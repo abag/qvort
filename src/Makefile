@@ -1,3 +1,4 @@
+BUILD=$1
 F90=gfortran
 #FFLAGS=-fdefault-real-8            # Double precision
 FFLAGS=-O3           # Use 3rd level of optimisation
@@ -14,8 +15,13 @@ DFLAGS=-O3 -fdefault-real-8           # DP/ 3rd level of optimisation
 #
 # Rules (how to make a Blergh from a Blah
 #
+ifeq ($(BUILD),double)
 .f90.o:
-	$(F90) $(FFLAGS) -o $*.o -c $*.f90
+	    $(F90) $(DFLAGS) -o $*.o -c $*.f90
+else
+.f90.o:
+	    $(F90) $(FFLAGS) -o $*.o -c $*.f90
+endif
 
 #
 # Special targets
@@ -24,10 +30,10 @@ default: run.x
 #
 # Targets
 #
-run.x: run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o Makefile 
-	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o
-double: run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o Makefile 
-	$(F90) $(DFLAGS) -o ./run.x run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o
+run.x: run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o Makefile 
+	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o
+double: run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o Makefile
+	$(F90) $(DFLAGS) -o ./run.x run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o
 #
 #
 clean: 
@@ -52,3 +58,5 @@ general.o: general.f90 cdata.o
 timestep.o: timestep.f90 general.o cdata.o
 #
 line.o: line.f90 general.o cdata.o
+#
+diagnostic.o: diagnostic.f90 general.o cdata.o

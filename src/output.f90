@@ -16,13 +16,14 @@ module output
     implicit none
     open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
-      print*, '%var--t---pcount--recon--avg_d--length'
-      write(78,*) '%var--t---pcount--recon--avg_d--length'
+      print*, '-var--t----pcount-recon-avg_d--length--maxu--maxdu'
+      write(78,*) '%-var--t---pcount-recon-avg_d--length--maxu--maxdu'
     end if
-    write(*,'(i4.3,f5.2,a,i5.4,a,i5.4,a,f5.2,a,f5.3)') &
-    itime/shots,t,' ', pcount,'  ',recon_count, '  ', avg_sep/delta, '   ',total_length
-    write(78,'(i4.3,f5.2,a,i5.4,a,i5.4,a,f5.2,a,f5.3)') &
-    itime/shots,t,' ', pcount,'  ',recon_count, '  ', avg_sep/delta, '   ',total_length
+    write(*,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3)') &
+itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
+    write(78,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3)') &
+itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
+    close(78)
     close(78)
   end subroutine
   !**********************************************************************

@@ -5,6 +5,7 @@ program run
   use periodic
   use timestep
   use line
+  use diagnostic
   implicit none
   logical :: restart
   call init_random_seed !cdata.mod
@@ -21,9 +22,14 @@ program run
   call print_dims !output.mod
   !begin time loop
   do itime=nstart, nsteps
-    !---------------------main operations--------------------------
     call ghostp !periodic.mod
+    !---------------------velocity operations----------------------
     call pmotion !timestep.mod
+    !---------------------diagnostic info--------------------------
+    if (mod(itime, shots)==0) then
+      call velocity_info !diagnostics.mod
+    end if
+    !---------------------line operations--------------------------
     call pinsert !line.mod
     if (mod(itime, recon_shots)==0) then
       call precon !line.mod

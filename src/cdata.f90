@@ -1,4 +1,5 @@
 module cdata
+  !**********VORTEX FILAMENT******************************************************
   type qvort !our main structure
     real :: x(3) !position
     real :: u(3), u1(3), u2(3) !stored velocities (adam bash)
@@ -7,11 +8,20 @@ module cdata
   end type
   type(qvort), allocatable :: f(:) !main vector
   integer :: pcount !number of particles in the simulation
+
+  !**************TIME PARAMS*******************************************************
   real :: t=0. !hold the current time globally
   integer :: itime !current timestep
+  integer :: nstart=1 !integer loop starts from (altered by reading in stored data)
+
+  !***********DIAGNOSTIC INFO******************************************************
   integer :: recon_count=0 !total number of reconnections
   real :: total_length !total length of filaments
   real :: avg_sep !average separation of the particles
+  real :: maxu,maxdu !velocity information
+  real :: energy !vortex energy
+
+  !***********CONSTANTS************************************************************
   !some constants - precompute for speed
   real, parameter :: pi=3.14159265358979324
   real :: one_half = (1./2.)
@@ -19,7 +29,8 @@ module cdata
   real :: twenty_three_twelve=(23./12.)
   real :: four_thirds=(4./3.)
   real :: five_twelths=(5./12.)
-  integer :: nstart=1 !integer loop starts from (altered by reading in stored data)
+
+  !***********RUN.IN***************************************************************
   !parameters from run.in, given protected status so treated like parameters
   !by routines in the rest of the code...
   integer, protected :: nsteps, shots, recon_shots=1
