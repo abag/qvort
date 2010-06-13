@@ -1,11 +1,11 @@
 nsteps 160000
-shots 800
+shots 80
 recon_shots 50
-init_pcount 800
+init_pcount 200
 dt 1E-4
 delta 0.001
 box_size 0.1
 velocity LIA
-initf random_loops
+initf linked_filaments
 line_count 20
 special_dump 0.

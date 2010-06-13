@@ -24,14 +24,13 @@ OPTIONS:
                     Use nohup to run the code in the background. This means 
                     the job will continue to run even if the terminal is closed.
                     All output is directed to a log file 'out.log'.
-
         -f|--force
                     If the script detects that data directory does not exist
                     then running with the -f option forces the creation of 
                     a directory, if on network space this can be slow...
         -r|--restart
-                    By default the code restarts itself set the -r option
-                    to avoid this.
+                    Set this option to restart the code from the last store Var
+                    file
         -h|--help
                     Show usage information.
 EOF
@@ -98,10 +97,12 @@ else
   fi
 fi
 if [ $RESTART -eq 1 ]; then
+    echo code will restart if possible
+  else
   if [ -f ./data/var.dat ]; then
-    echo deleting var.dat so code will not restart
-    rm ./data/var.dat
-  fi 
+    echo deleting varfile
+    rm ./data/var.dat 
+  fi
 fi
 if [ $COMPILE -eq 1 ]; then
   # Recompile
