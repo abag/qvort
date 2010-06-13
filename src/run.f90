@@ -26,6 +26,7 @@ program run
     call pmotion !timestep.mod
     call pinsert !line.mod
     if (mod(itime, recon_shots)==0) then
+      call precon !line.mod
       call premove !line.mod
     end if
     if(periodic_bc) call enforce_periodic !periodic.mod

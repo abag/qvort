@@ -23,6 +23,16 @@ module general
                    f(i)%ghostb(1:3)/(distb*(disti+distb)))
   end subroutine
   !*********************************************************************
+  subroutine clear_particle(i)
+    !empty all a particles information
+    implicit none
+    integer, intent(IN) :: i
+    f(i)%x=0.
+    f(i)%u=0. ; f(i)%u1=0. ; f(i)%u2=0.
+    f(i)%ghosti=0. ; f(i)%ghostb=0.
+    f(i)%infront=0 ; f(i)%behind=0
+  end subroutine
+  !*********************************************************************
   real function distf(i,j)
     !calculate the distance between particles in the f vector
     use Cdata
@@ -41,6 +51,33 @@ module general
     dist_gen=sqrt((a(1)-b(1))**2+&
                   (a(2)-b(2))**2+&
                   (a(3)-b(3))**2)
+  end function
+  !*********************************************************************
+  real function tangentf(i)
+    !calculate the tangent vector at point i
+    use Cdata
+    implicit none
+    real, dimension(3) :: tangentf
+    integer, intent(IN) :: i
+    real :: dist
+    !get distance between particle and ghost particle (infront)
+    dist=dist_gen(f(i)%x,f(i)%ghosti)
+    !now determine the vector (low order finite diff.)
+    tangentf(:)=(f(i)%ghosti(:)-f(i)%x(:))/dist
+  end function
+  !*********************************************************************
+  real function norm_tanf(i)
+    !calculate the normalised tangent vector at point i
+    use Cdata
+    implicit none
+    real, dimension(3) :: norm_tanf
+    integer, intent(IN) :: i
+    real :: length !length of vector
+    !now determine the vector (low order finite diff.)
+    norm_tanf(:)=(f(i)%ghosti(:)-f(i)%x(:))
+    !calculate length of vector
+    length=sqrt(norm_tanf(1)**2+norm_tanf(2)**2+norm_tanf(3)**2)
+    norm_tanf(:)=norm_tanf(:)/length !normalise
   end function
   !*********************************************************************
   real function cross_product(a,b)

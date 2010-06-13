@@ -1,11 +1,11 @@
 nsteps 160000
 shots 800
-recon_shots 5
+recon_shots 50
 init_pcount 800
 dt 1E-4
 delta 0.001
 box_size 0.1
 velocity LIA
-initf tangle
-line_count 8
+initf random_loops
+line_count 20
 special_dump 0.

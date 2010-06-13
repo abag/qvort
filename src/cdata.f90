@@ -7,9 +7,10 @@ module cdata
   end type
   type(qvort), allocatable :: f(:) !main vector
   integer :: pcount !number of particles in the simulation
-  real :: t !hold the current time globally
+  real :: t=0. !hold the current time globally
   integer :: itime !current timestep
-  integer :: recon_count !total number of reconnections
+  integer :: recon_count=0 !total number of reconnections
+  real :: total_length !total length of filaments
   real :: avg_sep !average separation of the particles
   !some constants - precompute for speed
   real, parameter :: pi=3.14159265358979324

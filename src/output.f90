@@ -12,12 +12,29 @@ module output
   end subroutine
   !**********************************************************************
   subroutine print_info()
-    !print information to screen
+    !print information to screen/file
     implicit none
+    open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
-      print*, 't---pcount--'
+      print*, '%var--t---pcount--recon--avg_d--length'
+      write(78,*) '%var--t---pcount--recon--avg_d--length'
     end if
-    write(*,'(f5.2,i5.4)') t, pcount
+    write(*,'(i4.3,f5.2,a,i5.4,a,i5.4,a,f5.2,a,f5.3)') &
+    itime/shots,t,' ', pcount,'  ',recon_count, '  ', avg_sep/delta, '   ',total_length
+    write(78,'(i4.3,f5.2,a,i5.4,a,i5.4,a,f5.2,a,f5.3)') &
+    itime/shots,t,' ', pcount,'  ',recon_count, '  ', avg_sep/delta, '   ',total_length
+    close(78)
+  end subroutine
+  !**********************************************************************
+  subroutine print_ts()
+    !print information to file
+    implicit none
+    open(unit=78,file='data/ts.log',position='append')
+    if (itime==shots) then
+      write(78,*) '%t---pcount---recon'
+    end if
+      write(78,'(f5.2,i5.4,i5.4)') t, pcount, recon_count
+    close(78)
   end subroutine
   !**********************************************************************
   subroutine printf(filenumber)
