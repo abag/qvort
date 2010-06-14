@@ -41,7 +41,7 @@ module timestep
         !use the local induction approximation
         call get_deriv_1(i,f_dot) !general.mod
         call get_deriv_2(i,f_ddot) !general.mod
-        u=5E-4*cross_product(f_dot,f_ddot)
+        u=5E-4*cross_product(f_dot,f_ddot) !general.mod
       case('BS')
         !full (nonlocal) biot savart
         print*, 'not yet ready'

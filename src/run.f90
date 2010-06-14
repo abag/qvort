@@ -6,6 +6,7 @@ program run
   use timestep
   use line
   use diagnostic
+  use quasip
   implicit none
   logical :: restart
   call init_random_seed !cdata.mod
@@ -50,5 +51,4 @@ program run
   end do
 !still to do:-
 !biot savart
-!analysis
 end program

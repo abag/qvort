@@ -13,6 +13,7 @@ module diagnostic
                     (f(:)%u1(2)-f(i)%u2(:))**2+&
                     (f(:)%u1(3)-f(i)%u2(:))**2)
     maxu=maxval(uinfo(:,1)) ; maxdu=maxval(uinfo(:,2))
+    deallocate(uinfo)
   end subroutine
   !*************************************************
   subroutine energy_info()

@@ -19,7 +19,7 @@ module line
       end if
       if (f(i)%infront==0) cycle !empty particle
       !get the distance between the particle and the one infront
-      disti=dist_gen(f(i)%x,f(i)%ghosti)
+      disti=dist_gen(f(i)%x,f(i)%ghosti) !general.f90
       total_length=total_length+disti !measure total length of filaments
       if (disti>delta) then               
         !print*, 'in here' ; stop
