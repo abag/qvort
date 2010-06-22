@@ -1,0 +1,99 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+abc_A	normal_fluid.f90	/^    real, parameter, private :: abc_A=/;"	v	module:normal_fluid
+abc_B	normal_fluid.f90	/^    real, parameter, private :: abc_A=1., abc_B=/;"	v	module:normal_fluid
+abc_C	normal_fluid.f90	/^    real, parameter, private :: abc_A=1., abc_B=1., abc_C=/;"	v	module:normal_fluid
+abc_k	normal_fluid.f90	/^    real, parameter, private :: abc_k=/;"	v	module:normal_fluid
+avg_sep	cdata.f90	/^  real :: avg_sep /;"	v	module:cdata
+behind	cdata.f90	/^    integer :: infront, behind /;"	k	type:qvort
+calc_velocity	timestep.f90	/^  subroutine calc_velocity(/;"	s	module:timestep
+cdata	cdata.f90	/^module cdata$/;"	m
+clear_particle	general.f90	/^  subroutine clear_particle(/;"	s	module:general
+cross_product	general.f90	/^  real function cross_product(/;"	f	module:general
+data_dump	output.f90	/^  subroutine data_dump$/;"	s	module:output
+data_restore	output.f90	/^  subroutine data_restore$/;"	s	module:output
+diagnostic	diagnostic.f90	/^module diagnostic$/;"	m
+diagnostics_quasip	quasip.f90	/^  subroutine diagnostics_quasip$/;"	s	module:quasip
+dist_gen	general.f90	/^  real function dist_gen(/;"	f	module:general
+distf	general.f90	/^  real function distf(/;"	f	module:general
+energy	cdata.f90	/^  real :: energy /;"	v	module:cdata
+energy_info	diagnostic.f90	/^  subroutine energy_info(/;"	s	module:diagnostic
+enforce_periodic	periodic.f90	/^  subroutine enforce_periodic(/;"	s	module:periodic
+f	cdata.f90	/^  type(qvort), allocatable :: f(/;"	v	module:cdata
+fatal_error	cdata.f90	/^  subroutine fatal_error(/;"	s	module:cdata
+five_twelths	cdata.f90	/^  real :: five_twelths=/;"	v	module:cdata
+four_thirds	cdata.f90	/^  real :: four_thirds=/;"	v	module:cdata
+g	quasip.f90	/^  type(quasi), allocatable :: g(/;"	v	module:quasip
+general	general.f90	/^module general$/;"	m
+get_deriv_1	general.f90	/^  subroutine get_deriv_1(/;"	s	module:general
+get_deriv_2	general.f90	/^  subroutine get_deriv_2(/;"	s	module:general
+get_ghost_p	periodic.f90	/^  subroutine get_ghost_p(/;"	s	module:periodic
+get_normal_fluid	normal_fluid.f90	/^    subroutine get_normal_fluid(/;"	s	module:normal_fluid
+ghostb	cdata.f90	/^    real :: ghosti(3), ghostb(/;"	k	type:qvort
+ghosti	cdata.f90	/^    real :: ghosti(/;"	k	type:qvort
+ghostp	periodic.f90	/^  subroutine ghostp$/;"	s	module:periodic
+infront	cdata.f90	/^    integer :: infront,/;"	k	type:qvort
+init_random_seed	cdata.f90	/^  SUBROUTINE init_random_seed(/;"	s	module:cdata
+init_setup	initial.f90	/^  subroutine init_setup(/;"	s	module:initial
+initial	initial.f90	/^module initial$/;"	m
+initiate_quasip	quasip.f90	/^  subroutine initiate_quasip$/;"	s	module:quasip
+int_special_dump	cdata.f90	/^  integer :: int_special_dump=/;"	v	module:cdata
+itime	cdata.f90	/^  integer :: itime /;"	v	module:cdata
+line	line.f90	/^module line$/;"	m
+loop_killer	line.f90	/^  subroutine loop_killer(/;"	s	module:line
+maxdu	cdata.f90	/^  real :: maxu,maxdu /;"	v	module:cdata
+maxu	cdata.f90	/^  real :: maxu,/;"	v	module:cdata
+norm_tanf	general.f90	/^  real function norm_tanf(/;"	f	module:general
+normal_fluid	normal_fluid.f90	/^module normal_fluid$/;"	m
+nstart	cdata.f90	/^  integer :: nstart=/;"	v	module:cdata
+one_half	cdata.f90	/^  real :: one_half /;"	v	module:cdata
+output	output.f90	/^module output$/;"	m
+pcount	cdata.f90	/^  integer :: pcount /;"	v	module:cdata
+periodic	periodic.f90	/^module periodic$/;"	m
+periodic_bc	cdata.f90	/^  logical :: periodic_bc=/;"	v	module:cdata
+pi	cdata.f90	/^  real, parameter :: pi=/;"	v	module:cdata
+pinsert	line.f90	/^  subroutine pinsert$/;"	s	module:line
+pmotion	timestep.f90	/^  subroutine pmotion(/;"	s	module:timestep
+precon	line.f90	/^  subroutine precon$/;"	s	module:line
+premove	line.f90	/^  subroutine premove$/;"	s	module:line
+print_dims	output.f90	/^  subroutine print_dims(/;"	s	module:output
+print_info	output.f90	/^  subroutine print_info(/;"	s	module:output
+print_ts	output.f90	/^  subroutine print_ts(/;"	s	module:output
+printf	output.f90	/^  subroutine printf(/;"	s	module:output
+quasi	quasip.f90	/^  type quasi /;"	t	module:quasip
+quasi_pcount	quasip.f90	/^  integer :: quasi_pcount$/;"	v	module:quasip
+quasip	quasip.f90	/^module quasip$/;"	m
+qvort	cdata.f90	/^  type qvort /;"	t	module:cdata
+read_run_file	cdata.f90	/^  subroutine read_run_file(/;"	s	module:cdata
+recon_count	cdata.f90	/^  integer :: recon_count=/;"	v	module:cdata
+restart	run.f90	/^  logical :: restart$/;"	v	program:run
+run	run.f90	/^program run$/;"	p
+sdata_dump	output.f90	/^  subroutine sdata_dump$/;"	s	module:output
+setup_leap_frog	initial.f90	/^  subroutine setup_leap_frog$/;"	s	module:initial
+setup_line_motion	initial.f90	/^  subroutine setup_line_motion$/;"	s	module:initial
+setup_linked_filaments	initial.f90	/^  subroutine setup_linked_filaments$/;"	s	module:initial
+setup_random_loops	initial.f90	/^  subroutine setup_random_loops$/;"	s	module:initial
+setup_single_loop	initial.f90	/^  subroutine setup_single_loop$/;"	s	module:initial
+setup_tangle	initial.f90	/^  subroutine setup_tangle$/;"	s	module:initial
+t	cdata.f90	/^  real :: t=/;"	v	module:cdata
+tangentf	general.f90	/^  real function tangentf(/;"	f	module:general
+three_twos	cdata.f90	/^  real :: three_twos=/;"	v	module:cdata
+timestep	timestep.f90	/^module timestep$/;"	m
+timestep_quasip	quasip.f90	/^  subroutine timestep_quasip$/;"	s	module:quasip
+total_length	cdata.f90	/^  real :: total_length /;"	v	module:cdata
+twenty_three_twelve	cdata.f90	/^  real :: twenty_three_twelve=/;"	v	module:cdata
+u	cdata.f90	/^    real :: u(/;"	k	type:qvort
+u	quasip.f90	/^    real :: u(/;"	k	type:quasi
+u1	cdata.f90	/^    real :: u(3), u1(/;"	k	type:qvort
+u1	quasip.f90	/^    real :: u(3), u1(/;"	k	type:quasi
+u2	cdata.f90	/^    real :: u(3), u1(3), u2(/;"	k	type:qvort
+u2	quasip.f90	/^    real :: u(3), u1(3), u2(/;"	k	type:quasi
+vel_xflow	normal_fluid.f90	/^    real, parameter, private :: vel_xflow=/;"	v	module:normal_fluid
+velocity_info	diagnostic.f90	/^  subroutine velocity_info(/;"	s	module:diagnostic
+velocity_quasip	quasip.f90	/^  subroutine velocity_quasip$/;"	s	module:quasip
+x	cdata.f90	/^    real :: x(/;"	k	type:qvort
+x	quasip.f90	/^    real :: x(/;"	k	type:quasi

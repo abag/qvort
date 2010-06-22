@@ -1,5 +1,6 @@
 module initial
   use cdata
+  use normal_fluid
   contains
   !*************************************************************************
   subroutine init_setup()
@@ -9,10 +10,11 @@ module initial
     !periodic bounday conditions?
     if (box_size>0.) then
       periodic_bc=.true.
-      print*, 'running with periodic boundaries, box size:', box_size
+      write(*,*) 'running with periodic boundaries, box size:', box_size
     else 
-      print*, 'running with open boundaries'
+      write(*,*) 'running with open boundaries'
     end if
+    call initialise_normal_fluid !normal_fluid.mod
     !sort out if there is a special dump time
     int_special_dump=int(special_dump/dt) !convert to integer
     !choose the correct setup routine based on the value of initf in run.in
@@ -30,10 +32,10 @@ module initial
       case('tangle')
         call setup_tangle
       case default
-        print*, 'invalid choice for initf parameter'
-        print*, 'available options: single_loop, leap-frog'
-        print*, 'line_motion, random_loops, tangle, linked_filaments'
-        call fatal_error !cdata.mod
+        !print*, 'available options: single_loop, leap-frog'
+        !print*, 'line_motion, random_loops, tangle, linked_filaments'
+        call fatal_error('cdata.mod:init_setup', &
+                         'invalid choice for initf parameter') !cdata.mod
      end select
   end subroutine
   !*************************************************************************
@@ -66,8 +68,8 @@ module initial
     real :: radius
     integer :: i 
     if (mod(pcount,2)/=0) then
-      print*, 'pcount is not a multiple of 2-aborting'
-      stop
+      call fatal_error('init.mod:setup_leap_frog', &
+      'pcount is not a multiple of 2-aborting')
     end if
     radius=(0.75*pcount*delta)/(4*pi) !75% of potential size
     print*, 'initf: leap-frog, radius of loops:', radius 
@@ -108,11 +110,11 @@ module initial
     real :: radius
     integer :: i 
     if (mod(pcount,2)/=0) then
-      print*, 'pcount is not a multiple of 2-aborting'
-      stop
+      call fatal_error('init.mod:setup_linked_filaments', &
+      'pcount is not a multiple of 2-aborting')
     end if
     radius=(0.75*pcount*delta)/(4*pi) !75% of potential size
-    print*, 'initf: leap-frog, radius of loops:', radius 
+    write(*,*) 'initf: leap-frog, radius of loops:', radius 
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount/2
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/(pcount/2))
@@ -161,8 +163,8 @@ module initial
       print*, 'pcount is now', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
-      print*, 'periodic boundary conditions required for this initial condition'
-      stop
+      call fatal_error('init.mod:setup_line_motion', &
+      'periodic boundary conditions required')
     end if
     do i=1, pcount
       f(i)%x(1)=(box_size/10.)*sin(pi*real(2*i-1)/(2.*pcount))
@@ -191,11 +193,12 @@ module initial
     integer :: i,j
       !test run.in parameters, if wrong program will exit
       if (line_count==0) then
-        print*, 'you have not set a value for line_count in run.in'
+        call fatal_error('init.mod:setup_random_loops', &
+        'you have not set a value for line_count in run.in')
       end if
       if (mod(pcount,line_count)/=0) then
-        print*, 'pcount/line_count is not an integer'
-        stop
+        call fatal_error('init.mod:setup_random_loops', &
+        'pcount/line_count is not an integer')
       end if
       loop_size=int(pcount/line_count)
       loop_radius=loop_size*(0.75*delta)/(2*pi) !75% of potential size
@@ -257,22 +260,23 @@ module initial
     integer :: i,j
       !test run.in parameters, if wrong program will exit
       if (line_count==0) then
-        print*, 'you have not set a value for line_count in run.in'
+        call fatal_error('init.mod:setup_tangle', &
+        'you have not set a value for line_count in run.in')
       end if
       if (mod(pcount,line_count)/=0) then
-        print*, 'pcount/line_count is not an integer'
-        stop
+        call fatal_error('init.mod:setup_tangle', &
+        'pcount/line_count is not an integer')
       end if
       if (periodic_bc) then
         !work out the number of particles required for our lines
         !given the box size specified in run.i
         pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
-        print*, 'changing size of pcount to fit with box_length and delta'
-        print*, 'pcount is now', pcount_required
+        write(*,*) 'changing size of pcount to fit with box_length and delta'
+        write(*,*) 'pcount is now', pcount_required
         deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
       else
-        print*, 'periodic boundary conditions required for this initial condition'
-        call fatal_error !cdata.mod
+        call fatal_error('init.mod:setup_tangle',&
+                         'periodic boundary conditions required for this initial condition') !cdata.mod
       end if
       line_size=int(pcount/line_count)
       do i=1, line_count

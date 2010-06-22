@@ -1,5 +1,5 @@
 module output
-  !ALL THE OUTPUT/INPUT ROUTINES USED IN THE CODE
+  !MAIN OUTPUT/INPUT ROUTINES USED IN THE CODE
   use cdata
   contains
   !**********************************************************************
@@ -16,7 +16,7 @@ module output
     implicit none
     open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
-      print*, '-var--t----pcount-recon-avg_d--length--maxu--maxdu'
+      write(*,*) '-var--t----pcount-recon-avg_d--length--maxu--maxdu'
       write(78,*) '%-var--t---pcount-recon-avg_d--length--maxu--maxdu'
     end if
     write(*,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3)') &
@@ -68,7 +68,7 @@ itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
   subroutine sdata_dump
     !store everything needed to restart the code - special edition :-)
     implicit none
-    print*, 'dumping to special data file, current time is=', t
+    write(*,*) 'dumping to special data file, current time is=', t
     open(unit=53,file="./data/special.dat",FORM='unformatted',status='replace')
       write(53) pcount
       write(53) itime
@@ -89,6 +89,6 @@ itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
       read(63) f
     close(63)
     nstart=itime+1
-    print*, 'data read in from dump file at t=', t
+    write(*,*) 'data read in from dump file at t=', t
   end subroutine
 end module

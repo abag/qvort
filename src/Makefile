@@ -30,10 +30,10 @@ default: run.x
 #
 # Targets
 #
-run.x: run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o Makefile 
-	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o
-double: run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o Makefile
-	$(F90) $(DFLAGS) -o ./run.x run.f90 cdata.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o
+run.x: run.f90 cdata.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o Makefile 
+	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o normal_fluid.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o
+double: run.f90 cdata.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o Makefile
+	$(F90) $(DFLAGS) -o ./run.x run.f90 cdata.o normal_fluid.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o
 #
 #
 clean: 
@@ -47,7 +47,6 @@ pristine: cleann
 #
 cdata.o: cdata.f90 ../run.in
 # 
-initial.o: initial.f90 cdata.o
 #
 output.o: output.f90 cdata.o
 #
@@ -55,7 +54,11 @@ periodic.o: periodic.f90 cdata.o
 #
 general.o: general.f90 cdata.o
 #
-timestep.o: timestep.f90 general.o cdata.o
+normal_fluid.o: normal_fluid.f90 general.o cdata.o
+#
+initial.o: initial.f90 normal_fluid.o cdata.o
+#
+timestep.o: timestep.f90 normal_fluid.o general.o cdata.o
 #
 line.o: line.f90 general.o cdata.o
 #

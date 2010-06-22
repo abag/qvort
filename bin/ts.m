@@ -4,7 +4,7 @@ t=A(:,2) ; pcount=A(:,3) ; rcount=A(:,4) ; sep=A(:,5) ; l=A(:,6) ;
 maxu=A(:,7) ; maxdu=A(:,8) ;
 figure('Name', 'filament information')
   subplot(2,2,1)
-    plot(t,pcount,'-k','LineWidth',2);
+    plot(t,pcount,'-r','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
     ylabel('pcount','FontSize',14)

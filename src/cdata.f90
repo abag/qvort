@@ -38,7 +38,10 @@ module cdata
   real, protected :: dt, delta
   real, protected :: box_size=0.
   logical :: periodic_bc=.false.
-  character(40), protected :: velocity, initf
+  !character 'parameters'
+  character(len=40), protected :: velocity, initf
+  character(len=40), protected :: normal_velocity='zero'
+  real, protected :: alpha(2)=0. !mutual friction coefficients
   integer, protected :: line_count=0
   !do we want to dump 'f' at a specific time, i.e. before a reconnection etc.
   real, protected :: special_dump=0. !special dump time
@@ -86,6 +89,10 @@ module cdata
              read(buffer, *, iostat=ios) box_size !size of periodic box
           case ('velocity')
              read(buffer, *, iostat=ios) velocity !BS/LIA
+          case ('normal_velocity')
+             read(buffer, *, iostat=ios) normal_velocity !zero/xflow/ABC/KS
+          case ('alpha')
+             read(buffer, *, iostat=ios) alpha !mutual friction
           case ('initf')
              read(buffer, *, iostat=ios) initf !initial setup of filaments
           case ('line_count')
@@ -99,8 +106,12 @@ module cdata
     end do
   end subroutine
   !*************************************************************************************************  
-  subroutine fatal_error()
-    implicit none
+  subroutine fatal_error(location,message)
+    implicit none      
+    character(len=*) :: location
+    character(len=*) :: message
+    write (*,*) 'fatal error detected,'
+    write (*,*) trim(location) , ": " , trim(message)
     print*, 'ABORTING RUN'
     stop
   end subroutine

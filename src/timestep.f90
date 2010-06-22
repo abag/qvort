@@ -1,6 +1,7 @@
 module timestep
   use cdata
   use general
+  use normal_fluid
   contains
   !*************************************************
   subroutine pmotion()
@@ -33,7 +34,7 @@ module timestep
   subroutine calc_velocity(u,i)
     implicit none
     integer, intent(IN) :: i
-    real :: u(3)
+    real :: u(3), u_norm(3)
     real :: f_dot(3), f_ddot(3) !first and second derivs
     !what scheme are we using? (LIA/BS)
     select case(velocity)
@@ -45,11 +46,19 @@ module timestep
       case('BS')
         !full (nonlocal) biot savart
         print*, 'not yet ready'
-        call fatal_error !cdata.mod
+        call fatal_error('timestep.mod:calc_velocity', &
+                         'BS not ready yet!') !cdata.mod
       case default
         print*, 'correct value for velocity in run.in has not been set'
         print*, 'options are: LIA, BS'
-        call fatal_error !cdata.mod
+        call fatal_error('timestep.mod:calc_velocity', & 
+        'correct value for "velocity" in run.in has not been set') !cdata.mod
     end select
+    !now account for mutual friction - test if alpha's are 0
+    if (sum(alpha)>epsilon(0.)) then
+      call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
+      u=u+alpha(1)*cross_product(f_dot,(u_norm-u))- &
+          alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
+    end if
   end subroutine
 end module
