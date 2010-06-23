@@ -9,6 +9,7 @@ module normal_fluid
     contains 
     !************************************************************
     subroutine setup_normal_fluid
+      !setup everything needed to use a normal fluid
       implicit none
       abc_k=2.*pi/box_size
       write(*,*) 'normal fluid velocity field is: ', trim(normal_velocity)
@@ -22,19 +23,22 @@ module normal_fluid
     end subroutine
     !************************************************************
     subroutine get_normal_velocity(x,u)
+      !get the normal fluid at a position x
       implicit none
       real, intent(IN) :: x(3) !position of the particle
       real, intent(OUT) :: u(3) !velocity at x
       select case(normal_velocity)
         case('zero')
-          u=0.
+          u=0. ! no flow
         case('xflow')
-          u=0. ; u(1)=vel_xflow
+          u=0. ; u(1)=vel_xflow !flow in the x direction
         case('ABC')
+          !commonly used toy model - turbulence/dynamo
           u(1)=abc_B*cos(abc_k*x(2))+abc_C*sin(abc_k*x(3))
           u(2)=abc_C*cos(abc_k*x(3))+abc_A*sin(abc_k*x(1))
           u(3)=abc_A*cos(abc_k*x(1))+abc_B*sin(abc_k*x(2))
         case('KS')
+          !multi-scale model of turbulence
           call fatal_error('normal_fluid', 'KS not ready yet')
         case default
           call fatal_error('normal_fluid.mod:get_normal_fluid', &

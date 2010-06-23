@@ -1,4 +1,5 @@
 module diagnostic
+  !DIAGNOSTICS - MAINLY TO PRINT TO SCREEN
   use cdata
   use general
   contains

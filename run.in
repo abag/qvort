@@ -1,3 +1,4 @@
+--------------required parameters------------
 nsteps 160000
 shots 80
 recon_shots 50
@@ -5,10 +6,16 @@ init_pcount 200
 dt 1E-4
 delta 0.001
 box_size 0.1
-mesh_size 64
 velocity LIA
-normal_velocity ABC
-alpha 0.098 0.012
-initf linked_filaments
+initf single_line
 line_count 20
+
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+mesh_size 64
+normal_velocity zero
+alpha 0.098 0.012
+force top_boundary
+force_amp 40.
+force_freq 1E2
 special_dump 0.

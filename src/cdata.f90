@@ -40,17 +40,26 @@ module cdata
   !***********RUN.IN***************************************************************
   !parameters from run.in, given protected status so treated like parameters
   !by routines in the rest of the code...
+  !--------main parameters-please set thes in run.in-----------------------------
   integer, protected :: nsteps, shots, recon_shots=1
   integer, protected :: init_pcount
   real, protected :: dt, delta
   real, protected :: box_size=0.
   integer, protected :: mesh_size=0
   logical :: periodic_bc=.false.
-  !character 'parameters'
   character(len=40), protected :: velocity, initf
+  integer, protected :: line_count=0
+
+  !--------the following parameters add special features-------------------------
+  !---------these should all have default values which 'switch' them off---------
+  !------------normal fluid component--------------------------------------------
   character(len=40), protected :: normal_velocity='zero'
   real, protected :: alpha(2)=0. !mutual friction coefficients
-  integer, protected :: line_count=0
+  !-----------------forcing------------------------------------------------------
+  character(len=40), protected :: force='off'
+  real, protected :: force_amp=0.
+  real, protected :: force_freq=0.  
+  !-----------------special data dumps-----------------------------------------------
   !do we want to dump 'f' at a specific time, i.e. before a reconnection etc.
   real, protected :: special_dump=0. !special dump time
   integer :: int_special_dump=0. !special dump time integer
@@ -107,6 +116,12 @@ module cdata
              read(buffer, *, iostat=ios) initf !initial setup of filaments
           case ('line_count')
              read(buffer, *, iostat=ios) line_count !used in certain intial conditions
+          case ('force')
+             read(buffer, *, iostat=ios) force !force the vortices
+          case ('force_amp')
+             read(buffer, *, iostat=ios) force_amp !forcing amplitude
+          case ('force_freq')
+             read(buffer, *, iostat=ios) force_freq !forcing frequency
           case ('special_dump')
              read(buffer, *, iostat=ios) special_dump !special dump
           case default

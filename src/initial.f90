@@ -1,9 +1,12 @@
 module initial
+  !INITIAL/RESTART CONDITIONS
   use cdata
   use normal_fluid
+  use forcing
   contains
   !*************************************************************************
   subroutine init_setup()
+    !prints and sets up intial conditions
     implicit none
     logical :: restart
     !periodic bounday conditions?
@@ -28,6 +31,8 @@ module initial
       select case(initf)
         case('single_loop')
           call setup_single_loop !init.mod
+        case('single_line')
+          call setup_single_line !init.mod
         case('random_loops')
           call setup_random_loops !init.mod
         case('leap-frog')
@@ -39,13 +44,11 @@ module initial
         case('tangle')
           call setup_tangle !init.mod
         case default
-          !print*, 'available options: single_loop, leap-frog'
-          !print*, 'line_motion, random_loops, tangle, linked_filaments'
           call fatal_error('cdata.mod:init_setup', &
                          'invalid choice for initf parameter') !cdata.mod
        end select
      end if
-     !finally test if we have a non-zero mesh size
+     !test if we have a non-zero mesh size
      if (mesh_size>0) then
        if (periodic_bc) then
          call setup_mesh !init.mod
@@ -54,6 +57,7 @@ module initial
          'running with a non-zero mesh size requires periodic BCs') !cdata.mod
        end if
      end if
+     call setup_forcing !forcing,mod
   end subroutine
   !**********************************************************************
   subroutine data_restore
@@ -92,6 +96,38 @@ module initial
       !zero the stored velocities
       f(i)%u1=0. ; f(i)%u2=0.
     end do   
+  end subroutine
+  !*************************************************************************
+  subroutine setup_single_line
+    !a line from the lop of the box to the bottom, no curvature
+    implicit none
+    integer :: pcount_required
+    integer :: i
+    if (periodic_bc) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length and delta'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_line_motion', &
+      'periodic boundary conditions required')
+    end if
+    do i=1, pcount
+      f(i)%x(1)=0.
+      f(i)%x(2)=0.
+      f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
   end subroutine
   !*************************************************************************
   subroutine setup_leap_frog

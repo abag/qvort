@@ -1,4 +1,5 @@
 program run
+  !THE MAIN PROGRAM
   use cdata
   use initial
   use output

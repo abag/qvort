@@ -1,10 +1,12 @@
 module line
+  !ANYTHING THAT ALTERS THE VORTEX FILAMENT (GEOMETRICALLY) SHOULD BE HERE
   use cdata
   use general
   use periodic
   contains
   !**************************************************************
   subroutine pinsert
+    !insert particles to maintain a ~constant resolution
     implicit none    
     type(qvort), allocatable, dimension(:) :: tmp
     real :: disti, curv, f_ddot(3)
@@ -148,6 +150,7 @@ module line
   !**************************************************
   subroutine loop_killer(particle)
     !removes loops with less than three particles
+    !this is needed to ensure derivatives can be calculated correctly
     implicit none
     integer :: particle, next
     integer :: store_next

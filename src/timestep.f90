@@ -3,6 +3,7 @@ module timestep
   use cdata
   use general
   use normal_fluid
+  use forcing
   contains
   !*************************************************
   subroutine pmotion()
@@ -33,9 +34,11 @@ module timestep
   end subroutine
   !*************************************************
   subroutine calc_velocity(u,i)
+    !get the velocity of each particle subject to the superfluid velocity
+    !plus any normal fluid/forcing
     implicit none
     integer, intent(IN) :: i
-    real :: u(3), u_norm(3)
+    real :: u(3), u_norm(3), u_force(3)
     real :: f_dot(3), f_ddot(3) !first and second derivs
     !what scheme are we using? (LIA/BS)
     select case(velocity)
@@ -61,9 +64,13 @@ module timestep
       u=u+alpha(1)*cross_product(f_dot,(u_norm-u))- &
           alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
     end if
+    !forcing?
+    call get_forcing(i,u_force)
+    u=u+u_force
   end subroutine
   !*************************************************
   subroutine mesh_velocity
+    !get the velocity at each point on the mesh for spectra etc.
     implicit none
     integer :: i,j,k
     do k=1, mesh_size

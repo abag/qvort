@@ -1,8 +1,10 @@
 module periodic
+  !ALL THE ROUTINES NEEDED TO KEEP THE CODE PERIODIC
   use cdata
   contains 
   !******************************************************************
   subroutine ghostp
+    !dummy routine, calls get_ghost_p below
     implicit none
     integer :: i
     do i=1, pcount
@@ -12,6 +14,9 @@ module periodic
   end subroutine
   !******************************************************************
   subroutine get_ghost_p(i,ginfront,gbehind)
+    !set the ghost particles, essentially these are the positions of the
+    !particles infront/behind, if they are at the other side of the box 
+    !due to periodic b.c. this position must be adjusted
     implicit none
     integer, intent(IN) :: i
     real :: ginfront(3), gbehind(3)
@@ -57,6 +62,7 @@ module periodic
   end subroutine
   !******************************************************************
   subroutine enforce_periodic()
+    !if a particle leaves one side of the box, reinsert it on the opposite side
     implicit none
     integer :: i
     do i=1, pcount
@@ -81,22 +87,4 @@ module periodic
       end if
     end do
   end subroutine
-  
-!this will contain all the periodic routines
-!1. move particles from one side of a box to another
-!2. a ghost particle routine
-!   if not periodic then just copy all of the particles infront and behind
-!   to a part of the qvort structure
-!  type qvort !our main structure
-!    real :: x(3) !position
-!    real :: u(3), u1(3), u2(3) !stored velocities (adam bash)
-!    real :: ghosti(3), ghostb(3) !ghost particles TO BE ADDED!!!!!
-!    integer :: infront, behind !to form a line/loop
-!  end type
-!
-!  if in periodic then have a routine which calculates the distance between particles infront 
-!  and behind and if larger than the box size then recalculates the ghosti ghostb data
-!  THINK ABOUT THIS ANDREW, PERHAPS THE OPTIMAL WAY IS TO DO THIS ONLY WHEN PARTICLES MOVE FROM 
-!  ONE SIDE OF THE BOX TO THE OTHER
-!  we then use these ghost particles in all our routines
 end module
