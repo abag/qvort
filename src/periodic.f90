@@ -6,6 +6,7 @@ module periodic
     implicit none
     integer :: i
     do i=1, pcount
+      if (f(i)%infront==0) cycle !empty particles
       call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb)
     end do
   end subroutine

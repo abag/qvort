@@ -5,8 +5,9 @@ init_pcount 200
 dt 1E-4
 delta 0.001
 box_size 0.1
+mesh_size 64
 velocity LIA
-normal_velocity xflow
+normal_velocity ABC
 alpha 0.098 0.012
 initf linked_filaments
 line_count 20

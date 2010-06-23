@@ -8,10 +8,10 @@ module diagnostic
     real, allocatable :: uinfo(:,:)
     integer :: i
     allocate(uinfo(pcount,2))
-    uinfo(:,1)=sqrt(f(:)%u(1)**2+f(:)%u(1)**2+f(:)%u(1)**2)
-    uinfo(:,2)=sqrt((f(:)%u1(1)-f(i)%u2(:))**2+&
-                    (f(:)%u1(2)-f(i)%u2(:))**2+&
-                    (f(:)%u1(3)-f(i)%u2(:))**2)
+    uinfo(:,1)=sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
+    uinfo(:,2)=sqrt((f(:)%u1(1)-f(:)%u2(1))**2+&
+                    (f(:)%u1(2)-f(:)%u2(2))**2+&
+                    (f(:)%u1(3)-f(:)%u2(3))**2)
     maxu=maxval(uinfo(:,1)) ; maxdu=maxval(uinfo(:,2))
     deallocate(uinfo)
   end subroutine

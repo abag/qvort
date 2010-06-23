@@ -1,5 +1,5 @@
 module output
-  !MAIN OUTPUT/INPUT ROUTINES USED IN THE CODE
+  !MAIN OUTPUT ROUTINES USED IN THE CODE
   use cdata
   contains
   !**********************************************************************
@@ -8,6 +8,7 @@ module output
     open(unit=77,file='./data/dims.log',status='replace')
       write(77,*) delta
       write(77,*) box_size
+      write(77,*) mesh_size
     close(77)  
   end subroutine
   !**********************************************************************
@@ -46,11 +47,11 @@ itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
     integer :: i
     write(unit=print_file,fmt="(a,i3.3,a)")"./data/var",filenumber,".log"
     open(unit=98,file=print_file,status='replace')
-    write(98,*) t
-    write(98,*) pcount
-    do i=1, pcount
-      write(98,*) f(i)%x(1:3), f(i)%infront
-    end do
+      write(98,*) t
+      write(98,*) pcount
+      do i=1, pcount
+        write(98,*) f(i)%x(1:3), f(i)%infront
+      end do
     close(98)
   end subroutine
   !**********************************************************************
@@ -77,18 +78,33 @@ itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
     close(53)
   end subroutine
   !**********************************************************************
-  subroutine data_restore
-    !restart the code - should this be in init.mod?
+  subroutine print_mesh(filenumber)
+    !print the mesh to a binary file
     implicit none
-    integer :: dummy_itime 
-    open(unit=63,file="./data/var.dat",FORM='unformatted')
-      read(63) pcount
-      read(63) itime
-      read(63) t
-      allocate(f(pcount))
-      read(63) f
-    close(63)
-    nstart=itime+1
-    write(*,*) 'data read in from dump file at t=', t
+    integer, intent(IN) :: filenumber
+    character (len=40) :: print_file
+    real, allocatable :: vapor_array(:,:,:)
+    logical :: vapor=.true.
+    if (mesh_size==0) return
+    write(unit=print_file,fmt="(a,i3.3,a)")"./data/mesh",filenumber,".dat"
+    open(unit=92,file=print_file,form='unformatted',status='replace',access='stream')
+      write(92) t
+      write(92) mesh(mesh_size/2,mesh_size/2,1:mesh_size)%x(1)
+      write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_norm(1)
+      write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_norm(2)
+      write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_norm(3)
+    close(92)
+    !print just the velocity field for vapor 
+    if (vapor) then
+      allocate(vapor_array(mesh_size, mesh_size, mesh_size))
+      vapor_array(:,:,:)=sqrt(mesh(:,:,:)%u_norm(1)**2+&
+                              mesh(:,:,:)%u_norm(2)**2+&
+                              mesh(:,:,:)%u_norm(3)**2)
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/vap_mesh",filenumber,".dat"
+      open(unit=93,file=print_file,form='unformatted',status='replace',access='stream')
+        write(93) vapor_array
+      close(93)
+      deallocate(vapor_array) 
+    end if
   end subroutine
 end module

@@ -1,4 +1,5 @@
 module timestep
+  !ANYTHING RELATED TO VELOCITY SHOULD ENTER HERE
   use cdata
   use general
   use normal_fluid
@@ -60,5 +61,23 @@ module timestep
       u=u+alpha(1)*cross_product(f_dot,(u_norm-u))- &
           alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
     end if
+  end subroutine
+  !*************************************************
+  subroutine mesh_velocity
+    implicit none
+    integer :: i,j,k
+    do k=1, mesh_size
+      do j=1, mesh_size
+        do i=1, mesh_size
+          !superfluid velocity
+          !select case(velocity)
+          !  case('BS')
+            !operations would go in here
+          !end select
+          !normal fluid
+          call get_normal_velocity(mesh(k,j,i)%x,mesh(k,j,i)%u_norm)
+        end do
+      end do
+    end do
   end subroutine
 end module

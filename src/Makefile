@@ -1,7 +1,7 @@
 BUILD=$1
 F90=gfortran
 #FFLAGS=-fdefault-real-8            # Double precision
-FFLAGS=-O3           # Use 3rd level of optimisation
+FFLAGS=-O3 # Use 3rd level of optimisation
 DFLAGS=-O3 -fdefault-real-8           # DP/ 3rd level of optimisation
    #
    #  -pg   =  profiler (gprof)

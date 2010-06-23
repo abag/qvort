@@ -8,7 +8,14 @@ module cdata
   end type
   type(qvort), allocatable :: f(:) !main vector
   integer :: pcount !number of particles in the simulation
-
+  !**********MESH STRUCTURE******************************************************
+  type grid
+    real :: x(3) !position
+    real :: u(3) !velocity (superfluid)
+    real :: u_norm(3) !velocity (normal fluid)
+  end type
+  type(grid), allocatable :: mesh(:,:,:)
+  real :: mesh_delta !mesh resolution
   !**************TIME PARAMS*******************************************************
   real :: t=0. !hold the current time globally
   integer :: itime !current timestep
@@ -37,6 +44,7 @@ module cdata
   integer, protected :: init_pcount
   real, protected :: dt, delta
   real, protected :: box_size=0.
+  integer, protected :: mesh_size=0
   logical :: periodic_bc=.false.
   !character 'parameters'
   character(len=40), protected :: velocity, initf
@@ -87,6 +95,8 @@ module cdata
              read(buffer, *, iostat=ios) delta !spatial resolution
           case ('box_size')
              read(buffer, *, iostat=ios) box_size !size of periodic box
+          case ('mesh_size')
+             read(buffer, *, iostat=ios) mesh_size !size of mesh
           case ('velocity')
              read(buffer, *, iostat=ios) velocity !BS/LIA
           case ('normal_velocity')
@@ -110,9 +120,8 @@ module cdata
     implicit none      
     character(len=*) :: location
     character(len=*) :: message
-    write (*,*) 'fatal error detected,'
+    write (*,*) 'FATAL ERROR'
     write (*,*) trim(location) , ": " , trim(message)
-    print*, 'ABORTING RUN'
     stop
   end subroutine
   !*************************************************************************************************  

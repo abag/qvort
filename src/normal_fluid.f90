@@ -8,13 +8,13 @@ module normal_fluid
     real, private :: abc_k
     contains 
     !************************************************************
-    subroutine initialise_normal_fluid
+    subroutine setup_normal_fluid
       implicit none
-      abc_k=2.*pi*box_size
+      abc_k=2.*pi/box_size
       write(*,*) 'normal fluid velocity field is: ', trim(normal_velocity)
       select case(normal_velocity)
         case('xflow')
-          write(*,*) 'u(x)=', vel_xflow
+          write(*,'(a,f6.3)') ' u(x)=', vel_xflow
         case('ABC')
           write(*,*) 'A=', abc_A, ' B=', abc_B, ' C=', abc_C
       end select
@@ -31,9 +31,9 @@ module normal_fluid
         case('xflow')
           u=0. ; u(1)=vel_xflow
         case('ABC')
-          u(1)=abc_B*cos(abc_k*x(2))+abc_C*cos(abc_k*x(3))
-          u(2)=abc_C*cos(abc_k*x(3))+abc_A*cos(abc_k*x(1))
-          u(3)=abc_A*cos(abc_k*x(1))+abc_B*cos(abc_k*x(2))
+          u(1)=abc_B*cos(abc_k*x(2))+abc_C*sin(abc_k*x(3))
+          u(2)=abc_C*cos(abc_k*x(3))+abc_A*sin(abc_k*x(1))
+          u(3)=abc_A*cos(abc_k*x(1))+abc_B*sin(abc_k*x(2))
         case('KS')
           call fatal_error('normal_fluid', 'KS not ready yet')
         case default

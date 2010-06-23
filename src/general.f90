@@ -89,4 +89,17 @@ module general
     cross_product(2)=a(3)*b(1)-a(1)*b(3)
     cross_product(3)=a(1)*b(2)-a(2)*b(1)
   end function
+  !*********************************************************************
+  subroutine zero_finder(location)
+    !only used for code testing
+    implicit none
+    integer :: i, zcount=0
+    character(len=*) :: location
+    do i=1, pcount
+      if (f(i)%infront==0) zcount=zcount+1
+    end do
+    write(*,*) 'zero finder called at', trim(location)
+    write(*,*) 'zero count= ', zcount
+    write(*,*) 'ending run...' ; stop 
+  end subroutine
 end module
