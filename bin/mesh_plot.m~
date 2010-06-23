@@ -1,0 +1,41 @@
+function mesh_plot(filenumber)
+close all
+filename=sprintf('data/mesh%03d.dat',filenumber);
+load data/dims.log;
+msize=dims(3);
+fid=fopen(filename);
+t=fread(fid,1,'float');
+x=fread(fid,msize,'float');
+ux=fread(fid,msize^3,'float');
+uy=fread(fid,msize^3,'float');
+uz=fread(fid,msize^3,'float');
+ux=reshape(ux,msize,msize,msize);
+uy=reshape(uy,msize,msize,msize);
+uz=reshape(uz,msize,msize,msize);
+mesh_slices(ux,uy,uz,msize)
+%spectrum
+fux=fftn(ux)/(msize^3);
+fuy=fftn(uy)/(msize^3);
+fuz=fftn(uz)/(msize^3);
+energyr=real(fux).^2+real(fuy).^2+real(fuz).^2;
+energyi=imag(fux).^2+imag(fuy).^2+imag(fuz).^2;
+midpt=msize/2+1;
+spect(1:2*msize)=0.;
+for i=1:msize
+    for j=1:msize
+        for k=1:msize
+            ii=i;
+            jj=j;
+            kk=k;
+            if ii>midpt ; ii=msize-jj+1; ; end ;
+            if jj>midpt ; jj=msize-jj+1; ; end ; 
+            if kk>midpt ; kk=msize-jj+1; ; end ;
+            r=int16(sqrt(ii^2+jj^2+kk^2));
+            spect(r)=spect(r)+energyr(i,j,k)+energyi(i,j,k);
+        end
+    end
+end
+figure('Name','Energy Spectrum') 
+k=1:midpt;
+plot(log10(k),log10(spect(1:midpt)),'LineWidth',2)
+  
