@@ -1,21 +1,21 @@
 --------------required parameters------------
 nsteps 160000
-shots 80
+shots 160
 recon_shots 50
 init_pcount 200
 dt 1E-4
 delta 0.001
 box_size 0.1
 velocity LIA
-initf single_line
-line_count 20
+initf single_loop
+line_count 10
 
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-mesh_size 64
-normal_velocity zero
+!mesh_size 64
+normal_velocity xflow
 alpha 0.098 0.012
-force top_boundary
-force_amp 40.
-force_freq 1E2
+!force top_boundary
+!force_amp 40.
+!force_freq 1E2
 special_dump 0.

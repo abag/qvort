@@ -39,6 +39,7 @@ module timestep
     implicit none
     integer, intent(IN) :: i
     real :: u(3), u_norm(3), u_force(3)
+    real :: curv, beta
     real :: f_dot(3), f_ddot(3) !first and second derivs
     !what scheme are we using? (LIA/BS)
     select case(velocity)
@@ -46,7 +47,14 @@ module timestep
         !use the local induction approximation
         call get_deriv_1(i,f_dot) !general.mod
         call get_deriv_2(i,f_ddot) !general.mod
-        u=5E-4*cross_product(f_dot,f_ddot) !general.mod
+        !calculate the curvature
+        curv=sqrt(dot_product(f_ddot,f_ddot))
+        if (curv<epsilon(0.)) then
+          curv=epsilon(0.) !we must check for zero curvature
+        end if
+        !caluculate beta based on the curvature
+        beta=(9.97E-4/(4.*pi))*log(1E8/curv)
+        u=beta*cross_product(f_dot,f_ddot) !general.mod
       case('BS')
         !full (nonlocal) biot savart
         print*, 'not yet ready'
