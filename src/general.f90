@@ -43,6 +43,16 @@ module general
                (f(i)%x(3)-f(j)%x(3))**2)
   end function
   !*********************************************************************
+  real function distfsq(i,j)
+    !calculate the squared distance between particles in the f vector
+    use Cdata
+    implicit none
+    integer, intent(IN) :: i, j
+    distfsq=(f(i)%x(1)-f(j)%x(1))**2+&
+            (f(i)%x(2)-f(j)%x(2))**2+&
+            (f(i)%x(3)-f(j)%x(3))**2
+  end function
+  !*********************************************************************
   real function dist_gen(a,b)
     !calculate the distance between points a(1:3), b(1:3)
     use Cdata
@@ -51,6 +61,16 @@ module general
     dist_gen=sqrt((a(1)-b(1))**2+&
                   (a(2)-b(2))**2+&
                   (a(3)-b(3))**2)
+  end function
+  !*********************************************************************
+  real function dist_gen_sq(a,b)
+    !calculate the squared distance between points a(1:3), b(1:3)
+    use Cdata
+    implicit none
+    real, dimension(3), intent(IN) :: a, b
+    dist_gen_sq=(a(1)-b(1))**2+&
+                (a(2)-b(2))**2+&
+                (a(3)-b(3))**2
   end function
   !*********************************************************************
   real function tangentf(i)

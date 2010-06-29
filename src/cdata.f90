@@ -45,6 +45,7 @@ module cdata
   integer, protected :: init_pcount
   real, protected :: dt, delta
   real, protected :: box_size=0.
+  real, protected :: quant_circ
   integer, protected :: mesh_size=0
   logical :: periodic_bc=.false.
   character(len=40), protected :: velocity, initf
@@ -102,6 +103,8 @@ module cdata
              read(buffer, *, iostat=ios) dt !timestep value
           case ('delta')
              read(buffer, *, iostat=ios) delta !spatial resolution
+          case ('quant_circ')
+             read(buffer, *, iostat=ios) quant_circ !quantum of circulation
           case ('box_size')
              read(buffer, *, iostat=ios) box_size !size of periodic box
           case ('mesh_size')
