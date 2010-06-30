@@ -4,11 +4,11 @@ shots 1600
 recon_shots 50
 init_pcount 200
 dt 1E-5
-delta 0.001
+delta 0.004
 box_size 0.1
 quant_circ 9.97E-4
 velocity BS
-initf leap-frog
+initf crow
 line_count 10
 
 --------------optional parameters------------

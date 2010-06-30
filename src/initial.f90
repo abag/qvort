@@ -35,6 +35,8 @@ module initial
           call setup_single_line !init.mod
         case('random_loops')
           call setup_random_loops !init.mod
+        case('crow')
+          call setup_crow !init.mod
         case('leap-frog')
           call setup_leap_frog !init.mod
         case('linked_filaments')
@@ -81,7 +83,7 @@ module initial
     real :: radius
     integer :: i 
     radius=(0.75*pcount*delta)/(2*pi) !75% of potential size 
-    print*, 'initf: single loop, radius of loop:', radius 
+    write(*,*) 'initf: single loop, radius of loop:', radius 
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
@@ -107,8 +109,8 @@ module initial
       !work out the number of particles required for single line
       !given the box size specified in run.i
       pcount_required=nint(box_size/(0.75*delta)) !75%
-      print*, 'changing size of pcount to fit with box_length and delta'
-      print*, 'pcount is now', pcount_required
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
       call fatal_error('init.mod:setup_line_motion', &
@@ -140,7 +142,7 @@ module initial
       'pcount is not a multiple of 2-aborting')
     end if
     radius=(0.75*pcount*delta)/(4*pi) !75% of potential size
-    print*, 'initf: leap-frog, radius of loops:', radius 
+    write(*,*) 'initf: leap-frog, radius of loops:', radius 
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount/2
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/(pcount/2))
@@ -160,6 +162,55 @@ module initial
       f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))
       f(i)%x(2)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
       f(i)%x(3)=4.*delta
+      if (i==(pcount/2+1)) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1+pcount/2
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do    
+  end subroutine
+  !*************************************************************************
+  subroutine setup_crow
+    !anti parallel lines (instability)
+    implicit none
+    integer :: pcount_required
+    integer :: i 
+    if (periodic_bc) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=2*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length and delta'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_crow', &
+      'periodic boundary conditions required')
+    end if
+    write(*,*) 'initf: crow, separation of lines is:', 2.*delta 
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount/2
+      f(i)%x(1)=0.
+      f(i)%x(2)=delta
+      f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(pcount)
+      if (i==1) then
+        f(i)%behind=pcount/2 ; f(i)%infront=i+1
+      else if (i==pcount/2) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
+    !second line
+    do i=pcount/2+1, pcount
+      f(i)%x(1)=0.
+      f(i)%x(2)=-delta
+      f(i)%x(3)=box_size/2.-box_size*real(2*(i-pcount/2)-1)/(pcount)
       if (i==(pcount/2+1)) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -226,8 +277,8 @@ module initial
       !work out the number of particles required for single line
       !given the box size specified in run.i
       pcount_required=nint(box_size/(0.75*delta)) !75%
-      print*, 'changing size of pcount to fit with box_length and delta'
-      print*, 'pcount is now', pcount_required
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
       call fatal_error('init.mod:setup_line_motion', &

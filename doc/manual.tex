@@ -1,0 +1,99 @@
+\title{{\sc qvort}\\
+{\normalsize A quantised vortex code}}
+\author{\normalsize
+        Andrew Baggaley\\
+        \normalsize  School of Mathematics and Statistics\\
+        \normalsize  Newcastle Univeristy\\
+        {\normalsize  U.K.}\\
+        \normalsize   a.w.baggaley@gmail.com
+}
+\date{\normalsize   \today}
+
+\documentclass[12pt]{article}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\newcommand{\bs}{\mathbf{s}}
+\newcommand{\br}{\mathbf{r}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\appsection}[1]{\let\oldthesection\thesection
+  \renewcommand{\thesection}{Appendix \oldthesection}
+  \section{#1}\let\thesection\oldthesection}
+\begin{document}
+\maketitle
+\pagestyle{plain}
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\clearpage
+\pagenumbering{arabic}
+\section{Introduction}\label{Sec:int}
+  Welcome to the documentation for the {\sc qvort} quantised vortex code.
+  The code is written in well commented Fortran, arranged in a modular structure.
+  The primary aim of this documentation is to highlight which module(s) are involved in the various sequences of the code, 
+  and also the parameters which can be set in the {\it run.in} file.
+  To run {\sc qvort} you need to be on a {\it UNIX}-type system ({\it Make} and {\it bash} are heavily used) with a Fortran compiler.
+  All the Fortran code can be found in the directory {\it src}.
+  MATLAB is used for post-processing, although it is probably very straightforward to convert the MATLAB scripts (found in {\it bin}) to work with {\it Octave}, freely available under the GNU license.
+  Please do not hesitate to contact with any queries, or if you are interested in helping to further develop the code.
+
+\section{Equations}\label{Sec:eqn}
+  The {\sc qvort} code is a vortex-filament code, a technique pioneerd by Schwarz in the early 1980s. 
+  Each line-vortex in the system is discretised into a number of points which are evolved according to an equation of motion.
+  Points along the line are added (or removed) if the vortex is streched (or compressed).
+  If any two lines become very close (a distance less than the separation along the line) then the filaments reconnect, changing the topology of the system.  
+  More precisely we define our vortex filament as a three diemensional curve $\bs=\bs(\xi,t)$.
+  Here $\xi$ represents arc-lengths and $t$ is time.
+  We can construct the tangent vector $\bs'$, then normal vector, $\bs''$,
+  and the binormal vector, $\bs' \times \bs''$ by taking numerical derivatives.
+  Note $\bs'=d \bs/d\xi$, and so on.
+  We denote the velocity at a point $\bs$ as $\bu(\bs)$ and consider the velocity field to be made up of two parts,
+  \begin{equation} 
+     \bu=\bu_\mathrm{s}+\bu_\mathrm{n},
+  \end{equation} 
+  where $\bu_\mathrm{s}$ is the superfluid component of the velocity field (i.e. motion induced by vortices),
+  and $\bu_\mathrm{n}$ is the normal fluid component.
+  In the code there are various options for both the normal and superfluid components.
+  For the superfluid component one can choose between the local induction approximation (LIA),
+  \begin{equation}\label{Eq:LIA}
+    \bu_\mathrm{s}=\beta \bs' \times \bs'', \qquad \beta=\frac{\Gamma}{4\pi} \ln \left( \frac{R}{a} \right),
+  \end{equation} 
+  where $\Gamma$ is the quantum of circulation (a parameter which can be set in {\it run.in}), 
+  $R$ is the radius of curvature ($1/|\bs''|$), and $a$ is the vortex core size (fixed $10^{-8}$cm).
+  We note that the time per iteration with this method scales like ${\cal O}(N)$, where $N$ is the total
+  number of particles in the simulation.
+
+  A second option is to solve the de-singulised Biot-Savart integral,
+  \begin{equation}\label{Eq:BS}
+    \bu_\mathrm{s}=\beta' \bs' \times \bs''+ \frac{\Gamma}{4\pi} \int_{\ell'} \frac{(\bs-\br)\times d\bs}{|\bs-\br|^3},
+    \qquad \beta'=\frac{\Gamma}{4\pi} \ln \left( \frac{\sqrt{\ell_{i}\ell_{i-1}}}{a}\right).
+  \end{equation}
+  $\ell'$ represents the full system with the local region around the point of interest removed (to avoid division by 0).
+  This local contribution enters back in as a binormal vector with a magnitude affected by the size of local region $\ell_i$/$\ell_{i-1}$.
+  Whilst a more realistic scheme the downside of using the full integral comes in the scaling of the time per iteration with $N$, which is quadratic (${\cal O}(N^2)$).
+      
+  The current options for the normal fluid are zero, $\bs_\mathrm{n}=0.$, a constant $x$-flow, 
+  $\bs_\mathrm{n}=(\mathrm{const},0,0),$ and the ABC flow,
+  \begin{equation} 
+    \bs_\mathrm{n}=
+  \end{equation} 
+  These two velocities combind together to give the total equation of motion
+  \begin{equation}
+    \frac{d \bs}{dt}=\bu_\mathrm{s}+\alpha \bs' \times (\bu_\mathrm{n}-\bu_\mathrm{s})
+    +\alpha' \bs' \times \left[ \bs' \times (\bu_\mathrm{n}-\bu_\mathrm{s})\right]
+  \end{equation}  
+\section{Numerical schemes}\label{Sec:num}
+  At a particular particle on a filament, with position $\bs_i$, define the distance to the particle infront ($\bs_{i+1}$)
+  as $\ell_{i+1}$ and the distance to the particle behind ($\bs_{i-1}$) as $\ell_{i-1}$.
+  By infront/behind we refer to the particles next/previous along the filament.
+  We can construct finite difference approximations to the first and second derivatives by taking Taylor's series expansions.
+  The resulting forms are as follows,
+  \begin{equation}
+    \frac{d \bs_i}{d \xi}=\frac{\ell_{i-1}\bs_{i+1}+(\ell_{i+1}-\ell_{i-1})\bs_i+\ell_{i+1}\bs_{i-1}}
+    {2\ell_{i+1}\ell_{i-1}}+{\cal O}(\ell^2),
+  \end{equation}
+  \begin{equation}
+    \frac{d^2 \bs_i}{d \xi}^2=\frac{2\bs_{i+1}}{\ell_{i+1}(\ell_{i+1}+\ell_{i-1})}-\frac{2\bs_i}{\ell_{i+1}\ell_{i-1}}+\frac{2\bs_{i-1}}{\ell_{i-1}(\ell_{i+1}+\ell_{i-1})}+{\cal O}(\ell^2).
+  \end{equation}
+  We must also use some numerical scheme to integrate in time
+\end{document}

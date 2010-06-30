@@ -10,7 +10,7 @@ clean:
 cleann:
 	make -C src cleann
 pristine: cleann
-	make -C src cleann
+	make -C doc pristine
 	rm -rf data/*
 linkx:
 	@for file in src/*.x; \
