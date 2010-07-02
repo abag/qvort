@@ -60,10 +60,12 @@ module cdata
   character(len=40), protected :: force='off'
   real, protected :: force_amp=0.
   real, protected :: force_freq=0.  
-  !-----------------special data dumps-----------------------------------------------
+  !-----------------special data dumps-------------------------------------------
   !do we want to dump 'f' at a specific time, i.e. before a reconnection etc.
   real, protected :: special_dump=0. !special dump time
   integer :: int_special_dump=0. !special dump time integer
+  !---------------------tree-code------------------------------------------------
+  real, protected :: tree_theta=0.
   contains
   !*************************************************************************************************  
   subroutine read_run_file()
@@ -127,6 +129,8 @@ module cdata
              read(buffer, *, iostat=ios) force_freq !forcing frequency
           case ('special_dump')
              read(buffer, *, iostat=ios) special_dump !special dump
+          case ('tree_theta')
+             read(buffer, *, iostat=ios) tree_theta !tree code, opening angle
           case default
              !print *, 'Skipping invalid label at line', line
           end select

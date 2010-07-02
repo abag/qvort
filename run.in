@@ -2,21 +2,22 @@
 nsteps 160000
 shots 1600
 recon_shots 50
-init_pcount 200
+init_pcount 60
 dt 1E-5
-delta 0.004
+delta 0.001
 box_size 0.1
 quant_circ 9.97E-4
 velocity BS
-initf crow
+initf single_loop
 line_count 10
 
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 !mesh_size 64
-normal_velocity xflow
-!alpha 0.098 0.012
+normal_velocity ABC
+alpha 0.098 0.012
 !force top_boundary
 !force_amp 40.
 !force_freq 1E2
 special_dump 0.
+tree_theta 1.

@@ -9,25 +9,43 @@ abc_B	normal_fluid.f90	/^    real, parameter, private :: abc_A=1., abc_B=/;"	v	m
 abc_C	normal_fluid.f90	/^    real, parameter, private :: abc_A=1., abc_B=1., abc_C=/;"	v	module:normal_fluid
 abc_k	normal_fluid.f90	/^    real, private :: abc_k$/;"	v	module:normal_fluid
 avg_sep	cdata.f90	/^  real :: avg_sep /;"	v	module:cdata
+bbl	tree.f90	/^      type (node), pointer :: bbl,/;"	k	type:node
+bbr	tree.f90	/^      type (node), pointer :: bbl, bbr /;"	k	type:node
 behind	cdata.f90	/^    integer :: infront, behind /;"	k	type:qvort
+btl	tree.f90	/^      type (node), pointer :: btl,/;"	k	type:node
+btr	tree.f90	/^      type (node), pointer :: btl, btr /;"	k	type:node
+build_tree	tree.f90	/^  recursive subroutine build_tree(/;"	s	module:tree
 calc_velocity	timestep.f90	/^  subroutine calc_velocity(/;"	s	module:timestep
 cdata	cdata.f90	/^module cdata$/;"	m
+centx	tree.f90	/^      real :: centx,/;"	k	type:node
+centy	tree.f90	/^      real :: centx, centy,/;"	k	type:node
+centz	tree.f90	/^      real :: centx, centy, centz /;"	k	type:node
+circ	tree.f90	/^      real :: circ(/;"	k	type:node
 clear_particle	general.f90	/^  subroutine clear_particle(/;"	s	module:general
+construct_tree	tree.f90	/^  subroutine construct_tree(/;"	s	module:tree
 cross_product	general.f90	/^  real function cross_product(/;"	f	module:general
 data_dump	output.f90	/^  subroutine data_dump$/;"	s	module:output
 data_restore	initial.f90	/^  subroutine data_restore$/;"	s	module:initial
+dead_tree	tree.f90	/^  subroutine dead_tree(/;"	s	module:tree
 diagnostic	diagnostic.f90	/^module diagnostic$/;"	m
 diagnostics_quasip	quasip.f90	/^  subroutine diagnostics_quasip$/;"	s	module:quasip
 dist_gen	general.f90	/^  real function dist_gen(/;"	f	module:general
+dist_gen_sq	general.f90	/^  real function dist_gen_sq(/;"	f	module:general
 distf	general.f90	/^  real function distf(/;"	f	module:general
+distfsq	general.f90	/^  real function distfsq(/;"	f	module:general
+empty_tree	tree.f90	/^  recursive subroutine empty_tree(/;"	s	module:tree
 energy	cdata.f90	/^  real :: energy /;"	v	module:cdata
 energy_info	diagnostic.f90	/^  subroutine energy_info(/;"	s	module:diagnostic
 enforce_periodic	periodic.f90	/^  subroutine enforce_periodic(/;"	s	module:periodic
 f	cdata.f90	/^  type(qvort), allocatable :: f(/;"	v	module:cdata
 fatal_error	cdata.f90	/^  subroutine fatal_error(/;"	s	module:cdata
+fbl	tree.f90	/^      type (node), pointer :: fbl,/;"	k	type:node
+fbr	tree.f90	/^      type (node), pointer :: fbl, fbr /;"	k	type:node
 five_twelths	cdata.f90	/^  real :: five_twelths=/;"	v	module:cdata
 forcing	forcing.f90	/^module forcing$/;"	m
 four_thirds	cdata.f90	/^  real :: four_thirds=/;"	v	module:cdata
+ftl	tree.f90	/^      type (node), pointer :: ftl,/;"	k	type:node
+ftr	tree.f90	/^      type (node), pointer :: ftl, ftr /;"	k	type:node
 g	quasip.f90	/^  type(quasi), allocatable :: g(/;"	v	module:quasip
 general	general.f90	/^module general$/;"	m
 get_deriv_1	general.f90	/^  subroutine get_deriv_1(/;"	s	module:general
@@ -53,17 +71,24 @@ maxu	cdata.f90	/^  real :: maxu,/;"	v	module:cdata
 mesh	cdata.f90	/^  type(grid), allocatable :: mesh(/;"	v	module:cdata
 mesh_delta	cdata.f90	/^  real :: mesh_delta /;"	v	module:cdata
 mesh_velocity	timestep.f90	/^  subroutine mesh_velocity$/;"	s	module:timestep
+new_tree	tree.f90	/^  subroutine new_tree(/;"	s	module:tree
+node	tree.f90	/^   type node$/;"	t	module:tree
 norm_tanf	general.f90	/^  real function norm_tanf(/;"	f	module:general
 normal_fluid	normal_fluid.f90	/^module normal_fluid$/;"	m
 nstart	cdata.f90	/^  integer :: nstart=/;"	v	module:cdata
 one_half	cdata.f90	/^  real :: one_half /;"	v	module:cdata
 output	output.f90	/^module output$/;"	m
+parray	tree.f90	/^      type (qvort), allocatable :: parray(/;"	k	type:node
 pcount	cdata.f90	/^  integer :: pcount /;"	v	module:cdata
+pcount	tree.f90	/^      integer :: pcount /;"	k	type:node
 periodic	periodic.f90	/^module periodic$/;"	m
 periodic_bc	cdata.f90	/^  logical :: periodic_bc=/;"	v	module:cdata
 pi	cdata.f90	/^  real, parameter :: pi=/;"	v	module:cdata
 pinsert	line.f90	/^  subroutine pinsert$/;"	s	module:line
 pmotion	timestep.f90	/^  subroutine pmotion(/;"	s	module:timestep
+posx	tree.f90	/^      real :: posx,/;"	k	type:node
+posy	tree.f90	/^      real :: posx,posy,/;"	k	type:node
+posz	tree.f90	/^      real :: posx,posy,posz /;"	k	type:node
 precon	line.f90	/^  subroutine precon$/;"	s	module:line
 premove	line.f90	/^  subroutine premove$/;"	s	module:line
 print_dims	output.f90	/^  subroutine print_dims(/;"	s	module:output
@@ -95,6 +120,7 @@ three_twos	cdata.f90	/^  real :: three_twos=/;"	v	module:cdata
 timestep	timestep.f90	/^module timestep$/;"	m
 timestep_quasip	quasip.f90	/^  subroutine timestep_quasip$/;"	s	module:quasip
 total_length	cdata.f90	/^  real :: total_length /;"	v	module:cdata
+tree	tree.f90	/^module tree$/;"	m
 twenty_three_twelve	cdata.f90	/^  real :: twenty_three_twelve=/;"	v	module:cdata
 u	cdata.f90	/^    real :: u(/;"	k	type:grid
 u	cdata.f90	/^    real :: u(/;"	k	type:qvort
@@ -107,6 +133,8 @@ u_norm	cdata.f90	/^    real :: u_norm(/;"	k	type:grid
 vel_xflow	normal_fluid.f90	/^    real, parameter, private :: vel_xflow=/;"	v	module:normal_fluid
 velocity_info	diagnostic.f90	/^  subroutine velocity_info(/;"	s	module:diagnostic
 velocity_quasip	quasip.f90	/^  subroutine velocity_quasip$/;"	s	module:quasip
+vtree	tree.f90	/^   type (node), pointer :: vtree /;"	v	module:tree
+width	tree.f90	/^      real :: width /;"	k	type:node
 x	cdata.f90	/^    real :: x(/;"	k	type:grid
 x	cdata.f90	/^    real :: x(/;"	k	type:qvort
 x	quasip.f90	/^    real :: x(/;"	k	type:quasi

@@ -8,6 +8,7 @@ program run
   use line
   use diagnostic
   use quasip
+  use tree
   implicit none
   call init_random_seed !cdata.mod
   !read in parameters
@@ -46,6 +47,15 @@ program run
       if (mod(itime, 10*shots)==0) then
         call print_mesh(itime/(10*shots)) !output.mod
       end if
+    end if
+    !----build the tree--------------------------------------------
+    !all this will be in timestep once it is finished
+    if (tree_theta>0) then
+      call construct_tree !tree.mod
+      !remove the tree
+      call empty_tree(vtree) !empty the tree to avoid a memory leak
+      deallocate(vtree%parray) ; deallocate(vtree)
+      nullify(vtree) !just in case!
     end if
     !special data dump
     if ((itime/=0).and.(itime==int_special_dump)) call sdata_dump
