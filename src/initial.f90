@@ -455,7 +455,7 @@ module initial
           z=mesh_delta*real(2*k-1)/2.-(box_size/2.)
           mesh(k,j,i)%x(1)=x ; mesh(k,j,i)%x(2)=y ; mesh(k,j,i)%x(3)=z
           !clear the velocity slots - for safety
-          mesh(k,j,i)%u=0. ; mesh(k,j,i)%u_norm=0.
+          mesh(k,j,i)%u_sup=0. ; mesh(k,j,i)%u_norm=0.
         end do
       end do
     end do

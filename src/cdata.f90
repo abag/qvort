@@ -11,7 +11,7 @@ module cdata
   !**********MESH STRUCTURE******************************************************
   type grid
     real :: x(3) !position
-    real :: u(3) !velocity (superfluid)
+    real :: u_sup(3) !velocity (superfluid)
     real :: u_norm(3) !velocity (normal fluid)
   end type
   type(grid), allocatable :: mesh(:,:,:)

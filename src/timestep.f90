@@ -97,7 +97,7 @@ module timestep
     call get_forcing(i,u_force)
     u=u+u_force
   end subroutine
-  !*************************************************
+  !**************************************************************************
   subroutine mesh_velocity
     !get the velocity at each point on the mesh for spectra etc.
     implicit none
@@ -106,14 +106,39 @@ module timestep
       do j=1, mesh_size
         do i=1, mesh_size
           !superfluid velocity
-          !select case(velocity)
-          !  case('BS')
-            !operations would go in here
-          !end select
+          select case(velocity)
+            case('BS')
+              call biot_savart_general(mesh(k,j,i)%x,mesh(k,j,i)%u_sup)
+          end select
           !normal fluid
           call get_normal_velocity(mesh(k,j,i)%x,mesh(k,j,i)%u_norm)
         end do
       end do
+    end do
+  end subroutine
+  !**************************************************************************
+  subroutine biot_savart_general(x,u)
+    !calculate the velocity field at a point x induced by the vortices
+    implicit none
+    real, intent(IN) :: x(3)
+    real, intent(OUT) :: u(3)
+    real :: u_bs(3) !helper vector
+    real :: a_bs, b_bs, c_bs !helper variables
+    integer :: j !needed to loop over all particles 
+    !what scheme are we using? (LIA/BS)
+    integer :: i
+    do i=1, pcount
+      !check that the particle is not empty
+      if (f(i)%infront==0) cycle
+      a_bs=dist_gen_sq(x,f(i)%x) !distance squared between x and particle
+      b_bs=2.*dot_product((f(i)%x-x),(f(i)%ghosti-f(i)%x))
+      c_bs=dist_gen_sq(f(i)%ghosti,f(i)%x) !distance sqd between i, i+1
+      !add non local contribution to velocity vector
+      if ((4*a_bs*c_bs-b_bs**2)==0) cycle !avoid 1/0!
+      u_bs=cross_product((f(i)%x-x),(f(i)%ghosti-f(i)%x))
+      u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
+      u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
+      u=u+u_bs !add on the non-local contribution of i
     end do
   end subroutine
 end module

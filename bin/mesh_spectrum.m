@@ -1,4 +1,4 @@
-function mesh_spectrum(ux,uy,uz,n)
+function mesh_spectrum(ux,uy,uz,n,fluid)
 fux=fftn(ux)/(n^3);
 fuy=fftn(uy)/(n^3);
 fuz=fftn(uz)/(n^3);
@@ -20,7 +20,7 @@ for i=1:n
         end
     end
 end
-figure('Name','Energy Spectrum') 
+figure('Name',strcat('Energy Spectrum, fluid:',fluid)) 
 k=1:midpt;
 loglog(k,spect(1:midpt),'LineWidth',2)
 xlabel('log k','FontSize',14) ; ylabel('log E(k)','FontSize',14)

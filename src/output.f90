@@ -93,13 +93,16 @@ itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
       write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_norm(1)
       write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_norm(2)
       write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_norm(3)
+      write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_sup(1)
+      write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_sup(2)
+      write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_sup(3)
     close(92)
     !print just the velocity field for vapor 
     if (vapor) then
       allocate(vapor_array(mesh_size, mesh_size, mesh_size))
-      vapor_array(:,:,:)=sqrt(mesh(:,:,:)%u_norm(1)**2+&
-                              mesh(:,:,:)%u_norm(2)**2+&
-                              mesh(:,:,:)%u_norm(3)**2)
+      vapor_array(:,:,:)=sqrt(mesh(:,:,:)%u_sup(1)**2+&
+                              mesh(:,:,:)%u_sup(2)**2+&
+                              mesh(:,:,:)%u_sup(3)**2)
       write(unit=print_file,fmt="(a,i3.3,a)")"./data/vap_mesh",filenumber,".dat"
       open(unit=93,file=print_file,form='unformatted',status='replace',access='stream')
         write(93) vapor_array

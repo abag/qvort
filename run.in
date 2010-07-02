@@ -8,13 +8,13 @@ delta 0.001
 box_size 0.1
 quant_circ 9.97E-4
 velocity BS
-initf single_loop
+initf tangle
 line_count 10
 
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-!mesh_size 64
-normal_velocity ABC
+mesh_size 32
+normal_velocity zero
 alpha 0.098 0.012
 !force top_boundary
 !force_amp 40.
