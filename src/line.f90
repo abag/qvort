@@ -90,9 +90,29 @@ module line
     end do
   end subroutine
   !******************************************************************
+  subroutine pclose
+    implicit none
+    !find the closest particle to i using N^2 operation
+    !we need to do particles on the boundary as well (periodic)
+    integer :: i, j
+    real :: dist
+    do i=1, pcount
+      f(i)%closestd=10. !arbitrarily high
+      do j=1, pcount
+        if ((i/=j).and.(f(i)%infront/=j).and.(f(i)%behind/=j)) then
+        !the above line ensures we do not reconnect with particles infront/behind
+          dist=distf(i,j)
+          if (dist<f(i)%closestd) then
+           f(i)%closest=j
+           f(i)%closestd=dist
+          end if
+        end if
+      end do
+    end do
+  end subroutine
+  !******************************************************************
   subroutine precon
     !THE ROUTINE THAT RECONNECTS FILAMENTS WHICH BECOME CLOSE
-    !THIS IS $N^2$ OPERATION.
     implicit none
     real :: distr, min_distr !reconnection distances
     real :: dot_val, tangent1(3), tangent2(3) !used to determine if filaments parallel
@@ -101,26 +121,13 @@ module line
     integer :: i, j !we must do a double loop over all particles N^2
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
-      min_distr=10. !arbitrarily large
       pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
       parii=f(pari)%infront ; parbb=f(parb)%behind !find particle twice infront/behind
-      do j=i, pcount !start the seocnd loop (running upwards from i is sufficient)
-        if ((i/=j).and.(pari/=j).and.(parb/=j).and.(parii/=j).and.(parbb/=j)) then
-          !the above line ensures we do not reconnect with particles infront/behind
-          !and also particles twice infront/behind, these operations are accounted for
-          !in pinsert/premove
-
-          !get the distance between i and j
-          distr=distf(i,j) !general.mod
-          if (distr<min_distr) then
-            !store this distance/particle
-            min_distr=distr ; par_recon=j
-          end if
-        end if
-      end do
       !now we determine if we can reconnect
-      if (min_distr<delta/2.) then
-        j=par_recon !go back to working with j (shorter!)
+      if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
+        j=f(i)%closest
+        !these two could have reconnected earlier in this case j will be empty
+        if (j==0) cycle
         parji=f(j)%infront ; parjb=f(j)%behind
         !we can reconnect based on distance
         !now check whether parallel

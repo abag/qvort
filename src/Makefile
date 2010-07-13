@@ -58,7 +58,7 @@ normal_fluid.o: normal_fluid.f90 general.o cdata.o
 #
 forcing.o: forcing.f90 general.o cdata.o
 #
-initial.o: initial.f90 normal_fluid.o forcing.o cdata.o
+initial.o: initial.f90 normal_fluid.o forcing.o cdata.o quasip.o
 #
 timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o
 #
@@ -68,4 +68,4 @@ diagnostic.o: diagnostic.f90 general.o cdata.o
 #
 tree.o: tree.f90 general.o cdata.o
 #
-quasip.o: quasip.f90 general.o cdata.o
+quasip.o: quasip.f90 general.o cdata.o timestep.o normal_fluid.o output.o

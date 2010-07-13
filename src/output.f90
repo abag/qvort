@@ -25,19 +25,18 @@ itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
     write(78,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3)') &
 itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
     close(78)
-    close(78)
   end subroutine
   !**********************************************************************
-  subroutine print_ts()
-    !print information to file
-    implicit none
-    open(unit=78,file='data/ts.log',position='append')
-    if (itime==shots) then
-      write(78,*) '%t---pcount---recon'
-    end if
-      write(78,'(f5.2,i5.4,i5.4)') t, pcount, recon_count
-    close(78)
-  end subroutine
+  !subroutine print_ts()
+  !  !print information to file
+  !  implicit none
+  !  open(unit=78,file='data/ts.log',position='append')
+  !  if (itime==shots) then
+  !    write(78,*) '%t---pcount---recon'
+  !  end if
+  !    write(78,'(f5.2,i5.4,i5.4)') t, pcount, recon_count
+  !  close(78)
+  !end subroutine
   !**********************************************************************
   subroutine printf(filenumber)
     !print the f array as formatted data for use with gnuplot/matlab
@@ -51,6 +50,22 @@ itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
       write(98,*) pcount
       do i=1, pcount
         write(98,*) f(i)%x(1:3), f(i)%infront
+      end do
+    close(98)
+  end subroutine
+  !**********************************************************************
+  subroutine printg(filenumber)
+    !print the g (particles) array as formatted data for use with gnuplot/matlab
+    implicit none
+    integer, intent(IN) :: filenumber
+    character (len=40) :: print_file
+    integer :: i
+    write(unit=print_file,fmt="(a,i3.3,a)")"./data/par",filenumber,".log"
+    open(unit=98,file=print_file,status='replace')
+      write(98,*) t
+      write(98,*) quasi_pcount
+      do i=1, quasi_pcount
+        write(98,*) g(i)%x(1:3)
       end do
     close(98)
   end subroutine

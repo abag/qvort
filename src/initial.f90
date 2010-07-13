@@ -7,6 +7,7 @@ module initial
   !*************************************************************************
   subroutine init_setup()
     !prints and sets up intial conditions
+    use quasip
     implicit none
     logical :: restart
     !periodic bounday conditions?
@@ -59,7 +60,12 @@ module initial
          'running with a non-zero mesh size requires periodic BCs') !cdata.mod
        end if
      end if
+     !do we employ forcing on the boundary?
      call setup_forcing !forcing,mod
+     !are there particles in the code?
+     if (quasi_pcount>0) then
+       call setup_quasip !quasip.mod
+     end if
   end subroutine
   !**********************************************************************
   subroutine data_restore
@@ -75,6 +81,9 @@ module initial
     close(63)
     nstart=dummy_itime+1
     write(*,*) 'data read in from dump file at t=', t
+    if (quasi_pcount>0) then
+      write(*,*)'note that the quasi particles will not be restored'
+    end if
   end subroutine
   !*************************************************************************
   subroutine setup_single_loop

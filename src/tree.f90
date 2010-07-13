@@ -145,4 +145,48 @@ module tree
     deallocate(vtree)
     nullify(vtree)
   end subroutine
+  !********************************************************************************
+  subroutine pclose_tree
+    !loop over all the particles and find the closest one to i using the tree mesh
+    implicit none
+    integer :: i
+    do i=1, pcount
+      f(i)%closestd=10. !arbitrarily high
+      call closest_tree(i,vtree)
+    end do
+  end subroutine
+  !********************************************************************************
+  recursive subroutine closest_tree(i,vtree)
+    !find the nearest particle to i
+    implicit none
+    integer, intent(IN) :: i
+    type (node), pointer :: vtree
+    real :: theta, dist !tree distance
+    integer :: j
+     if (f(i)%infront==0) return !zero particle exit
+     if (vtree%pcount==0) return !empty box no use
+     !work out distances opening angles etc. here
+     dist=sqrt((f(i)%x(1)-vtree%centx)**2+(f(i)%x(2)-vtree%centy)**2+(f(i)%x(3)-vtree%centz)**2)
+     theta=vtree%width/dist
+     if (vtree%pcount==1.or.theta<.5) then
+       !see if the distance if less than the minimum distance
+       if (dist<f(i)%closestd) then
+         j=f(vtree%parray(1)%infront)%behind
+         if (vtree%pcount>1) then
+           !skip this the particle must be isolated
+           !probably will not happen in practice
+           f(i)%closest=0
+         else if ((i/=j).and.(f(i)%infront/=j).and.(f(i)%behind/=j)) then
+           !the above line ensures we do not reconnect with particles infront/behind
+           f(i)%closest=j ; f(i)%closestd=dist
+         end if
+       end if
+     else
+       !open the box up and use the child cells
+       call closest_tree(i,vtree%fbl) ; call closest_tree(i,vtree%fbr)
+       call closest_tree(i,vtree%ftl) ; call closest_tree(i,vtree%ftr)
+       call closest_tree(i,vtree%bbl) ; call closest_tree(i,vtree%bbr)
+       call closest_tree(i,vtree%btl) ; call closest_tree(i,vtree%btr)
+     end if
+   end subroutine
 end module

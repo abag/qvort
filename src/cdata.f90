@@ -5,10 +5,12 @@ module cdata
     real :: u(3), u1(3), u2(3) !stored velocities (adam bash)
     real :: ghosti(3), ghostb(3)
     integer :: infront, behind !to form a line/loop
+    integer :: closest !nearest particle, used in reconnection
+    real :: closestd !distance to nearest particle
   end type
   type(qvort), allocatable :: f(:) !main vector
   integer :: pcount !number of particles in the simulation
-  !**********MESH STRUCTURE******************************************************
+  !**********MESH STRUCTURE********************************************************
   type grid
     real :: x(3) !position
     real :: u_sup(3) !velocity (superfluid)
@@ -16,6 +18,12 @@ module cdata
   end type
   type(grid), allocatable :: mesh(:,:,:)
   real :: mesh_delta !mesh resolution
+  !**********PARTICLE STRUCTURE****************************************************
+  type quasi !quasi particle structure
+    real :: x(3) !position
+    real :: u(3), u1(3), u2(3) !stored velocities (adam bash)
+  end type
+  type(quasi), allocatable :: g(:) !vector of particles
   !**************TIME PARAMS*******************************************************
   real :: t=0. !hold the current time globally
   integer :: itime !current timestep
@@ -48,22 +56,26 @@ module cdata
   real, protected :: quant_circ
   integer, protected :: mesh_size=0
   logical :: periodic_bc=.false.
-  character(len=40), protected :: velocity, initf
+  character(len=30), protected :: velocity, initf
   integer, protected :: line_count=0
 
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
   !------------normal fluid component--------------------------------------------
-  character(len=40), protected :: normal_velocity='zero'
+  character(len=30), protected :: normal_velocity='zero'
   real, protected :: alpha(2)=0. !mutual friction coefficients
   !-----------------forcing------------------------------------------------------
-  character(len=40), protected :: force='off'
+  character(len=20), protected :: force='off'
   real, protected :: force_amp=0.
   real, protected :: force_freq=0.  
   !-----------------special data dumps-------------------------------------------
   !do we want to dump 'f' at a specific time, i.e. before a reconnection etc.
   real, protected :: special_dump=0. !special dump time
   integer :: int_special_dump=0. !special dump time integer
+  !---------------------particles------------------------------------------------
+  integer, protected :: quasi_pcount=0 !number of particles (quasi or fluid)
+  character(len=20), protected :: particle_type='fluid' !fluid/interial/quasi particles
+  character(len=20), protected :: initg='random' !initial particle configuration
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   contains
@@ -119,6 +131,8 @@ module cdata
              read(buffer, *, iostat=ios) alpha !mutual friction
           case ('initf')
              read(buffer, *, iostat=ios) initf !initial setup of filaments
+          case ('initg')
+             read(buffer, *, iostat=ios) initg !initial setup of particles
           case ('line_count')
              read(buffer, *, iostat=ios) line_count !used in certain intial conditions
           case ('force')
@@ -129,6 +143,10 @@ module cdata
              read(buffer, *, iostat=ios) force_freq !forcing frequency
           case ('special_dump')
              read(buffer, *, iostat=ios) special_dump !special dump
+          case ('quasi_pcount')
+             read(buffer, *, iostat=ios) quasi_pcount !number of particles
+          case ('particle_type')
+             read(buffer, *, iostat=ios) particle_type !particle type (quasi/fluid)
           case ('tree_theta')
              read(buffer, *, iostat=ios) tree_theta !tree code, opening angle
           case default

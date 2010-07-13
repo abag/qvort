@@ -34,3 +34,28 @@ figure('Name', 'velocity information')
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
     ylabel('max(du)','FontSize',14)
+ if exist('data/par_ts.log');
+   B=load('data/par_ts.log');
+   t=B(:,2) ; pmaxu=B(:,3) ; pmaxdu=B(:,4) ; purms=B(:,5) ; psep=B(:,6) ;
+   figure('Name', 'particle information')
+   subplot(2,2,1)
+    plot(t,pmaxu,'-c','LineWidth',2);
+    set(gca,'FontSize',14)
+      xlabel('t','FontSize',14)
+      ylabel('max u','FontSize',14)
+      subplot(2,2,2)
+    plot(t,pmaxdu,'-r','LineWidth',2);
+      set(gca,'FontSize',14)
+      xlabel('t','FontSize',14)
+      ylabel('max du/dt','FontSize',14)
+      subplot(2,2,3)
+    plot(t,purms,'-y','LineWidth',2);
+      set(gca,'FontSize',14)
+      xlabel('t','FontSize',14)
+      ylabel('urms','FontSize',14)
+    subplot(2,2,4)
+      plot(t,psep,'-g','LineWidth',2);
+      set(gca,'FontSize',14)
+      xlabel('t','FontSize',14)
+      ylabel('particle sep.','FontSize',14)
+ end

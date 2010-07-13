@@ -3,6 +3,10 @@ close all
 filename=sprintf('data/mesh%03d.dat',filenumber);
 load data/dims.log;
 msize=dims(3)
+if (msize==0) 
+  disp('mesh size is zero exiting script')
+  return
+end
 fid=fopen(filename);
 t=fread(fid,1,'float');
 x=fread(fid,msize,'float');

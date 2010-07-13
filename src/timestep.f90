@@ -127,6 +127,7 @@ module timestep
     integer :: j !needed to loop over all particles 
     !what scheme are we using? (LIA/BS)
     integer :: i
+    u=0.
     do i=1, pcount
       !check that the particle is not empty
       if (f(i)%infront==0) cycle
