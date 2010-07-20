@@ -8,7 +8,7 @@ delta 0.002
 box_size 0.1
 quant_circ 9.97E-4
 velocity Tree
-initf crow
+initf leap-frog
 line_count 10
 
 --------------optional parameters------------
@@ -18,5 +18,5 @@ mesh_size 0
 !alpha 0.098 0.012
 !quasi_pcount 10
 initg pairs
-tree_theta 0.1
+tree_theta 0.4
 

@@ -81,15 +81,15 @@ module timestep
         u_bs=0. !zero u_bs
         call tree_walk(i,vtree,(/0.,0.,0./),u_bs) !tree.mod
         u=u+u_bs
-      !  if (periodic_bc) then
-      !    !we must shift the mesh in all 3 directions, all 26 permutations needed!
-      !    u_bs=0. !zero u_bs
-      !    do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
-      !      if (peri==0.and.perj==0.and.perk==0) cycle
-      !      call tree_walk_general(f(i)%x,vtree,(/peri*box_size,perj*box_size,perk*box_size/),u_bs) !tree.mod
-      !    end do ; end do ;end do
-      !    u=u+u_bs
-      !  end if
+        if (periodic_bc) then
+          !we must shift the mesh in all 3 directions, all 26 permutations needed!
+          u_bs=0. !zero u_bs
+          do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+            if (peri==0.and.perj==0.and.perk==0) cycle
+            call tree_walk_general(f(i)%x,vtree,(/peri*box_size,perj*box_size,perk*box_size/),u_bs) !tree.mod
+          end do ; end do ;end do
+          u=u+u_bs
+        end if
     end select
     !now account for mutual friction - test if alpha's are 0
     if (sum(alpha)>epsilon(0.)) then

@@ -198,7 +198,7 @@ module initial
     do i=pcount/2+1, pcount
       f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))
       f(i)%x(2)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
-      f(i)%x(3)=8.*delta
+      f(i)%x(3)=2.*delta
       if (i==(pcount/2+1)) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -270,7 +270,7 @@ module initial
       'pcount is not a multiple of 2-aborting')
     end if
     radius=(0.75*pcount*delta)/(4*pi) !75% of potential size
-    write(*,*) 'initf: leap-frog, radius of loops:', radius 
+    write(*,*) 'initf: linked filaments, radius of loops:', radius 
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount/2
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/(pcount/2))
