@@ -59,13 +59,41 @@ module initial
          call fatal_error('cdata.mod:init_setup', &
          'running with a non-zero mesh size requires periodic BCs') !cdata.mod
        end if
+     else
+       write(*,*) 'velocity fields not being stored on a mesh - (no spectra etc.)'
      end if
      !do we employ forcing on the boundary?
      call setup_forcing !forcing,mod
      !are there particles in the code?
      if (quasi_pcount>0) then
        call setup_quasip !quasip.mod
+     else
+       write(*,*) 'No particles in the code'
      end if
+     !is the tree code being used?
+     if (tree_theta>0) then
+       write(*,*) 'using tree algorithms for reconnection routine - scales like O(NlogN)'
+     else
+       write(*,*) 'using brute force reconnection routine - scales like O(N^2)'
+     end if
+     !finally print information about the velocity field to screen
+     select case(velocity)
+       case('LIA')
+         write(*,*) 'using local induction approximation - scales like O(N)'
+       case('BS')
+         write(*,*) 'using full Biot-Savart integral - scales like O(N^2)'
+       case('Tree')
+         if (tree_theta<epsilon(0.)) then 
+           call fatal_error('init.mod:init_setup', & 
+           'runnning with tree velocity but tree_theta is zero') !cdata.mod
+         end if
+         write(*,*) 'using tree approximation to Biot-Savart integral - scales like O(NlogN)'
+      case default
+        print*, 'correct value for velocity in run.in has not been set'
+        print*, 'options are: LIA, BS, Tree'
+        call fatal_error('init.mod:init_setup', & 
+        'correct value for "velocity" in run.in has not been set') !cdata.mod
+    end select
   end subroutine
   !**********************************************************************
   subroutine data_restore

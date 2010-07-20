@@ -17,6 +17,8 @@ module tree
       real :: circ(3) !total circulation vector
    end type node
    type (node), pointer :: vtree  ! our vortex tree
+   !how many evaluations are required to calculate the tree vel field
+   integer, protected :: eval_counter
   contains
   subroutine construct_tree()
     allocate(vtree)
@@ -30,10 +32,20 @@ module tree
     vtree%centx=sum(f(:)%x(1), mask=f(:)%infront>0)/count(mask=f(:)%infront>0)
     vtree%centy=sum(f(:)%x(2), mask=f(:)%infront>0)/count(mask=f(:)%infront>0)
     vtree%centz=sum(f(:)%x(3), mask=f(:)%infront>0)/count(mask=f(:)%infront>0)
+    vtree%circ=0. !0 the circulation
     !now nullify its children - for safety
     nullify(vtree%fbl, vtree%fbr, vtree%ftl, vtree%ftr)
     nullify(vtree%bbl, vtree%bbr, vtree%btl, vtree%btr)
     call build_tree(vtree) !the recursive routine which builds the tree
+    !set the evaluation counter here
+    select case(velocity)
+      case('LIA')
+        eval_counter=count(mask=f(:)%infront>0)
+      case('BS')
+        eval_counter=count(mask=f(:)%infront>0)**2
+      case('Tree')
+        eval_counter=2*count(mask=f(:)%infront>0) !set to 2 as we ignore particle/particle behind
+    end select
   end subroutine
   !**************************************************************************
   recursive subroutine build_tree(vtree)
@@ -101,9 +113,14 @@ module tree
          (parray(i)%x(3)>=posz).and.(parray(i)%x(3)<(posz+width))) then
         counter=counter+1
         vtree%parray(counter)=parray(i)
+        !add the position of the particle to the position of the mesh
         vtree%centx=vtree%centx+parray(i)%x(1)
         vtree%centy=vtree%centy+parray(i)%x(2)
         vtree%centz=vtree%centz+parray(i)%x(3)
+        !also account for the circulation
+        vtree%circ(1)=vtree%circ(1)+parray(i)%ghosti(1)-parray(i)%x(1)
+        vtree%circ(2)=vtree%circ(2)+parray(i)%ghosti(2)-parray(i)%x(2)
+        vtree%circ(3)=vtree%circ(3)+parray(i)%ghosti(3)-parray(i)%x(3)
       end if
     end do
     !take the average of the positions
@@ -188,5 +205,81 @@ module tree
        call closest_tree(i,vtree%bbl) ; call closest_tree(i,vtree%bbr)
        call closest_tree(i,vtree%btl) ; call closest_tree(i,vtree%btr)
      end if
+   end subroutine
+!************************************************************************
+   recursive subroutine tree_walk(i,vtree,shift,u)
+     implicit none
+     integer, intent(IN) :: i !the particle we are interested in
+     real, intent(IN) :: shift(3) !shift tree (periodicity)
+     type (node), pointer :: vtree !the tree
+     real :: u(3) !the velocity at particle i
+     real :: vect(3) !helper vector
+     real :: dist, theta !helper variables
+     integer :: j=0 !the particle in the tree mesh
+     if (vtree%pcount==0) return !empty box no use
+     !work out distances opening angles etc. here
+     dist=sqrt((f(i)%x(1)-(vtree%centx+shift(1)))**2+&
+               (f(i)%x(2)-(vtree%centy+shift(2)))**2+&
+               (f(i)%x(3)-(vtree%centz+shift(3)))**2)
+     theta=vtree%width/dist !the most simple way we can improve this
+     if (vtree%pcount==1.or.theta<tree_theta) then
+       !use the contribution of this cell
+       if (vtree%pcount==1) then
+         !check that the particle is not itself or the particle behind
+         j=f(vtree%parray(1)%infront)%behind
+         if (j==i) return
+         if (j==f(i)%behind) return
+         if (dist<epsilon(0.)) then
+           call fatal_error('tree.mod:tree_walk', & 
+           'singularity in BS (tree) velocity field - investigate') !cdata.mod
+         end if
+         !if (i==1) then
+         !  print*, j, dist, distf(i,j)
+         !  print*, vtree%circ, f(j)%ghosti(:)-f(j)%x
+         !end if
+       end if
+       eval_counter=eval_counter+1 !increment this counter
+       vect(1)=((vtree%centx+shift(1))-f(i)%x(1)) 
+       vect(2)=((vtree%centy+shift(2))-f(i)%x(2)) 
+       vect(3)=((vtree%centz+shift(3))-f(i)%x(3))
+       u=u+(cross_product(vect,vtree%circ)/(dist**3))*quant_circ/(4*pi)
+     else
+       !open the box up and use the child cells
+       call tree_walk(i,vtree%fbl,shift,u) ; call tree_walk(i,vtree%fbr,shift,u)
+       call tree_walk(i,vtree%ftl,shift,u) ; call tree_walk(i,vtree%ftr,shift,u)
+       call tree_walk(i,vtree%bbl,shift,u) ; call tree_walk(i,vtree%bbr,shift,u)
+       call tree_walk(i,vtree%btl,shift,u) ; call tree_walk(i,vtree%btr,shift,u)
+     end if 
+   end subroutine
+!************************************************************************
+   recursive subroutine tree_walk_general(x,vtree,shift,u)
+     implicit none
+     real, intent(IN) :: x(3) !the position we want the velocity at
+     real, intent(IN) :: shift(3) !shift tree (periodicity)
+     type (node), pointer :: vtree !the tree
+     real :: u(3) !the velocity at particle i
+     real :: vect(3) !helper vector
+     real :: dist, theta !helper variables
+     integer :: j=0 !the particle in the tree mesh
+     if (vtree%pcount==0) return !empty box no use
+     !work out distances opening angles etc. here
+     dist=sqrt((x(1)-(vtree%centx+shift(1)))**2+&
+               (x(2)-(vtree%centy+shift(2)))**2+&
+               (x(3)-(vtree%centz+shift(3)))**2)
+     theta=vtree%width/dist !the most simple way we can improve this
+     if (vtree%pcount==1.or.theta<tree_theta) then
+       !use the contribution of this cell
+       if (dist<epsilon(0.)) return !avoid 1/0.
+       vect(1)=((vtree%centx+shift(1))-x(1)) 
+       vect(2)=((vtree%centy+shift(2))-x(2)) 
+       vect(3)=((vtree%centz+shift(3))-x(3))
+       u=u+(cross_product(vect,vtree%circ)/(dist**3))*quant_circ/(4*pi)
+     else
+       !open the box up and use the child cells
+       call tree_walk_general(x,vtree%fbl,shift,u) ; call tree_walk_general(x,vtree%fbr,shift,u)
+       call tree_walk_general(x,vtree%ftl,shift,u) ; call tree_walk_general(x,vtree%ftr,shift,u)
+       call tree_walk_general(x,vtree%bbl,shift,u) ; call tree_walk_general(x,vtree%bbr,shift,u)
+       call tree_walk_general(x,vtree%btl,shift,u) ; call tree_walk_general(x,vtree%btr,shift,u)
+     end if 
    end subroutine
 end module

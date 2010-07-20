@@ -48,7 +48,7 @@ pristine: cleann
 cdata.o: cdata.f90 ../run.in
 # 
 #
-output.o: output.f90 cdata.o
+output.o: output.f90 cdata.o tree.o
 #
 periodic.o: periodic.f90 cdata.o
 #
@@ -60,7 +60,7 @@ forcing.o: forcing.f90 general.o cdata.o
 #
 initial.o: initial.f90 normal_fluid.o forcing.o cdata.o quasip.o
 #
-timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o
+timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o tree.o
 #
 line.o: line.f90 general.o cdata.o
 #

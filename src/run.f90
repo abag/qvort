@@ -23,8 +23,13 @@ program run
   write(*,*) 'setup complete: beginning time loop'
   do itime=nstart, nsteps
     call ghostp !periodic.mod
+    !---------------------build tree routines----------------------
+    if (tree_theta>0) then
+      call construct_tree !tree.mod
+    end if
     !---------------------velocity operations----------------------
     call pmotion !timestep.mod
+    !stop
     if (mod(itime,shots*10)==0) then
       call mesh_velocity !timestep.mod
     end if
@@ -35,7 +40,11 @@ program run
     !---------------------line operations--------------------------
     call pinsert !line.mod
     if (mod(itime, recon_shots)==0) then
-      call pclose !line.mod
+      if (tree_theta>0) then
+        call pclose_tree !tree.mod
+      else
+        call pclose !line.mod
+      end if
       call precon !line.mod
       call premove !line.mod
     end if
@@ -52,21 +61,14 @@ program run
         call print_mesh(itime/(10*shots)) !output.mod
       end if
     end if
-    !----build the tree--------------------------------------------
-    !all this will be in timestep once it is finished
+    !---do we have particles in the code - if so evolve them
+    if (quasi_pcount>0) call quasip_evolution !quasip.mod
+    !-------------------remove the tree----------------------------
     if (tree_theta>0) then
-      call construct_tree !tree.mod
-      !find the closest particles
-      do i=1, pcount
-       f(i)%closestd=10. !arbitaritly high
-      end do
-      !remove the tree
       call empty_tree(vtree) !empty the tree to avoid a memory leak
       deallocate(vtree%parray) ; deallocate(vtree)
       nullify(vtree) !just in case!
     end if
-    !---do we have particles in the code - if so evolve them
-    if (quasi_pcount>0) call quasip_evolution !quasip.mod
     !special data dump
     if ((itime/=0).and.(itime==int_special_dump)) call sdata_dump
     !--------------------------------------------------------------

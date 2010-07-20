@@ -13,6 +13,7 @@ x=fread(fid,msize,'float');
 unormx=fread(fid,msize^3,'float');
 unormy=fread(fid,msize^3,'float');
 unormz=fread(fid,msize^3,'float');
+unorm_mrms=max(sqrt(unormx(:).^2+unormy(:).^2+unormz(:).^2));
 ux=fread(fid,msize^3,'float');
 uy=fread(fid,msize^3,'float');
 uz=fread(fid,msize^3,'float');
@@ -24,10 +25,14 @@ uy=reshape(uy,msize,msize,msize);
 uz=reshape(uz,msize,msize,msize);
 %plot slices of field+isosurface
 mesh_slices(x,ux,uy,uz,msize,'super')
-mesh_slices(x,unormx,unormy,unormz,msize,'normal')
+if unorm_mrms>0.
+  mesh_slices(x,unormx,unormy,unormz,msize,'normal')
+end
 %spectrum
 mesh_spectrum(ux,uy,uz,msize,'super')
-mesh_spectrum(unormx,unormy,unormz,msize,'normal')
+if unorm_mrms>0.
+  mesh_spectrum(unormx,unormy,unormz,msize,'normal')
+end
 %u2=sqrt(unormx.^2+unormy.^2+unormz.^2);
 u2=sqrt(ux.^2+uy.^2+uz.^2);
 if msize<64

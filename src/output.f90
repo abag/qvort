@@ -1,6 +1,7 @@
 module output
   !MAIN OUTPUT ROUTINES USED IN THE CODE
   use cdata
+  use tree
   contains
   !**********************************************************************
   subroutine print_dims()
@@ -17,13 +18,15 @@ module output
     implicit none
     open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
-      write(*,*) '-var--t----pcount-recon-avg_d--length--maxu--maxdu'
-      write(78,*) '%-var--t---pcount-recon-avg_d--length--maxu--maxdu'
+      write(*,*) '-var--t----pcount-recon-avg_d--length--maxu--maxdu--num eval'
+      write(78,*) '%-var--t---pcount-recon-avg_d--length--maxu--maxdu--num eval'
     end if
-    write(*,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3)') &
-itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
-    write(78,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3)') &
-itime/shots,t,pcount,recon_count,avg_sep/delta,total_length,maxu,maxdu
+    write(*,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3,f6.3)') &
+itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
+total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0)
+    write(78,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3),f6.3') &
+itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
+total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0)
     close(78)
   end subroutine
   !**********************************************************************
