@@ -198,7 +198,7 @@ module initial
     do i=pcount/2+1, pcount
       f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))
       f(i)%x(2)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
-      f(i)%x(3)=4.*delta
+      f(i)%x(3)=8.*delta
       if (i==(pcount/2+1)) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 

@@ -39,11 +39,11 @@ module cdata
   !***********CONSTANTS************************************************************
   !some constants - precompute for speed
   real, parameter :: pi=3.14159265358979324
-  real :: one_half = (1./2.)
-  real :: three_twos=(3./2.)
-  real :: twenty_three_twelve=(23./12.)
-  real :: four_thirds=(4./3.)
-  real :: five_twelths=(5./12.)
+  real, parameter :: one_half = (1./2.)
+  real, parameter :: three_twos=(3./2.)
+  real, parameter :: twenty_three_twelve=(23./12.)
+  real, parameter :: four_thirds=(4./3.)
+  real, parameter :: five_twelths=(5./12.)
 
   !***********RUN.IN***************************************************************
   !parameters from run.in, given protected status so treated like parameters

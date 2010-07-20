@@ -42,6 +42,7 @@ module timestep
     real :: u(3), u_norm(3), u_force(3), u_bs(3) !velocities
     real :: curv, beta !LUA
     real :: f_dot(3), f_ddot(3) !first and second derivs
+    integer :: peri, perj, perk !used to loop in periodic cases
     !what scheme are we using? (LIA/BS)
     select case(velocity)
       case('LIA')
@@ -80,6 +81,15 @@ module timestep
         u_bs=0. !zero u_bs
         call tree_walk(i,vtree,(/0.,0.,0./),u_bs) !tree.mod
         u=u+u_bs
+      !  if (periodic_bc) then
+      !    !we must shift the mesh in all 3 directions, all 26 permutations needed!
+      !    u_bs=0. !zero u_bs
+      !    do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+      !      if (peri==0.and.perj==0.and.perk==0) cycle
+      !      call tree_walk_general(f(i)%x,vtree,(/peri*box_size,perj*box_size,perk*box_size/),u_bs) !tree.mod
+      !    end do ; end do ;end do
+      !    u=u+u_bs
+      !  end if
     end select
     !now account for mutual friction - test if alpha's are 0
     if (sum(alpha)>epsilon(0.)) then
@@ -96,6 +106,7 @@ module timestep
     !get the velocity at each point on the mesh for spectra etc.
     implicit none
     integer :: i,j,k
+    integer :: peri, perj, perk !used to loop in periodic cases
     do k=1, mesh_size
       do j=1, mesh_size
         do i=1, mesh_size
@@ -110,6 +121,14 @@ module timestep
             case('Tree')
               mesh(k,j,i)%u_sup=0. !must be zeroed for tree algorithms
               call tree_walk_general(mesh(k,j,i)%x,vtree,(/0.,0.,0./),mesh(k,j,i)%u_sup)
+              if (periodic_bc) then
+                !we must shift the mesh in all 3 directions, all 26 permutations needed!
+                do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+                  if (peri==0.and.perj==0.and.perk==0) cycle
+                  call tree_walk_general(mesh(k,j,i)%x,vtree, &
+                       (/peri*box_size,perj*box_size,perk*box_size/),mesh(k,j,i)%u_sup) !tree.mod
+                end do ; end do ;end do
+              end if
           end select
           !normal fluid
           call get_normal_velocity(mesh(k,j,i)%x,mesh(k,j,i)%u_norm)
@@ -133,16 +152,7 @@ module timestep
       b_bs=2.*dot_product((f(j)%x-f(i)%x),(f(j)%ghosti-f(j)%x))
       c_bs=dist_gen_sq(f(j)%ghosti,f(j)%x) !distance sqd between j, j+1
       !add non local contribution to velocity vector
-      if (4*a_bs*c_bs-b_bs**2<epsilon(0.)) then
-        !be a little less refined - avoids artificial 1/0
-        if (distf(i,j)<epsilon(0.)) then
-          call fatal_error('timestep.mod:biot_savart', & 
-         'singularity in BS velocity field - investigate') !cdata.mod
-        end if
-        u_bs=(quant_circ/(4*pi))*cross_product((f(j)%x-f(i)%x),(f(j)%ghosti-f(j)%x))/(distf(i,j)**3)
-        u=u+u_bs
-        cycle 
-      end if
+      if (4*a_bs*c_bs-b_bs**2==0) cycle !avoid 1/0
       u_bs=cross_product((f(j)%x-f(i)%x),(f(j)%ghosti-f(j)%x))
       u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
       u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))

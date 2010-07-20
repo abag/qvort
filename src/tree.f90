@@ -215,6 +215,7 @@ module tree
      real :: u(3) !the velocity at particle i
      real :: vect(3) !helper vector
      real :: dist, theta !helper variables
+     real :: a_bs, b_bs, c_bs, u_bs(3) !helper variables 
      integer :: j=0 !the particle in the tree mesh
      if (vtree%pcount==0) return !empty box no use
      !work out distances opening angles etc. here
@@ -233,16 +234,21 @@ module tree
            call fatal_error('tree.mod:tree_walk', & 
            'singularity in BS (tree) velocity field - investigate') !cdata.mod
          end if
-         !if (i==1) then
-         !  print*, j, dist, distf(i,j)
-         !  print*, vtree%circ, f(j)%ghosti(:)-f(j)%x
-         !end if
        end if
        eval_counter=eval_counter+1 !increment this counter
+
        vect(1)=((vtree%centx+shift(1))-f(i)%x(1)) 
        vect(2)=((vtree%centy+shift(2))-f(i)%x(2)) 
        vect(3)=((vtree%centz+shift(3))-f(i)%x(3))
-       u=u+(cross_product(vect,vtree%circ)/(dist**3))*quant_circ/(4*pi)
+       a_bs=dist**2
+       b_bs=2.*dot_product(vect,vtree%circ)
+       c_bs=dot_product(vtree%circ,vtree%circ) 
+       if (4*a_bs*c_bs-b_bs**2==0) return !avoid 1/0
+       u_bs=cross_product(vect,vtree%circ)
+       u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
+       u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
+       u=u+u_bs
+       !u=u+(cross_product(vect,vtree%circ)/(dist**3))*quant_circ/(4*pi)
      else
        !open the box up and use the child cells
        call tree_walk(i,vtree%fbl,shift,u) ; call tree_walk(i,vtree%fbr,shift,u)

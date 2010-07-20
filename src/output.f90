@@ -21,10 +21,10 @@ module output
       write(*,*) '-var--t----pcount-recon-avg_d--length--maxu--maxdu--num eval'
       write(78,*) '%-var--t---pcount-recon-avg_d--length--maxu--maxdu--num eval'
     end if
-    write(*,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3,f6.3)') &
+    write(*,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3,f7.6)') &
 itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
 total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0)
-    write(78,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3),f6.3') &
+    write(78,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3,f7.6)') &
 itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
 total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0)
     close(78)
