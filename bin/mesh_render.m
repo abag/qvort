@@ -23,14 +23,16 @@ unormz=reshape(unormz,msize,msize,msize);
 ux=reshape(ux,msize,msize,msize);
 uy=reshape(uy,msize,msize,msize);
 uz=reshape(uz,msize,msize,msize);
-%plot slices of field+isosurface
-mesh_slices(x,ux,uy,uz,msize,'super')
-if unorm_mrms>0.
-  mesh_slices(x,unormx,unormy,unormz,msize,'normal')
+u2=sqrt(unormx.^2+unormy.^2+unormz.^2);
+showvol(u2)
+u2=sqrt(ux.^2+uy.^2+uz.^2);
+showvol(u2)
+if msize<64
+  VolumeRender(interp3(u2,2));
+elseif msize<128 
+  VolumeRender(interp3(u2,1));
+else        
+  VolumeRender(u2); 
 end
-%spectrum
-mesh_spectrum(ux,uy,uz,msize,'super')
-if unorm_mrms>0.
-  mesh_spectrum(unormx,unormy,unormz,msize,'normal')
-end
+
   

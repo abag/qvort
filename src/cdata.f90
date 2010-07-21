@@ -64,6 +64,7 @@ module cdata
   !------------normal fluid component--------------------------------------------
   character(len=30), protected :: normal_velocity='zero'
   real, protected :: alpha(2)=0. !mutual friction coefficients
+  real, protected :: normal_fluid_cutoff=1E8 !impossibly high time 
   !-----------------forcing------------------------------------------------------
   character(len=20), protected :: force='off'
   real, protected :: force_amp=0.
@@ -127,6 +128,8 @@ module cdata
              read(buffer, *, iostat=ios) velocity !BS/LIA
           case ('normal_velocity')
              read(buffer, *, iostat=ios) normal_velocity !zero/xflow/ABC/KS
+          case ('normal_fluid_cutoff')
+             read(buffer, *, iostat=ios) normal_fluid_cutoff !turn off nf
           case ('alpha')
              read(buffer, *, iostat=ios) alpha !mutual friction
           case ('initf')

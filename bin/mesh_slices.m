@@ -28,12 +28,13 @@ figure('Name',strcat('xslice-fluid: ', fluid));
   colorbar
   set(gca,'Fontsize',14)
 figure('Name',strcat('Iso-surface-|u|, fluid:',fluid));
-  p=patch(isosurface(x,x,x,u2));
+  p=patch(isosurface(x,x,x,u2,2.5*rms));
   isonormals(x,x,x,u2, p)
   set(p, 'FaceColor', 'm', 'EdgeColor', 'none');
   daspect([1 1 1]); axis tight; 
   camup([0 0 1 ]); campos([0.7686    0.1432    0.3043])
   camlight; lighting phong
-  xlabel('y','FontSize',14) ; ylabel('y','FontSize',14) ; zlabel('z','FontSize',14)
+  xlabel('z','FontSize',14) ; ylabel('y','FontSize',14) ; zlabel('x','FontSize',14)
   set(gca,'Fontsize',14)
   axis([min(x) max(x) min(x) max(x) min(x) max(x)])
+

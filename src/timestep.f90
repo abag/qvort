@@ -86,13 +86,13 @@ module timestep
           u_bs=0. !zero u_bs
           do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
             if (peri==0.and.perj==0.and.perk==0) cycle
-            call tree_walk_general(f(i)%x,vtree,(/peri*box_size,perj*box_size,perk*box_size/),u_bs) !tree.mod
+            call tree_walk(i,vtree,(/peri*box_size,perj*box_size,perk*box_size/),u_bs) !tree.mod
           end do ; end do ;end do
           u=u+u_bs
         end if
     end select
     !now account for mutual friction - test if alpha's are 0
-    if (sum(alpha)>epsilon(0.)) then
+    if ((sum(alpha)>epsilon(0.)).and.(t<normal_fluid_cutoff)) then
       call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
       u=u+alpha(1)*cross_product(f_dot,(u_norm-u))- &
           alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))

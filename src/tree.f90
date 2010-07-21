@@ -42,7 +42,11 @@ module tree
       case('LIA')
         eval_counter=count(mask=f(:)%infront>0)
       case('BS')
-        eval_counter=count(mask=f(:)%infront>0)**2
+        if (periodic_bc) then
+          eval_counter=27*count(mask=f(:)%infront>0)**2
+        else
+          eval_counter=count(mask=f(:)%infront>0)**2
+        end if
       case('Tree')
         eval_counter=2*count(mask=f(:)%infront>0) !set to 2 as we ignore particle/particle behind
     end select
@@ -232,7 +236,8 @@ module tree
          if (j==f(i)%behind) return
          if (dist<epsilon(0.)) then
            call fatal_error('tree.mod:tree_walk', & 
-           'singularity in BS (tree) velocity field - investigate') !cdata.mod
+           'singularity in BS (tree) velocity field - &
+           this is normally caused by having recon_shots too large') !cdata.mod
          end if
        end if
        eval_counter=eval_counter+1 !increment this counter
@@ -242,7 +247,7 @@ module tree
        a_bs=dist**2
        b_bs=2.*dot_product(vect,vtree%circ)
        c_bs=dot_product(vtree%circ,vtree%circ) 
-       if (4*a_bs*c_bs-b_bs**2==0) return !avoid 1/0
+       if (4*a_bs*c_bs-b_bs**2<epsilon(0.)) return !avoid 1/0
        u_bs=cross_product(vect,vtree%circ)
        u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
        u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))

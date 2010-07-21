@@ -1,22 +1,24 @@
 --------------required parameters------------
 nsteps 160000
-shots 160
-recon_shots 50
-init_pcount 200
+shots 1600
+recon_shots 2
+init_pcount 50
 dt 1E-5
 delta 0.002
 box_size 0.1
 quant_circ 9.97E-4
 velocity Tree
-initf leap-frog
+initf single_loop
 line_count 10
 
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 mesh_size 0
-!normal_velocity ABC
-!alpha 0.098 0.012
+normal_velocity ABC
+alpha 0.098 0.012
 !quasi_pcount 10
-initg pairs
-tree_theta 0.4
-
+!initg pairs
+tree_theta 0.7
+!force delta_corr
+!force_amp .5
+!force_freq 10.

@@ -20,6 +20,9 @@ module normal_fluid
           write(*,*) 'A=', abc_A, ' B=', abc_B, ' C=', abc_C
       end select
       write(*,*) 'mutual friction coefficients alpha=',alpha(1),' alpha`=',alpha(2) 
+      if (normal_fluid_cutoff<100.) then
+        write(*,'(a,f6.3)') ' normal fluid is turned off when t=',normal_fluid_cutoff 
+      end if
     end subroutine
     !************************************************************
     subroutine get_normal_velocity(x,u)
