@@ -23,8 +23,8 @@ default: run.x
 #
 # Targets
 #
-run.x: run.f90 cdata.o forcing.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o tree.o Makefile 
-	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o forcing.o normal_fluid.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o tree.o
+run.x: run.f90 cdata.o forcing.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o tree.o ksmodel.o Makefile 
+	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o forcing.o normal_fluid.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o tree.o ksmodel.o
 #
 #
 clean: 
@@ -45,7 +45,7 @@ periodic.o: periodic.f90 cdata.o
 #
 general.o: general.f90 cdata.o
 #
-normal_fluid.o: normal_fluid.f90 general.o cdata.o
+normal_fluid.o: normal_fluid.f90 general.o cdata.o ksmodel.o
 #
 forcing.o: forcing.f90 general.o cdata.o
 #
@@ -60,3 +60,5 @@ diagnostic.o: diagnostic.f90 general.o cdata.o
 tree.o: tree.f90 general.o cdata.o
 #
 quasip.o: quasip.f90 general.o cdata.o timestep.o normal_fluid.o output.o
+#
+ksmodel.o: ksmodel.f90 general.o cdata.o

@@ -35,7 +35,7 @@ module cdata
   real :: avg_sep !average separation of the particles
   real :: maxu,maxdu !velocity information
   real :: energy !vortex energy
-
+  real :: kappa_bar
   !***********CONSTANTS************************************************************
   !some constants - precompute for speed
   real, parameter :: pi=3.14159265358979324

@@ -1,7 +1,7 @@
 %read in the ts file and plot
 A=load('data/ts.log');
 t=A(:,2) ; pcount=A(:,3) ; rcount=A(:,4) ; sep=A(:,5) ; l=A(:,6) ; 
-maxu=A(:,7) ; maxdu=A(:,8) ; eval=A(:,9) ; 
+maxu=A(:,7) ; maxdu=A(:,8) ; eval=A(:,9) ; curv=A(:,10)
 figure('Name', 'filament information')
   subplot(2,2,1)
     plot(t,pcount,'-r','LineWidth',2);
@@ -41,6 +41,12 @@ if std(eval)>0.
     xlabel('t','FontSize',14)
     ylabel('evaluations','FontSize',14)
 end
+figure('Name', 'mean curvature')
+  plot(t,curv,'-m','LineWidth',2);
+  set(gca,'FontSize',14)
+  xlabel('t','FontSize',14)
+  ylabel('curv','FontSize',14)
+
  if exist('data/par_ts.log');
    B=load('data/par_ts.log');
    t=B(:,2) ; pmaxu=B(:,3) ; pmaxdu=B(:,4) ; purms=B(:,5) ; psep=B(:,6) ;

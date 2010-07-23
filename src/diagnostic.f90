@@ -28,4 +28,17 @@ module diagnostic
       energy=energy+dot_product(f(i)%u,cross_product(f(i)%x,sdot))*dist_gen(f(i)%x,f(i)%ghosti)
     end do
   end subroutine
+  !*************************************************
+  subroutine mean_curv()
+    !caculate the mean curvature of the vortex system
+    implicit none
+    integer :: i
+    kappa_bar=0.
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !check for 'empty' particles
+      kappa_bar=kappa_bar+curvature(i)
+    end do
+    !average this quantity
+    kappa_bar=kappa_bar/count(mask=f(:)%infront>0)
+  end subroutine
 end module

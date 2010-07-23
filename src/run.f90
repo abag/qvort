@@ -36,6 +36,7 @@ program run
     if (mod(itime, shots)==0) then
       call velocity_info !diagnostics.mod
       call energy_info !diagnostics.mod
+      call mean_curv !diagnostics.mod
     end if
     !---------------------line operations--------------------------
     call pinsert !line.mod

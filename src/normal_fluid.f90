@@ -2,6 +2,7 @@ module normal_fluid
   !NORMAL FLUID COMPONENT IN THE EQUATION OF MOTION
   use cdata
   use general
+  use ksmodel
     !parameters used in get_normal_fluid
     real, parameter, private :: vel_xflow=1.
     real, parameter, private :: abc_A=1., abc_B=1., abc_C=1.
@@ -18,6 +19,8 @@ module normal_fluid
           write(*,'(a,f6.3)') ' u(x)=', vel_xflow
         case('ABC')
           write(*,*) 'A=', abc_A, ' B=', abc_B, ' C=', abc_C
+        case('KS')
+          call setup_KS !ksmodel
       end select
       write(*,'(a,f5.4,a,f5.4)') ' mutual friction coefficients alpha=',alpha(1),' alpha`=',alpha(2) 
       if (normal_fluid_cutoff<100.) then
@@ -42,7 +45,7 @@ module normal_fluid
           u(3)=abc_A*cos(abc_k*x(1))+abc_B*sin(abc_k*x(2))
         case('KS')
           !multi-scale model of turbulence
-          call fatal_error('normal_fluid', 'KS not ready yet')
+          call get_KS_flow(x,u)
         case default
           call fatal_error('normal_fluid.mod:get_normal_fluid', &
           'correct parameter for normal_veloctity not set')

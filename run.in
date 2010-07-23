@@ -1,20 +1,20 @@
 --------------required parameters------------
 nsteps 160000
-shots 100
+shots 160
 recon_shots 2
-init_pcount 30000
+init_pcount 200
 dt 1E-5
 delta 0.001
 box_size 0.1
 quant_circ 9.97E-4
 velocity Tree
 initf random_loops
-line_count 1500
+line_count 1
 
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-!mesh_size 64
-!normal_velocity zero
+mesh_size 64
+normal_velocity KS
 alpha 0.098 0.012
 !quasi_pcount 10
 !initg pairs
