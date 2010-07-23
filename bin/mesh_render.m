@@ -24,7 +24,7 @@ ux=reshape(ux,msize,msize,msize);
 uy=reshape(uy,msize,msize,msize);
 uz=reshape(uz,msize,msize,msize);
 u2=sqrt(unormx.^2+unormy.^2+unormz.^2);
-%showvol(u2)
+showvol(u2)
 u2=sqrt(ux.^2+uy.^2+uz.^2);
 showvol(u2)
 if msize<64
