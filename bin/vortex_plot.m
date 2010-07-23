@@ -1,7 +1,8 @@
 function vortex_plot(filenumber)
 filename=sprintf('data/var%03d.log',filenumber);
 %some options
-linetrue=0; %if 1 plots a line, else plots a thin cylinder
+rough=1 %if 1 
+linetrue=1; %if 1 plots a line, else plots a thin cylinder
 dark=1; %if 1 plots in dark
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -28,7 +29,10 @@ end
 f=uint16(f);
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
-
+if (rough==1)
+    plot3(x,y,z,'.')
+    return
+end
 %now create vectors to plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for j=1:number_of_particles
   if round(f(j))==0

@@ -124,7 +124,8 @@ module initial
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
-      f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount) ; f(i)%x(3)=0.
+      f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
+      f(i)%x(3)=0.0
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -288,7 +289,7 @@ module initial
     end do
     !second loop
     do i=pcount/2+1, pcount
-      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius/1.1
+      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius/0.6
       f(i)%x(2)=0.
       f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
 

@@ -25,9 +25,9 @@ OPTIONS:
                     the job will continue to run even if the terminal is closed.
                     All output is directed to a log file 'out.log'.
         -f|--force
-                    If the script detects that data directory does not exist
-                    then running with the -f option forces the creation of 
-                    a directory, if on network space this can be slow...
+                    If the script detects that data directory is not empty
+                    then running with the -f option will empty the data
+                    directory
         -r|--restart
                     Set this option to restart the code from the last store Var
                     file
@@ -88,12 +88,14 @@ echo Going to run...
 if [ -d ./data ]; then
   echo ./data exists, proceeding...
 else
-  if [ $FORCE -eq 0 ]; then
-    echo WARNING: data directory does not exist - aborting.
-    echo Use -f to force the creation of a directory, or create it yourself.
-    exit 1
-  else
-    mkdir data
+  echo "WARNING: data directory does not exist - aborting."
+  echo "create the directory using mkdir data."
+  exit 1
+fi
+if [ $FORCE -eq 1 ]; then
+  if [ -e ./data/ts.log ]; then
+  echo "emptying data"
+  rm data/*
   fi
 fi
 if [ $RESTART -eq 1 ]; then

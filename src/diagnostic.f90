@@ -24,7 +24,8 @@ module diagnostic
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
       call get_deriv_1(i,sdot)
-      energy=energy+distf(i,f(i)%infront)*dot_product(f(i)%u,cross_product((f(i)%x-dt*f(i)%u),sdot))
+      !energy=energy+dot_product(f(i)%u,cross_product(f(i)%x,f(i)%ghosti-f(i)%x))
+      energy=energy+dot_product(f(i)%u,cross_product(f(i)%x,sdot))*dist_gen(f(i)%x,f(i)%ghosti)
     end do
   end subroutine
 end module

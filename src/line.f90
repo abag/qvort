@@ -12,6 +12,10 @@ module line
     real :: disti, curv, f_ddot(3)
     integer :: par_new
     integer :: old_pcount, i
+    !check that we have particles
+    if (count(mask=f(:)%infront>0)==0) then
+      call fatal_error('line.mod:pinsert','vortex line length is 0, run over')
+    end if
     old_pcount=pcount
     total_length=0. !zero this
     do i=1, old_pcount
@@ -66,7 +70,7 @@ module line
     !calculate average separation of particles
     avg_sep=total_length/old_pcount
   end subroutine
-  !******************************************************************
+  !*************************************************************************
   subroutine premove
     !maximum curvature cutoff based on an equilateral triangle with side
     !of length delta is \sqrt(3)/delta. This routine will remove particles
@@ -126,8 +130,10 @@ module line
       !now we determine if we can reconnect
       if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
         j=f(i)%closest
+        !another saftery check
+        if (j==pari) cycle ; if (j==parb) cycle
         !these two could have reconnected earlier in this case j will be empty
-        if (j==0) cycle
+        if (f(j)%infront==0) cycle
         parji=f(j)%infront ; parjb=f(j)%behind
         !we can reconnect based on distance
         !now check whether parallel
@@ -164,7 +170,7 @@ module line
     integer :: i, counter
     counter=1
     next=particle
-    do i=1, pcount            
+    do i=1, pcount   
       next=f(next)%infront
       if (next==particle) exit  
       counter=counter+1

@@ -29,18 +29,19 @@ program run
     end if
     !---------------------velocity operations----------------------
     call pmotion !timestep.mod
-    !stop
     if (mod(itime,shots*10)==0) then
       call mesh_velocity !timestep.mod
     end if
     !---------------------diagnostic info--------------------------
     if (mod(itime, shots)==0) then
       call velocity_info !diagnostics.mod
+      call energy_info !diagnostics.mod
     end if
     !---------------------line operations--------------------------
     call pinsert !line.mod
     if (mod(itime, recon_shots)==0) then
       if (tree_theta>0) then
+        !we may need to empty the tree and then redraw it at this point
         call pclose_tree !tree.mod
       else
         call pclose !line.mod

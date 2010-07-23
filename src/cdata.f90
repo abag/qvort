@@ -79,6 +79,7 @@ module cdata
   character(len=20), protected :: initg='random' !initial particle configuration
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
+  logical, protected :: tree_print=.false.
   contains
   !*************************************************************************************************  
   subroutine read_run_file()
@@ -152,6 +153,8 @@ module cdata
              read(buffer, *, iostat=ios) particle_type !particle type (quasi/fluid)
           case ('tree_theta')
              read(buffer, *, iostat=ios) tree_theta !tree code, opening angle
+          case ('tree_print')
+             read(buffer, *, iostat=ios) tree_print !print the tree mesh
           case default
              !print *, 'Skipping invalid label at line', line
           end select
@@ -163,9 +166,19 @@ module cdata
     implicit none      
     character(len=*) :: location
     character(len=*) :: message
-    write (*,*) 'FATAL ERROR'
+    write (*,*) '---------------------FATAL ERROR-----------------------'
     write (*,*) trim(location) , ": " , trim(message)
+    write (*,*) '-------------------------------------------------------'
     stop
+  end subroutine
+  !*************************************************************************************************  
+  subroutine warning_message(location,message)
+    implicit none      
+    character(len=*) :: location
+    character(len=*) :: message
+    write (*,*) '---------------------WARNING-----------------------'
+    write (*,*) trim(location) , ": " , trim(message)
+    write (*,*) '---------------------------------------------------'
   end subroutine
   !*************************************************************************************************  
   SUBROUTINE init_random_seed()

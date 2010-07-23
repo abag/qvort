@@ -1,4 +1,5 @@
-function [time,line_count] = vortex_loop_count(filename)
+function vortex_loop_count(filenumber)
+filename=sprintf('data/var%03d.log',filenumber)
 fid=fopen(filename);
 tline=fgetl(fid);
 dummy=textscan(tline, '%f');
@@ -19,6 +20,7 @@ for j=1:number_of_particles
     zerocount=zerocount+1;
   end
 end
+f=uint16(f);
 for j=1:number_of_particles
   if f(j)~=0
     next=j;
@@ -34,7 +36,8 @@ for l=1:500
         next=f(next);
         counter(l)=counter(l)+1;
         if next==next_old
-          break
+          break   
+          counter(l)
         end
         if next==0
           break
@@ -64,3 +67,10 @@ for l=1:500
         break
       end
 end
+disp('total loop count is')
+line_count
+disp('brace yourself printing all the loop sizes!')
+counter(1:line_count)
+hist(counter(1:line_count))
+xlabel('number of particles')
+ylabel('frequency')

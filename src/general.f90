@@ -54,6 +54,16 @@ module general
             (f(i)%x(3)-f(j)%x(3))**2
   end function
   !*********************************************************************
+  real function curvature(i)
+    !calculate the curvature at the particle i
+    use Cdata
+    implicit none
+    integer, intent(IN) :: i
+    real :: fddot(3)
+    call get_deriv_2(i,fddot)
+    curvature=sqrt(dot_product(fddot,fddot))
+  end function
+  !*********************************************************************
   real function dist_gen(a,b)
     !calculate the distance between points a(1:3), b(1:3)
     use Cdata

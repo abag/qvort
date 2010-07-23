@@ -18,15 +18,18 @@ module output
     implicit none
     open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
-      write(*,*) '-var--t----pcount-recon-avg_d--length--maxu--maxdu--num eval'
-      write(78,*) '%-var--t---pcount-recon-avg_d--length--maxu--maxdu--num eval'
+      write(*,*) '-var---t---pcount-recon-avg_d--length--maxu--maxdu--num eval'
+      write(78,*) '%-var---t--pcount-recon-avg_d--length--maxu--maxdu--num eval'
     end if
-    write(*,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3,f7.6)') &
+    write(*,'(i5.3,f7.4,i6.4,i6.4,f6.3,f8.3,f7.3,f7.3,f7.2)') &
 itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
 total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0)
-    write(78,'(i5.3,f6.2,i6.4,i6.4,f6.2,f8.3,f7.3,f6.3,f8.3,f7.6)') &
+    write(78,'(i5.3,f7.4,i6.4,i6.4,f6.3,f8.3,f7.3,f7.3,f7.2)') &
 itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
 total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0)
+    close(78)
+    open(unit=78,file='data/energy.log',position='append')
+      write(78,*) energy
     close(78)
   end subroutine
   !**********************************************************************
@@ -47,6 +50,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0)
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
     integer :: i
+    if (filenumber==1001) call warning_message('output.mod','run out of filenumbers to print var to')
     write(unit=print_file,fmt="(a,i3.3,a)")"./data/var",filenumber,".log"
     open(unit=98,file=print_file,status='replace')
       write(98,*) t
