@@ -59,6 +59,6 @@ diagnostic.o: diagnostic.f90 general.o cdata.o
 #
 tree.o: tree.f90 general.o cdata.o
 #
-quasip.o: quasip.f90 general.o cdata.o timestep.o normal_fluid.o output.o
+quasip.o: quasip.f90 general.o cdata.o timestep.o normal_fluid.o output.o tree.o
 #
 ksmodel.o: ksmodel.f90 general.o cdata.o

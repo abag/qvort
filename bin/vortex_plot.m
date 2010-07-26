@@ -1,7 +1,7 @@
 function vortex_plot(filenumber)
 filename=sprintf('data/var%03d.log',filenumber);
 %some options
-rough=1 %if 1 
+rough=0; %if 1 
 linetrue=1; %if 1 plots a line, else plots a thin cylinder
 dark=1; %if 1 plots in dark
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

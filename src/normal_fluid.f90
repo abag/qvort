@@ -18,7 +18,7 @@ module normal_fluid
         case('xflow')
           write(*,'(a,f6.3)') ' u(x)=', vel_xflow
         case('ABC')
-          write(*,*) 'A=', abc_A, ' B=', abc_B, ' C=', abc_C
+          write(*,'(a,f6.3,a,f6.3,a,f6.3)') 'A=', abc_A, ' B=', abc_B, ' C=', abc_C
         case('KS')
           call setup_KS !ksmodel
       end select

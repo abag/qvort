@@ -107,6 +107,7 @@ module timestep
     implicit none
     integer :: i,j,k
     integer :: peri, perj, perk !used to loop in periodic cases
+    real :: normurms
     do k=1, mesh_size
       do j=1, mesh_size
         do i=1, mesh_size

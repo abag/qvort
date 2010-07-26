@@ -3,6 +3,7 @@ module quasip
   use general
   use timestep
   use output
+  use tree
   real :: qp_maxu=0., qp_maxdu=0., qp_urms=0. !velocity information
   real :: qp_sep=0. !avergae particle separation
   contains
@@ -94,7 +95,6 @@ module quasip
     real :: u(3)
     integer :: i
     do i=1, quasi_pcount
-
       call velocity_quasip(i,u)
       select case(particle_type)
         case('fluid')
@@ -142,9 +142,25 @@ module quasip
     integer, intent(IN) :: i
     real, intent(OUT) :: u(3)
     real :: u_sup(3), u_norm(3)
-    !get the superfluid velocity
-    call biot_savart_general(g(i)%x,u_sup) !timestep.mod
-    !we can put a tree biot-savart in here eventually
+    integer :: peri, perj, perk
+    logical :: superfluid_on=.false. !set to false to only use normal fluid
+    if (superfluid_on) then
+      select case(velocity)
+        case('LIA','BS')
+          call biot_savart_general(g(i)%x,u_sup) !timestep.mod
+        case('Tree')
+          u_sup=0. !must be zeroed for tree algorithms
+          call tree_walk_general(g(i)%x,vtree,(/0.,0.,0./),u_sup)
+          if (periodic_bc) then
+            !we must shift the mesh in all 3 directions, all 26 permutations needed!
+            do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+              if (peri==0.and.perj==0.and.perk==0) cycle
+              call tree_walk_general(g(i)%x,vtree, &
+                   (/peri*box_size,perj*box_size,perk*box_size/),u_sup) !tree.mod
+            end do ; end do ;end do
+          end if
+      end select
+    end if
     !normal fluid velocity
     call get_normal_velocity(g(i)%x,u_norm) !normal_fluid.mod
     u=u_sup+u_norm

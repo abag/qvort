@@ -4,6 +4,12 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
+A	ksmodel.f90	/^    real,private,dimension(3,KSmodes) :: unit_k,k,A,/;"	v	module:KSmodel
+B	ksmodel.f90	/^    real,private,dimension(3,KSmodes) :: unit_k,k,A,B$/;"	v	module:KSmodel
+KS_rey_int	ksmodel.f90	/^    integer,private, parameter :: KS_rey_int=/;"	v	module:KSmodel
+KS_slope	ksmodel.f90	/^    real,private, parameter :: KS_slope=/;"	v	module:KSmodel
+KSmodel	ksmodel.f90	/^module KSmodel$/;"	m
+KSmodes	ksmodel.f90	/^    integer,private, parameter :: KSmodes=/;"	v	module:KSmodel
 abc_A	normal_fluid.f90	/^    real, parameter, private :: abc_A=/;"	v	module:normal_fluid
 abc_B	normal_fluid.f90	/^    real, parameter, private :: abc_A=1., abc_B=/;"	v	module:normal_fluid
 abc_C	normal_fluid.f90	/^    real, parameter, private :: abc_A=1., abc_B=1., abc_C=/;"	v	module:normal_fluid
@@ -17,6 +23,7 @@ biot_savart_general	timestep.f90	/^  subroutine biot_savart_general(/;"	s	module
 btl	tree.f90	/^      type (node), pointer :: btl,/;"	k	type:node
 btr	tree.f90	/^      type (node), pointer :: btl, btr /;"	k	type:node
 build_tree	tree.f90	/^  recursive subroutine build_tree(/;"	s	module:tree
+calc_KS_amplitudes	ksmodel.f90	/^    subroutine calc_KS_amplitudes(/;"	s	module:KSmodel
 calc_velocity	timestep.f90	/^  subroutine calc_velocity(/;"	s	module:timestep
 cdata	cdata.f90	/^module cdata$/;"	m
 centx	tree.f90	/^      real :: centx,/;"	k	type:node
@@ -28,7 +35,10 @@ closest	cdata.f90	/^    integer :: closest /;"	k	type:qvort
 closest_tree	tree.f90	/^  recursive subroutine closest_tree(/;"	s	module:tree
 closestd	cdata.f90	/^    real :: closestd /;"	k	type:qvort
 construct_tree	tree.f90	/^  subroutine construct_tree(/;"	s	module:tree
+cross1	ksmodel.f90	/^    real,private,dimension(3,Ksmodes) :: cross1,/;"	v	module:KSmodel
+cross2	ksmodel.f90	/^    real,private,dimension(3,Ksmodes) :: cross1,cross2$/;"	v	module:KSmodel
 cross_product	general.f90	/^  real function cross_product(/;"	f	module:general
+curvature	general.f90	/^  real function curvature(/;"	f	module:general
 data_dump	output.f90	/^  subroutine data_dump$/;"	s	module:output
 data_restore	initial.f90	/^  subroutine data_restore$/;"	s	module:initial
 dead_tree	tree.f90	/^  subroutine dead_tree(/;"	s	module:tree
@@ -47,12 +57,14 @@ fatal_error	cdata.f90	/^  subroutine fatal_error(/;"	s	module:cdata
 fbl	tree.f90	/^      type (node), pointer :: fbl,/;"	k	type:node
 fbr	tree.f90	/^      type (node), pointer :: fbl, fbr /;"	k	type:node
 five_twelths	cdata.f90	/^  real, parameter :: five_twelths=/;"	v	module:cdata
+force_direction	forcing.f90	/^  real, private :: force_direction(/;"	v	module:forcing
 forcing	forcing.f90	/^module forcing$/;"	m
 four_thirds	cdata.f90	/^  real, parameter :: four_thirds=/;"	v	module:cdata
 ftl	tree.f90	/^      type (node), pointer :: ftl,/;"	k	type:node
 ftr	tree.f90	/^      type (node), pointer :: ftl, ftr /;"	k	type:node
 g	cdata.f90	/^  type(quasi), allocatable :: g(/;"	v	module:cdata
 general	general.f90	/^module general$/;"	m
+get_KS_flow	ksmodel.f90	/^    subroutine get_KS_flow(/;"	s	module:KSmodel
 get_deriv_1	general.f90	/^  subroutine get_deriv_1(/;"	s	module:general
 get_deriv_2	general.f90	/^  subroutine get_deriv_2(/;"	s	module:general
 get_forcing	forcing.f90	/^  subroutine get_forcing(/;"	s	module:forcing
@@ -69,10 +81,13 @@ init_setup	initial.f90	/^  subroutine init_setup(/;"	s	module:initial
 initial	initial.f90	/^module initial$/;"	m
 int_special_dump	cdata.f90	/^  integer :: int_special_dump=/;"	v	module:cdata
 itime	cdata.f90	/^  integer :: itime /;"	v	module:cdata
+k	ksmodel.f90	/^    real,private,dimension(3,KSmodes) :: unit_k,/;"	v	module:KSmodel
+kappa_bar	cdata.f90	/^  real :: kappa_bar$/;"	v	module:cdata
 line	line.f90	/^module line$/;"	m
 loop_killer	line.f90	/^  subroutine loop_killer(/;"	s	module:line
 maxdu	cdata.f90	/^  real :: maxu,maxdu /;"	v	module:cdata
 maxu	cdata.f90	/^  real :: maxu,/;"	v	module:cdata
+mean_curv	diagnostic.f90	/^  subroutine mean_curv(/;"	s	module:diagnostic
 mesh	cdata.f90	/^  type(grid), allocatable :: mesh(/;"	v	module:cdata
 mesh_delta	cdata.f90	/^  real :: mesh_delta /;"	v	module:cdata
 mesh_velocity	timestep.f90	/^  subroutine mesh_velocity$/;"	s	module:timestep
@@ -81,7 +96,9 @@ node	tree.f90	/^   type node$/;"	t	module:tree
 norm_tanf	general.f90	/^  real function norm_tanf(/;"	f	module:general
 normal_fluid	normal_fluid.f90	/^module normal_fluid$/;"	m
 nstart	cdata.f90	/^  integer :: nstart=/;"	v	module:cdata
+omega	ksmodel.f90	/^    real,private,dimension(KSmodes) :: omega$/;"	v	module:KSmodel
 one_half	cdata.f90	/^  real, parameter :: one_half /;"	v	module:cdata
+order	ksmodel.f90	/^    subroutine order(/;"	s	module:KSmodel
 output	output.f90	/^module output$/;"	m
 parray	tree.f90	/^      type (qvort), allocatable :: parray(/;"	k	type:node
 pclose	line.f90	/^  subroutine pclose$/;"	s	module:line
@@ -115,6 +132,7 @@ read_run_file	cdata.f90	/^  subroutine read_run_file(/;"	s	module:cdata
 recon_count	cdata.f90	/^  integer :: recon_count=/;"	v	module:cdata
 run	run.f90	/^program run$/;"	p
 sdata_dump	output.f90	/^  subroutine sdata_dump$/;"	s	module:output
+setup_KS	ksmodel.f90	/^    subroutine setup_KS$/;"	s	module:KSmodel
 setup_crow	initial.f90	/^  subroutine setup_crow$/;"	s	module:initial
 setup_forcing	forcing.f90	/^  subroutine setup_forcing(/;"	s	module:forcing
 setup_leap_frog	initial.f90	/^  subroutine setup_leap_frog$/;"	s	module:initial
@@ -135,6 +153,7 @@ timestep_quasip	quasip.f90	/^  subroutine timestep_quasip$/;"	s	module:quasip
 total_length	cdata.f90	/^  real :: total_length /;"	v	module:cdata
 tree	tree.f90	/^module tree$/;"	m
 tree_walk	tree.f90	/^   recursive subroutine tree_walk(/;"	s	module:tree
+tree_walk_flip	tree.f90	/^   recursive subroutine tree_walk_flip(/;"	s	module:tree
 tree_walk_general	tree.f90	/^   recursive subroutine tree_walk_general(/;"	s	module:tree
 twenty_three_twelve	cdata.f90	/^  real, parameter :: twenty_three_twelve=/;"	v	module:cdata
 u	cdata.f90	/^    real :: u(/;"	k	type:quasi
@@ -145,10 +164,13 @@ u2	cdata.f90	/^    real :: u(3), u1(3), u2(/;"	k	type:quasi
 u2	cdata.f90	/^    real :: u(3), u1(3), u2(/;"	k	type:qvort
 u_norm	cdata.f90	/^    real :: u_norm(/;"	k	type:grid
 u_sup	cdata.f90	/^    real :: u_sup(/;"	k	type:grid
+unit_k	ksmodel.f90	/^    real,private,dimension(3,KSmodes) :: unit_k,/;"	v	module:KSmodel
 vel_xflow	normal_fluid.f90	/^    real, parameter, private :: vel_xflow=/;"	v	module:normal_fluid
 velocity_info	diagnostic.f90	/^  subroutine velocity_info(/;"	s	module:diagnostic
 velocity_quasip	quasip.f90	/^  subroutine velocity_quasip(/;"	s	module:quasip
 vtree	tree.f90	/^   type (node), pointer :: vtree /;"	v	module:tree
+warning_message	cdata.f90	/^  subroutine warning_message(/;"	s	module:cdata
+wavenumbers	ksmodel.f90	/^    subroutine wavenumbers(/;"	s	module:KSmodel
 width	tree.f90	/^      real :: width /;"	k	type:node
 x	cdata.f90	/^    real :: x(/;"	k	type:grid
 x	cdata.f90	/^    real :: x(/;"	k	type:quasi

@@ -181,19 +181,30 @@ module cdata
     write (*,*) '---------------------------------------------------'
   end subroutine
   !*************************************************************************************************  
-  SUBROUTINE init_random_seed()
-     INTEGER :: i, n, clock
-     INTEGER, DIMENSION(:), ALLOCATABLE :: seed
+  subroutine init_random_seed()
+     !CREATE A NEW RANDOM SEED, UNLESS RESTARTING CODE
+     integer :: i, n=8, clock
+     integer, allocatable :: seed(:)
+     logical :: seed_exists=.false.
+     !call random_seed(size=n)
+     allocate(seed(n))
      
-     CALL RANDOM_SEED(size = n)
-     ALLOCATE(seed(n))
-     
-     CALL SYSTEM_CLOCK(COUNT=clock)
+     call system_clock(count=clock)
      
      seed = clock + 37 * (/ (i - 1, i = 1, n) /)
-     CALL RANDOM_SEED(PUT = seed)
-     
-     DEALLOCATE(seed)
-  END SUBROUTINE 
+     !read the seed in from file if possible
+     inquire(file='data/seed.dat',exist=seed_exists)
+     if (seed_exists) then
+       open(unit=37,file='data/seed.dat',form='unformatted')
+         read(37) seed
+       close(37)
+     else
+       open(unit=37,file='data/seed.dat',form='unformatted')
+         write(37) seed
+       close(37)
+     end if
+     call random_seed(put = seed)
+     deallocate(seed)
+  end subroutine 
   !**************************************************************************************************  
 end module

@@ -2,7 +2,7 @@ module KSmodel
   !ALL THE ROUTINES REQUIRED TO USE THE KS MODEL TURBULENT (LIKE) VELOCITY FIELD
   use cdata
   use general
-    integer,private, parameter :: KSmodes=100
+    integer,private, parameter :: KSmodes=50
     integer,private, parameter :: KS_rey_int=8
     real,private, parameter :: KS_slope=-5./3.
     real,private,dimension(3,KSmodes) :: unit_k,k,A,B
@@ -29,6 +29,7 @@ module KSmodel
         sin_arg=sin(argument)
 
         addition(:,r)=(cross1(:,r)*cos_arg)+(cross2(:,r)*sin_arg)
+        !u(:)=u(:)+4.*addition(:,r)
         u(:)=u(:)+addition(:,r)
       end do
     end subroutine get_KS_flow
@@ -93,8 +94,10 @@ module KSmodel
       close(57)
       !also print to screen
       write(*,*) '-------------------KS info------------------'
-      write(*,'(a,f6.2)') 'slope of spectrum is:', KS_slope
-      write(*,'(a,f6.2)') 'Reynolds number is', (kk(KSmodes)/kk(1))**(4./3.)
+      write(*,'(a,i5.4)') ' number of fourier modes:', KSmodes
+      write(*,'(a,f6.2)') ' slope of spectrum:', KS_slope
+      write(*,'(a,f6.2)') ' Reynolds number:', (kk(KSmodes)/kk(1))**(4./3.)
+      write(*,'(a,f6.2,f6.2)') ' Large/small eddie turnover times:', turn1,turnN
       write(*,*) '--------------------------------------------'
     end subroutine
     !*****************************************************************
@@ -120,13 +123,16 @@ module KSmodel
         angle=floor((KS_rey_int+1)*angle)/box_size
         call random_number(dir_in)
         direction=nint(dir_in) ; direction=2*direction-1  !positive or negative directions
+        if (i==1) then
+          angle(1)=0. ; angle(2)=0. ; angle(3)=1./box_size
+          direction(3)=1
+        end if
          
         k_option(:,i)=direction(:)*pi*2.0*angle(:) !a possible wavevector
       
         !find the length of the current k_option vector
         mkunit(i)=sqrt((k_option(1,i)**2)+(k_option(2,i)**2)+(k_option(3,i)**2))
-        if(mkunit(i).gt.0.0.and. &
-           mkunit(i)<=(mkunit(j)-20.).or.mkunit(i)>=(mkunit(j)+20.))then 
+        if(i==1.and.mkunit(i).gt.0.0)then
           k(:,num)=k_option(:,i)
           klengths(num)=mkunit(i)
         end if
@@ -134,7 +140,7 @@ module KSmodel
         !now we check that the current length is unique (hasn't come before)
         if(i.gt.1.and.num.lt.KSmodes)then
           do j=i-1,1,-1
-            if(mkunit(i).gt.0.0.and.mkunit(i) /= mkunit(j))then
+            if(mkunit(i).gt.0.0.and.(mkunit(i)/=mkunit(j)))then
                 ne=.true.
             else
               ne=.false.
