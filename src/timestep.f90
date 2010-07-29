@@ -45,6 +45,9 @@ module timestep
     integer :: peri, perj, perk !used to loop in periodic cases
     !what scheme are we using? (LIA/BS)
     select case(velocity)
+      case('Off')
+        !no superfluid velocity
+        u=0.
       case('LIA')
         !use the local induction approximation
         call get_deriv_1(i,f_dot) !general.mod
@@ -92,11 +95,17 @@ module timestep
         end if
     end select
     !now account for mutual friction - test if alpha's are 0
-    if ((sum(alpha)>epsilon(0.)).and.(t<normal_fluid_cutoff)) then
-      call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
-      u=u+alpha(1)*cross_product(f_dot,(u_norm-u))- &
-          alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
-    end if
+    select case(velocity)
+      case('Off')
+        call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
+        u=u_norm
+      case default
+        if ((sum(alpha)>epsilon(0.)).and.(t<normal_fluid_cutoff)) then
+          call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
+          u=u+alpha(1)*cross_product(f_dot,(u_norm-u))- &
+              alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
+        end if
+    end select
     !forcing?
     call get_forcing(i,u_force)
     u=u+u_force

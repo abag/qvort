@@ -78,6 +78,13 @@ module initial
      end if
      !finally print information about the velocity field to screen
      select case(velocity)
+       case('Off')
+         select case(normal_velocity)
+           case('zero')
+             call fatal_error('initial.mod',&
+                  'no superfluid velocity and no normal velocity')
+         end select
+         write(*,*) 'No superfluid velocity: simulation of passive lines'
        case('LIA')
          write(*,*) 'using local induction approximation - scales like O(N)'
        case('BS')
@@ -102,6 +109,7 @@ module initial
     integer :: dummy_itime 
     open(unit=63,file="./data/var.dat",FORM='unformatted')
       read(63) pcount
+      !read(63) recon_count
       read(63) dummy_itime
       read(63) t
       allocate(f(pcount))
@@ -418,10 +426,6 @@ module initial
     if (line_count==0) then
       call fatal_error('init.mod:setup_tangle', &
       'you have not set a value for line_count in run.in')
-    end if
-    if (mod(pcount,line_count)/=0) then
-      call fatal_error('init.mod:setup_tangle', &
-      'pcount/line_count is not an integer')
     end if
     if (periodic_bc) then
       !work out the number of particles required for our lines

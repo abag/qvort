@@ -1,4 +1,8 @@
 %read in the ts file and plot
+function line_length(sections)
+if nargin<1
+  sections=1;
+end
 A=load('data/ts.log');
 t=A(:,2) ; l=A(:,6) ; 
 scrsz = get(0,'ScreenSize');
@@ -9,9 +13,15 @@ figure('Position',[1 scrsz(4) scrsz(3)/1.2 scrsz(4)/2],'PaperPosition',[0.25 2.5
     xlabel('t','FontSize',14)
     ylabel('l','FontSize',14)
   subplot(1,2,2)
-    p=polyfit(t,log(l),1);
-    dummy_ll=p(1)*t+p(2);
-    plot(t,log(l),'-b',t,dummy_ll,'-.r','LineWidth',2);
+    plot(t,log(l),'-b','LineWidth',2);
+    hold on
+    for i=1:sections
+      start=floor((i-1)/sections*length(t)+1);
+      finish=ceil(i/sections*length(t));
+      p=polyfit(t(start:finish),log(l(start:finish)),1);
+      dummy_ll=p(1)*t(start:finish)+p(2);
+      plot(t(start:finish),dummy_ll,'-.r','LineWidth',2);
+      text(t(floor(start/2+finish/2)),dummy_ll(floor(length(dummy_ll)/2))-0.05*(max(log(l))-min(log(l))),num2str(p(1)),'FontSize',14)
+    end
+    hold off
     set(gca,'FontSize',14)
-    xlabel('t','FontSize',14)
-    ylabel('log(l)','FontSize',14)

@@ -29,15 +29,18 @@ program run
     end if
     !---------------------velocity operations----------------------
     call pmotion !timestep.mod
+    !print*, 'here1'
     if (mod(itime,shots*10)==0) then
       call mesh_velocity !timestep.mod
     end if
+    !print*, 'here2'
     !---------------------diagnostic info--------------------------
     if (mod(itime, shots)==0) then
       call velocity_info !diagnostics.mod
       call energy_info !diagnostics.mod
       call mean_curv !diagnostics.mod
     end if
+    !print*, 'here3'
     !---------------------line operations--------------------------
     call pinsert !line.mod
     if (mod(itime, recon_shots)==0) then
@@ -50,6 +53,7 @@ program run
       call precon !line.mod
       call premove !line.mod
     end if
+    !print*, 'here4'
     if(periodic_bc) call enforce_periodic !periodic.mod
     !--------------now do all data output--------------------------
     if (mod(itime, shots)==0) then
@@ -63,6 +67,7 @@ program run
         call print_mesh(itime/(10*shots)) !output.mod
       end if
     end if
+    !print*, 'here5'
     !---do we have particles in the code - if so evolve them
     if (quasi_pcount>0) call quasip_evolution !quasip.mod
     !-------------------remove the tree----------------------------

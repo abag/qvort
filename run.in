@@ -4,19 +4,19 @@ shots 160
 recon_shots 2
 init_pcount 600
 dt 1E-5
-delta 0.004
+delta 0.003
 box_size 0.1
 quant_circ 9.97E-4
 velocity Tree
 initf tangle
-line_count 6
+line_count 16
 
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-mesh_size 64
+mesh_size 0
 normal_velocity KS
 !alpha 0.098 0.012
 alpha 1.21 -0.3883
-!quasi_pcount 10
+quasi_pcount 0
 !initg pairs
 tree_theta 1.

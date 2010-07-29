@@ -82,6 +82,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
     implicit none
     open(unit=53,file="./data/var.dat",FORM='unformatted',status='replace')
       write(53) pcount
+      write(53) recon_count
       write(53) itime
       write(53) t
       write(53) f
