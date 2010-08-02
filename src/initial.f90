@@ -109,7 +109,7 @@ module initial
     integer :: dummy_itime 
     open(unit=63,file="./data/var.dat",FORM='unformatted')
       read(63) pcount
-      !read(63) recon_count
+      read(63) recon_count
       read(63) dummy_itime
       read(63) t
       allocate(f(pcount))

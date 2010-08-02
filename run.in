@@ -9,14 +9,14 @@ box_size 0.1
 quant_circ 9.97E-4
 velocity Tree
 initf tangle
-line_count 16
-
+line_count 1
+binary_print T
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 mesh_size 0
-normal_velocity KS
+normal_velocity xflow
 !alpha 0.098 0.012
 alpha 1.21 -0.3883
-quasi_pcount 0
+!quasi_pcount 10
 !initg pairs
 tree_theta 1.

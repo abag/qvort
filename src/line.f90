@@ -131,7 +131,7 @@ module line
       if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
         j=f(i)%closest
         !another saftery check
-        if (j==pari) cycle ; if (j==parb) cycle
+        if (j==pari) cycle ; if (j==parb) cycle ; if (j==0) cycle
         !these two could have reconnected earlier in this case j will be empty
         if (f(j)%infront==0) cycle
         parji=f(j)%infront ; parjb=f(j)%behind

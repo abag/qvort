@@ -2,33 +2,41 @@ function vortex_plot(filenumber)
 filename=sprintf('data/var%03d.log',filenumber);
 %some options
 rough=0; %if 1 
-linetrue=1; %if 1 plots a line, else plots a thin cylinder
+linetrue=0; %if 1 plots a line, else plots a thin cylinder
 dark=1; %if 1 plots in dark
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-fid=fopen(filename);
-%read the time
-tline=fgetl(fid);
-dummy=textscan(tline, '%f');
-time=dummy{:};
-%how many particles
-tline=fgetl(fid);
-dummy=textscan(tline, '%d');
-number_of_particles=dummy{:};
-
-%get the particles%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for j=1:number_of_particles
-  tline=fgetl(fid);
-  dummy=textscan(tline, '%f');
-  dummy_vect=dummy{:};
-  x(j)=dummy_vect(1);
-  y(j)=dummy_vect(2);
-  z(j)=dummy_vect(3);
-  f(j)=dummy_vect(4);
-end
-f=uint16(f);
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
+if dims(4)==1
+  fid=fopen(filename);
+  time=fread(fid,1,'float64');
+  number_of_particles=fread(fid,1,'int');
+  x=fread(fid,number_of_particles,'float64');
+  y=fread(fid,number_of_particles,'float64');
+  z=fread(fid,number_of_particles,'float64');
+  f=fread(fid,number_of_particles,'int');
+else 
+  fid=fopen(filename);
+  %read the time
+  tline=fgetl(fid);
+  dummy=textscan(tline, '%f');
+  time=dummy{:};
+  %how many particles
+  tline=fgetl(fid);
+  dummy=textscan(tline, '%d');  
+  number_of_particles=dummy{:};
+  %get the particles%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  for j=1:number_of_particles
+    tline=fgetl(fid);
+    dummy=textscan(tline, '%f');
+    dummy_vect=dummy{:};
+    x(j)=dummy_vect(1);
+    y(j)=dummy_vect(2);
+    z(j)=dummy_vect(3);
+    f(j)=dummy_vect(4);
+  end
+  f=uint16(f);
+end
 if (rough==1)
     plot3(x,y,z,'.')
     return

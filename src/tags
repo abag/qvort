@@ -76,7 +76,7 @@ ghostp	periodic.f90	/^  subroutine ghostp$/;"	s	module:periodic
 grid	cdata.f90	/^  type grid$/;"	t	module:cdata
 i	run.f90	/^  in/;"	v	program:run
 infront	cdata.f90	/^    integer :: infront,/;"	k	type:qvort
-init_random_seed	cdata.f90	/^  SUBROUTINE init_random_seed(/;"	s	module:cdata
+init_random_seed	cdata.f90	/^  subroutine init_random_seed(/;"	s	module:cdata
 init_setup	initial.f90	/^  subroutine init_setup(/;"	s	module:initial
 initial	initial.f90	/^module initial$/;"	m
 int_special_dump	cdata.f90	/^  integer :: int_special_dump=/;"	v	module:cdata

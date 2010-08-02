@@ -10,6 +10,11 @@ module output
       write(77,*) delta
       write(77,*) box_size
       write(77,*) mesh_size
+      if (binary_print) then
+        write(77,*) 1
+      else
+        write(77,*) 0
+      end if
     close(77)  
   end subroutine
   !**********************************************************************
@@ -45,36 +50,59 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
   !end subroutine
   !**********************************************************************
   subroutine printf(filenumber)
-    !print the f array as formatted data for use with gnuplot/matlab
+    !print the f array as (un)formatted data for use with gnuplot/matlab
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
     integer :: i
     if (filenumber==1001) call warning_message('output.mod','run out of filenumbers to print var to')
-    write(unit=print_file,fmt="(a,i3.3,a)")"./data/var",filenumber,".log"
-    open(unit=98,file=print_file,status='replace')
-      write(98,*) t
-      write(98,*) pcount
-      do i=1, pcount
-        write(98,*) f(i)%x(1:3), f(i)%infront
-      end do
-    close(98)
+    if (binary_print) then
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/var",filenumber,".log"
+      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+        write(98) t
+        write(98) pcount
+        write(98) f(:)%x(1)
+        write(98) f(:)%x(2)
+        write(98) f(:)%x(3)
+        write(98) f(:)%infront
+      close(98)
+    else
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/var",filenumber,".log"
+      open(unit=98,file=print_file,status='replace')
+        write(98,*) t
+        write(98,*) pcount
+        do i=1, pcount
+          write(98,*) f(i)%x(1:3), f(i)%infront
+        end do
+      close(98)
+    end if
   end subroutine
   !**********************************************************************
   subroutine printg(filenumber)
-    !print the g (particles) array as formatted data for use with gnuplot/matlab
+    !print the g (particles) array as (un)formatted data for use with gnuplot/matlab
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
     integer :: i
-    write(unit=print_file,fmt="(a,i3.3,a)")"./data/par",filenumber,".log"
-    open(unit=98,file=print_file,status='replace')
-      write(98,*) t
-      write(98,*) quasi_pcount
-      do i=1, quasi_pcount
-        write(98,*) g(i)%x(1:3)
-      end do
-    close(98)
+    if (binary_print) then
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/par",filenumber,".log"
+      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+        write(98) t
+        write(98) quasi_pcount
+        write(98) g(:)%x(1)
+        write(98) g(:)%x(2)
+        write(98) g(:)%x(3)
+      close(98)
+    else  
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/par",filenumber,".log"
+      open(unit=98,file=print_file,status='replace')
+        write(98,*) t
+        write(98,*) quasi_pcount
+        do i=1, quasi_pcount
+          write(98,*) g(i)%x(1:3)
+        end do
+      close(98)
+    end if
   end subroutine
   !**********************************************************************
   subroutine data_dump

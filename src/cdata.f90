@@ -58,7 +58,7 @@ module cdata
   logical :: periodic_bc=.false.
   character(len=30), protected :: velocity, initf
   integer, protected :: line_count=0
-
+  logical, protected :: binary_print=.false.
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
   !------------normal fluid component--------------------------------------------
@@ -117,6 +117,8 @@ module cdata
              read(buffer, *, iostat=ios) init_pcount !initial particle count
           case ('dt')
              read(buffer, *, iostat=ios) dt !timestep value
+          case ('binary_print')
+             read(buffer, *, iostat=ios) binary_print !print binary var data
           case ('delta')
              read(buffer, *, iostat=ios) delta !spatial resolution
           case ('quant_circ')
@@ -166,9 +168,9 @@ module cdata
     implicit none      
     character(len=*) :: location
     character(len=*) :: message
-    write (*,*) '---------------------FATAL ERROR-----------------------'
+    write (*,*) '-----------------------FATAL ERROR-------------------------'
     write (*,*) trim(location) , ": " , trim(message)
-    write (*,*) '-------------------------------------------------------'
+    write (*,*) '-----------------------------------------------------------'
     stop
   end subroutine
   !*************************************************************************************************  
@@ -176,9 +178,9 @@ module cdata
     implicit none      
     character(len=*) :: location
     character(len=*) :: message
-    write (*,*) '---------------------WARNING-----------------------'
+    write (*,*) '-----------------------WARNING-------------------------'
     write (*,*) trim(location) , ": " , trim(message)
-    write (*,*) '---------------------------------------------------'
+    write (*,*) '-------------------------------------------------------'
   end subroutine
   !*************************************************************************************************  
   subroutine init_random_seed()
