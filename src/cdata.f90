@@ -58,7 +58,7 @@ module cdata
   logical :: periodic_bc=.false.
   character(len=30), protected :: velocity, initf
   integer, protected :: line_count=0
-  logical, protected :: binary_print=.false.
+  logical, protected :: binary_print=.true.
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
   !------------normal fluid component--------------------------------------------

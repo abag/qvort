@@ -65,6 +65,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
         write(98) f(:)%x(2)
         write(98) f(:)%x(3)
         write(98) f(:)%infront
+        write(98) sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
       close(98)
     else
       write(unit=print_file,fmt="(a,i3.3,a)")"./data/var",filenumber,".log"
@@ -72,7 +73,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
         write(98,*) t
         write(98,*) pcount
         do i=1, pcount
-          write(98,*) f(i)%x(1:3), f(i)%infront
+          write(98,*) f(i)%x(1:3), f(i)%infront, sqrt(f(i)%u(1)**2+f(i)%u(2)**2+f(i)%u(3)**2)
         end do
       close(98)
     end if

@@ -55,8 +55,10 @@ module line
         f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)+&
                      (sqrt(curv**2-0.25*disti**2)-curv)*curv*f_ddot
         !f(par_new)%x=(f(i)%x+f(i)%ghosti)/2.
-        !0 the velocities
-        f(par_new)%u=0. ; f(par_new)%u1=0. ; f(par_new)%u2=0.
+        !average the current velocity
+        f(par_new)%u=0.5*(f(i)%u+f(f(i)%infront)%u) 
+        !zero the older velocities
+        f(par_new)%u1=0. ; f(par_new)%u2=0.
 
         !set correct infront and behinds & ghostzones
         f(par_new)%behind=i ; f(par_new)%infront=f(i)%infront
@@ -123,6 +125,8 @@ module line
     integer :: pari, parb, parii, parbb, parji, parjb !particles infront/behind
     integer :: par_recon !the particle we reconnect with
     integer :: i, j !we must do a double loop over all particles N^2
+    integer :: old_recon_count
+    old_recon_count=recon_count
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
@@ -159,6 +163,8 @@ module line
         end if 
       end if
     end do
+    !make recon_count a rate of reconnection
+    recon_count=recon_count-old_recon_count
   end subroutine
   !**************************************************
   subroutine loop_killer(particle)

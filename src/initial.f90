@@ -10,6 +10,12 @@ module initial
     use quasip
     implicit none
     logical :: restart
+    !how is data being outputted (binary or formatted)
+    if (binary_print) then
+      write(*,*) 'binary data output, formatted data can be selected in run.in'
+    else
+      write(*,*) 'formatted data output selected in run.im'
+    end if
     !periodic bounday conditions?
     if (box_size>0.) then
       periodic_bc=.true.

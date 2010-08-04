@@ -8,13 +8,12 @@ delta 0.003
 box_size 0.1
 quant_circ 9.97E-4
 velocity Tree
-initf tangle
+initf single_loop
 line_count 1
-binary_print T
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 mesh_size 0
-normal_velocity xflow
+normal_velocity ABC
 !alpha 0.098 0.012
 alpha 1.21 -0.3883
 !quasi_pcount 10

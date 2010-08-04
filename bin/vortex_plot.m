@@ -2,8 +2,9 @@ function vortex_plot(filenumber)
 filename=sprintf('data/var%03d.log',filenumber);
 %some options
 rough=0; %if 1 
-linetrue=0; %if 1 plots a line, else plots a thin cylinder
+linetrue=1; %if 1 plots a line, else plots a thin cylinder
 dark=1; %if 1 plots in dark
+rainbow=1; %if 1 plots colour of tubes according to velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
@@ -15,6 +16,7 @@ if dims(4)==1
   y=fread(fid,number_of_particles,'float64');
   z=fread(fid,number_of_particles,'float64');
   f=fread(fid,number_of_particles,'int');
+  u=fread(fid,number_of_particles,'float64');
 else 
   fid=fopen(filename);
   %read the time
@@ -34,12 +36,21 @@ else
     y(j)=dummy_vect(2);
     z(j)=dummy_vect(3);
     f(j)=dummy_vect(4);
+    u(j)=dummy_vect(5);
   end
   f=uint16(f);
 end
 if (rough==1)
     plot3(x,y,z,'.')
     return
+end
+if rainbow==1
+  %scale velocity into a colormap
+  store_caxis=([min(u(u>0)) max(u)]);
+  u=u-min(u(u>0));
+  rainbow_scale=199/max(u) ;
+  u=u*rainbow_scale;
+  rainbowcmap=colormap(jet(200));
 end
 %now create vectors to plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for j=1:number_of_particles
@@ -55,7 +66,14 @@ for j=1:number_of_particles
     if (dist<3.*dims(1))
       if linetrue==1
         if dark==1
-          plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2.0)
+          if rainbow==1
+            if u(j)==0
+              u(j)=1;
+            end
+            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(ceil(u(j)),:),'LineWidth',2.0)
+          else
+            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2.0)
+          end
         else
           plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2.0)
         end
@@ -63,7 +81,14 @@ for j=1:number_of_particles
         [x1 y1 z1]=cylind(0.00045,20, dummy_x(1,1:3),dummy_x(2,1:3));
         h=surf(x1,y1,z1);
         if dark==1
-          set(h,'FaceColor','m','EdgeColor','g','FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+          if rainbow==1
+            if u(j)==0
+                u(j)=1;
+            end
+            set(h,'FaceColor',rainbowcmap(ceil(u(j)),:),'EdgeColor',rainbowcmap(ceil(u(j)),:),'FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+          else
+            set(h,'FaceColor','m','EdgeColor','m','FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+          end
         else
           set(h,'FaceColor','k','EdgeColor','k','FaceAlpha',0.5,'EdgeAlpha',0.1) ;
         end
@@ -87,6 +112,10 @@ end
 lighting phong
 camlight
 hold off
+if rainbow==1
+  caxis(store_caxis)
+  colorbar
+end
 grid on
 s1='t=';
 s2=num2str(time);
