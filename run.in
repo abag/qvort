@@ -1,21 +1,25 @@
 --------------required parameters------------
-nsteps 160000
-shots 160
-recon_shots 2
-init_pcount 600
-dt 1E-5
-delta 0.003
-box_size 0.1
+nsteps 100000
+shots 20
+recon_shots 1
+init_pcount 400
+dt 1E-4
+delta 0.001
+box_size 0.
 quant_circ 9.97E-4
-velocity Tree
-initf single_loop
+velocity BS
+initf wave_spec
 line_count 1
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 mesh_size 0
-normal_velocity ABC
+!force top_boundary
+!force_amp 0.002
+!force_freq 40.
+!normal_velocity ABC
 !alpha 0.098 0.012
-alpha 1.21 -0.3883
+!alpha 1.21 -0.3883
 !quasi_pcount 10
 !initg pairs
-tree_theta 1.
+tree_theta 0.
+binary_print F

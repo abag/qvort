@@ -1,15 +1,83 @@
-function vortex_plot(filenumber)
+function vortex_plot(filenumber,varargin)
+optargin = size(varargin,2);
 filename=sprintf('data/var%03d.log',filenumber);
-%some options
-rough=0; %if 1 
-linetrue=1; %if 1 plots a line, else plots a thin cylinder
-dark=1; %if 1 plots in dark
-rainbow=1; %if 1 plots colour of tubes according to velocity
+%set options based on varargin
+rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; 
+for i=1:optargin
+  switch cell2str(varargin(i))
+    case 'rough'
+      rough=1;
+    case 'print'
+      printit=1;
+      disp('printing to file')
+      figure('visible', 'off')
+    case 'rainbow'
+      rainbow=1;
+    case 'movie'
+          disp('I am going to create a movie')
+          disp('Before we begin shall I delete all the old snapshot pngs?')
+          deleteold = input('delete old var.png files Y/N [N]','s');
+          if isempty(deleteold)
+            plotrough = 'N';
+          end
+          if deleteold=='Y'
+              unix('rm data/var*.png');
+              if ans==0
+                disp('old files succesfully removed')
+              end
+          end
+          figure('visible','off')
+          mstart=input('movie start file (as a number)');
+          mend=input('movie end file (as a number)');
+          mskip=input('skip (as a number) [1]');
+          if isempty(mskip)
+            mskip = 1 ;
+          end
+          plotrough = input('rough plots (very quick) Y/N [N]','s');
+          if isempty(plotrough)
+            plotrough = 'N';
+          end
+          if plotrough~='Y' 
+            plotlines = input('plot lines (or cylinders) Y/N [Y]','s');
+            if isempty(plotlines)
+              plotlines = 'Y';
+            end
+          end
+      for j=mstart:mskip:mend
+          fOUT=sprintf('data/var%03d.png',j)
+          if plotrough=='Y'
+            vortex_plot(j,'rough');
+            print('-dpng',fOUT);
+            continue
+          end
+          if plotlines=='Y'
+            vortex_plot(j,'line');
+          else
+            vortex_plot(j);
+          end
+          print('-dpng',fOUT); 
+      end
+      return
+    case 'dark'
+      dark=1;
+    case 'line'
+      linetrue=1;
+      otherwise
+      disp('invalid option in input arguements')
+      disp('aborting code and printing help:')
+      help vortex_plot
+      return
+  end
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
 if dims(4)==1
   fid=fopen(filename);
+  if fid<0
+      disp('var file does not exist, exiting script')
+      return
+  end
   time=fread(fid,1,'float64');
   number_of_particles=fread(fid,1,'int');
   x=fread(fid,number_of_particles,'float64');
@@ -19,6 +87,10 @@ if dims(4)==1
   u=fread(fid,number_of_particles,'float64');
 else 
   fid=fopen(filename);
+  if fid<0
+      disp('var file does not exist, exiting script')
+      return
+  end
   %read the time
   tline=fgetl(fid);
   dummy=textscan(tline, '%f');
@@ -42,6 +114,12 @@ else
 end
 if (rough==1)
     plot3(x,y,z,'.')
+    if (dims(2)>0.)
+      axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]); 
+      box on
+    else
+      axis([-0.05 0.05 -0.05 0.05 -0.05 0.05]);
+    end
     return
 end
 if rainbow==1
@@ -75,7 +153,14 @@ for j=1:number_of_particles
             plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2.0)
           end
         else
-          plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2.0)
+          if rainbow==1
+            if u(j)==0
+              u(j)=1;
+            end
+            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(ceil(u(j)),:),'LineWidth',2.0)
+          else
+            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2.0)
+          end
         end
       else
         [x1 y1 z1]=cylind(0.00045,20, dummy_x(1,1:3),dummy_x(2,1:3));
@@ -90,14 +175,21 @@ for j=1:number_of_particles
             set(h,'FaceColor','m','EdgeColor','m','FaceAlpha',0.5,'EdgeAlpha',0.1) ;
           end
         else
-          set(h,'FaceColor','k','EdgeColor','k','FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+          if rainbow==1
+            if u(j)==0
+                u(j)=1;
+            end
+            set(h,'FaceColor',rainbowcmap(ceil(u(j)),:),'EdgeColor',rainbowcmap(ceil(u(j)),:),'FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+          else
+            set(h,'FaceColor','k','EdgeColor','k','FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+          end
         end
       end
       if (dims(2)>0.)
         axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]); 
         box on
       else
-        axis([-0.1 0.1 -0.1 0.1 -0.1 0.1]);
+        axis([-0.05 0.05 -0.05 0.05 -0.05 0.05]);
       end
       hold on
     end
@@ -120,7 +212,14 @@ grid on
 s1='t=';
 s2=num2str(time);
 str=strcat(s1,s2);
-%text(-0.06,0.06,0.07,str,'FontSize',16)
+if (dims(2)>0.)
+  text(-1.2*dims(2),1.2*dims(2),1.3*dims(2),str,'FontSize',16)
+else
+  text(-0.06,0.06,0.07,str,'FontSize',16)
+end
+if printit==1
+  print('-dpng', './vortex_print_out.png')
+end
 %text(1.,10.5,0.55,str)
 %view(-18,17)
 

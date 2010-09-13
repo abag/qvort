@@ -10,6 +10,7 @@ module initial
     use quasip
     implicit none
     logical :: restart
+    write(*,'(a,f9.7)') 'quantum of circulation is:', quant_circ 
     !how is data being outputted (binary or formatted)
     if (binary_print) then
       write(*,*) 'binary data output, formatted data can be selected in run.in'
@@ -48,6 +49,10 @@ module initial
           call setup_leap_frog !init.mod
         case('linked_filaments')
           call setup_linked_filaments !init.mod
+        case('kivotedes')
+          call setup_kivotedes !init.mod
+        case('wave_spec')
+          call setup_wave_spec !init.mod
         case('line_motion')
           call setup_line_motion !init.mod
         case('tangle')
@@ -78,7 +83,11 @@ module initial
      end if
      !is the tree code being used?
      if (tree_theta>0) then
-       write(*,*) 'using tree algorithms for reconnection routine - scales like O(NlogN)'
+       if (box_size>0.) then
+         write(*,*) 'using tree algorithms for reconnection routine - scales like O(NlogN)'
+       else
+         call fatal_error('cdata.mod:init_setup','tree algorithms require a positive box size')
+       end if
      else
        write(*,*) 'using brute force reconnection routine - scales like O(N^2)'
      end if
@@ -285,7 +294,7 @@ module initial
       'pcount is not a multiple of 2-aborting')
     end if
     radius=(0.75*pcount*delta)/(4*pi) !75% of potential size
-    write(*,*) 'initf: linked filaments, radius of loops:', radius 
+    write(*,'(a,f9.6)') ' initf: linked filaments, radius of loops:', radius 
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount/2
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/(pcount/2))
@@ -303,7 +312,7 @@ module initial
     end do
     !second loop
     do i=pcount/2+1, pcount
-      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius/0.6
+      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius/0.52
       f(i)%x(2)=0.
       f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
 
@@ -317,6 +326,120 @@ module initial
       !zero the stored velocities
       f(i)%u1=0. ; f(i)%u2=0.
     end do    
+  end subroutine
+  !*************************************************************************
+  subroutine setup_kivotedes
+    !four unlinked loops as in Kivotedes 2001, PRL
+    implicit none
+    real :: radius
+    integer :: i 
+    if (mod(pcount,4)/=0) then
+      call fatal_error('init.mod:setup_linked_filaments', &
+      'pcount is not a multiple of 4-aborting')
+    end if
+    radius=(0.75*pcount*delta)/(8*pi) !75% of potential size
+    write(*,'(a,f9.6)') ' initf: 4 unlinked loops as in kivotedes, radius of loops:', radius 
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount/4
+      f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(pcount/4))
+      f(i)%x(2)=radius*cos(pi*real(2*i-1)/(pcount/4))
+      f(i)%x(3)=0.
+      if (i==1) then
+        f(i)%behind=pcount/4 ; f(i)%infront=i+1
+      else if (i==pcount/4) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
+    !second loop
+    do i=pcount/4+1, 2*pcount/4
+      f(i)%x(1)=-radius*sin(pi*real(2.*(i-pcount/4)-1)/(pcount/4))
+      f(i)%x(2)=radius/0.9
+      f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/4)-1)/(pcount/4))+radius/0.9
+
+      if (i==(pcount/4+1)) then
+        f(i)%behind=2*pcount/4 ; f(i)%infront=i+1
+      else if (i==2*pcount/4) then 
+        f(i)%behind=i-1 ; f(i)%infront=1+pcount/4
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do    
+    !third loop
+    do i=2*pcount/4+1, 3*pcount/4
+      f(i)%x(1)=radius*sin(pi*real(2.*(i-2*pcount/4)-1)/(pcount/4))
+      f(i)%x(2)=radius*cos(pi*real(2.*(i-2*pcount/4)-1)/(pcount/4))
+      f(i)%x(3)=2*radius/0.9
+
+      if (i==(2*pcount/4+1)) then
+        f(i)%behind=3*pcount/4 ; f(i)%infront=i+1
+      else if (i==3*pcount/4) then 
+        f(i)%behind=i-1 ; f(i)%infront=1+2*pcount/4
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
+    !final loop
+    do i=3*pcount/4+1, pcount
+      f(i)%x(1)=radius*sin(pi*real(2.*(i-3*pcount/4)-1)/(pcount/4))
+      f(i)%x(2)=-radius/0.9
+      f(i)%x(3)=radius*cos(pi*real(2.*(i-3*pcount/4)-1)/(pcount/4))+radius/0.9
+
+      if (i==(3*pcount/4+1)) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1+3*pcount/4
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
+  end subroutine
+  !*************************************************************************
+  subroutine setup_wave_spec
+    !a loop in the x-y plane with wave pertubations
+    implicit none
+    real, parameter :: spec_slope=-1.5
+    real :: wave_number, amp, prefactor
+    real :: radius
+    integer :: i, j
+    radius=(0.75*pcount*delta)/(2*pi) !75% of potential size 
+    write(*,*) ' initf: single loop, radius of loop:', radius 
+    write(*,'(a,f9.5)') ' 10 wave pertubations, with spectral slope:', spec_slope
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount
+      f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
+      f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
+      f(i)%x(3)=0.0
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
+    !now add pertubations in Z
+    prefactor=10./(2**spec_slope)
+    do j=1, 10 !8 diffent waves
+      wave_number=2*j
+      amp=prefactor*(wave_number**spec_slope)
+      write(*,'(a,f9.5,a,f9.5)'), 'wavenuber',wave_number,' amplitude', amp
+      do i=1, pcount
+        f(i)%x(3)=f(i)%x(3)+amp*delta*sin(wave_number*2.*pi*real(2*i-1)/pcount)+amp*delta*cos(wave_number*2.*pi*real(2*i-1)/pcount)
+      end do
+    end do
+
   end subroutine
   !*************************************************************************
   subroutine setup_line_motion

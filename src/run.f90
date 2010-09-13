@@ -80,7 +80,5 @@ program run
     if ((itime/=0).and.(itime==int_special_dump)) call sdata_dump
     !--------------------------------------------------------------
   end do
-  deallocate(f,mesh) !tidy up
-!still to do:-
-!tree
+  !deallocate(f,mesh) !tidy up
 end program

@@ -125,14 +125,12 @@ module line
     integer :: pari, parb, parii, parbb, parji, parjb !particles infront/behind
     integer :: par_recon !the particle we reconnect with
     integer :: i, j !we must do a double loop over all particles N^2
-    integer :: old_recon_count
-    old_recon_count=recon_count
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
       parii=f(pari)%infront ; parbb=f(parb)%behind !find particle twice infront/behind
       !now we determine if we can reconnect
-      if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
+      if ((f(i)%closestd<5.*delta/4.).and.(f(i)%closestd>epsilon(1.))) then
         j=f(i)%closest
         !another saftery check
         if (j==pari) cycle ; if (j==parb) cycle ; if (j==0) cycle
@@ -163,8 +161,6 @@ module line
         end if 
       end if
     end do
-    !make recon_count a rate of reconnection
-    recon_count=recon_count-old_recon_count
   end subroutine
   !**************************************************
   subroutine loop_killer(particle)

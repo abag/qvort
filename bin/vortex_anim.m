@@ -17,4 +17,6 @@ for i=start:skip:final
   fOUT=sprintf('data/var%03d.png',i)
   print('-dpng',fOUT)
 end
+figure('visible','on');
+close all
   

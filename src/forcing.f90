@@ -1,7 +1,6 @@
 module forcing
   !THIS MODULE CONTAINS ALL THE ROUTINES TO EMPLOY FORCING IN THE CODE
   use cdata
-  use general
   real, private :: force_direction(3)=0.
   contains
   subroutine setup_forcing()

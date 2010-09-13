@@ -12,6 +12,7 @@ cleann:
 pristine: cleann
 	make -C doc pristine
 	rm -rf data/*
+	rm *.eps *.png
 linkx:
 	@for file in src/*.x; \
 	do [ -e "`basename $$file`" ] || ln -s $$file .; \

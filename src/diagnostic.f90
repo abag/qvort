@@ -17,15 +17,20 @@ module diagnostic
   end subroutine
   !*************************************************
   subroutine energy_info()
+    !trapezium rule to calculate the integral
     implicit none
-    real :: sdot(3)
+    real :: sdot(3), sdoti(3)
+    integer :: infront
     integer :: i
     energy=0.
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
+      infront=f(i)%infront
       call get_deriv_1(i,sdot)
-      !energy=energy+dot_product(f(i)%u,cross_product(f(i)%x,f(i)%ghosti-f(i)%x))
-      energy=energy+dot_product(f(i)%u,cross_product(f(i)%x,sdot))*dist_gen(f(i)%x,f(i)%ghosti)
+      call get_deriv_1(infront,sdoti)
+      energy=energy+0.5*dist_gen(f(i)%x,f(i)%ghosti)*&
+      (dot_product(f(i)%u,cross_product(f(i)%x,sdot))+&
+       dot_product(f(infront)%u,cross_product(f(infront)%x,sdoti)))
     end do
   end subroutine
   !*************************************************

@@ -174,7 +174,9 @@ module tree
     do i=1, pcount
       f(i)%closestd=10. !arbitrarily high
       call closest_tree(i,vtree)
+      !print*, i, f(i)%closest
     end do
+    !stop
   end subroutine
   !********************************************************************************
   recursive subroutine closest_tree(i,vtree)
