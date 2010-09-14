@@ -10,6 +10,10 @@ quant_circ 9.97E-4
 velocity BS
 initf wave_spec
 line_count 1
+!wave spectrum parameters
+wave_count 20
+wave_slope -1.5
+wave_amp 15
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 mesh_size 0
@@ -23,3 +27,4 @@ mesh_size 0
 !initg pairs
 tree_theta 0.
 binary_print F
+curv_hist T

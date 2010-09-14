@@ -91,7 +91,7 @@ module initial
      else
        write(*,*) 'using brute force reconnection routine - scales like O(N^2)'
      end if
-     !finally print information about the velocity field to screen
+     !print information about the velocity field to screen
      select case(velocity)
        case('Off')
          select case(normal_velocity)
@@ -116,6 +116,8 @@ module initial
         call fatal_error('init.mod:init_setup', & 
         'correct value for "velocity" in run.in has not been set') !cdata.mod
     end select
+    !any special diagnostic information?
+    if (curv_hist) write(*,*) 'printing histograms of curvature to file'
   end subroutine
   !**********************************************************************
   subroutine data_restore
@@ -407,13 +409,13 @@ module initial
   subroutine setup_wave_spec
     !a loop in the x-y plane with wave pertubations
     implicit none
-    real, parameter :: spec_slope=-1.5
-    real :: wave_number, amp, prefactor
+    real :: wave_number, prefactor
+    real :: amp, random_shift
     real :: radius
     integer :: i, j
     radius=(0.75*pcount*delta)/(2*pi) !75% of potential size 
     write(*,*) ' initf: single loop, radius of loop:', radius 
-    write(*,'(a,f9.5)') ' 10 wave pertubations, with spectral slope:', spec_slope
+    write(*,'(i2.1,a,f9.5)') wave_count,' wave pertubations, with spectral slope:', wave_slope
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
@@ -430,15 +432,19 @@ module initial
       f(i)%u1=0. ; f(i)%u2=0.
     end do
     !now add pertubations in Z
-    prefactor=10./(2**spec_slope)
-    do j=1, 10 !8 diffent waves
+    prefactor=wave_amp/(2**wave_slope)
+    write(*,*) '------------------WAVE INFORMATION-------------------'
+    do j=1, wave_count !8 diffent waves
       wave_number=2*j
-      amp=prefactor*(wave_number**spec_slope)
-      write(*,'(a,f9.5,a,f9.5)'), 'wavenuber',wave_number,' amplitude', amp
+      amp=prefactor*(wave_number**wave_slope)
+      call random_number(random_shift)
+      random_shift=random_shift*2*pi
+      write(*,'(a,f9.5,a,f9.5,a,f9.5)'), ' wavenumber',wave_number,', amplitude', amp, ', shift', random_shift
       do i=1, pcount
-        f(i)%x(3)=f(i)%x(3)+amp*delta*sin(wave_number*2.*pi*real(2*i-1)/pcount)+amp*delta*cos(wave_number*2.*pi*real(2*i-1)/pcount)
+        f(i)%x(3)=f(i)%x(3)+amp*delta*sin(random_shift+wave_number*2.*pi*real(2*i-1)/pcount)!+amp*delta*cos(wave_number*2.*pi*real(2*i-1)/pcount)
       end do
     end do
+    write(*,*) '-----------------------------------------------------'
 
   end subroutine
   !*************************************************************************

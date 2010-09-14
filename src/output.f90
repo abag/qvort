@@ -15,7 +15,7 @@ module output
       else
         write(77,*) 0
       end if
-    close(77)  
+    close(77)
   end subroutine
   !**********************************************************************
   subroutine print_info()
@@ -36,6 +36,9 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
     open(unit=78,file='data/energy.log',position='append')
       write(78,*) energy
     close(78)
+    open(unit=79,file='data/curvature.log',position='append')
+      write(79,*) kappa_bar, kappa_min, kappa_max
+    close(79)
   end subroutine
   !**********************************************************************
   !subroutine print_ts()

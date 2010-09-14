@@ -1,18 +1,26 @@
-%read in the ts file and plot
+%read in the ts file and plot various dignostic information
+%if given the option print will print to .eps file rather than screen
 function ts(option)
 if nargin==0     
   option='empty';
 end
-if option=='print'
+switch option
+case 'print'
   disp('will not print to screen but instead to .eps files')
+case 'empty'
+  otherwise
+  disp('incorrect option, aborting script and printing help:')
+  help ts
+  return
 end
 A=load('data/ts.log');
 t=A(:,2) ; pcount=A(:,3) ; rcount=A(:,4) ; sep=A(:,5) ; l=A(:,6) ; 
 maxu=A(:,7) ; maxdu=A(:,8) ; eval=A(:,9) ; curv=A(:,10) ;
-if option=='print'
-  figure('visible','off');
-else
-  figure('Name', 'filament information')
+switch option
+  case 'print'
+    figure('visible','off');
+  otherwise
+    figure('Name', 'filament information')      
 end
   subplot(2,2,1)
     plot(t,pcount,'-r','LineWidth',2);
@@ -37,10 +45,11 @@ end
 if option=='print'
     print('-depsc','./filament_information.eps')
 end
-if option=='print'
-  figure('visible','off');
-else
-  figure('Name', 'velocity information')
+switch option
+  case 'print'
+    figure('visible','off');
+  otherwise
+    figure('Name', 'velocity information')      
 end
   subplot(2,1,1)
     plot(t,maxu,'-b','LineWidth',2);
@@ -62,10 +71,11 @@ if std(eval)>0.
     xlabel('t','FontSize',14)
     ylabel('evaluations','FontSize',14)
 end
-if option=='print'
-  figure('visible','off');
-else
-  figure('Name', 'mean curvature')
+switch option
+  case 'print'
+    figure('visible','off');
+  otherwise
+    figure('Name', 'mean curvature')      
 end
   plot(t,curv,'-m','LineWidth',2);
   set(gca,'FontSize',14);
@@ -77,10 +87,11 @@ end
 if exist('data/par_ts.log');
    B=load('data/par_ts.log');
    t=B(:,2) ; pmaxu=B(:,3) ; pmaxdu=B(:,4) ; purms=B(:,5) ; psep=B(:,6) ;
-   if option=='print'
-     figure('visible','off');
-   else
-     figure('Name', 'particle information')
+   switch option
+     case 'print'
+       figure('visible','off');
+     otherwise
+       figure('Name', 'particle information')      
    end
    subplot(2,2,1)
     plot(t,pmaxu,'-c','LineWidth',2);

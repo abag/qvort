@@ -28,14 +28,14 @@ module cdata
   real :: t=0. !hold the current time globally
   integer :: itime !current timestep
   integer :: nstart=1 !integer loop starts from (altered by reading in stored data)
-
   !***********DIAGNOSTIC INFO******************************************************
   integer :: recon_count=0 !total number of reconnections
   real :: total_length !total length of filaments
   real :: avg_sep !average separation of the particles
   real :: maxu,maxdu !velocity information
   real :: energy !vortex energy
-  real :: kappa_bar
+  real :: kappa_bar !mean curvature
+  real :: kappa_min, kappa_max !min/max curvature
   !***********CONSTANTS************************************************************
   !some constants - precompute for speed
   real, parameter :: pi=3.14159265358979324
@@ -44,7 +44,6 @@ module cdata
   real, parameter :: twenty_three_twelve=(23./12.)
   real, parameter :: four_thirds=(4./3.)
   real, parameter :: five_twelths=(5./12.)
-
   !***********RUN.IN***************************************************************
   !parameters from run.in, given protected status so treated like parameters
   !by routines in the rest of the code...
@@ -57,8 +56,12 @@ module cdata
   integer, protected :: mesh_size=0
   logical :: periodic_bc=.false.
   character(len=30), protected :: velocity, initf
-  integer, protected :: line_count=0
   logical, protected :: binary_print=.true.
+  !--specific initial conditions selected in run.in - give these default values--
+  integer, protected :: line_count=1
+  integer, protected :: wave_count=1
+  real, protected :: wave_slope=-1.5
+  real, protected :: wave_amp=20.
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
   !------------normal fluid component--------------------------------------------
@@ -80,6 +83,8 @@ module cdata
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
+  !--------------------additional diagnostics------------------------------------
+  logical, protected :: curv_hist=.false. !dumps binned curvature information
   contains
   !*************************************************************************************************  
   subroutine read_run_file()
@@ -157,6 +162,14 @@ module cdata
              read(buffer, *, iostat=ios) tree_theta !tree code, opening angle
           case ('tree_print')
              read(buffer, *, iostat=ios) tree_print !print the tree mesh
+          case ('wave_count')
+             read(buffer, *, iostat=ios) wave_count !for wave_spec initial conditions
+          case ('wave_slope')
+             read(buffer, *, iostat=ios) wave_slope !for wave_spec initial conditions
+          case ('wave_amp')
+             read(buffer, *, iostat=ios) wave_amp !for wave_spec initial conditions
+          case ('curv_hist')
+             read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
           case default
              !print *, 'Skipping invalid label at line', line
           end select

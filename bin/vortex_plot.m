@@ -43,21 +43,28 @@ for i=1:optargin
               plotlines = 'Y';
             end
           end
-      for j=mstart:mskip:mend
-          fOUT=sprintf('data/var%03d.png',j)
-          if plotrough=='Y'
-            vortex_plot(j,'rough');
-            print('-dpng',fOUT);
-            continue
+          for j=mstart:mskip:mend
+              fOUT=sprintf('data/var%03d.png',j)
+              if plotrough=='Y'
+                vortex_plot(j,'rough');
+                print('-dpng',fOUT);
+                continue
+              end
+              if plotlines=='Y'
+                vortex_plot(j,'line');
+              else
+                vortex_plot(j);
+              end
+              print('-dpng',fOUT); 
           end
-          if plotlines=='Y'
-            vortex_plot(j,'line');
-          else
-            vortex_plot(j);
+          animate = input('shall I animate the pngs I created Y/N [N]','s');
+          if isempty(deleteold)
+            plotrough = 'N';
           end
-          print('-dpng',fOUT); 
-      end
-      return
+          if animate=='Y'
+            unix('animate data/var*.png')
+          end 
+          return
     case 'dark'
       dark=1;
     case 'line'
@@ -141,7 +148,7 @@ for j=1:number_of_particles
     dummy_x(1,3)=z(j);
     dummy_x(2,3)=z(round(f(j)));
     dist=sqrt((dummy_x(1,1)-dummy_x(2,1))^2+(dummy_x(1,2)-dummy_x(2,2))^2+(dummy_x(1,3)-dummy_x(2,3))^2);
-    if (dist<3.*dims(1))
+    if (dist<4.*dims(1))
       if linetrue==1
         if dark==1
           if rainbow==1

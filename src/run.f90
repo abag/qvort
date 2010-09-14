@@ -38,7 +38,7 @@ program run
     if (mod(itime, shots)==0) then
       call velocity_info !diagnostics.mod
       call energy_info !diagnostics.mod
-      call mean_curv !diagnostics.mod
+      call curv_info !diagnostics.mod
     end if
     !print*, 'here3'
     !---------------------line operations--------------------------

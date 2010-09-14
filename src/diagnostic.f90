@@ -34,16 +34,54 @@ module diagnostic
     end do
   end subroutine
   !*************************************************
-  subroutine mean_curv()
-    !caculate the mean curvature of the vortex system
+  subroutine curv_info()
+    !caculate the mean, min, max curvature of the vortex system
     implicit none
-    integer :: i
-    kappa_bar=0.
+    real, allocatable :: curvi(:)
+    integer :: i, j
+    !------------histogram parameters below---------------------
+    !warning - at present the matlab routine to plot the histogram 
+    !is not adpative therefore if the number of bins is changed 
+    !the script must also be changed - warning
+    integer, parameter :: bin_num=10 !number of bins
+    real :: bin_size, bins(bin_num) !the bins of the histograms
+    real :: probability(bin_num) !the probability of that bin
+    allocate(curvi(pcount)) !allocate this array pcount size
     do i=1, pcount
-      if (f(i)%infront==0) cycle !check for 'empty' particles
-      kappa_bar=kappa_bar+curvature(i)
+      if (f(i)%infront==0) then
+        curvi(i)=0. !check for 'empty' particles
+      else
+        curvi(i)=curvature(i) !general.mod
+      end if
     end do
-    !average this quantity
-    kappa_bar=kappa_bar/count(mask=f(:)%infront>0)
+    !compute the average/min/max of this array
+    kappa_bar=sum(curvi)/count(mask=f(:)%infront>0)
+    kappa_max=maxval(curvi)
+    kappa_min=minval(curvi,mask=curvi>0)
+    !experimental creation of a histogram
+    if (curv_hist) then
+      !first we set the bins
+      bin_size=(kappa_max-kappa_min)/bin_num
+      bins=0.
+      !now loop over particles and bins and create the histogram
+      do i=1, pcount
+        if (f(i)%infront==0) cycle
+        do j=1, bin_num
+          if (curvi(i)>kappa_min+(j-1)*bin_size) then
+            if (curvi(i)<kappa_min+j*bin_size) then
+              bins(j)=bins(j)+1
+            end if
+          end if
+        end do
+      end do
+      bins=bins/count(mask=f(:)%infront>0)
+      open(unit=79,file='data/curv_pdf.log',position='append')
+      write(79,*) '%----------------t=',t,'---------------'
+      do j=1, bin_num
+        write(79,*) kappa_min+(j-1)*bin_size, bins(j) 
+      end do 
+      close(79)
+    end if
+    deallocate(curvi) !deallocate helper array
   end subroutine
 end module
