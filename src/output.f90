@@ -41,26 +41,15 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
     close(79)
   end subroutine
   !**********************************************************************
-  !subroutine print_ts()
-  !  !print information to file
-  !  implicit none
-  !  open(unit=78,file='data/ts.log',position='append')
-  !  if (itime==shots) then
-  !    write(78,*) '%t---pcount---recon'
-  !  end if
-  !    write(78,'(f5.2,i5.4,i5.4)') t, pcount, recon_count
-  !  close(78)
-  !end subroutine
-  !**********************************************************************
   subroutine printf(filenumber)
     !print the f array as (un)formatted data for use with gnuplot/matlab
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
     integer :: i
-    if (filenumber==1001) call warning_message('output.mod','run out of filenumbers to print var to')
+    if (filenumber==10000) call warning_message('output.mod','run out of filenumbers to print var to')
     if (binary_print) then
-      write(unit=print_file,fmt="(a,i3.3,a)")"./data/var",filenumber,".log"
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/var",filenumber,".log"
       open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
         write(98) t
         write(98) pcount
@@ -71,7 +60,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
         write(98) sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
       close(98)
     else
-      write(unit=print_file,fmt="(a,i3.3,a)")"./data/var",filenumber,".log"
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/var",filenumber,".log"
       open(unit=98,file=print_file,status='replace')
         write(98,*) t
         write(98,*) pcount
@@ -89,7 +78,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
     character (len=40) :: print_file
     integer :: i
     if (binary_print) then
-      write(unit=print_file,fmt="(a,i3.3,a)")"./data/par",filenumber,".log"
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/par",filenumber,".log"
       open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
         write(98) t
         write(98) quasi_pcount
@@ -98,7 +87,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
         write(98) g(:)%x(3)
       close(98)
     else  
-      write(unit=print_file,fmt="(a,i3.3,a)")"./data/par",filenumber,".log"
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/par",filenumber,".log"
       open(unit=98,file=print_file,status='replace')
         write(98,*) t
         write(98,*) quasi_pcount
@@ -141,7 +130,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
     real, allocatable :: vapor_array(:,:,:)
     logical :: vapor=.true.
     if (mesh_size==0) return
-    write(unit=print_file,fmt="(a,i3.3,a)")"./data/mesh",filenumber,".dat"
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/mesh",filenumber,".dat"
     open(unit=92,file=print_file,form='unformatted',status='replace',access='stream')
       write(92) t
       write(92) mesh(mesh_size/2,mesh_size/2,1:mesh_size)%x(1)
@@ -158,7 +147,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
       vapor_array(:,:,:)=sqrt(mesh(:,:,:)%u_sup(1)**2+&
                               mesh(:,:,:)%u_sup(2)**2+&
                               mesh(:,:,:)%u_sup(3)**2)
-      write(unit=print_file,fmt="(a,i3.3,a)")"./data/vap_mesh",filenumber,".dat"
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/vap_mesh",filenumber,".dat"
       open(unit=93,file=print_file,form='unformatted',status='replace',access='stream')
         write(93) vapor_array
       close(93)

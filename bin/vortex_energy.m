@@ -28,5 +28,6 @@ end
   ylabel('energy','FontSize',14)
 switch option
   case 'print'
+    disp('printing to vortex_energy.eps')
     print('-depsc','./vortex_energy.eps')
 end

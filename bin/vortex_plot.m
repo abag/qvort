@@ -1,12 +1,17 @@
 function vortex_plot(filenumber,varargin)
 optargin = size(varargin,2);
-filename=sprintf('data/var%03d.log',filenumber);
+filename=sprintf('data/var%04d.log',filenumber);
+%we set the dimensions of the box here
+%this is overridden if we have periodic B.C.'s
+box_size=.005 ;
 %set options based on varargin
-rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; 
+rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ;
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'rough'
       rough=1;
+    case 'overhead'
+      overhead=1;
     case 'print'
       printit=1;
       disp('printing to file')
@@ -44,7 +49,7 @@ for i=1:optargin
             end
           end
           for j=mstart:mskip:mend
-              fOUT=sprintf('data/var%03d.png',j)
+              fOUT=sprintf('data/var%04d.png',j)
               if plotrough=='Y'
                 vortex_plot(j,'rough');
                 print('-dpng',fOUT);
@@ -122,10 +127,19 @@ end
 if (rough==1)
     plot3(x,y,z,'.')
     if (dims(2)>0.)
-      axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]); 
-      box on
+      if overhead==1         
+        axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);               
+      else
+        axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);
+        box on
+      end
     else
-      axis([-0.05 0.05 -0.05 0.05 -0.05 0.05]);
+      if overhead==1         
+        axis([-box_size box_size -box_size box_size]);
+      else
+        axis([-box_size box_size -box_size box_size -box_size box_size]); 
+        box on
+      end
     end
     return
 end
@@ -193,10 +207,19 @@ for j=1:number_of_particles
         end
       end
       if (dims(2)>0.)
-        axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]); 
-        box on
+        if overhead==1         
+          axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);               
+        else
+          axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);
+          box on
+        end
       else
-        axis([-0.05 0.05 -0.05 0.05 -0.05 0.05]);
+        if overhead==1         
+          axis([-box_size box_size -box_size box_size]);
+        else
+          axis([-box_size box_size -box_size box_size -box_size box_size]);
+          box on
+        end
       end
       hold on
     end
@@ -225,6 +248,7 @@ else
   text(-0.06,0.06,0.07,str,'FontSize',16)
 end
 if printit==1
+  disp('printing to vortex_print_out.png')
   print('-dpng', './vortex_print_out.png')
 end
 %text(1.,10.5,0.55,str)

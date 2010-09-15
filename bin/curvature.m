@@ -42,5 +42,6 @@ end
     ylabel('max curv','FontSize',14)
 switch option
   case 'print'
+    disp('printing to curvature.eps')
     print('-depsc','./curvature.eps')
 end

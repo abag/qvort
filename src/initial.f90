@@ -10,12 +10,15 @@ module initial
     use quasip
     implicit none
     logical :: restart
-    write(*,'(a,f9.7)') 'quantum of circulation is:', quant_circ 
+    write(*,'(a,f9.7)') ' quantum of circulation is:', quant_circ 
+    !we must check the timestep is sufficient to resolve the motion
+    !based on the smallest separation possible in the code
+    call timestep_check !initial.mod
     !how is data being outputted (binary or formatted)
     if (binary_print) then
       write(*,*) 'binary data output, formatted data can be selected in run.in'
     else
-      write(*,*) 'formatted data output selected in run.im'
+      write(*,*) 'formatted data output selected in run.in'
     end if
     !periodic bounday conditions?
     if (box_size>0.) then
@@ -53,6 +56,8 @@ module initial
           call setup_kivotedes !init.mod
         case('wave_spec')
           call setup_wave_spec !init.mod
+        case('wave_line')
+          call setup_wave_line !init.mod
         case('line_motion')
           call setup_line_motion !init.mod
         case('tangle')
@@ -142,10 +147,14 @@ module initial
   subroutine setup_single_loop
     !a loop in the x-y plane
     implicit none
+    real :: velocity
     real :: radius
     integer :: i 
     radius=(0.75*pcount*delta)/(2*pi) !75% of potential size 
-    write(*,*) 'initf: single loop, radius of loop:', radius 
+    velocity=(quant_circ/(4*pi*radius))*log(8E8*radius)
+    write(*,*) 'initf: single loop, radius of loop:', radius
+    write(*,*) 'velocity should be:', velocity
+    
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
@@ -434,8 +443,8 @@ module initial
     !now add pertubations in Z
     prefactor=wave_amp/(2**wave_slope)
     write(*,*) '------------------WAVE INFORMATION-------------------'
-    do j=1, wave_count !8 diffent waves
-      wave_number=2*j
+    do j=2, wave_count+1 
+      wave_number=j
       amp=prefactor*(wave_number**wave_slope)
       call random_number(random_shift)
       random_shift=random_shift*2*pi
@@ -446,6 +455,65 @@ module initial
     end do
     write(*,*) '-----------------------------------------------------'
 
+  end subroutine
+  !*************************************************************************
+  subroutine setup_wave_line
+    !a line from the lop of the box to the bottom, helical waves added with
+    !specific spectrum
+    implicit none
+    real :: wave_number, prefactor
+    real :: amp, random_shift
+    integer :: pcount_required
+    integer :: i, j
+    character(*), parameter :: wave_type='planar' !helical or planar waves
+    if (periodic_bc) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=nint(box_size/delta) !100% as waves are added
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_line_motion', &
+      'periodic boundary conditions required')
+    end if
+    write(*,'(i4.1,a,a,f9.5)') wave_count, wave_type,' wave pertubations, with spectral slope:', wave_slope
+    do i=1, pcount
+      f(i)%x(1)=0.
+      f(i)%x(2)=0.
+      f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
+    !now we add the spiral waves
+    prefactor=wave_amp/(2**wave_slope)
+    write(*,*) ' wave information recorded in ./data/wave_info.log'
+    open(unit=34,file='./data/wave_info.log')
+    write(*,*) '%------------------WAVE INFORMATION-------------------'
+    do j=1, wave_count
+      wave_number=2+0.05*j
+      amp=prefactor*(wave_number**wave_slope)
+      call random_number(random_shift)
+      random_shift=random_shift*2*pi
+      write(34,'(a,f9.5,a,f9.5,a,f9.5)'), '%wavenumber',wave_number,', amplitude', amp, ', shift', random_shift
+      do i=1, pcount
+        select case(wave_type)
+          case('planar')
+            f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*4.*pi*f(i)%x(3)/box_size)
+          case('helical')
+            f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*4.*pi*f(i)%x(3)/box_size)
+            f(i)%x(2)=f(i)%x(2)+amp*delta*cos(random_shift+wave_number*4.*pi*f(i)%x(3)/box_size)
+        end select
+      end do
+    end do
+    close(34)
   end subroutine
   !*************************************************************************
   subroutine setup_line_motion
@@ -636,5 +704,18 @@ module initial
         end do
       end do
     end do
+  end subroutine
+  !******************************************************************
+  subroutine timestep_check
+    implicit none
+    real :: delta_min, dt_max
+    delta_min=delta/2.
+    dt_max=((delta_min)**2)/(quant_circ*log(delta_min*1E8/pi))
+    if (dt<dt_max) then
+      write(*,'(a,f14.13)') ' dt is below maximum possible dt:', dt_max
+    else
+      write(*,'(a,f14.13)') ' warning set dt below ', dt_max
+      call fatal_error('initial.mod:timestep_check','dt is too large')
+    end if
   end subroutine
 end module

@@ -43,6 +43,7 @@ end
     xlabel('t','FontSize',14)
     ylabel('L','FontSize',14)
 if option=='print'
+    disp('printing to filament_information.eps')
     print('-depsc','./filament_information.eps')
 end
 switch option
@@ -62,6 +63,7 @@ end
     xlabel('t','FontSize',14)
     ylabel('max(du)','FontSize',14)
 if option=='print'
+  disp('printing to velocity_information.eps')
   print('-depsc','./velocity_information.eps')
 end
 if std(eval)>0.
@@ -82,6 +84,7 @@ end
   xlabel('t','FontSize',14);
   ylabel('curv','FontSize',14);
 if option=='print'
+  disp('printing to mean_curvature.eps')
   print('-depsc','./mean_curvature.eps')
 end
 if exist('data/par_ts.log');
@@ -114,6 +117,7 @@ if exist('data/par_ts.log');
       xlabel('t','FontSize',14)
       ylabel('particle sep.','FontSize',14)
       if option=='print'
+        disp('printing to particle_information.eps')
         print('-depsc','./particle_information.eps')
       end
  end

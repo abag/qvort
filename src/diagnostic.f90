@@ -74,7 +74,7 @@ module diagnostic
           end if
         end do
       end do
-      bins=bins/count(mask=f(:)%infront>0)
+      bins=bins/(count(mask=f(:)%infront>0)*bin_size) !normalise 
       open(unit=79,file='data/curv_pdf.log',position='append')
       write(79,*) '%----------------t=',t,'---------------'
       do j=1, bin_num

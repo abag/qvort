@@ -1,30 +1,30 @@
 --------------required parameters------------
 nsteps 100000
-shots 20
+shots 100
 recon_shots 1
-init_pcount 400
-dt 1E-4
-delta 0.001
-box_size 0.
+init_pcount 576
+dt 3.4E-7
+delta 0.0001
+box_size 0.01
 quant_circ 9.97E-4
 velocity BS
-initf wave_spec
+initf wave_line
 line_count 1
 !wave spectrum parameters
-wave_count 20
-wave_slope -1.5
-wave_amp 15
+wave_count 500
+wave_slope -3
+wave_amp 4
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 mesh_size 0
 !force top_boundary
-!force_amp 0.002
-!force_freq 40.
+!force_amp .01
+!force_freq 500.
 !normal_velocity ABC
 !alpha 0.098 0.012
 !alpha 1.21 -0.3883
 !quasi_pcount 10
 !initg pairs
 tree_theta 0.
-binary_print F
+binary_print T
 curv_hist T
