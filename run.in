@@ -1,8 +1,8 @@
 --------------required parameters------------
 nsteps 100000
-shots 100
+shots 10
 recon_shots 1
-init_pcount 576
+init_pcount 100
 dt 3.4E-7
 delta 0.0001
 box_size 0.01
