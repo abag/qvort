@@ -16,6 +16,7 @@ end
 A=load('data/ts.log');
 t=A(:,2) ; pcount=A(:,3) ; rcount=A(:,4) ; sep=A(:,5) ; l=A(:,6) ; 
 maxu=A(:,7) ; maxdu=A(:,8) ; eval=A(:,9) ; curv=A(:,10) ;
+rmcount=A(:,11) ;
 switch option
   case 'print'
     figure('visible','off');
@@ -86,6 +87,20 @@ end
 if option=='print'
   disp('printing to mean_curvature.eps')
   print('-depsc','./mean_curvature.eps')
+end
+switch option
+  case 'print'
+    figure('visible','off');
+  otherwise
+    figure('Name', 'removed count')      
+end
+  plot(t,rmcount,'-','LineWidth',2,'Color',rgb('Indigo'));
+  set(gca,'FontSize',14);
+  xlabel('t','FontSize',14);
+  ylabel('rm count','FontSize',14);
+if option=='print'
+  disp('printing to rm_count.eps')
+  print('-depsc','./rm_count.eps')
 end
 if exist('data/par_ts.log');
    B=load('data/par_ts.log');

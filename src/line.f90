@@ -4,7 +4,6 @@ module line
   use general
   use periodic
   contains
-  !**************************************************************
   subroutine pinsert
     !insert particles to maintain a ~constant resolution
     implicit none    
@@ -86,13 +85,18 @@ module line
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)
       if (distii<delta) then
+        !print to file the curvature of this particle
         infront=f(i)%infront ; tinfront=f(f(i)%infront)%infront
+        open(unit=56,file='./data/removed_curv.log',position='append')
+          write(56,*) curvature(infront)
+        close(56)
         !remove the particle at infront
         f(tinfront)%behind=i ; f(i)%infront=tinfront
         call clear_particle(infront) !general.mod
+        !check the size of the new loop
+        call loop_killer(i)
+        remove_count=remove_count+1
       end if
-      !check the size of the new loop
-      call loop_killer(i)
     end do
   end subroutine
   !******************************************************************

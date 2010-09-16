@@ -105,10 +105,10 @@ if [ $RESTART -eq 1 ]; then
     echo deleting varfile
     rm ./data/var.dat 
   fi
-  if [ -f ./data/seed.dat ]; then
-    echo deleting random seed data
-    rm ./data/seed.dat 
-  fi
+  #if [ -f ./data/seed.dat ]; then
+  #  echo deleting random seed data
+  #  rm ./data/seed.dat 
+  #fi
 fi
 if [ $COMPILE -eq 1 ]; then
   # Recompile

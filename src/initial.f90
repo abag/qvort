@@ -3,6 +3,7 @@ module initial
   use cdata
   use normal_fluid
   use forcing
+  use periodic
   contains
   !*************************************************************************
   subroutine init_setup()
@@ -54,6 +55,8 @@ module initial
           call setup_linked_filaments !init.mod
         case('kivotedes')
           call setup_kivotedes !init.mod
+        case('cardoid')
+          call setup_cardoid !init.mod
         case('wave_spec')
           call setup_wave_spec !init.mod
         case('wave_line')
@@ -185,7 +188,7 @@ module initial
       write(*,*) 'pcount is now', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
-      call fatal_error('init.mod:setup_line_motion', &
+      call fatal_error('init.mod:setup_single_line', &
       'periodic boundary conditions required')
     end if
     do i=1, pcount
@@ -202,6 +205,38 @@ module initial
       !zero the stored velocities
       f(i)%u1=0. ; f(i)%u2=0.
     end do
+  end subroutine
+  !*************************************************************************
+  subroutine setup_cardoid
+    !a cardoid (http://en.wikipedia.org/wiki/Cardioid) in the x-y plane
+    implicit none
+    real :: velocity
+    real :: radius
+    integer :: i 
+    character(*), parameter :: shape='cartoid'
+    radius=(0.75*pcount*delta)/(6*pi) !75% of potential size 
+    write(*,*) 'initf: cardoid, cusp to probe kelvin waves'
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount
+      select case(shape)
+      case('cartoid')
+        f(i)%x(1)=radius*(2*sin(pi*real(2*i-1)/pcount)-sin(2*pi*real(2*i-1)/pcount))
+        f(i)%x(2)=radius*(2*cos(pi*real(2*i-1)/pcount)-cos(2*pi*real(2*i-1)/pcount))
+      case('astroid')
+        f(i)%x(1)=0.5*radius*(4-1)*cos(pi*real(2*i-1)/pcount)+radius*cos((4-1)*pi*real(2*i-1)/pcount)
+        f(i)%x(2)=0.5*radius*(4-1)*sin(pi*real(2*i-1)/pcount)-radius*sin((4-1)*pi*real(2*i-1)/pcount)
+      end select
+      f(i)%x(3)=0.0
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do   
   end subroutine
   !*************************************************************************
   subroutine setup_leap_frog
@@ -465,7 +500,7 @@ module initial
     real :: amp, random_shift
     integer :: pcount_required
     integer :: i, j
-    character(*), parameter :: wave_type='planar' !helical or planar waves
+    character(*), parameter :: wave_type='simple_planar' !helical or planar waves
     if (periodic_bc) then
       !work out the number of particles required for single line
       !given the box size specified in run.i
@@ -474,7 +509,7 @@ module initial
       write(*,*) 'pcount is now', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
-      call fatal_error('init.mod:setup_line_motion', &
+      call fatal_error('init.mod:setup_wave_line', &
       'periodic boundary conditions required')
     end if
     write(*,'(i4.1,a,a,f9.5)') wave_count, wave_type,' wave pertubations, with spectral slope:', wave_slope
@@ -496,36 +531,58 @@ module initial
     prefactor=wave_amp/(2**wave_slope)
     write(*,*) ' wave information recorded in ./data/wave_info.log'
     open(unit=34,file='./data/wave_info.log')
-    write(*,*) '%------------------WAVE INFORMATION-------------------'
+    write(34,*) '%------------------WAVE INFORMATION-------------------'
     do j=1, wave_count
-      wave_number=2+0.05*j
+      wave_number=2+.1*j
       amp=prefactor*(wave_number**wave_slope)
       call random_number(random_shift)
       random_shift=random_shift*2*pi
-      write(34,'(a,f9.5,a,f9.5,a,f9.5)'), '%wavenumber',wave_number,', amplitude', amp, ', shift', random_shift
+      write(34,'(f9.5,f9.5,f9.5)') wave_number, amp, random_shift
       do i=1, pcount
         select case(wave_type)
           case('planar')
-            f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*4.*pi*f(i)%x(3)/box_size)
+            if (j==1) then
+              f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
+            else
+              f(i)%x(:)=f(i)%x(:)+normalf(i)*amp*delta*sin(random_shift+wave_number*2.*pi*(i-1)/pcount)
+            end if
+          case('simple_planar')
+            f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))!+&
+!amp*delta*cos(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
+          case('simple_helical')
+            f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
+            f(i)%x(2)=f(i)%x(2)+amp*delta*cos(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
           case('helical')
-            f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*4.*pi*f(i)%x(3)/box_size)
-            f(i)%x(2)=f(i)%x(2)+amp*delta*cos(random_shift+wave_number*4.*pi*f(i)%x(3)/box_size)
+            if (j==1) then
+              f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
+              f(i)%x(2)=f(i)%x(2)+amp*delta*cos(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
+            else
+              f(i)%x(:)=f(i)%x(:)+normalf(i)*amp*delta*sin(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))+&
+                                binormalf(i)*amp*delta*cos(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
+            end if
+          case default
+            call fatal_error('initial.mod:wave_line','incorrect wave type parameter')
         end select
       end do
+      call ghostp !we must call this routine at the end of adding every wave in order to set correct ghost points
     end do
     close(34)
   end subroutine
   !*************************************************************************
   subroutine setup_line_motion
-    !a line from the lop of the box to the bottom,
-    !given none zero curvature so it moves
+    !3 lines from the top of the box to the bottom,
+    !given none zero curvature so they move
+    !wave pertubations added
     implicit none
+    real :: rand1, rand2, rand3, rand4
+    real :: random_shift
     integer :: pcount_required
-    integer :: i
+    integer :: line_size, line_position
+    integer :: i, j
     if (periodic_bc) then
       !work out the number of particles required for single line
       !given the box size specified in run.i
-      pcount_required=nint(box_size/(0.75*delta)) !75%
+      pcount_required=3*nint(box_size/(0.75*delta)) !75%
       write(*,*) 'changing size of pcount to fit with box_length and delta'
       write(*,*) 'pcount is now', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
@@ -533,19 +590,46 @@ module initial
       call fatal_error('init.mod:setup_line_motion', &
       'periodic boundary conditions required')
     end if
-    do i=1, pcount
-      f(i)%x(1)=(box_size/10.)*sin(pi*real(2*i-1)/(2.*pcount))
-      f(i)%x(2)=0.
-      f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
-      if (i==1) then
-        f(i)%behind=pcount ; f(i)%infront=i+1
-      else if (i==pcount) then 
-        f(i)%behind=i-1 ; f(i)%infront=1
+    line_size=int(pcount/3)
+    do i=1, 3
+      call random_number(rand1)
+      call random_number(rand2)
+      call random_number(rand3)
+      call random_number(rand4)
+      rand1=(rand1-.5)*box_size*0.1
+      if (rand4<0.5) then
+        rand4=-1.
       else
-        f(i)%behind=i-1 ; f(i)%infront=i+1
+        rand2=1.
       end if
-      !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      call random_number(random_shift)
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        if (rand2<0.5) then
+          f(line_position)%x(1)=rand4*(box_size/10.)*sin(pi*real(2*j-1)/(2.*line_size))
+          f(line_position)%x(2)=rand1+2.*delta*sin((random_shift+1)*(real(j-1)/line_size)*8*pi)+&
+          delta*sin((random_shift+1.2)*(real(j-1)/line_size)*9*pi)+&
+          0.5*delta*sin((random_shift+1.3)*(real(j-1)/line_size)*10*pi)
+          f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        else
+          f(line_position)%x(1)=rand1+2.*delta*sin((random_shift+1)*(real(j-1)/line_size)*8*pi)+&
+          delta*sin((random_shift+1.2)*(real(j-1)/line_size)*9*pi)+&
+          0.5*delta*sin((random_shift+1.3)*(real(j-1)/line_size)*10*pi)
+          f(line_position)%x(2)=rand4*(box_size/10.)*sin(pi*real(2*j-1)/(2.*line_size))
+          f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        end if
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0.
+      end do
     end do
   end subroutine
   !*************************************************************************

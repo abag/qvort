@@ -63,6 +63,7 @@ module general
     call get_deriv_2(i,fddot)
     curvature=sqrt(dot_product(fddot,fddot))
   end function
+
   !*********************************************************************
   real function dist_gen(a,b)
     !calculate the distance between points a(1:3), b(1:3)
@@ -109,6 +110,36 @@ module general
     !calculate length of vector
     length=sqrt(norm_tanf(1)**2+norm_tanf(2)**2+norm_tanf(3)**2)
     norm_tanf(:)=norm_tanf(:)/length !normalise
+  end function
+  !*********************************************************************
+  real function normalf(i)
+    !calculate the normalised normal vector at point i
+    use Cdata
+    implicit none
+    real, dimension(3) :: normalf
+    integer, intent(IN) :: i
+    real :: length !length of vector
+    !get the second derivative
+    call get_deriv_2(i,normalf)
+    !calculate length of vector
+    length=sqrt(normalf(1)**2+normalf(2)**2+normalf(3)**2)
+    normalf(:)=normalf(:)/length !normalise
+  end function
+  !*********************************************************************
+  real function binormalf(i)
+    !calculate the normalised binormal vector at point i
+    use Cdata
+    implicit none
+    real, dimension(3) :: s_dot, s_ddot, binormalf
+    integer, intent(IN) :: i
+    real :: length !length of vector
+    !get the first/second derivative
+    call get_deriv_1(i,s_dot)
+    call get_deriv_2(i,s_ddot)
+    binormalf=cross_product(s_dot,s_ddot)
+    !calculate length of vector
+    length=sqrt(binormalf(1)**2+binormalf(2)**2+binormalf(3)**2)
+    binormalf(:)=binormalf(:)/length !normalise
   end function
   !*********************************************************************
   real function cross_product(a,b)

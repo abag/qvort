@@ -1,17 +1,17 @@
 --------------required parameters------------
 nsteps 100000
 shots 10
-recon_shots 1
-init_pcount 100
+recon_shots 2
+init_pcount 600
 dt 3.4E-7
 delta 0.0001
 box_size 0.01
 quant_circ 9.97E-4
 velocity BS
-initf wave_line
-line_count 1
+initf line_motion
+line_count 10
 !wave spectrum parameters
-wave_count 500
+wave_count 1000
 wave_slope -3
 wave_amp 4
 --------------optional parameters------------
@@ -25,6 +25,6 @@ mesh_size 0
 !alpha 1.21 -0.3883
 !quasi_pcount 10
 !initg pairs
-tree_theta 0.
+tree_theta 0.4
 binary_print T
 curv_hist T

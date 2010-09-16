@@ -23,15 +23,19 @@ module output
     implicit none
     open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
-      write(*,*) '--var--------t-------pcount-------recon----avg_d-----length--------maxu---------maxdu-----num eval----curv--'
-      write(78,*) '%--var--------t-------pcount-------recon----avg_d-----length--------maxu---------maxdu-----num eval----curv--'
+      write(*,*) '--var--------t-------pcount-------recon----avg_d-----length&
+                  --------maxu---------maxdu-----num eval----curv------removed'
+      write(78,*) '%--var--------t-------pcount-------recon----avg_d-----length&
+                   --------maxu---------maxdu-----num eval----curv------removed'
     end if
-    write(*,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2)') &
+    write(*,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2,i13.1)') &
 itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
-total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
-    write(78,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2)') &
+total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
+remove_count
+    write(78,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2,i13.1)') &
 itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
-total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
+total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
+remove_count
     close(78)
     open(unit=78,file='data/energy.log',position='append')
       write(78,*) energy
@@ -130,7 +134,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
     real, allocatable :: vapor_array(:,:,:)
     logical :: vapor=.true.
     if (mesh_size==0) return
-    write(unit=print_file,fmt="(a,i4.4,a)")"./data/mesh",filenumber,".dat"
+    write(unit=print_file,fmt="(a,i3.3,a)")"./data/mesh",filenumber,".dat"
     open(unit=92,file=print_file,form='unformatted',status='replace',access='stream')
       write(92) t
       write(92) mesh(mesh_size/2,mesh_size/2,1:mesh_size)%x(1)
@@ -147,7 +151,7 @@ total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar
       vapor_array(:,:,:)=sqrt(mesh(:,:,:)%u_sup(1)**2+&
                               mesh(:,:,:)%u_sup(2)**2+&
                               mesh(:,:,:)%u_sup(3)**2)
-      write(unit=print_file,fmt="(a,i4.4,a)")"./data/vap_mesh",filenumber,".dat"
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/vap_mesh",filenumber,".dat"
       open(unit=93,file=print_file,form='unformatted',status='replace',access='stream')
         write(93) vapor_array
       close(93)

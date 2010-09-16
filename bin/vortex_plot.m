@@ -141,6 +141,7 @@ if (rough==1)
         box on
       end
     end
+    rotate3d on
     return
 end
 if rainbow==1
@@ -184,7 +185,7 @@ for j=1:number_of_particles
           end
         end
       else
-        [x1 y1 z1]=cylind(0.00045,20, dummy_x(1,1:3),dummy_x(2,1:3));
+        [x1 y1 z1]=cylind(dims(1)/3,20, dummy_x(1,1:3),dummy_x(2,1:3));
         h=surf(x1,y1,z1);
         if dark==1
           if rainbow==1
@@ -251,6 +252,7 @@ if printit==1
   disp('printing to vortex_print_out.png')
   print('-dpng', './vortex_print_out.png')
 end
+rotate3d on
 %text(1.,10.5,0.55,str)
 %view(-18,17)
 

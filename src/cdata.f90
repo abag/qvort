@@ -7,6 +7,7 @@ module cdata
     integer :: infront, behind !to form a line/loop
     integer :: closest !nearest particle, used in reconnection
     real :: closestd !distance to nearest particle
+    real :: delta
   end type
   type(qvort), allocatable :: f(:) !main vector
   integer :: pcount !number of particles in the simulation
@@ -30,6 +31,7 @@ module cdata
   integer :: nstart=1 !integer loop starts from (altered by reading in stored data)
   !***********DIAGNOSTIC INFO******************************************************
   integer :: recon_count=0 !total number of reconnections
+  integer :: remove_count=0 !total number of particle removals
   real :: total_length !total length of filaments
   real :: avg_sep !average separation of the particles
   real :: maxu,maxdu !velocity information
@@ -50,7 +52,8 @@ module cdata
   !--------main parameters-please set thes in run.in-----------------------------
   integer, protected :: nsteps, shots, recon_shots=1
   integer, protected :: init_pcount
-  real, protected :: dt, delta
+  real, protected ::  delta
+  real :: dt
   real, protected :: box_size=0.
   real, protected :: quant_circ
   integer, protected :: mesh_size=0
@@ -208,13 +211,15 @@ module cdata
      
      seed = clock + 37 * (/ (i - 1, i = 1, n) /)
      !read the seed in from file if possible
-     inquire(file='data/seed.dat',exist=seed_exists)
+     inquire(file='./data/seed.dat',exist=seed_exists)
      if (seed_exists) then
-       open(unit=37,file='data/seed.dat',form='unformatted')
+       write(*,*)' reading in random seed from ./data'
+       open(unit=37,file='./data/seed.dat',form='unformatted')
          read(37) seed
        close(37)
      else
-       open(unit=37,file='data/seed.dat',form='unformatted')
+       write(*,*)' generating new random seed saving to ./data'
+       open(unit=37,file='./data/seed.dat',form='unformatted')
          write(37) seed
        close(37)
      end if

@@ -49,7 +49,7 @@ normal_fluid.o: normal_fluid.f90 general.o cdata.o ksmodel.o
 #
 forcing.o: forcing.f90 general.o cdata.o
 #
-initial.o: initial.f90 normal_fluid.o forcing.o cdata.o quasip.o
+initial.o: initial.f90 normal_fluid.o forcing.o cdata.o quasip.o periodic.o
 #
 timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o tree.o
 #
