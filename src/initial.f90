@@ -57,8 +57,8 @@ module initial
           call setup_kivotedes !init.mod
         case('cardoid')
           call setup_cardoid !init.mod
-        case('wave_spec')
-          call setup_wave_spec !init.mod
+        case('wave_loop')
+          call setup_wave_loop !init.mod
         case('wave_line')
           call setup_wave_line !init.mod
         case('line_motion')
@@ -213,19 +213,12 @@ module initial
     real :: velocity
     real :: radius
     integer :: i 
-    character(*), parameter :: shape='cartoid'
     radius=(0.75*pcount*delta)/(6*pi) !75% of potential size 
     write(*,*) 'initf: cardoid, cusp to probe kelvin waves'
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
-      select case(shape)
-      case('cartoid')
-        f(i)%x(1)=radius*(2*sin(pi*real(2*i-1)/pcount)-sin(2*pi*real(2*i-1)/pcount))
-        f(i)%x(2)=radius*(2*cos(pi*real(2*i-1)/pcount)-cos(2*pi*real(2*i-1)/pcount))
-      case('astroid')
-        f(i)%x(1)=0.5*radius*(4-1)*cos(pi*real(2*i-1)/pcount)+radius*cos((4-1)*pi*real(2*i-1)/pcount)
-        f(i)%x(2)=0.5*radius*(4-1)*sin(pi*real(2*i-1)/pcount)-radius*sin((4-1)*pi*real(2*i-1)/pcount)
-      end select
+      f(i)%x(1)=radius*(2*sin(pi*real(2*i-1)/pcount)-sin(2*pi*real(2*i-1)/pcount))
+      f(i)%x(2)=radius*(2*cos(pi*real(2*i-1)/pcount)-cos(2*pi*real(2*i-1)/pcount))
       f(i)%x(3)=0.0
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
@@ -450,135 +443,202 @@ module initial
     end do
   end subroutine
   !*************************************************************************
-  subroutine setup_wave_spec
-    !a loop in the x-y plane with wave pertubations
+  subroutine setup_wave_loop
+    !clustered loops, helical/planar waves added with
+    !specific spectrum all set in run.in
     implicit none
     real :: wave_number, prefactor
     real :: amp, random_shift
-    real :: radius
-    integer :: i, j
-    radius=(0.75*pcount*delta)/(2*pi) !75% of potential size 
-    write(*,*) ' initf: single loop, radius of loop:', radius 
-    write(*,'(i2.1,a,f9.5)') wave_count,' wave pertubations, with spectral slope:', wave_slope
-    !loop over particles setting spatial and 'loop' position
-    do i=1, pcount
-      f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
-      f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
-      f(i)%x(3)=0.0
-      if (i==1) then
-        f(i)%behind=pcount ; f(i)%infront=i+1
-      else if (i==pcount) then 
-        f(i)%behind=i-1 ; f(i)%infront=1
-      else
-        f(i)%behind=i-1 ; f(i)%infront=i+1
-      end if
-      !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
-    end do
-    !now add pertubations in Z
-    prefactor=wave_amp/(2**wave_slope)
-    write(*,*) '------------------WAVE INFORMATION-------------------'
-    do j=2, wave_count+1 
-      wave_number=j
-      amp=prefactor*(wave_number**wave_slope)
-      call random_number(random_shift)
-      random_shift=random_shift*2*pi
-      write(*,'(a,f9.5,a,f9.5,a,f9.5)'), ' wavenumber',wave_number,', amplitude', amp, ', shift', random_shift
-      do i=1, pcount
-        f(i)%x(3)=f(i)%x(3)+amp*delta*sin(random_shift+wave_number*2.*pi*real(2*i-1)/pcount)!+amp*delta*cos(wave_number*2.*pi*real(2*i-1)/pcount)
+    real :: zpos
+    real :: loop_radius
+    integer :: pcount_required
+    integer :: loop_size, loop_position
+    integer :: i, j, k
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_wave_loops', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if (mod(pcount,line_count)/=0) then
+      call fatal_error('init.mod:setup_wave_loops', &
+      'pcount/line_count is not an integer')
+    end if
+    write(*,'(a,i3.1,a)') ' drawing', line_count, ' loops in the x-y plane'
+    write(*,'(i4.1,a,a,a,f9.5)') wave_count, ' ',trim(wave_type),' wave pertubations, with spectral slope:', wave_slope
+    loop_size=int(pcount/line_count)
+    loop_radius=loop_size*(0.75*delta)/(2*pi) !75% of potential size
+    !START THE LOOP
+    do i=1, line_count
+      call random_number(zpos)
+      zpos=(zpos-.5)*box_size*0.1 !1/10th of the box
+      do j=1, loop_size
+        loop_position=j+(i-1)*loop_size
+        f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)
+        f(loop_position)%x(2)=loop_radius*cos(pi*real(2*j-1)/loop_size)
+        f(loop_position)%x(3)=zpos
+        if(j==1) then
+          f(loop_position)%behind=i*loop_size
+          f(loop_position)%infront=loop_position+1
+        else if (j==loop_size) then
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=(i-1)*loop_size+1
+        else
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=loop_position+1
+        end if
+        f(loop_position)%u1=0. ; f(loop_position)%u2=0.
       end do
-    end do
-    write(*,*) '-----------------------------------------------------'
-
+      !we have now drawn the basic loop, now we add the wave pertubations
+      prefactor=wave_amp/(2.**wave_slope) !our starting wavenumber is 2
+      if (i==1) then !only write this once
+        write(*,*)'wave information recorded in ./data/wave_info.log'
+        open(unit=34,file='./data/wave_info.log')
+        write(34,*) '%------------------WAVE INFORMATION-------------------'
+      end if
+      do k=1, wave_count !wave_count set in run.in
+        call ghostp !we must call this routine at the start of adding every wave 
+                    !the routines normalf, binormalf rely on correct ghostpoints
+        !on a loop so wavenumbers must be an integer
+        wave_number=2+k !starting wavenumber is 2
+        amp=prefactor*(wave_number**wave_slope)
+        call random_number(random_shift) !help things along with a 
+        random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
+        if (i==1) then
+          write(34,'(f9.5,f9.5,f9.5)') wave_number, amp, random_shift
+        end if
+        do j=1, loop_size !reloop over particles
+          loop_position=j+(i-1)*loop_size
+          select case(wave_type) !what wave type do we want?
+            case('planar')       !set this in run.in
+              f(loop_position)%x(:)=f(loop_position)%x(:)+&
+              binormalf(loop_position)*amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*loop_size))
+            case('helical')
+              f(loop_position)%x(:)=f(loop_position)%x(:)+&
+              normalf(loop_position)*amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*loop_size))+&
+              binormalf(loop_position)*amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*loop_size))
+            case default
+              call fatal_error('initial.mod:wave_line','incorrect wave type parameter')
+          end select
+        end do
+      end do !close k loop
+      if (i==1) then
+        close(34)
+      end if 
+    end do !closes the i loop
   end subroutine
   !*************************************************************************
   subroutine setup_wave_line
-    !a line from the lop of the box to the bottom, helical waves added with
-    !specific spectrum
+    !lines from the lop of the box to the bottom, helical/planar waves added with
+    !specific spectrum all set in run.in
     implicit none
     real :: wave_number, prefactor
     real :: amp, random_shift
+    real :: xpos, ypos
     integer :: pcount_required
-    integer :: i, j
-    character(*), parameter :: wave_type='simple_planar' !helical or planar waves
+    integer :: line_size, line_position
+    integer :: i, j, k
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_wave_line', &
+      'you have not set a value for line_count in run.in')
+    end if
     if (periodic_bc) then
       !work out the number of particles required for single line
       !given the box size specified in run.i
-      pcount_required=nint(box_size/delta) !100% as waves are added
+      pcount_required=line_count*nint(box_size/delta) !100% as waves are added
       write(*,*) 'changing size of pcount to fit with box_length and delta'
-      write(*,*) 'pcount is now', pcount_required
+      write(*,'(a,i7.1)') ' pcount is now:', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
       call fatal_error('init.mod:setup_wave_line', &
       'periodic boundary conditions required')
     end if
-    write(*,'(i4.1,a,a,f9.5)') wave_count, wave_type,' wave pertubations, with spectral slope:', wave_slope
-    do i=1, pcount
-      f(i)%x(1)=0.
-      f(i)%x(2)=0.
-      f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
-      if (i==1) then
-        f(i)%behind=pcount ; f(i)%infront=i+1
-      else if (i==pcount) then 
-        f(i)%behind=i-1 ; f(i)%infront=1
-      else
-        f(i)%behind=i-1 ; f(i)%infront=i+1
-      end if
-      !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
-    end do
-    !now we add the spiral waves
-    prefactor=wave_amp/(2**wave_slope)
-    write(*,*) ' wave information recorded in ./data/wave_info.log'
-    open(unit=34,file='./data/wave_info.log')
-    write(34,*) '%------------------WAVE INFORMATION-------------------'
-    do j=1, wave_count
-      wave_number=2+.1*j
-      amp=prefactor*(wave_number**wave_slope)
-      call random_number(random_shift)
-      random_shift=random_shift*2*pi
-      write(34,'(f9.5,f9.5,f9.5)') wave_number, amp, random_shift
-      do i=1, pcount
-        select case(wave_type)
-          case('planar')
-            if (j==1) then
-              f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
-            else
-              f(i)%x(:)=f(i)%x(:)+normalf(i)*amp*delta*sin(random_shift+wave_number*2.*pi*(i-1)/pcount)
-            end if
-          case('simple_planar')
-            f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))!+&
-!amp*delta*cos(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
-          case('simple_helical')
-            f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
-            f(i)%x(2)=f(i)%x(2)+amp*delta*cos(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
-          case('helical')
-            if (j==1) then
-              f(i)%x(1)=f(i)%x(1)+amp*delta*sin(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
-              f(i)%x(2)=f(i)%x(2)+amp*delta*cos(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
-            else
-              f(i)%x(:)=f(i)%x(:)+normalf(i)*amp*delta*sin(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))+&
-                                binormalf(i)*amp*delta*cos(random_shift+wave_number*2.*pi*(2*i-1)/(2*pcount))
-            end if
-          case default
-            call fatal_error('initial.mod:wave_line','incorrect wave type parameter')
-        end select
+    write(*,'(a,i3.1,a)') ' drawing', line_count, ' lines from -z to +z'
+    write(*,'(i4.1,a,a,a,f9.5)') wave_count, ' ',trim(wave_type),' wave pertubations, with spectral slope:', wave_slope
+    line_size=int(pcount/line_count)
+    !START THE LOOP
+    do i=1, line_count
+      call random_number(xpos) ; call random_number(ypos)
+      xpos=(xpos-.5)*box_size*0.1 !1/10th of the box
+      ypos=(ypos-.5)*box_size*0.1 
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        f(line_position)%x(1)=xpos
+        f(line_position)%x(2)=ypos
+        f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0.
       end do
-      call ghostp !we must call this routine at the end of adding every wave in order to set correct ghost points
-    end do
-    close(34)
+      !we have now drawn the basic line, now we add the wave pertubations
+      prefactor=wave_amp/(2.**wave_slope) !our starting wavenumber is 2
+      if (i==1) then !only write this once
+        write(*,*)'wave information recorded in ./data/wave_info.log'
+        open(unit=34,file='./data/wave_info.log')
+        write(34,*) '%------------------WAVE INFORMATION-------------------'
+      end if
+      do k=1, wave_count !wave_count set in run.in
+        wave_number=2+.1*k !starting wavenumber is 2, step in .1
+        amp=prefactor*(wave_number**wave_slope)
+        call random_number(random_shift) !help things along with a 
+        random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
+        if (i==1) then
+          write(34,'(f9.5,f9.5,f9.5)') wave_number, amp, random_shift
+        end if
+        do j=1, line_size !reloop over particles
+          line_position=j+(i-1)*line_size
+          select case(wave_type) !what wave type do we want?
+            case('planar')       !set this in run.in
+              if (k==1) then !normal undefined for a straight line
+                f(line_position)%x(1)=f(line_position)%x(1)+&
+                amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+              else
+                f(line_position)%x(:)=f(line_position)%x(:)+&
+                normalf(line_position)*amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+              end if
+            case('helical')
+              if (k==1) then !normal/binormal undefined for a straight line
+                f(line_position)%x(1)=f(line_position)%x(1)+&
+                amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+                f(line_position)%x(2)=f(line_position)%x(2)+&
+                amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+              else
+                f(line_position)%x(:)=f(line_position)%x(:)+&
+                normalf(line_position)*amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))+&
+                binormalf(line_position)*amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+              end if
+            case default
+              call fatal_error('initial.mod:wave_line','incorrect wave type parameter')
+          end select
+        end do
+        call ghostp !we must call this routine at the end of adding every wave 
+                    !the routines normalf, binormalf rely on correct ghostpoints
+      end do !close k loop
+      if (i==1) then
+        close(34)
+      end if 
+    end do !closes the i loop
   end subroutine
   !*************************************************************************
   subroutine setup_line_motion
+    !THIS IS A REDUNDANT ROUTINE IT SHOULD BE REMOVED SOON
     !3 lines from the top of the box to the bottom,
-    !given none zero curvature so they move
-    !wave pertubations added
+    !given none zero curvature so they move, wave pertubations added
     implicit none
     real :: rand1, rand2, rand3, rand4
     real :: random_shift
     integer :: pcount_required
     integer :: line_size, line_position
     integer :: i, j
+
     if (periodic_bc) then
       !work out the number of particles required for single line
       !given the box size specified in run.i

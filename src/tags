@@ -18,6 +18,7 @@ avg_sep	cdata.f90	/^  real :: avg_sep /;"	v	module:cdata
 bbl	tree.f90	/^      type (node), pointer :: bbl,/;"	k	type:node
 bbr	tree.f90	/^      type (node), pointer :: bbl, bbr /;"	k	type:node
 behind	cdata.f90	/^    integer :: infront, behind /;"	k	type:qvort
+binormalf	general.f90	/^  real function binormalf(/;"	f	module:general
 biot_savart	timestep.f90	/^  subroutine biot_savart(/;"	s	module:timestep
 biot_savart_general	timestep.f90	/^  subroutine biot_savart_general(/;"	s	module:timestep
 btl	tree.f90	/^      type (node), pointer :: btl,/;"	k	type:node
@@ -43,12 +44,14 @@ curvature	general.f90	/^  real function curvature(/;"	f	module:general
 data_dump	output.f90	/^  subroutine data_dump$/;"	s	module:output
 data_restore	initial.f90	/^  subroutine data_restore$/;"	s	module:initial
 dead_tree	tree.f90	/^  subroutine dead_tree(/;"	s	module:tree
+delta	cdata.f90	/^    real :: delta$/;"	k	type:qvort
 diagnostic	diagnostic.f90	/^module diagnostic$/;"	m
 diagnostics_quasip	quasip.f90	/^  subroutine diagnostics_quasip$/;"	s	module:quasip
 dist_gen	general.f90	/^  real function dist_gen(/;"	f	module:general
 dist_gen_sq	general.f90	/^  real function dist_gen_sq(/;"	f	module:general
 distf	general.f90	/^  real function distf(/;"	f	module:general
 distfsq	general.f90	/^  real function distfsq(/;"	f	module:general
+dt	cdata.f90	/^  real :: dt$/;"	v	module:cdata
 empty_tree	tree.f90	/^  recursive subroutine empty_tree(/;"	s	module:tree
 energy	cdata.f90	/^  real :: energy /;"	v	module:cdata
 energy_info	diagnostic.f90	/^  subroutine energy_info(/;"	s	module:diagnostic
@@ -97,6 +100,7 @@ new_tree	tree.f90	/^  subroutine new_tree(/;"	s	module:tree
 node	tree.f90	/^   type node$/;"	t	module:tree
 norm_tanf	general.f90	/^  real function norm_tanf(/;"	f	module:general
 normal_fluid	normal_fluid.f90	/^module normal_fluid$/;"	m
+normalf	general.f90	/^  real function normalf(/;"	f	module:general
 nstart	cdata.f90	/^  integer :: nstart=/;"	v	module:cdata
 omega	ksmodel.f90	/^    real,private,dimension(KSmodes) :: omega$/;"	v	module:KSmodel
 one_half	cdata.f90	/^  real, parameter :: one_half /;"	v	module:cdata
@@ -132,9 +136,11 @@ quasip_evolution	quasip.f90	/^  subroutine quasip_evolution$/;"	s	module:quasip
 qvort	cdata.f90	/^  type qvort /;"	t	module:cdata
 read_run_file	cdata.f90	/^  subroutine read_run_file(/;"	s	module:cdata
 recon_count	cdata.f90	/^  integer :: recon_count=/;"	v	module:cdata
+remove_count	cdata.f90	/^  integer :: remove_count=/;"	v	module:cdata
 run	run.f90	/^program run$/;"	p
 sdata_dump	output.f90	/^  subroutine sdata_dump$/;"	s	module:output
 setup_KS	ksmodel.f90	/^    subroutine setup_KS$/;"	s	module:KSmodel
+setup_cardoid	initial.f90	/^  subroutine setup_cardoid$/;"	s	module:initial
 setup_crow	initial.f90	/^  subroutine setup_crow$/;"	s	module:initial
 setup_forcing	forcing.f90	/^  subroutine setup_forcing(/;"	s	module:forcing
 setup_kivotedes	initial.f90	/^  subroutine setup_kivotedes$/;"	s	module:initial
@@ -149,7 +155,7 @@ setup_single_line	initial.f90	/^  subroutine setup_single_line$/;"	s	module:init
 setup_single_loop	initial.f90	/^  subroutine setup_single_loop$/;"	s	module:initial
 setup_tangle	initial.f90	/^  subroutine setup_tangle$/;"	s	module:initial
 setup_wave_line	initial.f90	/^  subroutine setup_wave_line$/;"	s	module:initial
-setup_wave_spec	initial.f90	/^  subroutine setup_wave_spec$/;"	s	module:initial
+setup_wave_loop	initial.f90	/^  subroutine setup_wave_loop$/;"	s	module:initial
 t	cdata.f90	/^  real :: t=/;"	v	module:cdata
 tangentf	general.f90	/^  real function tangentf(/;"	f	module:general
 three_twos	cdata.f90	/^  real, parameter :: three_twos=/;"	v	module:cdata

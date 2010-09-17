@@ -65,6 +65,7 @@ module cdata
   integer, protected :: wave_count=1
   real, protected :: wave_slope=-1.5
   real, protected :: wave_amp=20.
+  character(len=30), protected :: wave_type='planar' 
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
   !------------normal fluid component--------------------------------------------
@@ -171,6 +172,8 @@ module cdata
              read(buffer, *, iostat=ios) wave_slope !for wave_spec initial conditions
           case ('wave_amp')
              read(buffer, *, iostat=ios) wave_amp !for wave_spec initial conditions
+          case ('wave_type')
+             read(buffer, *, iostat=ios) wave_type !for wave_spec initial conditions
           case ('curv_hist')
              read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
           case default
@@ -204,7 +207,6 @@ module cdata
      integer :: i, n=8, clock
      integer, allocatable :: seed(:)
      logical :: seed_exists=.false.
-     !call random_seed(size=n)
      allocate(seed(n))
      
      call system_clock(count=clock)
@@ -213,12 +215,12 @@ module cdata
      !read the seed in from file if possible
      inquire(file='./data/seed.dat',exist=seed_exists)
      if (seed_exists) then
-       write(*,*)' reading in random seed from ./data'
+       write(*,*)'reading in random seed from ./data'
        open(unit=37,file='./data/seed.dat',form='unformatted')
          read(37) seed
        close(37)
      else
-       write(*,*)' generating new random seed saving to ./data'
+       write(*,*)'generating new random seed saving to ./data'
        open(unit=37,file='./data/seed.dat',form='unformatted')
          write(37) seed
        close(37)
