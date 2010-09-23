@@ -68,6 +68,7 @@ set(gcf, 'KeyPressFcn'  , command_new);
 % Animation loop!
 Az    = Az_start;
 abort = false;
+count=1
 while (abort == false) && abs(Az - Az_start) < abs(Az_stop - Az_start)
     % Check for abort command
     abort = get(gcf, 'UserData');
@@ -79,6 +80,10 @@ while (abort == false) && abs(Az - Az_start) < abs(Az_stop - Az_start)
     % Change the view
     view([Az, El]);
     drawnow;
+    %print
+    fout=sprintf('data/rot_snap%03d',count);
+    print ('-dpng',fout)
+    count=count+1;
     % Stop stopwatch
     dT = toc;
 end

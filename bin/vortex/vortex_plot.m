@@ -249,8 +249,9 @@ else
   text(-0.06,0.06,0.07,str,'FontSize',16)
 end
 if printit==1
-  disp('printing to vortex_print_out.png')
-  print('-dpng', './vortex_print_out.png')
+  disp('printing to vortex_out.png')
+  fOUT=sprintf('vortex_out%04d.png',filenumber)
+  print('-dpng', fOUT)
 end
 rotate3d on
 %text(1.,10.5,0.55,str)

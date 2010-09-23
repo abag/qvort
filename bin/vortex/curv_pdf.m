@@ -42,7 +42,7 @@ for i=1:8:snap_number
       xlabel('\kappa','FontSize',14)
       ylabel('log PDF(\kappa)','FontSize',14)
     otherwise
-      plot(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
+      plot(B(:,i,1),B(:,i,2),'-','LineWidth',2,'Color',cmap(i,:)) ;
       xlabel('\kappa','FontSize',14)
       ylabel('PDF(\kappa)','FontSize',14)
   end

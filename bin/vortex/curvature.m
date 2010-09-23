@@ -19,6 +19,7 @@ A=load('data/curvature.log');
 B=load('data/ts.log') ; 
 t=B(:,2) ; cbar=A(:,1) ; cmin=A(:,2) ; cmax=A(:,3) ;
 cmaxmax(1:length(A))=sqrt(3)/delta;
+cmaxmax(1:length(A))=max(cmax)-20
 switch option
   case 'print'
     figure('visible','off');
