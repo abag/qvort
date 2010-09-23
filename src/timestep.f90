@@ -5,6 +5,7 @@ module timestep
   use normal_fluid
   use forcing
   use tree
+  use mirror
   contains
   !*************************************************
   subroutine pmotion()
@@ -43,6 +44,7 @@ module timestep
     real :: curv, beta !LUA
     real :: f_dot(3), f_ddot(3) !first and second derivs
     integer :: peri, perj, perk !used to loop in periodic cases
+    integer :: miri, mirj, mirk !used to loop in mirror cases
     !what scheme are we using? (LIA/BS)
     select case(velocity)
       case('Off')
@@ -73,6 +75,21 @@ module timestep
         !now we do the non-local part
         call biot_savart(i,u_bs)
         u=u+u_bs
+        !we now need to insert periodic and mirror boundary conditions here
+        if (periodic_bc) then
+          !we must shift the mesh in all 3 directions
+          do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+            if (peri==0.and.perj==0.and.perk==0) cycle
+            call biot_savart_shift(i,u_bs,(/peri*box_size,perj*box_size,perk*box_size/))
+            u=u+u_bs
+          end do ; end do ;end do
+        end if
+        if (mirror_bc) then
+          call mirror_init !mirror.mod
+          call biot_savart_mirror(i,u_bs) !mirror.mod
+          call mirror_close !mirror.mod
+          stop
+        end if
       case('Tree')
         !tree approximation to biot savart
         !first get the local part (similar to LIA)
@@ -152,7 +169,7 @@ module timestep
     integer, intent(IN) :: i !the particle we want the velocity at
     real :: u(3) !the velocity at i (non-local)#
     real :: u_bs(3) !helper array
-    real :: a_bs, b_bs, c_bs !helper variables 
+    real :: a_bs, b_bs, c_bs !helper variables
     integer :: j !needed to loop over all particles
     u=0.
     do j=1, pcount
@@ -164,6 +181,32 @@ module timestep
       !add non local contribution to velocity vector
       if (4*a_bs*c_bs-b_bs**2==0) cycle !avoid 1/0
       u_bs=cross_product((f(j)%x-f(i)%x),(f(j)%ghosti-f(j)%x))
+      u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
+      u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
+      u=u+u_bs !add on the non-local contribution of j
+    end do
+  end subroutine
+  !**************************************************************************
+  subroutine biot_savart_shift(i,u,shift)
+    !as above but shifts the particles for periodicity
+    !I THINK THIS ROUTINE IS CORRECT BUT IT NEEDS HEAVY TESTING
+    implicit none
+    integer, intent(IN) :: i !the particle we want the velocity at
+    real :: u(3) !the velocity at i (non-local)#
+    real :: u_bs(3) !helper array
+    real :: a_bs, b_bs, c_bs !helper variables
+    real :: shift(3) !moves all the particles for periodic_bc
+    integer :: j !needed to loop over all particles
+    u=0.
+    do j=1, pcount
+      !check that the particle is not empty
+      if (f(j)%infront==0) cycle
+      a_bs=dist_gen_sq(f(i)%x,f(j)%x+shift) !distance squared between i and j+shift
+      b_bs=2.*dot_product((f(j)%x+shift-f(i)%x),(f(j)%ghosti-f(j)%x))
+      c_bs=dist_gen_sq(f(j)%ghosti,f(j)%x) !distance sqd between j, j+1
+      !add non local contribution to velocity vector
+      if (4*a_bs*c_bs-b_bs**2==0) cycle !avoid 1/0
+      u_bs=cross_product((f(j)%x+shift-f(i)%x),(f(j)%ghosti-f(j)%x))
       u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
       u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
       u=u+u_bs !add on the non-local contribution of j

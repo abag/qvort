@@ -23,10 +23,25 @@ module initial
     end if
     !periodic bounday conditions?
     if (box_size>0.) then
-      periodic_bc=.true.
-      write(*,'(a,f6.3)') ' running with periodic boundaries, box size:', box_size
-    else 
-      write(*,*) 'running with open boundaries'
+      !what is the boundary
+      select case(boundary)
+        case('periodic')
+          periodic_bc=.true.
+          write(*,'(a,f6.3)') ' running with periodic boundaries, box size:', box_size
+        case('mirror')
+          mirror_bc=.true.
+          write(*,'(a,f6.3)') ' running with mirrored boundaries, box size:', box_size
+          select case(velocity)
+            case('LIA','Tree')
+              call fatal_error('init_setup','mirror bcs are not set up to work with the LIA/Tree veloctity')
+          end select
+        case('open')
+          write(*,*) 'running with open boundaries'
+        case default
+          call fatal_error('init_setup:', 'incorrect boundary parameter')
+      end select
+    else
+      call fatal_error('init_setup:', 'box size is less than zero')
     end if
     call setup_normal_fluid !normal_fluid.mod
     !sort out if there is a special dump time
@@ -126,6 +141,8 @@ module initial
     end select
     !any special diagnostic information?
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
+    !final boundary conditions sanity check
+    if (periodic_bc.and.mirror_bc) call fatal_error('init.mod','both periodic and mirror bcs are set')
   end subroutine
   !**********************************************************************
   subroutine data_restore
@@ -351,7 +368,7 @@ module initial
     end do
     !second loop
     do i=pcount/2+1, pcount
-      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius/0.52
+      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius/0.51
       f(i)%x(2)=0.
       f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
 
@@ -499,7 +516,7 @@ module initial
         call ghostp !we must call this routine at the start of adding every wave 
                     !the routines normalf, binormalf rely on correct ghostpoints
         !on a loop so wavenumbers must be an integer
-        wave_number=2+k !starting wavenumber is 2
+        wave_number=2+0.4*k !starting wavenumber is 2
         amp=prefactor*(wave_number**wave_slope)
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)

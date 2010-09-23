@@ -58,7 +58,8 @@ module cdata
   real, protected :: quant_circ
   integer, protected :: mesh_size=0
   logical :: periodic_bc=.false.
-  character(len=30), protected :: velocity, initf
+  logical :: mirror_bc=.false.
+  character(len=30), protected :: velocity, initf, boundary
   logical, protected :: binary_print=.true.
   !--specific initial conditions selected in run.in - give these default values--
   integer, protected :: line_count=1
@@ -138,6 +139,8 @@ module cdata
              read(buffer, *, iostat=ios) mesh_size !size of mesh
           case ('velocity')
              read(buffer, *, iostat=ios) velocity !BS/LIA
+          case ('boundary')
+             read(buffer, *, iostat=ios) boundary !open/periodic/mirror
           case ('normal_velocity')
              read(buffer, *, iostat=ios) normal_velocity !zero/xflow/ABC/KS
           case ('normal_fluid_cutoff')
