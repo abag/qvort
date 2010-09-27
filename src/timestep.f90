@@ -85,10 +85,10 @@ module timestep
           end do ; end do ;end do
         end if
         if (mirror_bc) then
-          call mirror_init !mirror.mod
+          u_bs=0. !0 this
           call biot_savart_mirror(i,u_bs) !mirror.mod
-          call mirror_close !mirror.mod
-          stop
+          u=u+u_bs
+          call mirror_check(i,u) !mirror.mod
         end if
       case('Tree')
         !tree approximation to biot savart

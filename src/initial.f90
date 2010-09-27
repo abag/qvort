@@ -68,6 +68,8 @@ module initial
           call setup_leap_frog !init.mod
         case('linked_filaments')
           call setup_linked_filaments !init.mod
+        case('colliding_loops')
+          call setup_colliding_loops !init.mod
         case('kivotedes')
           call setup_kivotedes !init.mod
         case('cardoid')
@@ -179,7 +181,7 @@ module initial
     do i=1, pcount
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
       f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
-      f(i)%x(3)=0.0
+      f(i)%x(3)=-box_size*0.47
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -371,6 +373,50 @@ module initial
       f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius/0.51
       f(i)%x(2)=0.
       f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
+
+      if (i==(pcount/2+1)) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1+pcount/2
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do    
+  end subroutine
+  !*************************************************************************
+  subroutine setup_colliding_loops
+    !two linked loops 
+    implicit none
+    real :: radius
+    integer :: i 
+    if (mod(pcount,2)/=0) then
+      call fatal_error('init.mod:setup_linked_filaments', &
+      'pcount is not a multiple of 2-aborting')
+    end if
+    radius=(0.75*pcount*delta)/(4*pi) !75% of potential size
+    write(*,'(a,f9.6)') ' initf: colliding loops, radius of loops:', radius 
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount/2
+      f(i)%x(1)=radius*sin(pi*real(2*i-1)/(pcount/2))
+      f(i)%x(2)=radius*cos(pi*real(2*i-1)/(pcount/2))
+      f(i)%x(3)=box_size/4.
+      if (i==1) then
+        f(i)%behind=pcount/2 ; f(i)%infront=i+1
+      else if (i==pcount/2) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
+    !second loop
+    do i=pcount/2+1, pcount
+      f(i)%x(1)=radius*sin(pi*real(2*i-1)/(pcount/2))
+      f(i)%x(2)=-radius*cos(pi*real(2*i-1)/(pcount/2))
+      f(i)%x(3)=-box_size/4.
 
       if (i==(pcount/2+1)) then
         f(i)%behind=pcount ; f(i)%infront=i+1
@@ -738,7 +784,7 @@ module initial
       anglex=anglex*2*pi
       angley=angley*2*pi
       anglez=anglez*2*pi
-      translate=(2*box_size*translate-box_size)
+      translate=0.1*(2*box_size*translate-box_size)
         
       do j=1, loop_size
 

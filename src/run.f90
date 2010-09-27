@@ -10,6 +10,7 @@ program run
   use diagnostic
   use quasip
   use tree
+  use mirror
   implicit none
   integer :: i
   call init_random_seed !cdata.mod
@@ -27,6 +28,8 @@ program run
     if (tree_theta>0) then
       call construct_tree !tree.mod
     end if
+    !---------------------create mirror array----------------------
+    if (mirror_bc) call mirror_init !mirror.mod
     !---------------------velocity operations----------------------
     call pmotion !timestep.mod
     !print*, 'here1'
@@ -76,7 +79,9 @@ program run
       deallocate(vtree%parray) ; deallocate(vtree)
       nullify(vtree) !just in case!
     end if
-    !special data dump
+    !---------------------close mirror array-----------------------
+    if (mirror_bc) call mirror_close !mirror.mod
+    !---------------------special data dump------------------------
     if ((itime/=0).and.(itime==int_special_dump)) call sdata_dump
     !--------------------------------------------------------------
   end do
