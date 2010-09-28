@@ -1,12 +1,11 @@
-function mirror_plot
-filename='./data/mirror.dat';
+function mirror_plot(filenumber)
+filename=sprintf('./data/mirror%04d.dat',filenumber);
 %we set the dimensions of the box here
 %this is overridden if we have periodic B.C.'s
 dims=load('./data/dims.log');
-
   fid=fopen(filename);
   if fid<0
-      disp('var file does not exist, exiting script')
+      disp('mirror file does not exist, exiting script')
       return
   end
   time=fread(fid,1,'float64');
@@ -28,8 +27,8 @@ for j=1:number_of_particles
     dummy_x(2,3)=z(round(f(j)));
     pos=dummy_x(1,:);
     arrow=4*(dummy_x(2,:)-dummy_x(1,:));
-    %plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2.0)
-    arrow3d(pos,arrow,'k', 0.9)
+    plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'.m','LineWidth',2.0)
+    %arrow3D(pos,arrow,'k', 0.9)
     hold on
   end
 end
@@ -41,4 +40,7 @@ for i=1:6
     alpha(h,0.1)
     set(h,'edgecolor','w');
 end
+%finally add in the vortex
+vortex_plot(filenumber,'rough')
+axis auto
 axis equal

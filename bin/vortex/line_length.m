@@ -1,4 +1,6 @@
-%read in the ts file and plot
+%read in the ts file and plot the line length in both normal and logscale
+%takes an input that is the number of sections to divide the plot into and give
+%a growth/decay rate
 function line_length(sections)
 if nargin<1
   sections=1;

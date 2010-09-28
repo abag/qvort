@@ -1,15 +1,14 @@
 --------------required parameters------------
-nsteps 1000000
-shots 40
+nsteps 10000
+shots 10
 recon_shots 1
 init_pcount 200
-dt 3E-7
-delta 0.0001
-box_size 0.01
-quant_circ 9.97E-4
+dt 2E-5
+delta 0.001
+box_size 0.1
 velocity BS
 initf single_loop
-line_count 3
+line_count 4
 boundary mirror
 !wave spectrum parameters
 wave_count 5
@@ -19,6 +18,8 @@ wave_type planar
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 mesh_size 0
-!tree_theta 0.4
+alpha 0.1 0.01
+tree_theta 0.
 binary_print T 
 curv_hist T
+mirror_print T

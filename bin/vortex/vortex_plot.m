@@ -1,3 +1,15 @@
+%the main vortex plotting routine, run this with a filenumber as an input, e.g.
+%vortex_plot(1)
+%the routine will also take the follwing options in the form vortex_plot(n,'option1','option2') e.g.
+%options are:
+%            rough: plots particles only advised for a large number of particles
+%            line: looks better than above a nice compromise
+%            dark: add a night time theme!
+%	     rainbow: colour code the vortex according to velocity
+%            overhead: angle the plot overhead
+%            print: print to file rather than screen
+%            movie: make a movie by outputting lots of pngs
+%
 function vortex_plot(filenumber,varargin)
 optargin = size(varargin,2);
 filename=sprintf('data/var%04d.log',filenumber);
@@ -203,7 +215,12 @@ for j=1:number_of_particles
             end
             set(h,'FaceColor',rainbowcmap(ceil(u(j)),:),'EdgeColor',rainbowcmap(ceil(u(j)),:),'FaceAlpha',0.5,'EdgeAlpha',0.1) ;
           else
-            set(h,'FaceColor','k','EdgeColor','k','FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+            if (j==1)
+              %pick out a particle in a particular colour?
+              set(h,'FaceColor','k','EdgeColor','b','FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+            else
+              set(h,'FaceColor','k','EdgeColor','k','FaceAlpha',0.5,'EdgeAlpha',0.1) ; 
+            end
           end
         end
       end

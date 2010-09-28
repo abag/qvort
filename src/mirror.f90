@@ -1,68 +1,46 @@
 module mirror
+  !ALL THE ROUTINES REQUIRED TO IMPOSE CLOSED BOUNDARIES USING THE METHOD OF IMAGES
+  !THIS IS DONE BY MIRRORING THE VORTICES AT EACH OF THE 6 EDGES OF THE BOX
   use cdata
   use general
   type(qvort), allocatable, private :: m(:,:) !the mirror array
   contains
   !**************************************************************************
   subroutine mirror_init
+    !set up the mirror array
     implicit none
-    integer, allocatable :: store_infront(:)
     integer :: i
+    !note everything is in mirror_biot_savart is done using m(i)%infront
+    !so copying beind to infront is OK, behind is never used
     !begin by allocating the mirror array
     allocate(m(6,pcount)) !6 faces of the cube
-    !now we need to fill the array
-    do i=1,6 !again 6 faces
-      m(i,:)=f(:)
-      if (i<6) then
-        m(i,:)%infront=0.
-      else
-        m(i,:)%x(3)=-box_size-m(i,:)%x(3)
-        m(i,:)%infront=m(i,:)%behind
-        !reflect in negative z
-      end if
-    end do
-  end subroutine
-  !**************************************************************************
-  subroutine mirror_init_old
-    implicit none
-    integer, allocatable :: store_infront(:)
-    integer :: i
-    !begin by allocating the mirror array
-    allocate(m(6,pcount)) !6 faces of the cube
-    allocate(store_infront(pcount)) !store the infront vector
     !now we need to fill the array
     do i=1,6 !again 6 faces
       m(i,:)=f(:)
       if ((i==1).or.(i==2)) then
         if (i==1) then
           m(i,:)%x(1)=box_size-m(i,:)%x(1)
-          store_infront(:)=m(i,:)%infront
           m(i,:)%infront=m(i,:)%behind
-          m(i,:)%behind=store_infront
           !reflect in positive x
         else
           m(i,:)%x(1)=-box_size-m(i,:)%x(1)
           m(i,:)%infront=m(i,:)%behind
-          m(i,:)%behind=store_infront
           !reflect in negative x
         end if
       else if ((i==3).or.(i==4)) then
         if (i==3) then
           m(i,:)%x(2)=box_size-m(i,:)%x(2)
           m(i,:)%infront=m(i,:)%behind
-          m(i,:)%behind=store_infront
           !reflect in positive y
         else
           m(i,:)%x(2)=-box_size-m(i,:)%x(2)
           m(i,:)%infront=m(i,:)%behind
-          m(i,:)%behind=store_infront
           !reflect in negative y
         end if
       else !i=5 or 6
         if (i==5) then
           m(i,:)%x(3)=box_size-m(i,:)%x(3)
           m(i,:)%infront=m(i,:)%behind
-          m(i,:)%behind=store_infront
           !reflect in positive z
         else
           m(i,:)%x(3)=-box_size-m(i,:)%x(3)
@@ -71,17 +49,16 @@ module mirror
         end if
       end if
     end do
-    deallocate(store_infront) !deallocate once created
   end subroutine
   !**************************************************************************
   subroutine mirror_close
+    !deallocate the mirror array and print if asked
     implicit none
-    logical :: print_mirror=.true.
     integer, parameter :: mnum=6
     integer :: i
     character (len=40) :: print_file
     !if we want to print it goes in here
-    if (print_mirror.and.(mod(itime, shots)==0)) then
+    if (mirror_print.and.(mod(itime, shots)==0)) then
       write(unit=print_file,fmt="(a,i4.4,a)")"./data/mirror",itime/shots,".dat"
       open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
         write(98) t
@@ -104,6 +81,7 @@ module mirror
   end subroutine
   !**************************************************************************
   subroutine biot_savart_mirror(i,u)
+    !get the induced velocity from the method of images
     implicit none
     integer, intent(IN) :: i !the particle we want the velocity at
     real :: u(3) !the velocity at i (non-local mirror field)
@@ -128,18 +106,18 @@ module mirror
     end do
   end subroutine
   !**************************************************************************
-  subroutine mirror_check(i,u)
+  subroutine mirror_flux_check(i,u)
     !ensure that the normal velocity at the boundaries is 0
     implicit none
     integer, intent(IN) :: i !the particle we want the velocity at
     real :: u(3) !the velocity at i
-    real :: threshold
-    threshold=box_size/2.-0.5*delta
-    !if (f(i)%x(1)>threshold) f(i)%u(1)=0.
-    !if (f(i)%x(1)<-threshold) f(i)%u(1)=0.
-    !if (f(i)%x(2)>threshold) f(i)%u(2)=0.
-    !if (f(i)%x(2)<-threshold) f(i)%u(2)=0.
-    if (f(i)%x(3)>threshold) f(i)%u(3)=0.
-    if (f(i)%x(3)<(-threshold)) f(i)%u(3)=0.
+    real :: threshold !force zero flux at the boundaries
+    threshold=box_size/2.-delta/2.
+    if (f(i)%x(1)>threshold) u(1)=0.
+    if (f(i)%x(1)<-threshold) u(1)=0.
+    if (f(i)%x(2)>threshold) u(2)=0.
+    if (f(i)%x(2)<-threshold) u(2)=0.
+    if (f(i)%x(3)>threshold) u(3)=0.
+    if (f(i)%x(3)<-threshold) u(3)=0.
   end subroutine
 end module

@@ -1,3 +1,4 @@
+%not ready yet
 function vortex_fft(filenumber)
 filename=sprintf('data/var%03d.log',filenumber);
 %set options based on varargin

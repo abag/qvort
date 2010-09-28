@@ -1,4 +1,7 @@
 module cdata
+  !THIS MODULE HOLDS ALL THE VARIABLES GLOBALLY, ALL MODULES WILL NEED THIS
+  !THIS ROUTINE CONTAINS SOME IMPORTANT ROUTINES TO READ IN THE RUNTIME PARAMETERS
+  !IN RUN.IN AS WELL AS SETTING THE RANDOM NUMBER GENERATOR
   !**********VORTEX FILAMENT******************************************************
   type qvort !our main structure
     real :: x(3) !position
@@ -55,7 +58,7 @@ module cdata
   real, protected ::  delta
   real :: dt
   real, protected :: box_size=0.
-  real, protected :: quant_circ
+  real, protected :: quant_circ=9.97E-4
   integer, protected :: mesh_size=0
   logical :: periodic_bc=.false.
   logical :: mirror_bc=.false.
@@ -90,6 +93,7 @@ module cdata
   logical, protected :: tree_print=.false.
   !--------------------additional diagnostics------------------------------------
   logical, protected :: curv_hist=.false. !dumps binned curvature information
+  logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   contains
   !*************************************************************************************************  
   subroutine read_run_file()
@@ -179,6 +183,8 @@ module cdata
              read(buffer, *, iostat=ios) wave_type !for wave_spec initial conditions
           case ('curv_hist')
              read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
+          case ('mirror_print')
+             read(buffer, *, iostat=ios) mirror_print !print the mirror filaments
           case default
              !print *, 'Skipping invalid label at line', line
           end select
@@ -190,9 +196,9 @@ module cdata
     implicit none      
     character(len=*) :: location
     character(len=*) :: message
-    write (*,*) '-----------------------FATAL ERROR-------------------------'
+    write (*,*) '-------------------------FATAL ERROR-------------------------'
     write (*,*) trim(location) , ": " , trim(message)
-    write (*,*) '-----------------------------------------------------------'
+    write (*,*) '-------------------------------------------------------------'
     stop
   end subroutine
   !*************************************************************************************************  
@@ -200,9 +206,9 @@ module cdata
     implicit none      
     character(len=*) :: location
     character(len=*) :: message
-    write (*,*) '-----------------------WARNING-------------------------'
+    write (*,*) '-------------------------WARNING----------------------------'
     write (*,*) trim(location) , ": " , trim(message)
-    write (*,*) '-------------------------------------------------------'
+    write (*,*) '------------------------------------------------------------'
   end subroutine
   !*************************************************************************************************  
   subroutine init_random_seed()

@@ -88,7 +88,7 @@ module timestep
           u_bs=0. !0 this
           call biot_savart_mirror(i,u_bs) !mirror.mod
           u=u+u_bs
-          call mirror_check(i,u) !mirror.mod
+          call mirror_flux_check(i,u) !mirror.mod
         end if
       case('Tree')
         !tree approximation to biot savart

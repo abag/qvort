@@ -30,11 +30,12 @@ module initial
           write(*,'(a,f6.3)') ' running with periodic boundaries, box size:', box_size
         case('mirror')
           mirror_bc=.true.
-          write(*,'(a,f6.3)') ' running with mirrored boundaries, box size:', box_size
           select case(velocity)
             case('LIA','Tree')
               call fatal_error('init_setup','mirror bcs are not set up to work with the LIA/Tree veloctity')
           end select
+          write(*,'(a,f6.3)') ' running with mirrored boundaries, box size:', box_size
+          if (mirror_print) write(*,*) 'printing mirror filaments to file'
         case('open')
           write(*,*) 'running with open boundaries'
         case default
@@ -89,11 +90,11 @@ module initial
      end if
      !test if we have a non-zero mesh size
      if (mesh_size>0) then
-       if (periodic_bc) then
+       if (box_size>0) then
          call setup_mesh !init.mod
        else 
          call fatal_error('cdata.mod:init_setup', &
-         'running with a non-zero mesh size requires periodic BCs') !cdata.mod
+         'running with a non-zero mesh size requires a non-zero box size') !cdata.mod
        end if
      else
        write(*,*) 'velocity fields not being stored on a mesh - (no spectra etc.)'
@@ -181,7 +182,7 @@ module initial
     do i=1, pcount
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
       f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
-      f(i)%x(3)=-box_size*0.47
+      f(i)%x(3)=0.
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 

@@ -1,3 +1,4 @@
+%a redundent script, superceded by new options in vortex_plot
 function vortex_anim(start,final,skip)
 if nargin<1
   disp('I at least need finish filenumbers')
