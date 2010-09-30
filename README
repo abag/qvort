@@ -1,0 +1,29 @@
+to compile the code type
+
+make
+
+to run the code type
+
+./run.sh
+
+to visualise first open matlab, type
+
+matlab
+
+to visualise snapshots of the simulation in the matlab window type
+
+vortex_plot(n)
+
+where n is the snapshot you wish to visualise (1,10,999,etc.)
+
+to visualise time series information type the following in the matlab window
+
+ts
+
+for more information please consult the documentation in ./doc, to compile the manual type
+
+make
+
+when compiled the manual can be compiled by typing
+
+acroread manual.pdf

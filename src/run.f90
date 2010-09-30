@@ -53,8 +53,8 @@ program run
       else
         call pclose !line.mod
       end if
-      call precon !line.mod
-      call premove !line.mod
+      !call precon !line.mod
+     ! call premove !line.mod
     end if
     !print*, 'here4'
     if(periodic_bc) call enforce_periodic !periodic.mod

@@ -2,24 +2,22 @@
 nsteps 10000
 shots 10
 recon_shots 1
-init_pcount 200
+pcount 100
 dt 2E-5
 delta 0.001
 box_size 0.1
 velocity BS
-initf single_loop
-line_count 4
+initf random_loops
+line_count 5
 boundary mirror
 !wave spectrum parameters
-wave_count 5
+wave_count 10
 wave_slope -3
-wave_amp 4
-wave_type planar
+wave_amp 5
+wave_type helical
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 mesh_size 0
-alpha 0.1 0.01
-tree_theta 0.
+tree_theta 0.4
 binary_print T 
 curv_hist T
-mirror_print T

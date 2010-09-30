@@ -12,6 +12,10 @@ module initial
     implicit none
     logical :: restart
     write(*,'(a,f9.7)') ' quantum of circulation is:', quant_circ 
+    !check particle separation has been set
+    if (delta<epsilon(0.)) call fatal_error('init.mod','delta must be set in run.in')
+    !check that the particle count (pcount) has been set
+    if (init_pcount<4) call fatal_error('init.mod','you must set enough intial particles')
     !we must check the timestep is sufficient to resolve the motion
     !based on the smallest separation possible in the code
     call timestep_check !initial.mod
@@ -30,6 +34,7 @@ module initial
           write(*,'(a,f6.3)') ' running with periodic boundaries, box size:', box_size
         case('mirror')
           mirror_bc=.true.
+          call warning_message('init.mod','mirror b.c.s are still in testing and will probably fail at some point in the run!')
           select case(velocity)
             case('LIA','Tree')
               call fatal_error('init_setup','mirror bcs are not set up to work with the LIA/Tree veloctity')
@@ -785,7 +790,7 @@ module initial
       anglex=anglex*2*pi
       angley=angley*2*pi
       anglez=anglez*2*pi
-      translate=0.1*(2*box_size*translate-box_size)
+      translate=(box_size*translate-box_size/2.)-loop_radius
         
       do j=1, loop_size
 

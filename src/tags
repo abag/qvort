@@ -21,6 +21,8 @@ behind	cdata.f90	/^    integer :: infront, behind /;"	k	type:qvort
 binormalf	general.f90	/^  real function binormalf(/;"	f	module:general
 biot_savart	timestep.f90	/^  subroutine biot_savart(/;"	s	module:timestep
 biot_savart_general	timestep.f90	/^  subroutine biot_savart_general(/;"	s	module:timestep
+biot_savart_mirror	mirror.f90	/^  subroutine biot_savart_mirror(/;"	s	module:mirror
+biot_savart_shift	timestep.f90	/^  subroutine biot_savart_shift(/;"	s	module:timestep
 btl	tree.f90	/^      type (node), pointer :: btl,/;"	k	type:node
 btr	tree.f90	/^      type (node), pointer :: btl, btr /;"	k	type:node
 build_tree	tree.f90	/^  recursive subroutine build_tree(/;"	s	module:tree
@@ -91,11 +93,17 @@ kappa_max	cdata.f90	/^  real :: kappa_min, kappa_max /;"	v	module:cdata
 kappa_min	cdata.f90	/^  real :: kappa_min,/;"	v	module:cdata
 line	line.f90	/^module line$/;"	m
 loop_killer	line.f90	/^  subroutine loop_killer(/;"	s	module:line
+m	mirror.f90	/^  type(qvort), allocatable, private :: m(/;"	v	module:mirror
 maxdu	cdata.f90	/^  real :: maxu,maxdu /;"	v	module:cdata
 maxu	cdata.f90	/^  real :: maxu,/;"	v	module:cdata
 mesh	cdata.f90	/^  type(grid), allocatable :: mesh(/;"	v	module:cdata
 mesh_delta	cdata.f90	/^  real :: mesh_delta /;"	v	module:cdata
 mesh_velocity	timestep.f90	/^  subroutine mesh_velocity$/;"	s	module:timestep
+mirror	mirror.f90	/^module mirror$/;"	m
+mirror_bc	cdata.f90	/^  logical :: mirror_bc=/;"	v	module:cdata
+mirror_close	mirror.f90	/^  subroutine mirror_close$/;"	s	module:mirror
+mirror_flux_check	mirror.f90	/^  subroutine mirror_flux_check(/;"	s	module:mirror
+mirror_init	mirror.f90	/^  subroutine mirror_init$/;"	s	module:mirror
 new_tree	tree.f90	/^  subroutine new_tree(/;"	s	module:tree
 node	tree.f90	/^   type node$/;"	t	module:tree
 norm_tanf	general.f90	/^  real function norm_tanf(/;"	f	module:general
@@ -141,6 +149,7 @@ run	run.f90	/^program run$/;"	p
 sdata_dump	output.f90	/^  subroutine sdata_dump$/;"	s	module:output
 setup_KS	ksmodel.f90	/^    subroutine setup_KS$/;"	s	module:KSmodel
 setup_cardoid	initial.f90	/^  subroutine setup_cardoid$/;"	s	module:initial
+setup_colliding_loops	initial.f90	/^  subroutine setup_colliding_loops$/;"	s	module:initial
 setup_crow	initial.f90	/^  subroutine setup_crow$/;"	s	module:initial
 setup_forcing	forcing.f90	/^  subroutine setup_forcing(/;"	s	module:forcing
 setup_kivotedes	initial.f90	/^  subroutine setup_kivotedes$/;"	s	module:initial

@@ -68,7 +68,7 @@ module cdata
   integer, protected :: line_count=1
   integer, protected :: wave_count=1
   real, protected :: wave_slope=-1.5
-  real, protected :: wave_amp=20.
+  real, protected :: wave_amp=10.
   character(len=30), protected :: wave_type='planar' 
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
@@ -122,27 +122,39 @@ module cdata
           buffer = buffer(pos+1:)
           select case (label)
           case ('nsteps')
+             !number of steps, enter a natural number
              read(buffer, *, iostat=ios) nsteps !number of steps to take
           case ('shots')
+             !number often to print to file, enter a natural number
              read(buffer, *, iostat=ios) shots !how often to print to file
           case ('recon_shots')
+             !how often to try reconnection algorithm, enter a natural number
              read(buffer, *, iostat=ios) recon_shots !how often to perform reconnection algorithm
-          case ('init_pcount')
+          case ('pcount')
+             !initial number of particles, can be overwritten by intial condition, enter natural number
              read(buffer, *, iostat=ios) init_pcount !initial particle count
           case ('dt')
+             !size of timestep, cheked based on delta
              read(buffer, *, iostat=ios) dt !timestep value
           case ('binary_print')
+             !print to binary (T) or formatted data (F)
              read(buffer, *, iostat=ios) binary_print !print binary var data
           case ('delta')
+             !resolution, real number
              read(buffer, *, iostat=ios) delta !spatial resolution
           case ('quant_circ')
+             !quatum of circulation, not necessary to set, accepts real #
              read(buffer, *, iostat=ios) quant_circ !quantum of circulation
           case ('box_size')
+             !size of box must be>0, real number
              read(buffer, *, iostat=ios) box_size !size of periodic box
           case ('mesh_size')
+             !mesh for outputting veloctiy fields, by default is 0, enter
+             !natural number
              read(buffer, *, iostat=ios) mesh_size !size of mesh
           case ('velocity')
-             read(buffer, *, iostat=ios) velocity !BS/LIA
+             !velocity field options are LIA, BS, Tree
+             read(buffer, *, iostat=ios) velocity !BS/LIA/Tree
           case ('boundary')
              read(buffer, *, iostat=ios) boundary !open/periodic/mirror
           case ('normal_velocity')

@@ -40,7 +40,7 @@ module timestep
     !plus any normal fluid/forcing
     implicit none
     integer, intent(IN) :: i
-    real :: u(3), u_norm(3), u_force(3), u_bs(3) !velocities
+    real :: u(3), u_norm(3), u_force(3), u_bs(3), u_mir(3) !velocities
     real :: curv, beta !LUA
     real :: f_dot(3), f_ddot(3) !first and second derivs
     integer :: peri, perj, perk !used to loop in periodic cases
@@ -85,10 +85,9 @@ module timestep
           end do ; end do ;end do
         end if
         if (mirror_bc) then
-          u_bs=0. !0 this
-          call biot_savart_mirror(i,u_bs) !mirror.mod
-          u=u+u_bs
-          call mirror_flux_check(i,u) !mirror.mod
+          !get the contribution of the image vortices
+          call biot_savart_mirror(i,u_mir) !mirror.mod
+          u=u+u_mir
         end if
       case('Tree')
         !tree approximation to biot savart
@@ -126,6 +125,10 @@ module timestep
     !forcing?
     call get_forcing(i,u_force)
     u=u+u_force
+    if (mirror_bc) then
+      !check the flux through the boundaries is 0
+      call mirror_flux_check(i,u) !mirror.mod
+    end if
   end subroutine
   !**************************************************************************
   subroutine mesh_velocity
@@ -199,8 +202,9 @@ module timestep
     integer :: j !needed to loop over all particles
     u=0.
     do j=1, pcount
-      !check that the particle is not empty
-      if (f(j)%infront==0) cycle
+      !check that the particle is not empty or the particle behind
+      !if ((f(j)%infront==0).or.(i==j).or.(f(i)%behind==j)) cycle
+      if ((f(j)%infront==0).or.(f(i)%behind==j)) cycle
       a_bs=dist_gen_sq(f(i)%x,f(j)%x+shift) !distance squared between i and j+shift
       b_bs=2.*dot_product((f(j)%x+shift-f(i)%x),(f(j)%ghosti-f(j)%x))
       c_bs=dist_gen_sq(f(j)%ghosti,f(j)%x) !distance sqd between j, j+1

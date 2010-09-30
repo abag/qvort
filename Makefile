@@ -4,7 +4,8 @@ run:
 	make -C src 
 double:
 	make -C src double
-	#@make linkx
+man:
+	make -C doc
 clean:
 	make -C src clean
 cleann:
