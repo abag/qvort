@@ -25,6 +25,7 @@ module initial
     else
       write(*,*) 'formatted data output selected in run.in'
     end if
+    write(*,'(a,i3.2,a)') ' outputting filament information every ', shots, ' time-steps'
     !periodic bounday conditions?
     if (box_size>0.) then
       !what is the boundary
@@ -110,7 +111,7 @@ module initial
      if (quasi_pcount>0) then
        call setup_quasip !quasip.mod
      else
-       write(*,*) 'No particles in the code'
+       write(*,*) 'no particles in the code'
      end if
      !is the tree code being used?
      if (tree_theta>0) then
@@ -904,6 +905,7 @@ module initial
     if (mesh_size<16) write(*,*) 'warning mesh size is small'
     mesh_delta=real(box_size)/mesh_size
     write(*,'(a,i3.2,a,f7.6)') ' creating an n^3 mesh, n=', mesh_size, ' resolution=', mesh_delta
+    write(*,'(a,i5.2,a)') ' mesh information will be printed every ', mesh_shots, ' time-steps'
     allocate(mesh(mesh_size,mesh_size,mesh_size))
     do k=1, mesh_size
       do j=1, mesh_size

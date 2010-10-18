@@ -13,6 +13,7 @@ program run
   use mirror
   implicit none
   integer :: i
+  logical :: can_stop=.false.
   call init_random_seed !cdata.mod
   !read in parameters
   call read_run_file !cdata.mod
@@ -33,7 +34,7 @@ program run
     !---------------------velocity operations----------------------
     call pmotion !timestep.mod
     !print*, 'here1'
-    if (mod(itime,shots*10)==0) then
+    if (mod(itime,mesh_shots)==0) then
       call mesh_velocity !timestep.mod
     end if
     !print*, 'here2'
@@ -53,8 +54,8 @@ program run
       else
         call pclose !line.mod
       end if
-      !call precon !line.mod
-     ! call premove !line.mod
+      call precon !line.mod
+      call premove !line.mod
     end if
     !print*, 'here4'
     if(periodic_bc) call enforce_periodic !periodic.mod
@@ -65,9 +66,11 @@ program run
       !store data to a binary file for reload
       call data_dump !output.mod
       call print_info !output.mod
-      !print the mesh to a binary file
-      if (mod(itime, 10*shots)==0) then
-        call print_mesh(itime/(10*shots)) !output.mod
+      if (mod(itime, mesh_shots)==0) then
+        !print the mesh to a binary file
+        call print_mesh(itime/(mesh_shots)) !output.mod
+        !can also print full velocity field for statistics 
+        call print_velocity(itime/mesh_shots) !output.mod
       end if
     end if
     !print*, 'here5'
@@ -83,6 +86,14 @@ program run
     if (mirror_bc) call mirror_close !mirror.mod
     !---------------------special data dump------------------------
     if ((itime/=0).and.(itime==int_special_dump)) call sdata_dump
+    !---------------------can we exit early------------------------
+    if (mod(itime,shots)==0) then
+      inquire(file='./STOP', exist=can_stop)
+      if (can_stop) then
+        write(*,*) 'Encountered stop file, ending simulation'
+        stop
+      end if
+    end if
     !--------------------------------------------------------------
   end do
   !deallocate(f,mesh) !tidy up

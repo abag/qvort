@@ -158,4 +158,22 @@ remove_count
       deallocate(vapor_array) 
     end if
   end subroutine
+  !**********************************************************************
+  subroutine print_velocity(filenumber)
+    !print the velocity  array as unformatted data for use matlab
+    implicit none
+    integer, intent(IN) :: filenumber
+    character (len=40) :: print_file
+    integer :: i
+    if (vel_print) then !set in run.in false by default
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/uu",filenumber,".dat"
+      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+        write(98) t
+        write(98) pcount
+        write(98) f(:)%u(1)
+        write(98) f(:)%u(2)
+        write(98) f(:)%u(3)
+      close(98)
+    end if
+  end subroutine
 end module

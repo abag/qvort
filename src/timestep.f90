@@ -138,6 +138,9 @@ module timestep
     integer :: peri, perj, perk !used to loop in periodic cases
     real :: normurms
     do k=1, mesh_size
+      if (mesh_size>=128) then
+        write(*,'(a,i4.1,a,i4.1)') 'drawing mesh section ', k, ' of ', mesh_size
+      end if
       do j=1, mesh_size
         do i=1, mesh_size
           !superfluid velocity

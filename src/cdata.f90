@@ -59,7 +59,6 @@ module cdata
   real :: dt
   real, protected :: box_size=0.
   real, protected :: quant_circ=9.97E-4
-  integer, protected :: mesh_size=0
   logical :: periodic_bc=.false.
   logical :: mirror_bc=.false.
   character(len=30), protected :: velocity, initf, boundary
@@ -72,6 +71,9 @@ module cdata
   character(len=30), protected :: wave_type='planar' 
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
+  !----------------------mesh information----------------------------------------
+  integer, protected :: mesh_size=0
+  integer, protected :: mesh_shots=100
   !------------normal fluid component--------------------------------------------
   character(len=30), protected :: normal_velocity='zero'
   real, protected :: alpha(2)=0. !mutual friction coefficients
@@ -94,6 +96,7 @@ module cdata
   !--------------------additional diagnostics------------------------------------
   logical, protected :: curv_hist=.false. !dumps binned curvature information
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
+  logical, protected :: vel_print=.false. !prints the full velocity information to file
   contains
   !*************************************************************************************************  
   subroutine read_run_file()
@@ -152,6 +155,8 @@ module cdata
              !mesh for outputting veloctiy fields, by default is 0, enter
              !natural number
              read(buffer, *, iostat=ios) mesh_size !size of mesh
+          case ('mesh_shots')
+             read(buffer, *, iostat=ios) mesh_shots !how often to print mesh to file
           case ('velocity')
              !velocity field options are LIA, BS, Tree
              read(buffer, *, iostat=ios) velocity !BS/LIA/Tree
@@ -197,6 +202,8 @@ module cdata
              read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
           case ('mirror_print')
              read(buffer, *, iostat=ios) mirror_print !print the mirror filaments
+          case ('vel_print')
+             read(buffer, *, iostat=ios) vel_print !print the velocity information
           case default
              !print *, 'Skipping invalid label at line', line
           end select

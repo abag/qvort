@@ -1,4 +1,4 @@
-function mesh_plot(filenumber)
+function mesh_spec_fit(filenumber)
 close all
 filename=sprintf('data/mesh%03d.dat',filenumber);
 load data/dims.log;
@@ -23,14 +23,8 @@ unormz=reshape(unormz,msize,msize,msize);
 ux=reshape(ux,msize,msize,msize);
 uy=reshape(uy,msize,msize,msize);
 uz=reshape(uz,msize,msize,msize);
-%plot slices of field+isosurface
-mesh_slices(x,ux,uy,uz,msize,'super')
+mesh_spectrum(ux,uy,uz,msize,'super',1)
 if unorm_mrms>0.
-  mesh_slices(x,unormx,unormy,unormz,msize,'normal')
-end
-%spectrum
-mesh_spectrum(ux,uy,uz,msize,'super',0)
-if unorm_mrms>0.
-  mesh_spectrum(unormx,unormy,unormz,msize,'normal',0)
+  mesh_spectrum(unormx,unormy,unormz,msize,'normal',1)
 end
   

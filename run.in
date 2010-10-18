@@ -6,10 +6,10 @@ pcount 100
 dt 2E-5
 delta 0.001
 box_size 0.1
-velocity BS
-initf random_loops
-line_count 5
-boundary mirror
+velocity Tree
+initf tangle
+line_count 10
+boundary periodic
 !wave spectrum parameters
 wave_count 10
 wave_slope -3
@@ -17,7 +17,10 @@ wave_amp 5
 wave_type helical
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
+normal_velocity KS
+alpha 1.21 -0.3883
 mesh_size 0
+mesh_shots 10
 tree_theta 0.4
 binary_print T 
-curv_hist T
+vel_print T

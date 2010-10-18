@@ -1,4 +1,4 @@
-function mesh_spectrum(ux,uy,uz,n,fluid)
+function mesh_spectrum(ux,uy,uz,n,fluid,fit)
 fux=fftn(ux)/(n^3);
 fuy=fftn(uy)/(n^3);
 fuz=fftn(uz)/(n^3);
@@ -23,6 +23,13 @@ end
 figure('Name',strcat('Energy Spectrum, fluid:',fluid)) 
 k=1:midpt;
 loglog(k,spect(1:midpt),'LineWidth',2)
+if fit==1
+  dummy_spect=k.^(-4.5/3);
+  scaling_factor=spect(3)/dummy_spect(3);
+  dummy_spect=dummy_spect*scaling_factor;
+  hold on
+  loglog(k,dummy_spect,'--k','LineWidth',2)
+end
 xlabel('log k','FontSize',14) ; ylabel('log E(k)','FontSize',14)
 axis tight
 set(gca,'FontSize',14)
