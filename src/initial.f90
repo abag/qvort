@@ -902,7 +902,7 @@ module initial
       call fatal_error('init.mod:setup_mesh', &
       'mesh size must be a multiple of 2')
     end if
-    if (mesh_size<16) write(*,*) 'warning mesh size is small'
+    if (mesh_size<16) call warning_message('setup_mesh','warning mesh size is small')
     mesh_delta=real(box_size)/mesh_size
     write(*,'(a,i3.2,a,f7.6)') ' creating an n^3 mesh, n=', mesh_size, ' resolution=', mesh_delta
     write(*,'(a,i5.2,a)') ' mesh information will be printed every ', mesh_shots, ' time-steps'

@@ -3,8 +3,6 @@ module KSmodel
   use cdata
   use general
     integer,private, parameter :: KSmodes=50
-    integer,private, parameter :: KS_rey_int=8
-    real,private, parameter :: KS_slope=-5./3.
     real,private,dimension(3,KSmodes) :: unit_k,k,A,B
     real,private,dimension(3,Ksmodes) :: cross1,cross2
     real,private,dimension(KSmodes) :: omega
@@ -29,7 +27,6 @@ module KSmodel
         sin_arg=sin(argument)
 
         addition(:,r)=(cross1(:,r)*cos_arg)+(cross2(:,r)*sin_arg)
-        !u(:)=u(:)+4.*addition(:,r)
         u(:)=u(:)+addition(:,r)
       end do
     end subroutine get_KS_flow
@@ -42,7 +39,10 @@ module KSmodel
       real :: arg
       real :: turn1,turnN
       integer :: i,j
-    
+      !if we have a mesh that we are printing to it is important the check the resolution
+      if ((mesh_size>0).and.(mesh_size<4*KS_rey_int)) then
+        call warning_message('ksmodel.mod, setup_KS','mesh resolution not sufficient to resolve KS model')
+      end if
       call wavenumbers(klengths)
   
       !put the wavelengths in order

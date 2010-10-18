@@ -77,7 +77,10 @@ module cdata
   !------------normal fluid component--------------------------------------------
   character(len=30), protected :: normal_velocity='zero'
   real, protected :: alpha(2)=0. !mutual friction coefficients
-  real, protected :: normal_fluid_cutoff=1E8 !impossibly high time 
+  real, protected :: normal_fluid_cutoff=1E8 !impossibly high time
+  !------------KS model--------------------------------------------
+  integer,protected :: KS_rey_int=8
+  real,protected :: KS_slope=-5./3.
   !-----------------forcing------------------------------------------------------
   character(len=20), protected :: force='off'
   real, protected :: force_amp=0.
@@ -204,6 +207,10 @@ module cdata
              read(buffer, *, iostat=ios) mirror_print !print the mirror filaments
           case ('vel_print')
              read(buffer, *, iostat=ios) vel_print !print the velocity information
+          case ('KS_slope')
+             read(buffer, *, iostat=ios) KS_slope !KS velocity field spectrum
+          case ('KS_rey_int')
+             read(buffer, *, iostat=ios) KS_rey_int !KS Reynolds number proxy
           case default
              !print *, 'Skipping invalid label at line', line
           end select
