@@ -1,19 +1,22 @@
 --------------required parameters------------
-nsteps 100000
-shots 100
-recon_shots 2
-pcount 600
-dt 1E-4
-delta 0.003
-box_size 0.075
+nsteps 10000
+shots 10
+recon_shots 1
+pcount 100
+dt 2E-5
+delta 0.001
+box_size 0.1
 velocity Tree
 initf tangle
-line_count 16
+line_count 10
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 normal_velocity KS
 alpha 1.21 -0.3883
-tree_theta 0.6
+mesh_size 32
+mesh_shots 10
+tree_theta 0.4
 binary_print T 
-KS_rey_int 16
+vel_print T
+KS_rey_int 8

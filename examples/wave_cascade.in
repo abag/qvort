@@ -1,0 +1,21 @@
+--------------required parameters------------
+nsteps 10000
+shots 10
+recon_shots 1
+pcount 100
+dt 2E-5
+delta 0.001
+box_size 0.1
+velocity BS
+initf wave_line
+line_count 3
+boundary periodic
+!wave spectrum parameters
+wave_count 10
+wave_slope -3
+wave_amp 5
+wave_type helical
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+tree_theta 0.
+binary_print T 
