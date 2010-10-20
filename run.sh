@@ -94,13 +94,23 @@ else
 fi
 if [ $FORCE -eq 1 ]; then
   if [ -e ./data/ts.log ]; then
-  echo "emptying data"
-  rm data/*
+    echo "emptying data"
+    rm data/*
+  fi
+  if [ -e ./STOP ]; then
+    echo "removing STOP file"
+    rm ./STOP
+  fi
+else
+  if [ -e ./STOP ]; then
+    echo "encountered STOP file: aborting run"
+    echo "please delete the STOP file before running again"
+    exit 1
   fi
 fi
 if [ $RESTART -eq 1 ]; then
-    echo code will restart if possible
-  else
+  echo code will restart if possible
+else
   if [ -f ./data/var.dat ]; then
     echo deleting varfile
     rm ./data/var.dat 
