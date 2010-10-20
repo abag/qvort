@@ -1,21 +1,51 @@
-function vortex_smooth(filename,skip)
-global slope
-global k p
-fid=fopen(filename);
-tline=fgetl(fid);
-dummy=textscan(tline, '%f');
-time=dummy{:};
-tline=fgetl(fid);
-dummy=textscan(tline, '%d');
-number_of_particles=dummy{:};
-for j=1:number_of_particles
+function slope=vortex_smooth(filenumber,skip,option)
+if nargin==2     
+  option='plot';
+end
+filename=sprintf('data/var%04d.log',filenumber);
+%set options based on varargin
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%get the dimensions information from dims.log
+dims=load('./data/dims.log');
+if dims(4)==1
+  fid=fopen(filename);
+  if fid<0
+      disp('var file does not exist, exiting script')
+      return
+  end
+  time=fread(fid,1,'float64');
+  number_of_particles=fread(fid,1,'int');
+  x=fread(fid,number_of_particles,'float64');
+  y=fread(fid,number_of_particles,'float64');
+  z=fread(fid,number_of_particles,'float64');
+  f=fread(fid,number_of_particles,'int');
+  u=fread(fid,number_of_particles,'float64');
+else 
+  fid=fopen(filename);
+  if fid<0
+      disp('var file does not exist, exiting script')
+      return
+  end
+  %read the time
   tline=fgetl(fid);
-  dummy=textscan(tline, '%f64');
-  dummy_vect=dummy{:};
-  x(j)=dummy_vect(1);
-  y(j)=dummy_vect(2);
-  z(j)=dummy_vect(3);
-  f(j)=dummy_vect(4);
+  dummy=textscan(tline, '%f');
+  time=dummy{:};
+  %how many particles
+  tline=fgetl(fid);
+  dummy=textscan(tline, '%d');  
+  number_of_particles=dummy{:};
+  %get the particles%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  for j=1:number_of_particles
+    tline=fgetl(fid);
+    dummy=textscan(tline, '%f');
+    dummy_vect=dummy{:};
+    x(j)=dummy_vect(1);
+    y(j)=dummy_vect(2);
+    z(j)=dummy_vect(3);
+    f(j)=dummy_vect(4);
+    u(j)=dummy_vect(5);
+  end
+  f=uint16(f);
 end
 %now order these particles, start with i=1
 newx(1,1)=x(200);
@@ -51,9 +81,18 @@ step=0.05;
 t=[1:step:s2(2)];
 Ft=ppval(F,t);
 %now find distances
-plot3(Ft(1,:),Ft(2,:),Ft(3,:),'b-', ...
-     newx(1,:),newx(2,:),newx(3,:),'ro');
-  pause
+switch option
+  case 'plot'
+     plot3(Ft(1,:),Ft(2,:),Ft(3,:),'b-','LineWidth',1.5)
+     hold on
+     plot3(newx(1,:),newx(2,:),newx(3,:),'ro');
+     hold off
+     set(gca,'FontSize',14)
+     xlabel('x','FontSize',14)
+     ylabel('y','FontSize',14)
+     zlabel('z','FontSize',14)
+     pause
+end
 dist(1:(s(2)-10))=10.;
 s2=size(Ft);
 len(1:(s(2)-10))=0;
@@ -86,9 +125,12 @@ dumk=k(dmin:dmax);
 s=size(k);
 slope=polyfit(log(k(60:s(2))),log(p(60:s(2))),1);
 dummp=log(k)*slope(1)+slope(2);
-plot(log(k),log(p));
-pause
-%plot(log(k2),log(p2))
-%pause
-%loglog(k,p)
+switch option
+  case 'plot'
+    plot(log(k),log(p),'k','LineWidth',2) ; hold on
+    plot(log(k),dummp,'--r','LineWidth',1.5); hold off
+     set(gca,'FontSize',14)
+     xlabel('log k','FontSize',14)
+     ylabel('log A(k)','FontSize',14)
+end
 end
