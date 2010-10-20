@@ -573,9 +573,10 @@ module initial
         amp=prefactor*(wave_number**wave_slope)
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
-        if (i==1) then
-          write(34,'(f9.5,f9.5,f9.5)') wave_number, amp, random_shift
+        if (k==1) then
+          write(34,'(a,i3.1)') '%loop number ', i
         end if
+        write(34,'(f9.5,f9.5,f9.5)') wave_number, amp, random_shift
         do j=1, loop_size !reloop over particles
           loop_position=j+(i-1)*loop_size
           select case(wave_type) !what wave type do we want?
@@ -591,10 +592,8 @@ module initial
           end select
         end do
       end do !close k loop
-      if (i==1) then
-        close(34)
-      end if 
     end do !closes the i loop
+    close(34)
   end subroutine
   !*************************************************************************
   subroutine setup_wave_line

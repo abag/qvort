@@ -1,19 +1,19 @@
 --------------required parameters------------
 nsteps 100000
-shots 100
-recon_shots 2
-pcount 600
-dt 1E-4
-delta 0.003
-box_size 0.075
-velocity Tree
-initf tangle
-line_count 16
-boundary periodic
+shots 10
+recon_shots 1
+pcount 900
+dt 2E-5
+delta 0.001
+box_size 0.1
+velocity BS
+initf wave_loop
+line_count 3
+boundary open
+wave_count 5
+wave_slope -4
+wave_amp 10.
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-normal_velocity KS
-alpha 1.21 -0.3883
-tree_theta 0.6
-binary_print T 
-KS_rey_int 16
+binary_print T
+curv_hist T
