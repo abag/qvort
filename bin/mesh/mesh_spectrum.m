@@ -24,7 +24,7 @@ figure('Name',strcat('Energy Spectrum, fluid:',fluid))
 k=1:midpt;
 loglog(k,spect(1:midpt),'LineWidth',2)
 if fit==1
-  dummy_spect=k.^(-4.5/3);
+  dummy_spect=k.^(-5/3);
   scaling_factor=spect(3)/dummy_spect(3);
   dummy_spect=dummy_spect*scaling_factor;
   hold on

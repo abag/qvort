@@ -132,7 +132,6 @@ remove_count
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
     real, allocatable :: vapor_array(:,:,:)
-    logical :: vapor=.true.
     if (mesh_size==0) return
     write(unit=print_file,fmt="(a,i3.3,a)")"./data/mesh",filenumber,".dat"
     open(unit=92,file=print_file,form='unformatted',status='replace',access='stream')
@@ -145,13 +144,20 @@ remove_count
       write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_sup(2)
       write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_sup(3)
     close(92)
-    !print just the velocity field for vapor 
-    if (vapor) then
+    !print the velocity field for vapor (vapor print set in run.in) 
+    if (vapor_print) then
       allocate(vapor_array(mesh_size, mesh_size, mesh_size))
+      vapor_array(:,:,:)=sqrt(mesh(:,:,:)%u_norm(1)**2+&
+                              mesh(:,:,:)%u_norm(2)**2+&
+                              mesh(:,:,:)%u_norm(3)**2)
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/vap_norm",filenumber,".dat"
+      open(unit=93,file=print_file,form='unformatted',status='replace',access='stream')
+        write(93) vapor_array
+      close(93)
       vapor_array(:,:,:)=sqrt(mesh(:,:,:)%u_sup(1)**2+&
                               mesh(:,:,:)%u_sup(2)**2+&
                               mesh(:,:,:)%u_sup(3)**2)
-      write(unit=print_file,fmt="(a,i3.3,a)")"./data/vap_mesh",filenumber,".dat"
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/vap_sup",filenumber,".dat"
       open(unit=93,file=print_file,form='unformatted',status='replace',access='stream')
         write(93) vapor_array
       close(93)
@@ -164,15 +170,22 @@ remove_count
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
+    logical :: sup_only=.true.
     integer :: i
     if (vel_print) then !set in run.in false by default
       write(unit=print_file,fmt="(a,i4.4,a)")"./data/uu",filenumber,".dat"
       open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
         write(98) t
         write(98) pcount
-        write(98) f(:)%u(1)
-        write(98) f(:)%u(2)
-        write(98) f(:)%u(3)
+        if (sup_only) then
+          write(98) f(:)%u_sup(1)
+          write(98) f(:)%u_sup(2)
+          write(98) f(:)%u_sup(3)
+        else
+          write(98) f(:)%u(1)
+          write(98) f(:)%u(2)
+          write(98) f(:)%u(3)
+        end if
       close(98)
     end if
   end subroutine

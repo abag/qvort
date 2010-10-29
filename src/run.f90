@@ -68,7 +68,7 @@ program run
       call print_info !output.mod
       if (mod(itime, mesh_shots)==0) then
         !print the mesh to a binary file
-        call print_mesh(itime/(mesh_shots)) !output.mod
+        call print_mesh(itime/mesh_shots) !output.mod
         !can also print full velocity field for statistics 
         call print_velocity(itime/mesh_shots) !output.mod
       end if

@@ -12,6 +12,7 @@ module initial
     implicit none
     logical :: restart
     write(*,'(a,f9.7)') ' quantum of circulation is:', quant_circ 
+    write(*,'(a,e9.3)') ' core size is:', corea 
     !check particle separation has been set
     if (delta<epsilon(0.)) call fatal_error('init.mod','delta must be set in run.in')
     !check that the particle count (pcount) has been set
@@ -926,9 +927,9 @@ module initial
     delta_min=delta/2.
     dt_max=((delta_min)**2)/(quant_circ*log(delta_min*1E8/pi))
     if (dt<dt_max) then
-      write(*,'(a,f14.13)') ' dt is below maximum possible dt:', dt_max
+      write(*,'(a,e10.4)') ' dt is below maximum possible dt:', dt_max
     else
-      write(*,'(a,f14.13)') ' warning set dt below ', dt_max
+      write(*,'(a,e10.4)') ' warning set dt below ', dt_max
       call fatal_error('initial.mod:timestep_check','dt is too large')
     end if
   end subroutine

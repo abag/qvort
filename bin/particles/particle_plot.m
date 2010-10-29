@@ -1,5 +1,5 @@
 function vortex_plot(filenumber)
-filename=sprintf('data/par%03d.log',filenumber);
+filename=sprintf('data/par%04d.log',filenumber);
 fid=fopen(filename);
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');

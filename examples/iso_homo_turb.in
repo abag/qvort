@@ -1,0 +1,20 @@
+--------------required parameters------------
+nsteps 100000
+shots 50
+recon_shots 1
+pcount 100
+dt 2E-5
+delta 0.001
+box_size 0.05
+velocity Tree
+initf tangle
+line_count 50
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+mesh_size 128
+mesh_shots 1000
+tree_theta 0.7
+binary_print T 
+vel_print T
+vapor_print T

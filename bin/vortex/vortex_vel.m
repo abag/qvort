@@ -1,4 +1,4 @@
-loa%plot PDFs' (using kernal density estimates) of the x/y/z velocities along the filaments
+%plot PDFs' (using kernal density estimates) of the x/y/z velocities along the filaments
 function vortex_vel(start,finish)
 if nargin<2
     finish=start
@@ -11,6 +11,7 @@ for i=start:finish
     disp('var file does not exist, exiting script')
     return
   end
+  %disp(sprintf('reading var %04d',i))
   time=fread(fid,1,'float64');
   number_of_particles=fread(fid,1,'int');
   if i==start
@@ -27,21 +28,25 @@ end
 markerx=1;
 markery=1;
 markerz=1;
+vcoff=7.
 for i=1:length(ux)
-    if (ux(i)<5)
-        if (ux(i)>-5)
+    if mod(100000,i)==0
+      disp(sprintf('processed %f6 percent of data',i/length(ux)))
+    end
+    if (ux(i)<vcoff)
+        if (ux(i)>-vcoff)
             dum_ux(markerx)=ux(i);
             markerx=markerx+1;
         end
     end
-    if (uy(i)<5)
-        if (uy(i)>-5)
+    if (uy(i)<vcoff)
+        if (uy(i)>-vcoff)
             dum_uy(markery)=uy(i);
             markery=markery+1;
         end
     end
-     if (uz(i)<5)
-        if (uz(i)>-5)
+     if (uz(i)<vcoff)
+        if (uz(i)>-vcoff)
             dum_uz(markerz)=uz(i);
             markerz=markerz+1;
         end
@@ -56,7 +61,7 @@ save velocity.mat dum_ux dum_uy dum_uz
 [den_uy ymesh]=hist(uy,30);
 [den_uz zmesh]=hist(uz,30);
 [den_uu umesh]=hist(sqrt(ux.^2+uy.^2+uz.^2),30);
-histfit(dum_ux,20) 
+histfit(ux,20) 
 pause
 return
 subplot(2,2,1) 

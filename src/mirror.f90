@@ -88,7 +88,6 @@ module mirror
     real :: u_mir(3) !helper array  
     real :: a_bs, b_bs, c_bs !helper variables
     integer :: j, k
-    u=0.
     do k=6, 6 !all 6 faces
       do j=1, pcount
         !check that the particle is not empty

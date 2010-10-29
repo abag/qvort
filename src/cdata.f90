@@ -6,6 +6,7 @@ module cdata
   type qvort !our main structure
     real :: x(3) !position
     real :: u(3), u1(3), u2(3) !stored velocities (adam bash)
+    real :: u_sup(3) !nice to have the just the superfluid veloctity even with normal fluid/forcing
     real :: ghosti(3), ghostb(3)
     integer :: infront, behind !to form a line/loop
     integer :: closest !nearest particle, used in reconnection
@@ -26,6 +27,8 @@ module cdata
   type quasi !quasi particle structure
     real :: x(3) !position
     real :: u(3), u1(3), u2(3) !stored velocities (adam bash)
+    real :: p(3) !momentum
+    real :: energy
   end type
   type(quasi), allocatable :: g(:) !vector of particles
   !**************TIME PARAMS*******************************************************
@@ -59,6 +62,7 @@ module cdata
   real :: dt
   real, protected :: box_size=0.
   real, protected :: quant_circ=9.97E-4
+  real , protected :: corea=8.244023E-9 
   logical :: periodic_bc=.false.
   logical :: mirror_bc=.false.
   character(len=30), protected :: velocity, initf, boundary
@@ -98,6 +102,7 @@ module cdata
   logical, protected :: tree_print=.false.
   !--------------------additional diagnostics------------------------------------
   logical, protected :: curv_hist=.false. !dumps binned curvature information
+  logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
   contains
@@ -151,6 +156,8 @@ module cdata
           case ('quant_circ')
              !quatum of circulation, not necessary to set, accepts real #
              read(buffer, *, iostat=ios) quant_circ !quantum of circulation
+          case ('corea')
+             read(buffer, *, iostat=ios) corea !size of vortex core
           case ('box_size')
              !size of box must be>0, real number
              read(buffer, *, iostat=ios) box_size !size of periodic box
@@ -207,6 +214,8 @@ module cdata
              read(buffer, *, iostat=ios) mirror_print !print the mirror filaments
           case ('vel_print')
              read(buffer, *, iostat=ios) vel_print !print the velocity information
+          case ('vapor_print')
+             read(buffer, *, iostat=ios) vapor_print !print the velocity field for vapor
           case ('KS_slope')
              read(buffer, *, iostat=ios) KS_slope !KS velocity field spectrum
           case ('KS_rey_int')

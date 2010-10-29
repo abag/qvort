@@ -5,7 +5,7 @@ if nargin==1
 end
 c=colormap(jet(pnumber));
 for i=1:filenumber
-  filename=sprintf('data/par%03d.log',i);
+  filename=sprintf('data/par%04d.log',i);
   fid=fopen(filename);
   %read the time
   tline=fgetl(fid);
@@ -37,7 +37,7 @@ for j=1:pnumber
     for i=1:filenumber-1
       dist=sqrt((parray(j,i,1)-parray(j,i+1,1))^2+(parray(j,i,2)-parray(j,i+1,2))^2+(parray(j,i,3)-parray(j,i+1,3))^2);
       if (dist<dims(2)/2.) || (dims(2)==0.)
-        plot3([parray(j,i,1) parray(j,i+1,1)],[parray(j,i,2) parray(j,i+1,2)],[parray(j,i,3) parray(j,i+1,3)],'Color',c(j,:))
+        plot3([parray(j,i,1) parray(j,i+1,1)],[parray(j,i,2) parray(j,i+1,2)],[parray(j,i,3) parray(j,i+1,3)],'Color',c(j,:),'LineWidth',1.5)
       end
         hold on
     end

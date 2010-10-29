@@ -8,6 +8,10 @@ if (msize==0)
   return
 end
 fid=fopen(filename);
+if fid<0
+  disp('mesh file does not exist, exiting script')
+  return
+end
 t=fread(fid,1,'float64');
 x=fread(fid,msize,'float64');
 unormx=fread(fid,msize^3,'float64');

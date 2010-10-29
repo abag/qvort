@@ -3,19 +3,16 @@ nsteps 100000
 shots 10
 recon_shots 1
 pcount 100
-dt 1E-9
-delta 1E-5
-box_size 1E-3
+dt 1E-8
+delta 0.001
+box_size 0.1
 velocity BS
 initf single_line
 line_count 1
 boundary periodic
------------------Helium III-------------------
-quant_circ 6.662E-4
-corea 8.5E-6
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-quasi_pcount 40
+quasi_pcount 20
 particle_type quasi
 initg quasi2
 binary_print F
