@@ -1,4 +1,4 @@
-function slope=vortex_smooth(filenumber,skip,option)
+function [slope meana maxa]=vortex_smooth(filenumber,skip,option)
 if nargin==2     
   option='plot';
 end
@@ -48,17 +48,18 @@ else
   f=uint16(f);
 end
 %now order these particles, start with i=1
-newx(1,1)=x(200);
-newx(2,1)=y(200);
-newx(3,1)=z(200);
-next=f(200);
+startpoint=2;
+newx(1,1)=x(startpoint);
+newx(2,1)=y(startpoint);
+newx(3,1)=z(startpoint);
+next=f(startpoint);
 counter=2;
 for i=2:number_of_particles
     newx(1,counter)=x(next);   
     newx(2,counter)=y(next);    
     newx(3,counter)=z(next);
     next=f(next);
-    if (next==200)
+    if (next==startpoint)
         break
     end
     counter=counter+1;
@@ -113,6 +114,8 @@ end
 
 %plot(len,dist)
 %pause
+meana=mean(dist);
+maxa=max(dist);
 p=abs(fft(dist))/((s(2)-10)/2) ;
 p=p(1:floor((s(2)-10)/2)).^2;
 k=(1:floor((s(2)-10)/2))/max(len);
