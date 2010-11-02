@@ -1,11 +1,14 @@
 %not ready yet
-function corr_dim(filenumber)
+function corrdim=corr_dim(filenumber,option)
+if nargin==1     
+  option='plot';
+end
 filename=sprintf('data/var%04d.log',filenumber);
 %set options based on varargin
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
-delta=dims(1)  %set the resolution
+delta=dims(1);  %set the resolution
 if dims(4)==1
   fid=fopen(filename);
   if fid<0
@@ -64,13 +67,26 @@ for i=1:number_of_particles
     dist(i,j)=sqrt((x(i)-x(j))^2+(y(i)-y(j))^2+(z(i)-z(j))^2);
   end
 end
-pcolor(dist/delta) ; shading interp ; colorbar
-pause
+switch option
+  case 'plot'
+    figure('Name','distance array')
+    pcolor(dist/delta) ; shading interp ; colorbar
+    set(gca,'FontSize',14);
+    xlabel('pcount index','FontSize',12);
+    ylabel('pcount index','FontSize',12);
+    pause
+end
 for i=1:15
     rad(i)=delta*i;
     corr(i)=sum(sum(dist<rad(i)));
 end
-plot(rad,corr)
-pause
-p=polyfit(log(rad),log(corr),1)
+switch option
+  case 'plot'
+    plot(rad,corr,'LineWidth',2)
+    set(gca,'FontSize',14);
+    xlabel('radius','FontSize',12);
+    ylabel('particle count','FontSize',12);
+end
+p=polyfit(log(rad),log(corr),1);
+corrdim=p(1);
 end
