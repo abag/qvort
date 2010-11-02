@@ -1,5 +1,5 @@
 function vortex_plot(filenumber,pnumber)
-disp('plotting a trace of particles trajectory')
+disp(sprintf('plotting a trace of %04d particles trajectory',pnumber))
 if nargin==1
   pnumber=1;
 end

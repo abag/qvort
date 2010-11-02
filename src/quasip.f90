@@ -140,18 +140,35 @@ module quasip
   subroutine timestep_quasip
     !TIMESTEP THE QUASI-PARTICLES USING EULER SCHEME
     implicit none
+    type(quasi), allocatable :: storeg(:)
     real :: rdot(3), pdot(3)
+    real :: rdotpred(3), pdotpred(3)
     integer :: i
+    character(*), parameter :: scheme='euler' !euler, moulton
+    allocate(storeg(quasi_pcount))
+    storeg(:)=g(:)
     do i=1, quasi_pcount
       call velocity_quasip(i,rdot,pdot)
       !euler step both the position and momentum
       g(i)%x(:)=g(i)%x(:)+dt*rdot(:)
       g(i)%p(:)=g(i)%p(:)+dt*pdot(:)
+      select case(scheme)
+        !use the new position to get rdot/pdot
+        case('moulton')
+          call velocity_quasip(i,rdotpred,pdotpred)
+          g(i)%x(:)=storeg(i)%x(:)+0.5*dt*(rdot(:)+rdotpred(:))
+          g(i)%p(:)=storeg(i)%p(:)+0.5*dt*(pdot(:)+pdotpred(:))
+      end select
       !enforce periodicity
       if (periodic_bc) then
         !if a particle leaves one side of the box
         !-------------x------------------     
         if (g(i)%x(1)>(box_size/2.)) then
+          select case(initg)
+            !for certain initial conditions end the run once the particles have left the box
+            case('quasi1','quasi2')
+              call fatal_error('quasip_timestep','particles have left the box!')
+          end select
           g(i)%x(1)=g(i)%x(1)-box_size
         else if (g(i)%x(1)<(-box_size/2.)) then
           g(i)%x(1)=g(i)%x(1)+box_size
@@ -172,6 +189,7 @@ module quasip
         !put it back in the other side....
       end if
     end do
+    deallocate(storeg)
   end subroutine 
   !************************************************************
   subroutine velocity_quasip(i,rdot,pdot)
