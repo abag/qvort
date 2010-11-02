@@ -8,6 +8,7 @@
 %	     rainbow: colour code the vortex according to velocity
 %            overhead: angle the plot overhead
 %            print: print to file rather than screen
+%            eps: if print is set and eps is set then output eps files
 %            movie: make a movie by outputting lots of pngs
 %
 function vortex_plot(filenumber,varargin)
@@ -17,13 +18,15 @@ filename=sprintf('data/var%04d.log',filenumber);
 %this is overridden if we have periodic B.C.'s
 box_size=.005 ;
 %set options based on varargin
-rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ;
+rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'rough'
       rough=1;
     case 'overhead'
       overhead=1;
+    case 'eps'
+      ploteps=1;
     case 'print'
       printit=1;
       disp('printing to file')
@@ -193,7 +196,7 @@ for j=1:number_of_particles
             end
             plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(ceil(u(j)),:),'LineWidth',2.0)
           else
-            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2.0)
+            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',1.5)
           end
         end
       else
@@ -261,16 +264,23 @@ s1='t=';
 s2=num2str(time);
 str=strcat(s1,s2);
 if (dims(2)>0.)
-  text(-1.2*dims(2),1.2*dims(2),1.3*dims(2),str,'FontSize',16)
+  text(-.6*dims(2),.6*dims(2),.7*dims(2),str,'FontSize',14)
 else
   text(-0.06,0.06,0.07,str,'FontSize',16)
 end
 if printit==1
-  disp('printing to vortex_out.png')
-  fOUT=sprintf('vortex_out%04d.png',filenumber)
-  print('-dpng', fOUT)
+  if ploteps==1 
+    disp(sprintf('printing to vortex_out%04d.eps',filenumber))
+    fOUT=sprintf('vortex_out%04d.eps',filenumber)
+    print('-deps', fOUT)
+  else
+    disp(sprintf('printing to vortex_out%04d.png',filenumber))
+    fOUT=sprintf('vortex_out%04d.png',filenumber)
+    print('-dpng', fOUT) 
+  end
 end
 rotate3d on
+set(gca,'FontSize',14)
 %text(1.,10.5,0.55,str)
 %view(-18,17)
 

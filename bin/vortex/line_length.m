@@ -26,4 +26,11 @@ figure('Position',[1 scrsz(4) scrsz(3)/1.2 scrsz(4)/2],'PaperPosition',[0.25 2.5
       text(t(floor(start/2+finish/2)),dummy_ll(floor(length(dummy_ll)/2))-0.05*(max(log(l))-min(log(l))),num2str(p(1)),'FontSize',14)
     end
     hold off
+    xlabel('t','FontSize',14)
+    ylabel('log l','FontSize',14)
     set(gca,'FontSize',14)
+figure('Name', 'line length only')
+    plot(t,l,'-k','LineWidth',2);
+    set(gca,'FontSize',14)
+    xlabel('t','FontSize',14)
+    ylabel('l','FontSize',14)
