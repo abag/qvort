@@ -1,4 +1,7 @@
-function vortex_angle(filenumber,skip)
+function slope=vortex_angle(filenumber,skip,option)
+if nargin==2     
+  option='plot';
+end
 filename=sprintf('data/var%04d.log',filenumber);
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
@@ -59,7 +62,7 @@ for i=2:number_of_particles
     end
     counter=counter+1;
 end
-s=size(newx)
+s=size(newx);
 counter=1;
 for i=1:skip:s(2)
     newx2(1,counter)=newx(1,i);
@@ -73,14 +76,23 @@ end
 s2=size(newx2);
 F=spline((1:s2(2)),newx2);
 step=s2(2)/s(2);
-step=0.25/skip
+step=0.05;
 t=[1:step:s2(2)];
 Ft=ppval(F,t);
-%now find angles
-%plot3(Ft(1,:),Ft(2,:),Ft(3,:),'bo', ...
-%     newx(1,:),newx(2,:),newx(3,:),'ro');
-%  pause
-dist(1:(s(2)-10))=10.; %arbitrarily high
+%now find distances
+switch option
+  case 'plot'
+     plot3(Ft(1,:),Ft(2,:),Ft(3,:),'b-','LineWidth',1.5)
+     hold on
+     plot3(newx(1,:),newx(2,:),newx(3,:),'ro');
+     hold off
+     set(gca,'FontSize',14)
+     xlabel('x','FontSize',14)
+     ylabel('y','FontSize',14)
+     zlabel('z','FontSize',14)
+     pause
+end
+dist(1:(s(2)-10))=10.;
 s2=size(Ft);
 len(1:(s(2)-10))=0;
 for i=1:(s(2)-10)
@@ -89,7 +101,6 @@ for i=1:(s(2)-10)
         dum_dist=sqrt((newx(1,i)-Ft(1,j))^2+(newx(2,i)-Ft(2,j))^2+(newx(3,i)-Ft(3,j))^2);
         if dum_dist<dist(i)
           dist(i)=dum_dist;
-          nearest(i)=j;
           if i==1
             len(i)=dum_len;
           else
@@ -111,6 +122,19 @@ for i=1:(s(2)-10)
     angle(i)=acos((dot(tana,tanb)));
 end
 [n xout]=histnorm(angle);
-plot(xout,n);
-%save angle.mat angle
+switch option
+  case 'plot'
+  figure('Name','PDF of angle')
+    plot(xout,n,'-k','LineWidth',2);
+    xlabel('\theta','FontSize',14);
+    ylabel('PDF(\theta)','FontSize',14);
+    set(gca,'FontSize',14);
+  figure('Name','log-log plot')
+    loglog(xout,n,'-k','LineWidth',2);
+    xlabel('log \theta','FontSize',14);
+    ylabel('log PDF(\theta)','FontSize',14);
+    set(gca,'FontSize',14);
+end
+dum_slope=polyfit(log(xout(5:10)),log(n(5:10)),1);
+slope=dum_slope(1);
 end

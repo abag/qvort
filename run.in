@@ -1,11 +1,18 @@
 --------------required parameters------------
 nsteps 10000
 shots 10
+recon_shots 1
 pcount 200
 dt 2E-5
 delta 0.001
-box_size 0.03
+box_size 0.1
 velocity BS
-initf single_loop
+initf linked_wave_loop
 boundary open
+!wave spectrum parameters
+wave_count 4
+wave_slope -3
+wave_amp 5
+wave_type helical
 --------------optional parameters------------
+---delete all below for a 'standard' run-----

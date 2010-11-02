@@ -84,6 +84,8 @@ module initial
           call setup_cardoid !init.mod
         case('wave_loop')
           call setup_wave_loop !init.mod
+        case('linked_wave_loop')
+          call setup_linked_wave_loop !init.mod
         case('wave_line')
           call setup_wave_line !init.mod
         case('line_motion')
@@ -558,6 +560,100 @@ module initial
           f(loop_position)%infront=loop_position+1
         end if
         f(loop_position)%u1=0. ; f(loop_position)%u2=0.
+      end do
+      !we have now drawn the basic loop, now we add the wave pertubations
+      prefactor=wave_amp/(2.**wave_slope) !our starting wavenumber is 2
+      if (i==1) then !only write this once
+        write(*,*)'wave information recorded in ./data/wave_info.log'
+        open(unit=34,file='./data/wave_info.log')
+        write(34,*) '%------------------WAVE INFORMATION-------------------'
+      end if
+      do k=1, wave_count !wave_count set in run.in
+        call ghostp !we must call this routine at the start of adding every wave 
+                    !the routines normalf, binormalf rely on correct ghostpoints
+        !on a loop so wavenumbers must be an integer
+        wave_number=2+0.4*k !starting wavenumber is 2
+        amp=prefactor*(wave_number**wave_slope)
+        call random_number(random_shift) !help things along with a 
+        random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
+        if (k==1) then
+          write(34,'(a,i3.1)') '%loop number ', i
+        end if
+        write(34,'(f9.5,f9.5,f9.5)') wave_number, amp, random_shift
+        do j=1, loop_size !reloop over particles
+          loop_position=j+(i-1)*loop_size
+          select case(wave_type) !what wave type do we want?
+            case('planar')       !set this in run.in
+              f(loop_position)%x(:)=f(loop_position)%x(:)+&
+              binormalf(loop_position)*amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*loop_size))
+            case('helical')
+              f(loop_position)%x(:)=f(loop_position)%x(:)+&
+              normalf(loop_position)*amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*loop_size))+&
+              binormalf(loop_position)*amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*loop_size))
+            case default
+              call fatal_error('initial.mod:wave_line','incorrect wave type parameter')
+          end select
+        end do
+      end do !close k loop
+    end do !closes the i loop
+    close(34)
+  end subroutine
+ !*************************************************************************
+  subroutine setup_linked_wave_loop
+    !linked loops, helical/planar waves added with
+    !specific spectrum all set in run.in
+    implicit none
+    real :: wave_number, prefactor
+    real :: amp, random_shift
+    real :: loop_radius
+    integer :: pcount_required
+    integer :: loop_size, loop_position
+    integer :: i, j, k
+    !test run.in parameters, if wrong program will exit
+    if (mod(pcount,2)/=0) then
+      call fatal_error('init.mod:setup_linked_wave_loops', &
+      'pcount/2 is not an integer')
+    end if
+    write(*,'(a)') ' drawing 2 linked loops'
+    write(*,'(i4.1,a,a,a,f9.5)') wave_count, ' ',trim(wave_type),' wave pertubations, with spectral slope:', wave_slope
+    loop_size=int(pcount/2)
+    loop_radius=loop_size*(0.75*delta)/(2*pi) !75% of potential size
+    !START THE LOOP
+    do i=1, 2
+      do j=1, loop_size
+        if (i==1) then
+          loop_position=j+(i-1)*loop_size
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)
+          f(loop_position)%x(2)=loop_radius*cos(pi*real(2*j-1)/loop_size)
+          f(loop_position)%x(3)=0.
+          if(j==1) then
+            f(loop_position)%behind=i*loop_size
+            f(loop_position)%infront=loop_position+1
+          else if (j==loop_size) then
+            f(loop_position)%behind=loop_position-1
+            f(loop_position)%infront=(i-1)*loop_size+1
+          else
+            f(loop_position)%behind=loop_position-1
+            f(loop_position)%infront=loop_position+1
+          end if
+          f(loop_position)%u1=0. ; f(loop_position)%u2=0.
+        else
+          loop_position=j+(i-1)*loop_size
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)+loop_radius/0.51
+          f(loop_position)%x(2)=0.
+          f(loop_position)%x(3)=loop_radius*cos(pi*real(2*j-1)/loop_size)
+          if(j==1) then
+            f(loop_position)%behind=i*loop_size
+            f(loop_position)%infront=loop_position+1
+          else if (j==loop_size) then
+            f(loop_position)%behind=loop_position-1
+            f(loop_position)%infront=(i-1)*loop_size+1
+          else
+            f(loop_position)%behind=loop_position-1
+            f(loop_position)%infront=loop_position+1
+          end if
+          f(loop_position)%u1=0. ; f(loop_position)%u2=0.
+        end if
       end do
       !we have now drawn the basic loop, now we add the wave pertubations
       prefactor=wave_amp/(2.**wave_slope) !our starting wavenumber is 2
