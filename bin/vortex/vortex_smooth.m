@@ -3,8 +3,6 @@ if nargin==2
   option='plot';
 end
 filename=sprintf('data/var%04d.log',filenumber);
-%set options based on varargin
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
 if dims(4)==1
@@ -47,7 +45,7 @@ else
   end
   f=uint16(f);
 end
-%now order these particles, start with i=1
+%now order these particles, start with i=startpoint
 startpoint=2;
 newx(1,1)=x(startpoint);
 newx(2,1)=y(startpoint);

@@ -1,33 +1,60 @@
-function vortex_angle(filename,skip)
-global slope
-fid=fopen(filename);
-tline=fgetl(fid);
-dummy=textscan(tline, '%f');
-time=dummy{:};
-tline=fgetl(fid);
-dummy=textscan(tline, '%d');
-number_of_particles=dummy{:};
-for j=1:number_of_particles
+function vortex_angle(filenumber,skip)
+filename=sprintf('data/var%04d.log',filenumber);
+%get the dimensions information from dims.log
+dims=load('./data/dims.log');
+if dims(4)==1
+  fid=fopen(filename);
+  if fid<0
+      disp('var file does not exist, exiting script')
+      return
+  end
+  time=fread(fid,1,'float64');
+  number_of_particles=fread(fid,1,'int');
+  x=fread(fid,number_of_particles,'float64');
+  y=fread(fid,number_of_particles,'float64');
+  z=fread(fid,number_of_particles,'float64');
+  f=fread(fid,number_of_particles,'int');
+  u=fread(fid,number_of_particles,'float64');
+else 
+  fid=fopen(filename);
+  if fid<0
+      disp('var file does not exist, exiting script')
+      return
+  end
+  %read the time
   tline=fgetl(fid);
-  dummy=textscan(tline, '%f64');
-  dummy_vect=dummy{:};
-  x(j)=dummy_vect(1);
-  y(j)=dummy_vect(2);
-  z(j)=dummy_vect(3);
-  f(j)=dummy_vect(4);
+  dummy=textscan(tline, '%f');
+  time=dummy{:};
+  %how many particles
+  tline=fgetl(fid);
+  dummy=textscan(tline, '%d');  
+  number_of_particles=dummy{:};
+  %get the particles%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  for j=1:number_of_particles
+    tline=fgetl(fid);
+    dummy=textscan(tline, '%f');
+    dummy_vect=dummy{:};
+    x(j)=dummy_vect(1);
+    y(j)=dummy_vect(2);
+    z(j)=dummy_vect(3);
+    f(j)=dummy_vect(4);
+    u(j)=dummy_vect(5);
+  end
+  f=uint16(f);
 end
-%now order these particles, start with i=1
-newx(1,1)=x(200);
-newx(2,1)=y(200);
-newx(3,1)=z(200);
-next=f(200);
+%now order these particles, start with i=startpoint
+startpoint=2;
+newx(1,1)=x(startpoint);
+newx(2,1)=y(startpoint);
+newx(3,1)=z(startpoint);
+next=f(startpoint);
 counter=2;
 for i=2:number_of_particles
     newx(1,counter)=x(next);   
     newx(2,counter)=y(next);    
     newx(3,counter)=z(next);
     next=f(next);
-    if (next==200)
+    if (next==startpoint)
         break
     end
     counter=counter+1;
@@ -85,6 +112,5 @@ for i=1:(s(2)-10)
 end
 [n xout]=histnorm(angle);
 plot(xout,n);
-save angle.mat angle
-
+%save angle.mat angle
 end
