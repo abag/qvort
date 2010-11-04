@@ -1,8 +1,8 @@
 --------------required parameters------------
-nsteps 10000
-shots 10
+nsteps 100000
+shots 100
 recon_shots 1
-pcount 200
+pcount 400
 dt 2E-5
 delta 0.001
 box_size 0.1
@@ -12,7 +12,8 @@ boundary open
 !wave spectrum parameters
 wave_count 4
 wave_slope -3
-wave_amp 5
-wave_type helical
+wave_amp 10
+wave_type planar
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
+curv_hist T

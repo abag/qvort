@@ -1,4 +1,9 @@
+
 function slope=vortex_angle(filenumber,skip,option)
+if nargin==1
+  skip=10;
+  option='plot';
+end
 if nargin==2     
   option='plot';
 end
@@ -76,13 +81,13 @@ end
 s2=size(newx2);
 F=spline((1:s2(2)),newx2);
 step=s2(2)/s(2);
-step=0.05;
+step=0.1;
 t=[1:step:s2(2)];
 Ft=ppval(F,t);
 %now find distances
 switch option
   case 'plot'
-     plot3(Ft(1,:),Ft(2,:),Ft(3,:),'b-','LineWidth',1.5)
+     plot3(Ft(1,:),Ft(2,:),Ft(3,:),'*b-','LineWidth',1.5)
      hold on
      plot3(newx(1,:),newx(2,:),newx(3,:),'ro');
      hold off
@@ -121,20 +126,22 @@ for i=1:(s(2)-10)
     tanb=tanb/sqrt(tanb(1)^2+tanb(2)^2+tanb(3)^2);
     angle(i)=acos((dot(tana,tanb)));
 end
-[n xout]=histnorm(angle);
+%[n xout]=histnorm(angle,15);
+[bandwidth,n,xout]=kde(angle,2^4);
+%[mu sig]=normfit(angle);
 switch option
   case 'plot'
   figure('Name','PDF of angle')
-    plot(xout,n,'-k','LineWidth',2);
+    plot(xout,n,'o-k','LineWidth',2);
     xlabel('\theta','FontSize',14);
     ylabel('PDF(\theta)','FontSize',14);
     set(gca,'FontSize',14);
   figure('Name','log-log plot')
-    loglog(xout,n,'-k','LineWidth',2);
+    loglog(xout,n,'o-k','LineWidth',2);
     xlabel('log \theta','FontSize',14);
     ylabel('log PDF(\theta)','FontSize',14);
     set(gca,'FontSize',14);
 end
-dum_slope=polyfit(log(xout(5:10)),log(n(5:10)),1);
+dum_slope=polyfit(log(xout(10:15)),log(n(10:15))',1);
 slope=dum_slope(1);
 end

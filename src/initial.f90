@@ -639,7 +639,7 @@ module initial
           f(loop_position)%u1=0. ; f(loop_position)%u2=0.
         else
           loop_position=j+(i-1)*loop_size
-          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)+loop_radius/0.51
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)+loop_radius/0.5
           f(loop_position)%x(2)=0.
           f(loop_position)%x(3)=loop_radius*cos(pi*real(2*j-1)/loop_size)
           if(j==1) then
@@ -666,7 +666,7 @@ module initial
         call ghostp !we must call this routine at the start of adding every wave 
                     !the routines normalf, binormalf rely on correct ghostpoints
         !on a loop so wavenumbers must be an integer
-        wave_number=2+0.4*k !starting wavenumber is 2
+        wave_number=2+0.5*k !starting wavenumber is 2
         amp=prefactor*(wave_number**wave_slope)
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)

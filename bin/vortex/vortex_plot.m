@@ -18,7 +18,7 @@ filename=sprintf('data/var%04d.log',filenumber);
 %this is overridden if we have periodic B.C.'s
 box_size=.005 ;
 %set options based on varargin
-rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0
+rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ;
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'rough'
