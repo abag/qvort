@@ -49,3 +49,4 @@ if (dims(2)>0.)
 else
   axis([-0.1 0.1 -0.1 0.1 -0.1 0.1]);      
 end
+rotate3d on

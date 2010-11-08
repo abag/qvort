@@ -26,8 +26,10 @@ module cdata
   !**********PARTICLE STRUCTURE****************************************************
   type quasi !quasi particle structure
     real :: x(3) !position
+    real :: xold(6,3) !old positions used for backwards difference
     real :: u(3), u1(3), u2(3) !stored velocities (adam bash)
     real :: p(3) !momentum
+    real :: pold(6,3) !old momentum used for backwards difference
     real :: energy
   end type
   type(quasi), allocatable :: g(:) !vector of particles
@@ -94,7 +96,7 @@ module cdata
   real, protected :: special_dump=0. !special dump time
   integer :: int_special_dump=0. !special dump time integer
   !---------------------particles------------------------------------------------
-  integer, protected :: quasi_pcount=0 !number of particles (quasi or fluid)
+  integer :: quasi_pcount=0 !number of particles (quasi or fluid)
   character(len=20), protected :: particle_type='fluid' !fluid/interial/quasi particles
   character(len=20), protected :: initg='random' !initial particle configuration
   !---------------------tree-code------------------------------------------------

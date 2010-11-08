@@ -1,19 +1,22 @@
 --------------required parameters------------
 nsteps 100000
-shots 100
+shots 10
 recon_shots 1
-pcount 400
-dt 2E-5
-delta 0.001
-box_size 0.1
+pcount 100
+dt 1E-9
+delta 1E-5
+box_size 1E-3
 velocity BS
-initf linked_wave_loop
-boundary open
-!wave spectrum parameters
-wave_count 4
-wave_slope -3
-wave_amp 10
-wave_type planar
+initf single_line
+line_count 1
+boundary periodic
+-----------------Helium III-------------------
+quant_circ 6.662E-4
+corea 8.5E-6
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
+quasi_pcount 40
+particle_type quasi
+initg quasi2
+binary_print F
 curv_hist T

@@ -15,6 +15,7 @@ module output
       else
         write(77,*) 0
       end if
+      write(77,*) quasi_pcount
     close(77)
   end subroutine
   !**********************************************************************
@@ -111,6 +112,8 @@ remove_count
       write(53) itime
       write(53) t
       write(53) f
+      write(53) quasi_pcount
+      write(53) g
     close(53)
   end subroutine
   !**********************************************************************

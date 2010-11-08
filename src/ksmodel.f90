@@ -2,7 +2,7 @@ module KSmodel
   !ALL THE ROUTINES REQUIRED TO USE THE KS MODEL TURBULENT (LIKE) VELOCITY FIELD
   use cdata
   use general
-    integer,private, parameter :: KSmodes=50
+    integer,private, parameter :: KSmodes=200
     real,private,dimension(3,KSmodes) :: unit_k,k,A,B
     real,private,dimension(3,Ksmodes) :: cross1,cross2
     real,private,dimension(KSmodes) :: omega

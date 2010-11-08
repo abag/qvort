@@ -23,8 +23,8 @@ default: run.x
 #
 # Targets
 #
-run.x: run.f90 cdata.o forcing.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o tree.o ksmodel.o mirror.o Makefile 
-	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o forcing.o normal_fluid.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o tree.o ksmodel.o mirror.o
+run.x: run.f90 cdata.o forcing.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o Makefile 
+	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o forcing.o normal_fluid.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o
 #
 #
 clean: 
@@ -49,7 +49,7 @@ normal_fluid.o: normal_fluid.f90 general.o cdata.o ksmodel.o
 #
 forcing.o: forcing.f90 general.o cdata.o
 #
-initial.o: initial.f90 normal_fluid.o forcing.o cdata.o quasip.o periodic.o
+initial.o: initial.f90 stiff_solver.o normal_fluid.o forcing.o cdata.o quasip.o periodic.o
 #
 timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o tree.o mirror.o
 #
@@ -59,8 +59,12 @@ diagnostic.o: diagnostic.f90 general.o cdata.o
 #
 tree.o: tree.f90 general.o cdata.o
 #
-quasip.o: quasip.f90 general.o cdata.o timestep.o normal_fluid.o output.o tree.o
+quasip.o: quasip.f90 hamiltonian.o general.o cdata.o timestep.o normal_fluid.o output.o tree.o stiff_solver.o
 #
 ksmodel.o: ksmodel.f90 general.o cdata.o
 #
-ksmodel.o: mirror.f90 general.o cdata.o
+mirror.o: mirror.f90 general.o cdata.o
+#
+stiff_solver.o: stiff_solver.f90 hamiltonian.o general.o cdata.o
+#
+hamiltonian.o: hamiltonian.f90 tree.o timestep.o output.o general.o cdata.o

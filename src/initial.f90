@@ -11,6 +11,7 @@ module initial
     use quasip
     implicit none
     logical :: restart
+    write(*,'(a)') ' ---------------------VORTEX PARAMETERS------------------' 
     write(*,'(a,f9.7)') ' quantum of circulation is:', quant_circ 
     write(*,'(a,e9.3)') ' core size is:', corea 
     !check particle separation has been set
@@ -19,15 +20,18 @@ module initial
     if (init_pcount<4) call fatal_error('init.mod','you must set enough intial particles')
     !we must check the timestep is sufficient to resolve the motion
     !based on the smallest separation possible in the code
+    write(*,'(a)') ' ---------------------TIME-STEP--------------------' 
     call timestep_check !initial.mod
     !how is data being outputted (binary or formatted)
     if (binary_print) then
+    write(*,'(a)') ' ---------------------DATA FORMAT--------------------' 
       write(*,*) 'binary data output, formatted data can be selected in run.in'
     else
       write(*,*) 'formatted data output selected in run.in'
     end if
     write(*,'(a,i3.2,a)') ' outputting filament information every ', shots, ' time-steps'
     !periodic bounday conditions?
+    write(*,'(a)') ' ---------------------BOUNDARY CONDITIONS--------------------' 
     if (box_size>0.) then
       !what is the boundary
       select case(boundary)
@@ -51,10 +55,11 @@ module initial
     else
       call fatal_error('init_setup:', 'box size is less than zero')
     end if
+    write(*,'(a)') ' --------------------NORMAL FLUID--------------------' 
     call setup_normal_fluid !normal_fluid.mod
     !sort out if there is a special dump time
     int_special_dump=int(special_dump/dt) !convert to integer
-
+    write(*,'(a)') ' --------------------INITIAL CONDITIONS--------------------' 
     !check if we can restart the code
     inquire(file="./data/var.dat", exist=restart)
     if (restart) then
@@ -95,63 +100,72 @@ module initial
         case default
           call fatal_error('cdata.mod:init_setup', &
                          'invalid choice for initf parameter') !cdata.mod
-       end select
-     end if
-     !test if we have a non-zero mesh size
-     if (mesh_size>0) then
-       if (box_size>0) then
-         call setup_mesh !init.mod
-       else 
-         call fatal_error('cdata.mod:init_setup', &
-         'running with a non-zero mesh size requires a non-zero box size') !cdata.mod
-       end if
-     else
-       write(*,*) 'velocity fields not being stored on a mesh - (no spectra etc.)'
-     end if
-     !do we employ forcing on the boundary?
-     call setup_forcing !forcing,mod
-     !are there particles in the code?
-     if (quasi_pcount>0) then
-       call setup_quasip !quasip.mod
-     else
-       write(*,*) 'no particles in the code'
-     end if
-     !is the tree code being used?
-     if (tree_theta>0) then
-       if (box_size>0.) then
-         write(*,*) 'using tree algorithms for reconnection routine - scales like O(NlogN)'
-       else
-         call fatal_error('cdata.mod:init_setup','tree algorithms require a positive box size')
-       end if
-     else
-       write(*,*) 'using brute force reconnection routine - scales like O(N^2)'
-     end if
-     !print information about the velocity field to screen
-     select case(velocity)
-       case('Off')
-         select case(normal_velocity)
-           case('zero')
-             call fatal_error('initial.mod',&
-                  'no superfluid velocity and no normal velocity')
-         end select
-         write(*,*) 'No superfluid velocity: simulation of passive lines'
-       case('LIA')
-         write(*,*) 'using local induction approximation - scales like O(N)'
-       case('BS')
-         write(*,*) 'using full Biot-Savart integral - scales like O(N^2)'
-       case('Tree')
-         if (tree_theta<epsilon(0.)) then 
-           call fatal_error('init.mod:init_setup', & 
-           'runnning with tree velocity but tree_theta is zero') !cdata.mod
-         end if
-         write(*,*) 'using tree approximation to Biot-Savart integral - scales like O(NlogN)'
-      case default
-        print*, 'correct value for velocity in run.in has not been set'
-        print*, 'options are: LIA, BS, Tree'
-        call fatal_error('init.mod:init_setup', & 
+      end select
+    end if
+    !test if we have a non-zero mesh size
+    write(*,'(a)') ' ------------------------MESH-----------------------' 
+    if (mesh_size>0) then
+      if (box_size>0) then
+        call setup_mesh !init.mod
+      else 
+        call fatal_error('cdata.mod:init_setup', &
+        'running with a non-zero mesh size requires a non-zero box size') !cdata.mod
+      end if
+    else
+      write(*,*) 'velocity fields not being stored on a mesh - (no spectra etc.)'
+    end if
+    !do we employ forcing on the boundary?
+    write(*,'(a)') ' -----------------------FORCING-----------------------' 
+    call setup_forcing !forcing,mod
+    !are there particles in the code?
+    write(*,'(a)') ' ------------------------PARTICLES-----------------------' 
+    if (quasi_pcount>0) then
+      if (restart) then
+        write(*,*) 'particles have been restored from dump file, see above'
+      else 
+        call setup_quasip !quasip.mod
+      end if
+    else
+      write(*,*) 'no particles in the code'
+    end if
+    write(*,'(a)') ' ---------------------VELOCITY CALCULATION----------------------' 
+    !is the tree code being used?
+    if (tree_theta>0) then
+      if (box_size>0.) then
+        write(*,*) 'using tree algorithms for reconnection routine - scales like O(NlogN)'
+      else
+        call fatal_error('cdata.mod:init_setup','tree algorithms require a positive box size')
+      end if
+    else
+      write(*,*) 'using brute force reconnection routine - scales like O(N^2)'
+    end if
+    !print information about the velocity field to screen
+    select case(velocity)
+      case('Off')
+        select case(normal_velocity)
+          case('zero')
+            call fatal_error('initial.mod',&
+                 'no superfluid velocity and no normal velocity')
+        end select
+        write(*,*) 'No superfluid velocity: simulation of passive lines'
+      case('LIA')
+        write(*,*) 'using local induction approximation - scales like O(N)'
+      case('BS')
+        write(*,*) 'using full Biot-Savart integral - scales like O(N^2)'
+      case('Tree')
+        if (tree_theta<epsilon(0.)) then 
+          call fatal_error('init.mod:init_setup', & 
+          'runnning with tree velocity but tree_theta is zero') !cdata.mod
+        end if
+        write(*,*) 'using tree approximation to Biot-Savart integral - scales like O(NlogN)'
+     case default
+       print*, 'correct value for velocity in run.in has not been set'
+       print*, 'options are: LIA, BS, Tree'
+       call fatal_error('init.mod:init_setup', & 
         'correct value for "velocity" in run.in has not been set') !cdata.mod
     end select
     !any special diagnostic information?
+    write(*,'(a)') ' ---------------------FURTHER DIAGNOSTICS----------------------' 
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
     !final boundary conditions sanity check
     if (periodic_bc.and.mirror_bc) call fatal_error('init.mod','both periodic and mirror bcs are set')
@@ -159,6 +173,7 @@ module initial
   !**********************************************************************
   subroutine data_restore
     !restart the code
+    use stiff_solver
     implicit none
     integer :: dummy_itime 
     open(unit=63,file="./data/var.dat",FORM='unformatted')
@@ -168,6 +183,18 @@ module initial
       read(63) t
       allocate(f(pcount))
       read(63) f
+      write(*,*) 'restored vortex filament'
+      read(63) quasi_pcount
+      if (quasi_pcount>0) then
+        allocate(g(quasi_pcount))
+        read(63) g
+        write(*,'(a,i4.1,a)') ' restored ', quasi_pcount,' particles'
+        select case(particle_type)
+          case('quasi')
+            !finally intialise the backwards difference coefficients array
+            call set_BDF_coeff !stiff_solver.mod
+        end select
+      end if
     close(63)
     nstart=dummy_itime+1
     write(*,*) 'data read in from dump file at t=', t
@@ -752,7 +779,8 @@ module initial
         write(34,*) '%------------------WAVE INFORMATION-------------------'
       end if
       do k=1, wave_count !wave_count set in run.in
-        wave_number=2+.1*k !starting wavenumber is 2, step in .1
+        !wave_number=2+.1*k !starting wavenumber is 2, step in .1
+        wave_number=2+2*k !starting wavenumber is 2, step in .1
         amp=prefactor*(wave_number**wave_slope)
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
