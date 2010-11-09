@@ -84,7 +84,7 @@ module line
       if (f(i)%infront==0) cycle !empty particle
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)
-      if (distii<delta) then
+      if ((distii<delta).or.(curvature(infront)>sqrt(3.)/delta)) then
         !print to file the curvature of this particle
         infront=f(i)%infront ; tinfront=f(f(i)%infront)%infront
         open(unit=56,file='./data/removed_curv.log',position='append')
@@ -97,6 +97,7 @@ module line
         call loop_killer(i)
         remove_count=remove_count+1
       end if
+      !now check to see if the particles curvature is too high
     end do
   end subroutine
   !******************************************************************

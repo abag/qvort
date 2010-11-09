@@ -113,7 +113,7 @@ remove_count
       write(53) t
       write(53) f
       write(53) quasi_pcount
-      write(53) g
+      if (quasi_pcount>0) write(53) g
     close(53)
   end subroutine
   !**********************************************************************

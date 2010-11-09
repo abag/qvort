@@ -87,6 +87,7 @@ module cdata
   !------------KS model--------------------------------------------
   integer,protected :: KS_rey_int=8
   real,protected :: KS_slope=-5./3.
+  integer, protected :: KS_modes=50
   !-----------------forcing------------------------------------------------------
   character(len=20), protected :: force='off'
   real, protected :: force_amp=0.
@@ -222,6 +223,8 @@ module cdata
              read(buffer, *, iostat=ios) KS_slope !KS velocity field spectrum
           case ('KS_rey_int')
              read(buffer, *, iostat=ios) KS_rey_int !KS Reynolds number proxy
+          case ('KS_modes')
+             read(buffer, *, iostat=ios) KS_modes !the number of KS modes
           case default
              !print *, 'Skipping invalid label at line', line
           end select

@@ -2,24 +2,27 @@ module KSmodel
   !ALL THE ROUTINES REQUIRED TO USE THE KS MODEL TURBULENT (LIKE) VELOCITY FIELD
   use cdata
   use general
-    integer,private, parameter :: KSmodes=200
-    real,private,dimension(3,KSmodes) :: unit_k,k,A,B
-    real,private,dimension(3,Ksmodes) :: cross1,cross2
-    real,private,dimension(KSmodes) :: omega
+    !arrays needed for the duration of the simualtion
+    real,private,dimension(:,:),allocatable :: unit_k,k,A,B
+    real,private,dimension(:,:),allocatable :: cross1,cross2
+    real,private,dimension(:,:),allocatable:: addition !helper array for get_KS_flow
+    real,private,dimension(:),allocatable :: omega !turnover time
+    !arrays needed for the setup only
+    real,private,dimension(:,:),allocatable :: orderK
+    real,private,dimension(:),allocatable  ::  klengths,kk,delk,KS_energy 
     contains 
+    !************************************************************
     subroutine get_KS_flow(x,u)
       !Use our vectors to put together our KS velocity field
       implicit none
       real,intent(in)     :: x(3)
       real,intent(out)    :: u(3)
-      !real,dimension(3,KSmodes) :: cross1,cross2
       real :: argument
-      real, dimension(3,KSmodes)::addition
       real :: sin_arg,cos_arg
       integer :: r
       u=0.
       argument=0.
-      do r=1,KSmodes                 
+      do r=1,KS_modes                 
         !find A(&B)crossed with unit_k as this appears in our sum for
         !the velocity field.
         argument=(k(1,r)*x(1))+(k(2,r)*x(2))+(k(3,r)*x(3))+(omega(r)*t)   
@@ -33,24 +36,27 @@ module KSmodel
     !************************************************************
     subroutine setup_KS
       implicit none
-
-      real,dimension(3,KSmodes) :: orderK
-      real,dimension(KSmodes) :: kk,delk,energy,klengths
       real :: arg
       real :: turn1,turnN
       integer :: i,j
+      !begin by allocating the main KS arrays
+      allocate(unit_k(3,KS_modes),k(3,KS_modes),A(3,KS_modes),B(3,KS_modes)) 
+      allocate(cross1(3,KS_modes),cross2(3,KS_modes),addition(3,KS_modes),omega(KS_modes))
+      !now allocate the arrays for this routine, they are deallocated at the end of the routine
+      allocate(orderK(3,KS_modes))
+      allocate(kk(KS_modes),delk(KS_modes),KS_energy(KS_modes),klengths(KS_modes))
       !if we have a mesh that we are printing to it is important the check the resolution
       if ((mesh_size>0).and.(mesh_size<4*KS_rey_int)) then
         call warning_message('ksmodel.mod, setup_KS','mesh resolution not sufficient to resolve KS model')
       end if
-      call wavenumbers(klengths)
+      call wavenumbers
   
       !put the wavelengths in order
-      call order(klengths,KSmodes,1,kk) !the 1 means ascending order
+      call order(klengths,KS_modes,1,kk) !the 1 means ascending order
   
       !sort the wave-vectors into the same order as their corresponding lengths
-      do i=1,KSmodes
-        do j=1,KSmodes
+      do i=1,KS_modes
+        do j=1,KS_modes
           if(kk(i)==klengths(j))then
             orderK(:,i)=k(:,j)
           end if
@@ -60,53 +66,54 @@ module KSmodel
       k=orderK  !now we have k(3,N) that are listed in order of increasing length
   
       open(unit=19, file='./data/KSwavenumbers.log')
-      do i=1,KSmodes
+      do i=1,KS_modes
         unit_k(:,i)=k(:,i)/kk(i)
         write(19,*) kk(i), unit_k(:,i)
       end do
       close(19)    
 
-      do i=1,KSmodes
+      do i=1,KS_modes
       !now we find delk as defined in Malik & Vassilicos' paper
         if(i==1)delk(i)=(kk(i+1)-kk(i))*0.5
-        if(i==KSmodes)delk(i)=(kk(i)-kk(i-1))*0.5
-        if(i.gt.1.and.i.lt.KSmodes)delk(i)=(kk(i+1)-kk(i-1))*0.5
+        if(i==KS_modes)delk(i)=(kk(i)-kk(i-1))*0.5
+        if(i.gt.1.and.i.lt.KS_modes)delk(i)=(kk(i+1)-kk(i-1))*0.5
       end do      
       !now find A&B that are perpendicular to each of our N wave-vectors
-      call calc_KS_amplitudes(kk,delk,energy)
+      call calc_KS_amplitudes
       
-      do i=1,KSmodes
-        arg=energy(i)*(kk(i)**3)            !these are used to define omega - the
+      do i=1,KS_modes
+        arg=KS_energy(i)*(kk(i)**3)            !these are used to define omega - the
         if(arg.gt.0.)omega(i)=sqrt(arg) !unsteadiness frequency (co-eff of t)
         if(arg==0.)omega(i)=0.
       end do
       
       !Here we compute the turnover time of the fastest & slowest eddy
-      turn1=2.*pi/omega(1)   ; turnN=2.*pi/omega(KSmodes) 
+      turn1=2.*pi/omega(1)   ; turnN=2.*pi/omega(KS_modes) 
     
       !Key information is output to a text file
       open(unit=57, file="./data/KSinfo.log")
-        write(57,*) 'inner length scale',(2.*pi)/kk(KSmodes)
+        write(57,*) 'inner length scale',(2.*pi)/kk(KS_modes)
         write(57,*) 'outer length scale',(2.*pi)/kk(1)
         write(57,*) 'large eddie turnover time', turn1
         write(57,*) 'small eddie turnover time', turnN
-        write(57,*) 'reynolds number',(kk(KSmodes)/kk(1))**(4./3.)  
+        write(57,*) 'reynolds number',(kk(KS_modes)/kk(1))**(4./3.)  
       close(57)
       !also print to screen
       write(*,*) '-------------------KS info------------------'
-      write(*,'(a,i5.4)') ' number of fourier modes:', KSmodes
+      write(*,'(a,i5.4)') ' number of fourier modes:', KS_modes
       write(*,'(a,f6.2)') ' slope of spectrum:', KS_slope
-      write(*,'(a,f6.2)') ' Reynolds number:', (kk(KSmodes)/kk(1))**(4./3.)
+      write(*,'(a,f6.2)') ' Reynolds number:', (kk(KS_modes)/kk(1))**(4./3.)
       write(*,'(a,f6.2,f6.2)') ' Large/small eddie turnover times:', turn1,turnN
       write(*,*) '--------------------------------------------'
+      !deallocate these helper arrays
+      deallocate(orderK,kk,delk,KS_energy,klengths)
     end subroutine
     !*****************************************************************
-    subroutine wavenumbers(klengths)
+    subroutine wavenumbers
       implicit none
       real,dimension(3) :: angle,dir_in
       integer, parameter :: total=100000
       real :: k_option(3,total), mkunit(total)
-      real,dimension(KSmodes) :: klengths
       real:: bubble
       integer ::direction(3)
       integer :: i,j,num
@@ -138,7 +145,7 @@ module KSmodel
         end if
       
         !now we check that the current length is unique (hasn't come before)
-        if(i.gt.1.and.num.lt.KSmodes)then
+        if(i.gt.1.and.num.lt.KS_modes)then
           do j=i-1,1,-1
             if(mkunit(i).gt.0.0.and.(mkunit(i)/=mkunit(j)))then
                 ne=.true.
@@ -153,7 +160,7 @@ module KSmodel
             end if
           end do
         end if     
-        if(i==total.and.num.lt.KSmodes) call fatal_error("ksmodel.mod","Haven't got enough modes to run KS")
+        if(i==total.and.num.lt.KS_modes) call fatal_error("ksmodel.mod","Haven't got enough modes to run KS")
       end do
     end subroutine
     !*************************************************************************
@@ -180,22 +187,21 @@ module KSmodel
       end do
     end subroutine order
     !*************************************************************
-    subroutine calc_KS_amplitudes(kk,delk,energy)
+    subroutine calc_KS_amplitudes
       !Get our A's & B's that are perpendicular to k for each
       !of our N wave-vectors k. This is done by making 2 extra random
       !vectors, j & l and taking the cross product of these with k
       implicit none
-      real,dimension(KSmodes),  intent(in)  :: kk,delk
-      real,dimension(KSmodes),  intent(out) :: energy
       real :: j(3),l(3),newa(3),newa2(3)
-      real :: ampA(KSmodes),ampB(KSmodes)
+      real,allocatable :: ampA(:),ampB(:)
       integer :: r 
-      do r=1,KSmodes
-         energy(r)=1.0+(kk(r))**2
-         energy(r)=(kk(r)**2)*(energy(r)**((KS_slope-2.)/2.)) !11./6. gives kolmogorov
-         energy(r)=energy(r)*exp(-0.5*(kk(r)/kk(KSmodes))**2) 
+      allocate(ampA(KS_modes),ampB(KS_modes))
+      do r=1,KS_modes
+         KS_energy(r)=1.0+(kk(r))**2
+         KS_energy(r)=(kk(r)**2)*(KS_energy(r)**((KS_slope-2.)/2.)) !11./6. gives kolmogorov
+         KS_energy(r)=KS_energy(r)*exp(-0.5*(kk(r)/kk(KS_modes))**2) 
          !set the lengths of A& B as defined in Malik & Vassilicos
-         ampA(r)=sqrt(2.0*energy(r)*delk(r))!/3.0) 
+         ampA(r)=sqrt(2.0*KS_energy(r)*delk(r))!/3.0) 
          ampB(r)=ampA(r)                                
       
          call random_number(newa) ; call random_number(newa2)
@@ -214,5 +220,6 @@ module KSmodel
         cross1(:,r)=cross_product(A(:,r),unit_k(:,r))
         cross2(:,r)=cross_product(B(:,r),unit_k(:,r))
       end do
+      deallocate(ampA,ampB)
     end subroutine
 end module

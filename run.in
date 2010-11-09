@@ -1,22 +1,22 @@
 --------------required parameters------------
-nsteps 100000
+nsteps 10000
 shots 10
 recon_shots 1
 pcount 100
-dt 1E-9
-delta 1E-5
-box_size 1E-3
-velocity BS
-initf single_line
-line_count 1
+dt 2E-5
+delta 0.001
+box_size 0.1
+velocity Tree
+initf tangle
+line_count 10
 boundary periodic
------------------Helium III-------------------
-quant_circ 6.662E-4
-corea 8.5E-6
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-quasi_pcount 40
-particle_type quasi
-initg quasi2
-binary_print F
-curv_hist T
+normal_velocity KS
+alpha 1.21 -0.3883
+mesh_size 32
+mesh_shots 10
+tree_theta 0.4
+binary_print T 
+vel_print T
+KS_rey_int 8
