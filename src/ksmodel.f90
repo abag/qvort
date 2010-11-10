@@ -112,7 +112,7 @@ module KSmodel
     subroutine wavenumbers
       implicit none
       real,dimension(3) :: angle,dir_in
-      integer, parameter :: total=100000
+      integer, parameter :: total=10000000
       real :: k_option(3,total), mkunit(total)
       real:: bubble
       integer ::direction(3)
@@ -147,7 +147,7 @@ module KSmodel
         !now we check that the current length is unique (hasn't come before)
         if(i.gt.1.and.num.lt.KS_modes)then
           do j=i-1,1,-1
-            if(mkunit(i).gt.0.0.and.(mkunit(i)/=mkunit(j)))then
+            if((mkunit(i)>0.).and.((mkunit(i)<mkunit(j)-0.001).or.(mkunit(i)>mkunit(j)+0.001)))then
                 ne=.true.
             else
               ne=.false.
@@ -159,7 +159,11 @@ module KSmodel
               klengths(num)=mkunit(i)  ! store the length also
             end if
           end do
-        end if     
+        end if
+        if (num==KS_modes) then
+          write(*,*) ' found all KS wavenumbers'
+          exit
+        end if    
         if(i==total.and.num.lt.KS_modes) call fatal_error("ksmodel.mod","Haven't got enough modes to run KS")
       end do
     end subroutine

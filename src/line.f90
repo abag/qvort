@@ -84,7 +84,8 @@ module line
       if (f(i)%infront==0) cycle !empty particle
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)
-      if ((distii<delta).or.(curvature(infront)>sqrt(3.)/delta)) then
+      !if ((distii<delta).or.(curvature(infront)>sqrt(3.)/delta)) then
+      if (distii<delta) then
         !print to file the curvature of this particle
         infront=f(i)%infront ; tinfront=f(f(i)%infront)%infront
         open(unit=56,file='./data/removed_curv.log',position='append')

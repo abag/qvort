@@ -693,7 +693,7 @@ module initial
         call ghostp !we must call this routine at the start of adding every wave 
                     !the routines normalf, binormalf rely on correct ghostpoints
         !on a loop so wavenumbers must be an integer
-        wave_number=2+0.5*k !starting wavenumber is 2
+        wave_number=2+.25*k !starting wavenumber is 2
         amp=prefactor*(wave_number**wave_slope)
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
