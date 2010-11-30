@@ -132,9 +132,9 @@ end
 switch option
   case 'plot'
   figure('Name','PDF of angle')
-    plot(xout,n,'o-k','LineWidth',2);
-    xlabel('\theta','FontSize',14);
-    ylabel('PDF(\theta)','FontSize',14);
+    plot(xout-min(xout),n,'-k','LineWidth',2);
+    xlabel('\theta','FontSize',16);
+    ylabel('PDF(\theta)','FontSize',16);
     set(gca,'FontSize',14);
   figure('Name','log-log plot')
     loglog(xout,n,'o-k','LineWidth',2);

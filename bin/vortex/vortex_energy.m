@@ -22,7 +22,7 @@ switch option
   otherwise
     figure('Name', 'vortex energy')      
 end
-  plot(t,energy,'-r','LineWidth',2);
+  plot(t,smooth(energy,10),'-r','LineWidth',2);
   set(gca,'FontSize',14)
   xlabel('t','FontSize',14)
   ylabel('energy','FontSize',14)
