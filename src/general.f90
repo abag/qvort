@@ -85,6 +85,15 @@ module general
                 (a(3)-b(3))**2
   end function
   !*********************************************************************
+  real function vector_angle(a,b)
+    !calculate the angle vectors a(1:3), b(1:3)
+    use Cdata
+    implicit none
+    real, dimension(3), intent(IN) :: a, b
+    vector_angle=acos(dot_product(a,b)/ &
+                 (sqrt(dot_product(a,a))*sqrt(dot_product(b,b))))
+  end function
+  !*********************************************************************
   real function tangentf(i)
     !calculate the tangent vector at point i
     use Cdata

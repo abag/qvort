@@ -147,7 +147,7 @@ module quasip
     real :: rdot(3), pdot(3)
     real :: rdotpred(3), pdotpred(3)
     integer :: i
-    integer, parameter :: order=6 !order of backwards difference scheme
+    integer, parameter :: order=4 !order of backwards difference scheme
     character(*), parameter :: scheme='stiff' !euler,stiff
     allocate(storeg(quasi_pcount))
     storeg(:)=g(:)
@@ -160,6 +160,7 @@ module quasip
           g(i)%p(:)=g(i)%p(:)+dt*pdot(:)
         case('stiff')
           call BDF(i,order) !stiff_solver.mod
+          call BDF_dt_adjust !stiff_solver.mod
       end select
       !enforce periodicity
       if (periodic_bc) then

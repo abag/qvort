@@ -2,6 +2,7 @@ module stiff_solver
   !CONTAINS ALL THE ROUTINES FOR SOLVING THE STIFF ODE SOLVER REQIURED BY QUASI PARTICLES
   use cdata
   use hamiltonian
+  real, allocatable, private :: eta(:) !used for adjusting timestep
   real, dimension(6,7), private :: BDF_coeff
   contains
   subroutine set_BDF_coeff()
@@ -14,6 +15,8 @@ module stiff_solver
     BDF_coeff(5,:)=(/137./60., -5., 5., -10./3., 5./4., -1./5.,0./)
     BDF_coeff(6,:)=(/49./20., -6., 15./2., -20./3., 15./4., -6./5.,1./6./)
     write(*,*) 'set up backwards difference coefficients for stiff ode solver'
+    allocate(eta(quasi_pcount))
+    write(*,*) 'allocated adaptive timestep array'
   end subroutine
   !******************************************************************************************
   subroutine BDF(i,order)
@@ -38,5 +41,24 @@ module stiff_solver
     end do
     !finally the most recent
     g(i)%xold(1,:)=g(i)%x ; g(i)%pold(1,:)=g(i)%p
+    !now we want to alter the timestep
+    if (useorder>2) then !can only do once we have a few values stored
+      eta(i)=vector_angle(g(i)%pold(1,:),g(i)%pold(2,:)) !general.mod
+    else
+      eta(i)=0.
+    end if
+  end subroutine
+  !*********************************************************************
+  subroutine BDF_dt_adjust
+    implicit none
+    real :: dt_min=1E-17
+    real :: dt_max=1E-9
+    open(unit=78,file='data/qp_eta.log',position='append')
+      write(78,*) t, maxval(eta), dt
+    close(78)
+    if (maxval(eta)>.00001) dt=dt/4.
+    if (maxval(eta)<.000005) dt=1.2*dt
+    if (dt>dt_max) dt=dt_max
+    if (dt<dt_min) dt=dt_min
   end subroutine
 endmodule
