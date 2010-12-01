@@ -184,6 +184,7 @@ module hamiltonian
     real :: u_pz_px(3), u_pz_mx(3), u_mz_px(3) , u_mz_mx(3)  
     !-------------------------------------------------------------------
     real :: epsilonp !used in the hamiltonian
+    real :: ep_helper1 , ep_helper2 !used in the jacobian calculation
     real :: dist, min_dist !need the minimum distance between the particle and the vortex 
     integer :: peri, perj, perk !used to loop in periodic cases
     integer :: j !used for loops
@@ -287,7 +288,20 @@ module hamiltonian
     jac(1,4)=-dot_product(g(i)%p,du_sup_x2) ; jac(1,5)=-dot_product(g(i)%p,du_sup_xy) ; jac(1,6)=-dot_product(g(i)%p,du_sup_zx)
     jac(2,4)=-dot_product(g(i)%p,du_sup_xy) ; jac(2,5)=-dot_product(g(i)%p,du_sup_y2) ; jac(2,6)=-dot_product(g(i)%p,du_sup_yz)
     jac(3,4)=-dot_product(g(i)%p,du_sup_zx) ; jac(3,5)=-dot_product(g(i)%p,du_sup_yz) ; jac(3,6)=-dot_product(g(i)%p,du_sup_z2)
-    !finaly section that needs doing occupies jac(4:6,1:3)
-    !d(rdot)/dp
+    !d(rdot)/dp - the most complex section of the matrix
+    ep_helper1=(1./(mfermi*sqrt(epsilonp**2+delta_gap**2)))
+    ep_helper2=((epsilonp**2)/(mfermi*(epsilonp**2+delta_gap**2)))
+    !derivative of rdot(1)
+    jac(4,1)=ep_helper1*(epsilonp+(g(i)%p(1)**2)/mfermi-ep_helper2*g(i)%p(1)**2) 
+    jac(4,2)=ep_helper1*(g(i)%p(1)*g(i)%p(2)/mfermi-ep_helper2*g(i)%p(1)*g(i)%p(2))
+    jac(4,3)=ep_helper1*(g(i)%p(1)*g(i)%p(3)/mfermi-ep_helper2*g(i)%p(1)*g(i)%p(3))
+    !derivative of rdot(2)
+    jac(5,1)=ep_helper1*(g(i)%p(2)*g(i)%p(1)/mfermi-ep_helper2*g(i)%p(2)*g(i)%p(1))
+    jac(5,2)=ep_helper1*(epsilonp+(g(i)%p(2)**2)/mfermi-ep_helper2*g(i)%p(2)**2) 
+    jac(5,3)=ep_helper1*(g(i)%p(2)*g(i)%p(3)/mfermi-ep_helper2*g(i)%p(2)*g(i)%p(3))
+    !derivative of rdot(3)
+    jac(6,1)=ep_helper1*(g(i)%p(3)*g(i)%p(1)/mfermi-ep_helper2*g(i)%p(3)*g(i)%p(1)) 
+    jac(6,2)=ep_helper1*(g(i)%p(3)*g(i)%p(2)/mfermi-ep_helper2*g(i)%p(3)*g(i)%p(2))
+    jac(6,3)=ep_helper1*(epsilonp+(g(i)%p(3)**2)/mfermi-ep_helper2*g(i)%p(3)**2) 
   end subroutine
 end module
