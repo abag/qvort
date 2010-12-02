@@ -42,8 +42,8 @@ module stiff_solver
     !finally the most recent
     g(i)%xold(1,:)=g(i)%x ; g(i)%pold(1,:)=g(i)%p
     !now we want to alter the timestep
-    if (useorder>2) then !can only do once we have a few values stored
-      eta(i)=vector_angle(g(i)%pold(1,:),g(i)%pold(2,:)) !general.mod
+    if (useorder>3) then !can only do once we have a few values stored
+      eta(i)=vector_angle(g(i)%pold(2,:),g(i)%pold(3,:)) !general.mod
     else
       eta(i)=0.
     end if
@@ -51,13 +51,13 @@ module stiff_solver
   !*********************************************************************
   subroutine BDF_dt_adjust
     implicit none
-    real :: dt_min=1E-17
+    real :: dt_min=1E-20
     real :: dt_max=1E-9
     open(unit=78,file='data/qp_eta.log',position='append')
       write(78,*) t, maxval(eta), dt
     close(78)
-    if (maxval(eta)>.00001) dt=dt/4.
-    if (maxval(eta)<.000005) dt=1.2*dt
+    if (maxval(eta)>.000001) dt=dt/8.
+    if (maxval(eta)<.0000005) dt=2*dt
     if (dt>dt_max) dt=dt_max
     if (dt<dt_min) dt=dt_min
   end subroutine
