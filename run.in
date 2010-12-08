@@ -1,6 +1,6 @@
 --------------required parameters------------
 nsteps 100000
-shots 10
+shots 20
 recon_shots 1
 pcount 100
 dt 1E-9
@@ -15,8 +15,8 @@ quant_circ 6.662E-4
 corea 8.5E-6
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-quasi_pcount 40
+quasi_pcount 1
 particle_type quasi
-initg quasi2
+initg quasi1
 binary_print F
 curv_hist T

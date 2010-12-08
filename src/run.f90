@@ -32,7 +32,7 @@ program run
     !---------------------create mirror array----------------------
     if (mirror_bc) call mirror_init !mirror.mod
     !---------------------velocity operations----------------------
-    call pmotion !timestep.mod
+    !call pmotion !timestep.mod
     !print*, 'here1'
     if (mod(itime,mesh_shots)==0) then
       call mesh_velocity !timestep.mod
@@ -59,6 +59,8 @@ program run
     end if
     !print*, 'here4'
     if(periodic_bc) call enforce_periodic !periodic.mod
+    !---------------once all algorithms have been run--------------
+    t=t+dt  !increment the time
     !--------------now do all data output--------------------------
     if (mod(itime, shots)==0) then
       !print to file

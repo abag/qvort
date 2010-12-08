@@ -86,7 +86,7 @@ module quasip
             g(1)%x(2)=-delta/2. ; g(1)%x(3)=0.
             g(1)%p(1)=1.0001*pfermi
             g(1)%p(2)=0. ; g(1)%p(3)=0.
-            g(1)%xold=0. ; g(1)%pold=0.
+            g(1)%xold(1,:)=g(1)%x ; g(1)%pold(1,:)=g(1)%p
          case default
             call fatal_error('setup_quasip','particle type must be quasi')
       end select
@@ -143,24 +143,12 @@ module quasip
   subroutine timestep_quasip
     !TIMESTEP THE QUASI-PARTICLES USING VARIOUS SCHEMES
     implicit none
-    type(quasi), allocatable :: storeg(:)
-    real :: rdot(3), pdot(3)
-    real :: rdotpred(3), pdotpred(3)
-    integer :: i
-    integer, parameter :: order=5 !order of backwards difference scheme
-    character(*), parameter :: scheme='stiff' !euler,stiff
-    allocate(storeg(quasi_pcount))
-    storeg(:)=g(:)
+    integer, parameter :: order=4 !order of backwards difference scheme
+    integer :: i !used to loop over particles
     do i=1, quasi_pcount
-      select case(scheme)
-        case('euler')
-          !euler step both the position and momentum
-          call velocity_quasip(i,rdot,pdot) !hamiltonian.mod
-          g(i)%x(:)=g(i)%x(:)+dt*rdot(:)
-          g(i)%p(:)=g(i)%p(:)+dt*pdot(:)
-        case('stiff')
-          call BDF(i,order) !stiff_solver.mod
-      end select
+      !move the particle - backwards difference
+      call BDF(i,order) !stiff_solver.mod
+
       !enforce periodicity
       if (periodic_bc) then
         !if a particle leaves one side of the box
@@ -173,6 +161,11 @@ module quasip
           end select
           g(i)%x(1)=g(i)%x(1)-box_size
         else if (g(i)%x(1)<(-box_size/2.)) then
+          select case(initg)
+            !for certain initial conditions end the run once the particles have left the box
+            case('quasi1','quasi2')
+              call fatal_error('quasip_timestep','particles have left the box!')
+          end select
           g(i)%x(1)=g(i)%x(1)+box_size
         end if
         !-------------y------------------
@@ -191,8 +184,6 @@ module quasip
         !put it back in the other side....
       end if
     end do
-    deallocate(storeg)
-    call BDF_dt_adjust !stiff_solver.mod
   end subroutine 
   !******************NORMAL PARTICLES*****************************
   subroutine timestep_fluid

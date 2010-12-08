@@ -32,7 +32,6 @@ module timestep
       f(i)%u2(:)=f(i)%u1(:) !store our old velocities 
       f(i)%u1(:)=f(i)%u(:)
     end do
-    t=t+dt !time needs incrementing 
   end subroutine
   !*************************************************
   subroutine calc_velocity(u,i)
