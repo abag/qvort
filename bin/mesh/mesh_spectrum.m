@@ -12,9 +12,9 @@ for i=1:n
             ii=i;
             jj=j;
             kk=k;
-            if ii>midpt ; ii=n-jj+1; ; end ;
+            if ii>midpt ; ii=n-ii+1; ; end ;
             if jj>midpt ; jj=n-jj+1; ; end ; 
-            if kk>midpt ; kk=n-jj+1; ; end ;
+            if kk>midpt ; kk=n-kk+1; ; end ;
             r=int16(sqrt(ii^2+jj^2+kk^2));
             spect(r)=spect(r)+energyr(i,j,k)+energyi(i,j,k);
         end

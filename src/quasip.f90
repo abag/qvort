@@ -84,7 +84,7 @@ module quasip
             if (quasi_pcount>1) call fatal_error('setup_quasip','only one particle for this initial conditon only')
             g(1)%x(1)=-0.49*box_size
             g(1)%x(2)=-delta/2. ; g(1)%x(3)=0.
-            g(1)%p(1)=1.0001*pfermi
+            g(1)%p(1)=1.0002*pfermi
             g(1)%p(2)=0. ; g(1)%p(3)=0.
             g(1)%xold(1,:)=g(1)%x ; g(1)%pold(1,:)=g(1)%p
          case default
@@ -143,7 +143,7 @@ module quasip
   subroutine timestep_quasip
     !TIMESTEP THE QUASI-PARTICLES USING VARIOUS SCHEMES
     implicit none
-    integer, parameter :: order=4 !order of backwards difference scheme
+    integer, parameter :: order=6 !order of backwards difference scheme
     integer :: i !used to loop over particles
     do i=1, quasi_pcount
       !move the particle - backwards difference

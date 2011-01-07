@@ -30,6 +30,7 @@ module cdata
     real :: u(3), u1(3), u2(3) !stored velocities (adam bash)
     real :: p(3) !momentum
     real :: pold(6,3) !old momentum used for backwards difference
+    real :: rdot_old(3) !used for angle calculation
     real :: energy
   end type
   type(quasi), allocatable :: g(:) !vector of particles
@@ -105,6 +106,7 @@ module cdata
   logical, protected :: tree_print=.false.
   !--------------------additional diagnostics------------------------------------
   logical, protected :: curv_hist=.false. !dumps binned curvature information
+  integer, protected :: one_dim=0 !size of 1d velocity information printed to file
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
@@ -225,6 +227,8 @@ module cdata
              read(buffer, *, iostat=ios) KS_rey_int !KS Reynolds number proxy
           case ('KS_modes')
              read(buffer, *, iostat=ios) KS_modes !the number of KS modes
+          case ('one_dim')
+             read(buffer, *, iostat=ios) one_dim !size of 1D print
           case default
              !print *, 'Skipping invalid label at line', line
           end select

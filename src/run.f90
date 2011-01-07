@@ -32,7 +32,7 @@ program run
     !---------------------create mirror array----------------------
     if (mirror_bc) call mirror_init !mirror.mod
     !---------------------velocity operations----------------------
-    !call pmotion !timestep.mod
+    call pmotion !timestep.mod
     !print*, 'here1'
     if (mod(itime,mesh_shots)==0) then
       call mesh_velocity !timestep.mod
@@ -43,6 +43,7 @@ program run
       call velocity_info !diagnostics.mod
       call energy_info !diagnostics.mod
       call curv_info !diagnostics.mod
+      call one_dim_vel !diagnostics.mod
     end if
     !print*, 'here3'
     !---------------------line operations--------------------------
@@ -97,6 +98,7 @@ program run
       end if
     end if
     !--------------------------------------------------------------
+    t=t+dt !finish by incrementing time 
   end do
   !deallocate(f,mesh) !tidy up
 end program

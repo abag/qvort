@@ -169,6 +169,7 @@ module initial
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
     !final boundary conditions sanity check
     if (periodic_bc.and.mirror_bc) call fatal_error('init.mod','both periodic and mirror bcs are set')
+    if (one_dim>0) write(*,'(a,i5.3)') 'printing 1D velocity info to file, mesh size: ', one_dim
   end subroutine
   !**********************************************************************
   subroutine data_restore

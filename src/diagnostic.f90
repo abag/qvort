@@ -35,6 +35,47 @@ module diagnostic
     end do
   end subroutine
   !*************************************************
+  subroutine one_dim_vel
+    !print off a velocity spectrum in 1 dimension
+    use tree
+    use timestep
+    implicit none
+    real :: u_norm(3), u_sup(3)=0., x(3)=0.
+    integer :: i, peri, perj, perk
+    open(unit=32,file='data/vel_slice_1D.log')
+    do i=1, one_dim
+      x(1)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
+      !superfluid velocity
+      select case(velocity)
+        case('BS')
+          u_sup=0. !always 0 before making initial BS call
+          call biot_savart_general(x,u_sup)
+          if (periodic_bc) then
+            !we must shift the mesh in all 3 directions, all 26 permutations needed!
+            do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+              if (peri==0.and.perj==0.and.perk==0) cycle
+              call biot_savart_general_shift(x,u_sup, &
+              (/peri*box_size,perj*box_size,perk*box_size/)) !timestep.mod
+            end do ; end do ;end do
+          end if
+        case('Tree')
+          u_sup=0. !must be zeroed for all algorithms
+          call tree_walk_general(x,vtree,(/0.,0.,0./),u_sup)
+          if (periodic_bc) then
+            !we must shift the mesh in all 3 directions, all 26 permutations needed!
+            do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+              if (peri==0.and.perj==0.and.perk==0) cycle
+              call tree_walk_general(x,vtree, &
+                   (/peri*box_size,perj*box_size,perk*box_size/),u_sup) !tree.mod
+            end do ; end do ;end do
+          end if
+      end select
+      call get_normal_velocity(x,u_norm)
+      write(32,*) x(1), u_sup, u_norm 
+    end do
+    close(32)
+  end subroutine
+  !*************************************************
   subroutine curv_info()
     !caculate the mean, min, max curvature of the vortex system
     implicit none
