@@ -97,6 +97,8 @@ module initial
           call setup_line_motion !init.mod
         case('tangle')
           call setup_tangle !init.mod
+        case('criss-cross')
+          call setup_criss_cross !init.mod
         case default
           call fatal_error('cdata.mod:init_setup', &
                          'invalid choice for initf parameter') !cdata.mod
@@ -114,6 +116,8 @@ module initial
     else
       write(*,*) 'velocity fields not being stored on a mesh - (no spectra etc.)'
     end if
+    if (mesh_shots<shots) call warning_message('init.mod',&
+                          'mesh shots < shots which will create output anomolies')
     !do we employ forcing on the boundary?
     write(*,'(a)') ' -----------------------FORCING-----------------------' 
     call setup_forcing !forcing,mod
@@ -167,9 +171,11 @@ module initial
     !any special diagnostic information?
     write(*,'(a)') ' ---------------------FURTHER DIAGNOSTICS----------------------' 
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
+    if (vel_print) write(*,'(a,i4.2,a)') ' printing full velocity information every: ', mesh_shots, ' timesteps'
     !final boundary conditions sanity check
     if (periodic_bc.and.mirror_bc) call fatal_error('init.mod','both periodic and mirror bcs are set')
-    if (one_dim>0) write(*,'(a,i5.3)') 'printing 1D velocity info to file, mesh size: ', one_dim
+    if (one_dim>0) write(*,'(a,i5.3)') ' printing 1D velocity info to file, mesh size: ', one_dim
+    if (two_dim>0) write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
   end subroutine
   !**********************************************************************
   subroutine data_restore
@@ -1016,6 +1022,100 @@ module initial
         end if
         f(line_position)%u1=0. ; f(line_position)%u2=0.
       end do
+    end do
+  end subroutine
+!*************************************************************************
+  subroutine setup_criss_cross
+    implicit none
+    real :: rand1, rand2, rand3, rand4
+    integer :: pcount_required
+    integer :: line_size
+    integer:: line_position
+    integer :: i,j
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_tangle', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if (periodic_bc) then
+      !work out the number of particles required for our lines
+      !given the box size specified in run.i
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_criss_cross',&
+                       'periodic boundary conditions required for this initial condition') !cdata.mod
+    end if
+    line_size=int(pcount/line_count)
+    do i=1, line_count
+      call random_number(rand1)
+      call random_number(rand2)
+      call random_number(rand3)
+      call random_number(rand4)
+      rand1=(rand1-.5)*box_size
+      rand2=(rand2-.5)*box_size
+      if (rand4<0.5) then
+        rand4=-1
+      else
+        rand4=1
+      end if
+      if (rand3<0.33333333) then
+        do j=1, line_size
+          line_position=j+(i-1)*line_size
+          f(line_position)%x(1)=rand1
+          f(line_position)%x(2)=rand2
+          f(line_position)%x(3)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
+          if(j==1) then
+            f(line_position)%behind=i*line_size
+            f(line_position)%infront=line_position+1
+          else if (j==line_size) then
+            f(line_position)%behind=line_position-1
+            f(line_position)%infront=(i-1)*line_size+1
+          else
+            f(line_position)%behind=line_position-1
+            f(line_position)%infront=line_position+1
+          end if
+          f(line_position)%u1=0. ; f(line_position)%u2=0.
+        end do
+      else if (rand3<0.6666666) then
+        do j=1, line_size
+          line_position=j+(i-1)*line_size
+          f(line_position)%x(1)=rand1
+          f(line_position)%x(2)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
+          f(line_position)%x(3)=rand2
+          if(j==1) then
+            f(line_position)%behind=i*line_size
+            f(line_position)%infront=line_position+1
+          else if (j==line_size) then
+            f(line_position)%behind=line_position-1
+            f(line_position)%infront=(i-1)*line_size+1
+          else
+            f(line_position)%behind=line_position-1
+            f(line_position)%infront=line_position+1
+          end if
+          f(line_position)%u1=0. ; f(line_position)%u2=0.
+        end do
+      else
+        do j=1, line_size
+          line_position=j+(i-1)*line_size
+          f(line_position)%x(1)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
+          f(line_position)%x(2)=rand1
+          f(line_position)%x(3)=rand2
+          if(j==1) then
+            f(line_position)%behind=i*line_size
+            f(line_position)%infront=line_position+1
+          else if (j==line_size) then
+            f(line_position)%behind=line_position-1
+            f(line_position)%infront=(i-1)*line_size+1
+          else
+            f(line_position)%behind=line_position-1
+            f(line_position)%infront=line_position+1
+          end if
+          f(line_position)%u1=0. ; f(line_position)%u2=0.
+        end do
+      end if
     end do
   end subroutine
 !****************************************************************

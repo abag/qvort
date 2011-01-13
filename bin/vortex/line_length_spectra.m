@@ -1,7 +1,7 @@
 function line_length_spectrum
 A=load('data/ts.log');
 n=length(A) ;
-t=A(floor(0.05*n):n,2) ; l=A(floor(0.05*n):n,6) ;
+t=A(floor(0.05*n):floor(0.95*n),2) ; l=A(floor(0.05*n):floor(0.95*n),6) ;
 N=length(l) ;
 p = abs(fft(l))/(N/2); %% absolute value of the fft
 p = p(1:floor(N/2)).^2;
@@ -11,7 +11,8 @@ freq2=freq(floor(0.2*length(freq)):length(freq));
 p2=p(floor(0.2*length(p)):length(p));
 polyfit(log(freq2),log(p2'),1);
 disp(sprintf('spectral slope: %f',ans(1)))
-dummy_spect=freq.^(ans(1));
+%dummy_spect=freq.^(ans(1));
+dummy_spect=freq.^(-5/3);
 scaling_factor=p(floor(0.2*length(freq)))/dummy_spect(floor(0.2*length(freq)));
 dummy_spect=dummy_spect*scaling_factor;
 %%%%%%%%%%%%%%%%%%%%PLOTTING%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

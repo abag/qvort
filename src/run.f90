@@ -43,7 +43,6 @@ program run
       call velocity_info !diagnostics.mod
       call energy_info !diagnostics.mod
       call curv_info !diagnostics.mod
-      call one_dim_vel !diagnostics.mod
     end if
     !print*, 'here3'
     !---------------------line operations--------------------------
@@ -74,6 +73,8 @@ program run
         call print_mesh(itime/mesh_shots) !output.mod
         !can also print full velocity field for statistics 
         call print_velocity(itime/mesh_shots) !output.mod
+        call one_dim_vel(itime/mesh_shots) !diagnostics.mod
+        call two_dim_vel(itime/mesh_shots) !diagnostics.mod
       end if
     end if
     !print*, 'here5'

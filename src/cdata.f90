@@ -107,6 +107,7 @@ module cdata
   !--------------------additional diagnostics------------------------------------
   logical, protected :: curv_hist=.false. !dumps binned curvature information
   integer, protected :: one_dim=0 !size of 1d velocity information printed to file
+  integer, protected :: two_dim=0 !size of 2d velocity information printed to file
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
@@ -229,6 +230,8 @@ module cdata
              read(buffer, *, iostat=ios) KS_modes !the number of KS modes
           case ('one_dim')
              read(buffer, *, iostat=ios) one_dim !size of 1D print
+          case ('two_dim')
+             read(buffer, *, iostat=ios) two_dim !size of 1D print
           case default
              !print *, 'Skipping invalid label at line', line
           end select

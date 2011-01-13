@@ -35,14 +35,17 @@ module diagnostic
     end do
   end subroutine
   !*************************************************
-  subroutine one_dim_vel
+  subroutine one_dim_vel(filenumber)
     !print off a velocity spectrum in 1 dimension
     use tree
     use timestep
     implicit none
+    integer, intent(IN) :: filenumber
     real :: u_norm(3), u_sup(3)=0., x(3)=0.
     integer :: i, peri, perj, perk
-    open(unit=32,file='data/vel_slice_1D.log')
+    character (len=40) :: print_file
+    write(unit=print_file,fmt="(a,i3.3,a)")"./data/vel_slice_1D",filenumber,".log"
+    open(unit=32,file=print_file)
     do i=1, one_dim
       x(1)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
       !superfluid velocity
@@ -72,6 +75,53 @@ module diagnostic
       end select
       call get_normal_velocity(x,u_norm)
       write(32,*) x(1), u_sup, u_norm 
+    end do
+    close(32)
+  end subroutine
+  !*************************************************
+  subroutine two_dim_vel(filenumber)
+    !print off a velocity spectrum in 1 dimension
+    use tree
+    use timestep
+    implicit none
+    integer, intent(IN) :: filenumber
+    real :: u_norm(3), u_sup(3)=0., x(3)=0.
+    integer :: i, j, peri, perj, perk
+    character (len=40) :: print_file
+    write(unit=print_file,fmt="(a,i3.3,a)")"./data/vel_slice_2D",filenumber,".dat"
+    open(unit=32,file=print_file,status='replace',form='unformatted',access='stream')
+    do i=1, two_dim
+      do j=1, two_dim
+        x(1)=((2.*i-1)/(2.*two_dim))*box_size-box_size/2.
+        x(2)=((2.*j-1)/(2.*two_dim))*box_size-box_size/2.
+        !superfluid velocity
+        select case(velocity)
+          case('BS')
+            u_sup=0. !always 0 before making initial BS call
+            call biot_savart_general(x,u_sup)
+            if (periodic_bc) then
+              !we must shift the mesh in all 3 directions, all 26 permutations needed!
+              do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+                if (peri==0.and.perj==0.and.perk==0) cycle
+                call biot_savart_general_shift(x,u_sup, &
+                (/peri*box_size,perj*box_size,perk*box_size/)) !timestep.mod
+              end do ; end do ;end do
+            end if
+          case('Tree')
+            u_sup=0. !must be zeroed for all algorithms
+            call tree_walk_general(x,vtree,(/0.,0.,0./),u_sup)
+            if (periodic_bc) then
+              !we must shift the mesh in all 3 directions, all 26 permutations needed!
+              do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+                if (peri==0.and.perj==0.and.perk==0) cycle
+                call tree_walk_general(x,vtree, &
+                     (/peri*box_size,perj*box_size,perk*box_size/),u_sup) !tree.mod
+              end do ; end do ;end do
+            end if
+        end select
+        call get_normal_velocity(x,u_norm)
+        write(32) x(1), x(2), u_sup, u_norm 
+      end do
     end do
     close(32)
   end subroutine
