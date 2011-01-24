@@ -140,6 +140,7 @@ else
   f=uint16(f);
 end
 if (rough==1)
+    %plot3(x,y,z,'o','MarkerFaceColor','r','MarkerEdgeColor','r')
     plot3(x,y,z,'.')
     if (dims(2)>0.)
       if overhead==1         

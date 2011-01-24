@@ -46,6 +46,7 @@ program run
     end if
     !print*, 'here3'
     !---------------------line operations--------------------------
+    call premove !line.mod 
     call pinsert !line.mod
     if (mod(itime, recon_shots)==0) then
       if (tree_theta>0) then
@@ -55,7 +56,6 @@ program run
         call pclose !line.mod
       end if
       call precon !line.mod
-      call premove !line.mod
     end if
     !print*, 'here4'
     if(periodic_bc) call enforce_periodic !periodic.mod

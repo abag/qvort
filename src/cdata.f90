@@ -47,6 +47,7 @@ module cdata
   real :: energy !vortex energy
   real :: kappa_bar !mean curvature
   real :: kappa_min, kappa_max !min/max curvature
+  integer :: self_rcount=0, vv_rcount=0 !self or vortex vortex reconnection count 
   !***********CONSTANTS************************************************************
   !some constants - precompute for speed
   real, parameter :: pi=3.14159265358979324
@@ -78,6 +79,9 @@ module cdata
   character(len=30), protected :: wave_type='planar' 
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
+  !--------------------simulate phonon emission at high k------------------------
+  logical, protected :: phonon_emission=.false. !do we want it one?
+  real, protected :: phonon_percent=0.95 !what percentage of 2/delta?
   !----------------------mesh information----------------------------------------
   integer, protected :: mesh_size=0
   integer, protected :: mesh_shots=100
@@ -111,6 +115,7 @@ module cdata
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
+  logical, protected :: recon_info=.false. !more in depth reconnection information
   contains
   !*************************************************************************************************  
   subroutine read_run_file()
@@ -196,6 +201,10 @@ module cdata
              read(buffer, *, iostat=ios) force_amp !forcing amplitude
           case ('force_freq')
              read(buffer, *, iostat=ios) force_freq !forcing frequency
+          case ('phonon_emission')
+             read(buffer, *, iostat=ios) phonon_emission !phonon emission on or off
+          case ('phonon_percent')
+             read(buffer, *, iostat=ios) phonon_percent !percentage of max curv we cutoff at
           case ('special_dump')
              read(buffer, *, iostat=ios) special_dump !special dump
           case ('quasi_pcount')
@@ -231,7 +240,9 @@ module cdata
           case ('one_dim')
              read(buffer, *, iostat=ios) one_dim !size of 1D print
           case ('two_dim')
-             read(buffer, *, iostat=ios) two_dim !size of 1D print
+             read(buffer, *, iostat=ios) two_dim !size of 2D print
+          case ('recon_info')
+             read(buffer, *, iostat=ios) recon_info !extra reconnection information
           case default
              !print *, 'Skipping invalid label at line', line
           end select

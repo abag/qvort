@@ -79,13 +79,23 @@ module line
     implicit none
     real :: distii
     integer :: infront, tinfront
-    integer :: i    
+    integer :: i
+    logical :: do_remove 
     do i=1, pcount
+      do_remove=.false.
       if (f(i)%infront==0) cycle !empty particle
+      if (phonon_emission) then
+        if (curvature(i)>phonon_percent*(2./delta)) then
+          do_remove=.true.
+        end if
+      end if  
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)
       !if ((distii<delta).or.(curvature(infront)>sqrt(3.)/delta)) then
       if (distii<delta) then
+        do_remove=.true.
+      end if
+      if (do_remove) then
         !print to file the curvature of this particle
         infront=f(i)%infront ; tinfront=f(f(i)%infront)%infront
         open(unit=56,file='./data/removed_curv.log',position='append')
@@ -98,7 +108,6 @@ module line
         call loop_killer(i)
         remove_count=remove_count+1
       end if
-      !now check to see if the particles curvature is too high
     end do
   end subroutine
   !******************************************************************
@@ -131,6 +140,7 @@ module line
     integer :: pari, parb, parii, parbb, parji, parjb !particles infront/behind
     integer :: par_recon !the particle we reconnect with
     integer :: i, j !we must do a double loop over all particles N^2
+    logical :: same_loop
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
@@ -155,6 +165,14 @@ module line
           !print*, 'j',j, f(j)%infront, f(j)%behind
           !reconnect the filaments
           recon_count=recon_count+1 !keep track of the total # of recons
+          if (recon_info) then !more reconnection information
+            call same_loop_test(i,j,same_loop) !line.mod
+            if (same_loop) then
+              self_rcount=self_rcount+1 
+            else
+              vv_rcount=vv_rcount+1
+            end if
+          end if
           !reomove two particles involved in reconnection
           call clear_particle(i) ; call clear_particle(j)
           !set correct behind_infront
@@ -196,4 +214,24 @@ module line
       end do
     end if
   end subroutine
+  !**************************************************
+   subroutine same_loop_test(i,j,same_loop)
+     use Cdata
+     implicit none
+     integer,intent(IN) :: i,j
+     integer :: k
+     integer :: next
+     logical :: same_loop
+     !aim  of routine is to find out wether the links are on the same loop
+     same_loop=.false. !initial condition now try and prove if true
+     next=i
+     do k=1, pcount
+       next=f(k)%infront
+       if (next==j) then
+         same_loop=.true.
+         exit
+       end if
+       if (next==i) exit
+     end do
+   end subroutine
 end module

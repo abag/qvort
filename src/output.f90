@@ -41,6 +41,11 @@ remove_count
     open(unit=78,file='data/energy.log',position='append')
       write(78,*) energy
     close(78)
+    if (recon_info) then
+      open(unit=72,file='data/recon_extra_info.log',position='append')
+        write(72,*) self_rcount, vv_rcount
+      close(72)
+    end if
     open(unit=79,file='data/curvature.log',position='append')
       write(79,*) kappa_bar, kappa_min, kappa_max
     close(79)
