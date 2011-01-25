@@ -1,15 +1,15 @@
 --------------required parameters------------
 nsteps 100000
-shots 100
+shots 10
 recon_shots 1
 pcount 600
 dt 2E-5
-delta 0.001
+delta 0.003
 box_size 0.1
-velocity BS
-initf wave_loop
-line_count 3
-boundary open
+velocity LIA
+initf criss-cross
+line_count 30
+boundary periodic
 wave_count 5
 wave_slope -3
 wave_amp 5.
@@ -19,3 +19,4 @@ binary_print T
 curv_hist T
 recon_info T
 phonon_emission T
+switch_off_recon T

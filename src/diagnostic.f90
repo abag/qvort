@@ -44,6 +44,7 @@ module diagnostic
     real :: u_norm(3), u_sup(3)=0., x(3)=0.
     integer :: i, peri, perj, perk
     character (len=40) :: print_file
+    if (one_dim<1) return
     write(unit=print_file,fmt="(a,i3.3,a)")"./data/vel_slice_1D",filenumber,".log"
     open(unit=32,file=print_file)
     do i=1, one_dim
@@ -88,6 +89,7 @@ module diagnostic
     real :: u_norm(3), u_sup(3)=0., x(3)=0.
     integer :: i, j, peri, perj, perk
     character (len=40) :: print_file
+    if (two_dim<1) return
     write(unit=print_file,fmt="(a,i3.3,a)")"./data/vel_slice_2D",filenumber,".dat"
     open(unit=32,file=print_file,status='replace',form='unformatted',access='stream')
     do i=1, two_dim

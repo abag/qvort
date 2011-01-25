@@ -38,13 +38,6 @@ program run
       call mesh_velocity !timestep.mod
     end if
     !print*, 'here2'
-    !---------------------diagnostic info--------------------------
-    if (mod(itime, shots)==0) then
-      call velocity_info !diagnostics.mod
-      call energy_info !diagnostics.mod
-      call curv_info !diagnostics.mod
-    end if
-    !print*, 'here3'
     !---------------------line operations--------------------------
     call premove !line.mod 
     call pinsert !line.mod
@@ -55,12 +48,19 @@ program run
       else
         call pclose !line.mod
       end if
-      call precon !line.mod
+      if (switch_off_recon.eqv..false.) call precon !line.mod
     end if
-    !print*, 'here4'
+    !print*, 'here3'
     if(periodic_bc) call enforce_periodic !periodic.mod
     !---------------once all algorithms have been run--------------
     t=t+dt  !increment the time
+    !---------------------diagnostic info--------------------------
+    if (mod(itime, shots)==0) then
+      call velocity_info !diagnostics.mod
+      call energy_info !diagnostics.mod
+      call curv_info !diagnostics.mod
+    end if
+    !print*, 'here4'
     !--------------now do all data output--------------------------
     if (mod(itime, shots)==0) then
       !print to file

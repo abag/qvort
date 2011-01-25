@@ -1,0 +1,70 @@
+Changelog for stacks package
+============================
+
+Release 2010-11-30 (rev. 408)
+
+new features
+- can now display vector images (display either as RGB, or display the norm)
+- can read meta image files with images stored as list of slices
+- show histogram of RGB images as 3 separate bands
+- stacks rotations has been rewritten
+
+GUI
+- re-organized menus, and added accelerators
+- better display of floating point values (zoom, pixel coords)
+
+display
+- updated computation of grayscale extent for display
+- add support for Look-Up table
+
+bug fixes
+- can now display binary stacks
+- metaImageInfo: read correct spatial calibration of planar images
+- metaImageWrite: avoid to write too much zeros
+- added a private package to avoid name conflicts
+
+
+Release 2010-07-02 (rev. 322)
+
+- add new visualization functions:
+    + orthoSlices, 
+    + showXSlice, 
+    + showYSlice, 
+    + showZSlice)
+- added stackSize and isColorStack functions
+- added displayRange option for controlling grayscale extent
+- updated header informations
+
+
+Release 2010-06-22
+
+- added function rotateStack90
+- added a dialog to change image resolution
+- keep grayscale range when rotating image
+- added about dialog
+
+
+Release 2010-06-15
+
+- added support for non cubic voxels
+- use (x,y) user coordinates for mouse display,  instead of (row,col) indices
+- added reading and writing in metaImage format
+- use gray range [0 maxint] for images with non negative values 
+- added display of metadata for imported images
+- added basic image transformations:
+    + flip in each direction
+    + rotations by 90 degrees
+- improved memory management
+
+
+Release 2010-01-06
+
+- Added possibility to modify grayscale range, based on image min-max, on data
+	type min-max, or manual selection.
+- Added import of some 3D formats (DICOM, Analyze, and Interfile)
+- Added display of histogram	
+- Removed zoom buttons, and put zoom options in menu bar
+- Updated help and code comments
+- Added function stackSlice, which extracts a 2D slice from a 3D image and
+	ensures correct dimension
+- changed license to modified BSD license.	

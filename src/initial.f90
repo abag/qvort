@@ -24,7 +24,7 @@ module initial
     call timestep_check !initial.mod
     if (phonon_emission) then
       write(*,'(a)') ' ------------------PHONON EMISSION--------------------' 
-      write(*,'(a,f6.2,a)') ' simulating phonon emission, cutoff is ', 100*phonon_percent, '% of max'
+      write(*,'(a,f6.2,a,f8.1)') ' simulating phonon emission, cutoff is ', 100*phonon_percent, '% of max:', 2/delta
     end if
     !how is data being outputted (binary or formatted)
     if (binary_print) then
@@ -181,6 +181,7 @@ module initial
     if (one_dim>0) write(*,'(a,i5.3)') ' printing 1D velocity info to file, mesh size: ', one_dim
     if (two_dim>0) write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
     if (recon_info) write(*,*) 'printing extra reconnection information to file'
+    if (switch_off_recon) call warning_message('init.mod','reconnections switched off: I HOPE YOU KNOW WHAT YOUR DOING!')
   end subroutine
   !**********************************************************************
   subroutine data_restore

@@ -82,16 +82,18 @@ module line
     integer :: i
     logical :: do_remove 
     do i=1, pcount
-      do_remove=.false.
       if (f(i)%infront==0) cycle !empty particle
-      if (phonon_emission) then
-        if (curvature(i)>phonon_percent*(2./delta)) then
-          do_remove=.true.
-        end if
-      end if  
+      do_remove=.false.
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)
-      !if ((distii<delta).or.(curvature(infront)>sqrt(3.)/delta)) then
+      !check curvature if required
+      if (phonon_emission) then
+        if (curvature(i)>phonon_percent*(2./delta)) then
+          if (distii<2.*delta) then!we don't remove if separation is too large
+            do_remove=.true.
+          end if
+        end if
+      end if  
       if (distii<delta) then
         do_remove=.true.
       end if

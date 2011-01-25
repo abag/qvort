@@ -116,6 +116,8 @@ module cdata
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
   logical, protected :: recon_info=.false. !more in depth reconnection information
+  !----------------------------code testing---------------------------------------
+  logical, protected :: switch_off_recon=.false.
   contains
   !*************************************************************************************************  
   subroutine read_run_file()
@@ -243,6 +245,8 @@ module cdata
              read(buffer, *, iostat=ios) two_dim !size of 2D print
           case ('recon_info')
              read(buffer, *, iostat=ios) recon_info !extra reconnection information
+          case ('switch_off_recon')
+             read(buffer, *, iostat=ios) switch_off_recon !for test cases only!
           case default
              !print *, 'Skipping invalid label at line', line
           end select
