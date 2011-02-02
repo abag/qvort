@@ -1,20 +1,22 @@
 --------------required parameters------------
 nsteps 100000
-shots 10
+shots 1
 recon_shots 1
 pcount 600
 dt 2E-5
 delta 0.003
-box_size 0.1
+box_size 0.075
 velocity LIA
 initf criss-cross
-line_count 30
+line_count 16
 boundary periodic
 wave_count 5
 wave_slope -3
 wave_amp 5.
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
+force compressible
+force_amp 1.
 binary_print T
 curv_hist T
 recon_info T
