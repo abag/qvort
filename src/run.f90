@@ -12,6 +12,7 @@ program run
   use tree
   use mirror
   use smoothing
+  use mag
   implicit none
   integer :: i
   logical :: can_stop=.false.
@@ -70,6 +71,7 @@ program run
       !store data to a binary file for reload
       call data_dump !output.mod
       call print_info !output.mod
+      if (magnetic) call B_ts !mag.mod
       if (mod(itime, mesh_shots)==0) then
         !print the mesh to a binary file
         call print_mesh(itime/mesh_shots) !output.mod

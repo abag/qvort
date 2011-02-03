@@ -19,5 +19,6 @@ normal_velocity ABC
 binary_print T
 smoothed_field T
 smoothing_length 0.5
+magnetic T
 tree_theta 0.8
 

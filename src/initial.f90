@@ -187,6 +187,10 @@ module initial
     if (recon_info) write(*,*) 'printing extra reconnection information to file'
     if (switch_off_recon) call warning_message('init.mod','reconnections switched off: I HOPE YOU KNOW WHAT YOUR DOING!')
     if (smoothed_field) call setup_smoothing_mesh !smoothing.mod
+    if (magnetic) then
+      write(*,'(a)') ' ---------------------ACTING AS A MAGNETIC FIELD----------------------'
+      f(:)%B=B_init
+    end if 
   end subroutine
   !**********************************************************************
   subroutine data_restore

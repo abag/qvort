@@ -66,6 +66,11 @@ module line
         call get_ghost_p(f(i)%infront,f(f(i)%infront)%ghosti, f(f(i)%infront)%ghostb) !periodic.mod         
         f(i)%infront=par_new
         call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb) !periodic.mod         
+        !finally address the magnetic issue
+        if (magnetic) then
+          f(i)%B=2*f(i)%B
+          f(par_new)%B=f(i)%B
+        end if 
       end if
     end do
     !calculate average separation of particles
@@ -88,7 +93,7 @@ module line
       distii=distf(i,f(f(i)%infront)%infront)
       !check curvature if required
       if (phonon_emission) then
-        if (curvature(i)>phonon_percent*(2./delta)) then
+        if (curvature(f(i)%infront)>phonon_percent*(2./delta)) then
           if (distii<2.*delta) then!we don't remove if separation is too large
             do_remove=.true.
           end if
@@ -109,6 +114,10 @@ module line
         !check the size of the new loop
         call loop_killer(i)
         remove_count=remove_count+1
+        !halve the magnetic field - due to contraction
+        if (magnetic) then
+          f(i)%B=f(i)%B/2.
+        end if 
       end if
     end do
   end subroutine

@@ -119,6 +119,10 @@ module cdata
   logical, protected :: recon_info=.false. !more in depth reconnection information
   logical, protected :: smoothed_field=.false. !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
+  !----------------------------magnetic field-------------------------------------
+  !----------------ENABLE THE FILAMENTS TO ACT AS MAGNETIC FLUX TUBES-------------
+  logical, protected :: magnetic=.false.  
+  real, protected :: B_init=1.  
   !----------------------------code testing---------------------------------------
   logical, protected :: switch_off_recon=.false.
   contains
@@ -254,6 +258,10 @@ module cdata
              read(buffer, *, iostat=ios) smoothed_field !gaussian smoothing of vorticity
           case ('smoothing_length')
              read(buffer, *, iostat=ios) smoothing_length !length we are smoothing over (delta)
+          case ('magnetic')
+             read(buffer, *, iostat=ios) magnetic !act as a magnetic field
+          case ('B_init')
+             read(buffer, *, iostat=ios) B_init !initial field strength
           case default
              !print *, 'Skipping invalid label at line', line
           end select
