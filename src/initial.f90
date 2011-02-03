@@ -4,6 +4,7 @@ module initial
   use normal_fluid
   use forcing
   use periodic
+  use smoothing
   contains
   !*************************************************************************
   subroutine init_setup()
@@ -152,8 +153,11 @@ module initial
       case('Off')
         select case(normal_velocity)
           case('zero')
-            call fatal_error('initial.mod',&
-                 'no superfluid velocity and no normal velocity')
+            select case(force)
+              case ('off')
+                call fatal_error('initial.mod',&
+                'no superfluid velocity, no normal velocity, no forcing')
+            end select
         end select
         write(*,*) 'No superfluid velocity: simulation of passive lines'
       case('LIA')
@@ -182,6 +186,7 @@ module initial
     if (two_dim>0) write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
     if (recon_info) write(*,*) 'printing extra reconnection information to file'
     if (switch_off_recon) call warning_message('init.mod','reconnections switched off: I HOPE YOU KNOW WHAT YOUR DOING!')
+    if (smoothed_field) call setup_smoothing_mesh !smoothing.mod
   end subroutine
   !**********************************************************************
   subroutine data_restore

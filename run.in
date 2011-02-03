@@ -1,24 +1,23 @@
 --------------required parameters------------
 nsteps 100000
-shots 1
+shots 100
 recon_shots 1
-pcount 600
-dt 2E-5
+pcount 300
+dt 1E-4
 delta 0.003
 box_size 0.075
-velocity LIA
-initf criss-cross
-line_count 16
+velocity Off
+initf random_loops
+line_count 10
 boundary periodic
 wave_count 5
 wave_slope -3
 wave_amp 5.
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-force compressible
-force_amp 1.
+normal_velocity ABC
 binary_print T
-curv_hist T
-recon_info T
-phonon_emission T
-switch_off_recon T
+smoothed_field T
+smoothing_length 0.5
+tree_theta 0.8
+

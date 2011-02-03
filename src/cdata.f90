@@ -12,6 +12,7 @@ module cdata
     integer :: closest !nearest particle, used in reconnection
     real :: closestd !distance to nearest particle
     real :: delta
+    real :: B !magnetic field strength
   end type
   type(qvort), allocatable :: f(:) !main vector
   integer :: pcount !number of particles in the simulation
@@ -116,6 +117,8 @@ module cdata
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
   logical, protected :: recon_info=.false. !more in depth reconnection information
+  logical, protected :: smoothed_field=.false. !gaussian smoothing of vorticity/B field
+  real, protected :: smoothing_length=1. !length we smooth over
   !----------------------------code testing---------------------------------------
   logical, protected :: switch_off_recon=.false.
   contains
@@ -247,6 +250,10 @@ module cdata
              read(buffer, *, iostat=ios) recon_info !extra reconnection information
           case ('switch_off_recon')
              read(buffer, *, iostat=ios) switch_off_recon !for test cases only!
+          case ('smoothed_field')
+             read(buffer, *, iostat=ios) smoothed_field !gaussian smoothing of vorticity
+          case ('smoothing_length')
+             read(buffer, *, iostat=ios) smoothing_length !length we are smoothing over (delta)
           case default
              !print *, 'Skipping invalid label at line', line
           end select

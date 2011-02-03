@@ -172,7 +172,7 @@ module tree
     implicit none
     integer :: i
     do i=1, pcount
-      f(i)%closestd=10. !arbitrarily high
+      f(i)%closestd=100. !arbitrarily high
       call closest_tree(i,vtree)
       !print*, i, f(i)%closest
     end do
@@ -260,58 +260,6 @@ module tree
        call tree_walk(i,vtree%ftl,shift,u) ; call tree_walk(i,vtree%ftr,shift,u)
        call tree_walk(i,vtree%bbl,shift,u) ; call tree_walk(i,vtree%bbr,shift,u)
        call tree_walk(i,vtree%btl,shift,u) ; call tree_walk(i,vtree%btr,shift,u)
-     end if 
-   end subroutine
-!************************************************************************
-   recursive subroutine tree_walk_flip(i,vtree,u)
-     implicit none
-     integer, intent(IN) :: i !the particle we are interested in
-     real :: shift(3) !shift tree (periodicity)
-     type (node), pointer :: vtree !the tree
-     real :: u(3) !the velocity at particle i
-     real :: vect(3) !helper vector
-     real :: dist, theta !helper variables
-     real :: a_bs, b_bs, c_bs, u_bs(3) !helper variables 
-     integer :: j=0 !the particle in the tree mesh
-     shift(1)=0. ; shift(2)=0.
-     shift(3)=-box_size/2.-vtree%centz
-     if (vtree%pcount==0) return !empty box no use
-     !work out distances opening angles etc. here
-     dist=sqrt((f(i)%x(1)-(vtree%centx+shift(1)))**2+&
-               (f(i)%x(2)-(vtree%centy+shift(2)))**2+&
-               (f(i)%x(3)-(vtree%centz+shift(3)))**2)
-     theta=vtree%width/dist !the most simple way we can improve this
-     if (vtree%pcount==1.or.theta<tree_theta) then
-       !use the contribution of this cell
-       !if (vtree%pcount==1) then
-         !check that the particle is not itself or the particle behind
-         !j=f(vtree%parray(1)%infront)%behind
-         !if (j==i) return
-         !if (j==f(i)%behind) return
-         if (dist<epsilon(0.)) then
-           call fatal_error('tree.mod:tree_walk', & 
-           'singularity in BS (tree) velocity field - &
-           this is normally caused by having recon_shots too large') !cdata.mod
-         end if
-       !end if
-       eval_counter=eval_counter+1 !increment this counter
-       vect(1)=((vtree%centx+shift(1))-f(i)%x(1)) 
-       vect(2)=((vtree%centy+shift(2))-f(i)%x(2)) 
-       vect(3)=((vtree%centz+shift(3))-f(i)%x(3))
-       a_bs=dist**2
-       b_bs=2.*dot_product(vect,-vtree%circ)
-       c_bs=dot_product(vtree%circ,vtree%circ) 
-       if (4*a_bs*c_bs-b_bs**2<epsilon(0.)) return !avoid 1/0
-       u_bs=cross_product(vect,-vtree%circ)
-       u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
-       u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
-       u=u+u_bs
-     else
-       !open the box up and use the child cells
-       call tree_walk_flip(i,vtree%fbl,u) ; call tree_walk_flip(i,vtree%fbr,u)
-       call tree_walk_flip(i,vtree%ftl,u) ; call tree_walk_flip(i,vtree%ftr,u)
-       call tree_walk_flip(i,vtree%bbl,u) ; call tree_walk_flip(i,vtree%bbr,u)
-       call tree_walk_flip(i,vtree%btl,u) ; call tree_walk_flip(i,vtree%btr,u)
      end if 
    end subroutine
 !************************************************************************

@@ -11,6 +11,7 @@ program run
   use quasip
   use tree
   use mirror
+  use smoothing
   implicit none
   integer :: i
   logical :: can_stop=.false.
@@ -36,10 +37,10 @@ program run
     !print*, 'here1'
     if (mod(itime,mesh_shots)==0) then
       call mesh_velocity !timestep.mod
+      if (smoothed_field) call get_smoothed_field !smoothing.mod
     end if
     !print*, 'here2'
     !---------------------line operations--------------------------
-    call premove !line.mod 
     call pinsert !line.mod
     if (mod(itime, recon_shots)==0) then
       if (tree_theta>0) then
@@ -49,6 +50,7 @@ program run
         call pclose !line.mod
       end if
       if (switch_off_recon.eqv..false.) call precon !line.mod
+      call premove !line.mod 
     end if
     !print*, 'here3'
     if(periodic_bc) call enforce_periodic !periodic.mod
@@ -71,6 +73,7 @@ program run
       if (mod(itime, mesh_shots)==0) then
         !print the mesh to a binary file
         call print_mesh(itime/mesh_shots) !output.mod
+        if (smoothed_field) call print_smooth_mesh(itime/mesh_shots)!smoothing.mod
         !can also print full velocity field for statistics 
         call print_velocity(itime/mesh_shots) !output.mod
         call one_dim_vel(itime/mesh_shots) !diagnostics.mod
