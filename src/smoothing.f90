@@ -12,7 +12,6 @@ module smoothing
      real :: w(3) !vorticity/magnetic field 
   end type
   !use the abbreviation sm (smoothed mesh)
-  integer, private, parameter :: sm_size=64 !to be used with below
   real, private :: sm_res !resolution of mesh
   real, private :: sm_sigma !smoothing length
   type(smoothing_grid), allocatable, private :: sm(:,:,:)
@@ -89,7 +88,11 @@ module smoothing
     if (vtree%pcount==1.or.theta<tree_theta) then
       !use the contribution of this cell
       smoothing_factor=(1./sqrt(2.*pi*(sm_sigma**2)))*exp(-dist2/(2.*(sm_sigma**2)))
-      wsmooth=wsmooth+vtree%circ*smoothing_factor
+      if (magnetic) then
+        wsmooth=wsmooth+vtree%B*smoothing_factor
+      else
+        wsmooth=wsmooth+vtree%circ*smoothing_factor
+      end if
     else
       !open the box up and use the child cells
       call tree_smooth(x,vtree%fbl,shift,wsmooth) ; call tree_smooth(x,vtree%fbr,shift,wsmooth)

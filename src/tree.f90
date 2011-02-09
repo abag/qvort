@@ -15,6 +15,7 @@ module tree
       type (qvort), allocatable :: parray(:) !the particles in that mesh
       real :: centx, centy, centz !centres of 'mass'
       real :: circ(3) !total circulation vector
+      real :: B(3) !if we have a magentic field
    end type node
    type (node), pointer :: vtree  ! our vortex tree
    !how many evaluations are required to calculate the tree vel field
@@ -107,7 +108,7 @@ module tree
     !set up this node of the tree with the input info
     vtree%posx=posx ; vtree%posy=posy ; vtree%posz=posz
     vtree%width=width ; vtree%centx=0. ; vtree%centy=0.
-    vtree%centz=0. ; vtree%circ=0.
+    vtree%centz=0. ; vtree%circ=0. ; vtree%B=0.
     vtree%parray(:)%infront=0 !0 the infront marker
     counter=0 !0 the counter
     do i=1, loc_pcount
@@ -125,6 +126,12 @@ module tree
         vtree%circ(1)=vtree%circ(1)+parray(i)%ghosti(1)-parray(i)%x(1)
         vtree%circ(2)=vtree%circ(2)+parray(i)%ghosti(2)-parray(i)%x(2)
         vtree%circ(3)=vtree%circ(3)+parray(i)%ghosti(3)-parray(i)%x(3)
+        !magnetic field
+        if (magnetic) then
+          vtree%B(1)=vtree%B(1)+(parray(i)%ghosti(1)-parray(i)%x(1))*parray(i)%B
+          vtree%B(2)=vtree%B(2)+(parray(i)%ghosti(2)-parray(i)%x(2))*parray(i)%B
+          vtree%B(3)=vtree%B(3)+(parray(i)%ghosti(3)-parray(i)%x(3))*parray(i)%B
+        end if
       end if
     end do
     !take the average of the positions

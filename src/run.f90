@@ -50,7 +50,7 @@ program run
       else
         call pclose !line.mod
       end if
-      if (switch_off_recon.eqv..false.) call precon !line.mod
+      if (switch_off_recon.eqv..false.) call precon2 !line.mod
       call premove !line.mod 
     end if
     !print*, 'here3'
@@ -73,6 +73,7 @@ program run
       call print_info !output.mod
       if (magnetic) call B_ts !mag.mod
       if (mod(itime, mesh_shots)==0) then
+        if (magnetic) call Bstretch(itime/mesh_shots)
         !print the mesh to a binary file
         call print_mesh(itime/mesh_shots) !output.mod
         if (smoothed_field) call print_smooth_mesh(itime/mesh_shots)!smoothing.mod

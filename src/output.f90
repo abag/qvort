@@ -67,7 +67,11 @@ remove_count
         write(98) f(:)%x(2)
         write(98) f(:)%x(3)
         write(98) f(:)%infront
-        write(98) sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
+        if (magnetic) then
+          write(98) f(:)%B
+        else 
+          write(98) sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
+        end if
       close(98)
     else
       write(unit=print_file,fmt="(a,i4.4,a)")"./data/var",filenumber,".log"

@@ -1,6 +1,6 @@
 function mesh_slices(x,ux,uy,uz,n,fluid)
 u2=(ux.^2+uy.^2+uz.^2);
-rms=sqrt(sum(sum(sum(u2)))/(n^3));
+rms=sqrt(sum(sum(sum(u2)))/(n^3))
 u2=sqrt(u2);
 if n<=32
   interpc=4;
@@ -30,7 +30,7 @@ figure('Name',strcat('xslice-fluid: ', fluid));
   colorbar
   set(gca,'Fontsize',14)
 figure('Name',strcat('Iso-surface-|u|, fluid:',fluid));
-  p=patch(isosurface(x,x,x,u2,1.5*rms));
+  p=patch(isosurface(x,x,x,u2,2*rms));
   isonormals(x,x,x,u2, p)
   set(p, 'FaceColor', 'm', 'EdgeColor', 'none');
   daspect([1 1 1]); axis tight;

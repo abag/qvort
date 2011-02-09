@@ -48,6 +48,7 @@ module cdata
   real :: energy !vortex energy
   real :: kappa_bar !mean curvature
   real :: kappa_min, kappa_max !min/max curvature
+  real :: Brms !rms of magnetic field
   integer :: self_rcount=0, vv_rcount=0 !self or vortex vortex reconnection count 
   !***********CONSTANTS************************************************************
   !some constants - precompute for speed
@@ -119,6 +120,7 @@ module cdata
   logical, protected :: recon_info=.false. !more in depth reconnection information
   logical, protected :: smoothed_field=.false. !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
+  integer, protected :: sm_size=64 !size of smoothing mesh
   !----------------------------magnetic field-------------------------------------
   !----------------ENABLE THE FILAMENTS TO ACT AS MAGNETIC FLUX TUBES-------------
   logical, protected :: magnetic=.false.  
@@ -258,6 +260,8 @@ module cdata
              read(buffer, *, iostat=ios) smoothed_field !gaussian smoothing of vorticity
           case ('smoothing_length')
              read(buffer, *, iostat=ios) smoothing_length !length we are smoothing over (delta)
+          case ('sm_size')
+             read(buffer, *, iostat=ios) sm_size !size of smoothing mesh
           case ('magnetic')
              read(buffer, *, iostat=ios) magnetic !act as a magnetic field
           case ('B_init')

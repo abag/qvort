@@ -6,6 +6,7 @@ module timestep
   use forcing
   use tree
   use mirror
+  use mag
   contains
   !*************************************************
   subroutine pmotion()
@@ -39,7 +40,7 @@ module timestep
     !plus any normal fluid/forcing
     implicit none
     integer, intent(IN) :: i
-    real :: u(3), u_norm(3), u_force(3), u_bs(3), u_mir(3) !velocities
+    real :: u(3), u_norm(3), u_force(3), u_bs(3), u_mir(3), u_B(3) !velocities
     real :: curv, beta !LUA
     real :: f_dot(3), f_ddot(3) !first and second derivs
     integer :: peri, perj, perk !used to loop in periodic cases
@@ -134,6 +135,11 @@ module timestep
       !check the flux through the boundaries is 0
       call mirror_flux_check(i,u) !mirror.mod
     end if
+    !magnetic field
+    !if (magnetic) then
+     ! call mag_tension(i,u_B) !mag.mod
+     ! u=u+u_B
+    !end if
   end subroutine
   !**************************************************************************
   subroutine mesh_velocity

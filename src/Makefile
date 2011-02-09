@@ -52,7 +52,7 @@ forcing.o: forcing.f90 general.o cdata.o
 #
 initial.o: initial.f90 stiff_solver.o normal_fluid.o forcing.o cdata.o quasip.o periodic.o smoothing.o
 #
-timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o tree.o mirror.o
+timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o tree.o mirror.o mag.o
 #
 line.o: line.f90 general.o cdata.o
 #

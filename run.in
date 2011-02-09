@@ -1,9 +1,10 @@
 --------------required parameters------------
 nsteps 100000
 shots 100
-recon_shots 1
+mesh_shots 1000
+recon_shots 5
 pcount 300
-dt 1E-4
+dt 1E-5
 delta 0.003
 box_size 0.075
 velocity Off
@@ -15,10 +16,11 @@ wave_slope -3
 wave_amp 5.
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-normal_velocity ABC
+normal_velocity KS
 binary_print T
-smoothed_field T
-smoothing_length 0.5
-magnetic T
+smoothed_field F
+smoothing_length 1.
+sm_size 128
+magnetic F
 tree_theta 0.8
 

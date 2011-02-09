@@ -189,6 +189,7 @@ module initial
     if (smoothed_field) call setup_smoothing_mesh !smoothing.mod
     if (magnetic) then
       write(*,'(a)') ' ---------------------ACTING AS A MAGNETIC FIELD----------------------'
+      write(*,'(a, f6.3, a)') ' initial field strength ', B_init, ' G'
       f(:)%B=B_init
     end if 
   end subroutine
@@ -1164,6 +1165,10 @@ module initial
   subroutine timestep_check
     implicit none
     real :: delta_min, dt_max
+    select case(velocity)
+      case('Off')
+        return
+    end select
     delta_min=delta/2.
     dt_max=((delta_min)**2)/(quant_circ*log(delta_min*1E8/pi))
     if (dt<dt_max) then
