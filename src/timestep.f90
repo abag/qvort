@@ -136,10 +136,10 @@ module timestep
       call mirror_flux_check(i,u) !mirror.mod
     end if
     !magnetic field
-    !if (magnetic) then
-     ! call mag_tension(i,u_B) !mag.mod
-     ! u=u+u_B
-    !end if
+    if (magnetic) then
+      call mag_tension(i,u_B) !mag.mod
+      u=u+1E-5*u_B
+    end if
   end subroutine
   !**************************************************************************
   subroutine mesh_velocity

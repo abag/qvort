@@ -69,12 +69,12 @@ module line
         call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb) !periodic.mod         
         !finally address the magnetic issue
         if (magnetic) then
-          if (f(i)%B<5.5*Brms) then
-              f(par_new)%B=f(i)%B
-              f(i)%B=2*f(i)%B
-          else
+        !  if (f(i)%B<5.5*Brms) then
+        !      f(par_new)%B=f(i)%B
+        !      f(i)%B=2*f(i)%B
+        !  else
             f(par_new)%B=f(i)%B
-          end if
+        !  end if
         end if 
       end if
     end do
@@ -121,9 +121,9 @@ module line
         call loop_killer(i)
         remove_count=remove_count+1
         !halve the magnetic field - due to contraction
-        if (magnetic) then
-          f(i)%B=f(i)%B/2.
-        end if 
+        !if (magnetic) then
+        !  f(i)%B=f(i)%B/2.
+        !end if 
       end if
     end do
   end subroutine

@@ -7,6 +7,7 @@ module normal_fluid
     real, parameter, private :: vel_xflow=1.
     real, parameter, private :: abc_A=1., abc_B=1., abc_C=1.
     real, private :: abc_k
+    real, private :: urms_norm
     !normal fluid mesh - all grid based normal velocities use this (e.g. Navier Stokes future)
     type norm_fluid_grid
       private
@@ -23,20 +24,35 @@ module normal_fluid
     !************************************************************
     subroutine setup_normal_fluid
       !setup everything needed to use a normal fluid
+      !in here we print to file the timescale of the flow
       implicit none
       abc_k=2.*pi/box_size
       write(*,*) 'normal fluid velocity field is: ', trim(normal_velocity)
       select case(normal_velocity)
         case('xflow')
           write(*,'(a,f6.3)') ' u(x)=', vel_xflow
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/vel_xflow !time-taken to cross box
+          close(77)
         case('ABC')
           write(*,'(a,f6.3,a,f6.3,a,f6.3)') ' A=', abc_A, ' B=', abc_B, ' C=', abc_C
+          call setup_ABC !normal_fluid.mod
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/urms_norm !size of box scaled by urms
+          close(77)
         case('KS')
           call setup_KS !ksmodel.mod
+          call print_KS_Mesh !normal_fluid.mod
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/urms_norm !size of box scaled by urms
+          close(77)
         case('compressible')
           if (periodic_bc) then 
-            write(*,'(a,i4.2,a)') 'creating gradient of a random field  on a', nfm_size,'^3 mesh'
+            write(*,'(a,i4.2,a)') ' creating gradient of a random field  on a', nfm_size,'^3 mesh'
             call setup_compressible !normal_fluid.mod
+            open(unit=77,file='./data/normal_timescale.log',status='replace')
+              write(77,*) box_size/urms_norm !size of box scaled by urms
+            close(77)
           else
             call fatal_error('normal_fluid.mod','comrpressible v needs periodic b.c.')
           end if
@@ -109,6 +125,7 @@ module normal_fluid
     !**********************************************************
     subroutine setup_compressible
       implicit none
+      real :: u_rms
       integer :: i, j, k
       integer :: im, jm, km, ip, jp, kp
       !print dimensions to file for matlab
@@ -127,6 +144,7 @@ module normal_fluid
         nfm(k,j,i)%v=nfm(k,j,i)%v*2.-1. ; nfm(k,j,i)%v=0.01*nfm(k,j,i)%v
       end do ; end do ; end do
       ! now we must take the gradient of this
+      u_rms=0. !0 the root mean squared velocity
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         if (k==1) then !PERIODICITY
           kp=k+1 ; km=nfm_size
@@ -153,7 +171,12 @@ module normal_fluid
         nfm(k,j,i)%u(1)=(nfm(k,j,ip)%v-nfm(k,j,im)%v)*nfm_inv_res
         nfm(k,j,i)%u(2)=(nfm(k,jp,i)%v-nfm(k,jm,i)%v)*nfm_inv_res
         nfm(k,j,i)%u(3)=(nfm(kp,j,i)%v-nfm(km,j,i)%v)*nfm_inv_res
+        u_rms=u_rms+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
       end do ; end do ; end do
+      u_rms=sqrt(u_rms/(nfm_size**3))
+      !now we normalise this field by u_rms
+      nfm%u(1)=nfm%u(1)/u_rms ; nfm%u(2)=nfm%u(2)/u_rms ; nfm%u(3)=nfm%u(3)/u_rms
+      urms_norm=1.!urms_norm must be 1 as we have scaled it to be!
       ! calculate the divergence of this field
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         if (k==1) then !PERIODICITY
@@ -182,11 +205,75 @@ module normal_fluid
                                 (nfm(k,jp,i)%u(2)-nfm(k,jm,i)%u(2))*nfm_inv_res + &
                                 (nfm(kp,j,i)%u(3)-nfm(km,j,i)%u(3))*nfm_inv_res
       end do ; end do ; end do
-      write(*,'(a)') 'velocity field calculated, printing to ./data/compressible_mesh.dat'
+      write(*,'(a)') ' velocity field calculated, printing to ./data/compressible_mesh.dat'
       open(unit=92,file='./data/compressible_mesh.dat',form='unformatted',status='replace',access='stream')
         write(92) nfm(nfm_size/2,nfm_size/2,1:nfm_size)%x(1)
         write(92) nfm(:,:,:)%v
         write(92) nfm(:,:,:)%div
+        write(92) nfm(:,:,:)%u(1)
+        write(92) nfm(:,:,:)%u(2)
+        write(92) nfm(:,:,:)%u(3)
+      close(92)
+    end subroutine
+    !**********************************************************
+    subroutine setup_ABC
+      implicit none
+      integer :: i, j, k
+      !print dimensions to file for matlab
+      open(unit=77,file='./data/nfm_dims.log',status='replace')
+        write(77,*) nfm_size
+      close(77)
+      allocate(nfm(nfm_size,nfm_size,nfm_size))
+      nfm_res=(real(box_size)/nfm_size)
+      nfm_inv_res=1./nfm_res
+      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
+        nfm(k,j,i)%x(1)=nfm_res*real(2*i-1)/2.-(box_size/2.)
+        nfm(k,j,i)%x(2)=nfm_res*real(2*j-1)/2.-(box_size/2.)
+        nfm(k,j,i)%x(3)=nfm_res*real(2*k-1)/2.-(box_size/2.)
+      end do ; end do ; end do
+      urms_norm=0. !0 the root mean squared velocity
+      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
+        !get the velocity field - ABC flow
+        nfm(k,j,i)%u(1)=abc_B*cos(abc_k*nfm(k,j,i)%x(2))+abc_C*sin(abc_k*nfm(k,j,i)%x(3))
+        nfm(k,j,i)%u(2)=abc_C*cos(abc_k*nfm(k,j,i)%x(3))+abc_A*sin(abc_k*nfm(k,j,i)%x(1))
+        nfm(k,j,i)%u(3)=abc_A*cos(abc_k*nfm(k,j,i)%x(1))+abc_B*sin(abc_k*nfm(k,j,i)%x(2))        
+        urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
+      end do ; end do ; end do
+      urms_norm=sqrt(urms_norm/(nfm_size**3))
+      write(*,'(a)') ' velocity field calculated, printing to ./data/ABC_mesh.dat'
+      open(unit=92,file='./data/ABC_mesh.dat',form='unformatted',status='replace',access='stream')
+        write(92) nfm(nfm_size/2,nfm_size/2,1:nfm_size)%x(1)
+        write(92) nfm(:,:,:)%u(1)
+        write(92) nfm(:,:,:)%u(2)
+        write(92) nfm(:,:,:)%u(3)
+      close(92)
+    end subroutine
+    !**********************************************************
+    subroutine print_KS_Mesh
+      implicit none
+      integer :: i, j, k
+      !print dimensions to file for matlab
+      open(unit=77,file='./data/nfm_dims.log',status='replace')
+        write(77,*) nfm_size
+      close(77)
+      allocate(nfm(nfm_size,nfm_size,nfm_size))
+      nfm_res=(real(box_size)/nfm_size)
+      nfm_inv_res=1./nfm_res
+      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
+        nfm(k,j,i)%x(1)=nfm_res*real(2*i-1)/2.-(box_size/2.)
+        nfm(k,j,i)%x(2)=nfm_res*real(2*j-1)/2.-(box_size/2.)
+        nfm(k,j,i)%x(3)=nfm_res*real(2*k-1)/2.-(box_size/2.)
+      end do ; end do ; end do
+      urms_norm=0. !0 the root mean squared velocity
+      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
+        !get the velocity field - ABC flow
+        call get_KS_flow(nfm(k,j,i)%x,nfm(k,j,i)%u)       
+        urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
+      end do ; end do ; end do
+      urms_norm=sqrt(urms_norm/(nfm_size**3))
+      write(*,'(a)') ' velocity field calculated, printing to ./data/KS_mesh.dat'
+      open(unit=92,file='./data/KS_mesh.dat',form='unformatted',status='replace',access='stream')
+        write(92) nfm(nfm_size/2,nfm_size/2,1:nfm_size)%x(1)
         write(92) nfm(:,:,:)%u(1)
         write(92) nfm(:,:,:)%u(2)
         write(92) nfm(:,:,:)%u(3)
