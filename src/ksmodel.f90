@@ -105,6 +105,9 @@ module KSmodel
       write(*,'(a,f6.2)') ' Reynolds number:', (kk(KS_modes)/kk(1))**(4./3.)
       write(*,'(a,f6.2,f6.2)') ' Large/small eddie turnover times:', turn1,turnN
       write(*,*) '--------------------------------------------'
+      open(unit=77,file='./data/normal_timescale.log',status='replace')
+        write(77,*) turn1 !write large eddy turnover as normal timescale
+      close(77)
       !deallocate these helper arrays
       deallocate(orderK,kk,delk,KS_energy,klengths)
     end subroutine

@@ -26,7 +26,7 @@ module normal_fluid
       !setup everything needed to use a normal fluid
       !in here we print to file the timescale of the flow
       implicit none
-      abc_k=2.*pi/box_size
+      abc_k=2.*pi/box_size !wavenumber used in a number of normal fluids (rename/make more general?)
       write(*,*) 'normal fluid velocity field is: ', trim(normal_velocity)
       select case(normal_velocity)
         case('xflow')
@@ -40,12 +40,15 @@ module normal_fluid
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/urms_norm !size of box scaled by urms
           close(77)
-        case('KS')
-          call setup_KS !ksmodel.mod
-          call print_KS_Mesh !normal_fluid.mod
+        case('taylor-green')
+          call setup_TG !normal_fluid.mod
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/urms_norm !size of box scaled by urms
           close(77)
+        case('KS')
+          call setup_KS !ksmodel.mod
+          call print_KS_Mesh !normal_fluid.mod
+          !Normal vel timescale written in setup_KS (line 109)
         case('compressible')
           if (periodic_bc) then 
             write(*,'(a,i4.2,a)') ' creating gradient of a random field  on a', nfm_size,'^3 mesh'
@@ -61,6 +64,7 @@ module normal_fluid
       if (normal_fluid_cutoff<100.) then
         write(*,'(a,f6.3)') ' normal fluid is turned off when t=',normal_fluid_cutoff 
       end if
+      write(*,'(a,f8.4)') 'normal fluid rms velocity is: ', urms_norm
     end subroutine
     !************************************************************
     subroutine get_normal_velocity(x,u)
@@ -78,6 +82,11 @@ module normal_fluid
           u(1)=abc_B*cos(abc_k*x(2))+abc_C*sin(abc_k*x(3))
           u(2)=abc_C*cos(abc_k*x(3))+abc_A*sin(abc_k*x(1))
           u(3)=abc_A*cos(abc_k*x(1))+abc_B*sin(abc_k*x(2))
+        case('taylor-green')
+          !The Taylor-Green Vortex
+          u(1)=sin(abc_k*x(1))*cos(abc_k*x(2))*cos(abc_k*x(3))
+          u(2)=-cos(abc_k*x(1))*sin(abc_k*x(2))*cos(abc_k*x(3))
+          u(3)=0.
         case('KS')
           !multi-scale model of turbulence
           call get_KS_flow(x,u)
@@ -217,6 +226,7 @@ module normal_fluid
     end subroutine
     !**********************************************************
     subroutine setup_ABC
+      !SET UP THE ABC NORMAL FLUID FLOW AND PRINT TO FILE
       implicit none
       integer :: i, j, k
       !print dimensions to file for matlab
@@ -248,8 +258,43 @@ module normal_fluid
         write(92) nfm(:,:,:)%u(3)
       close(92)
     end subroutine
+   !**********************************************************
+    subroutine setup_TG
+      !SET UP THE TAYLOR GREEN NORMAL FLUID FLOW AND PRINT TO FILE
+      implicit none
+      integer :: i, j, k
+      !print dimensions to file for matlab
+      open(unit=77,file='./data/nfm_dims.log',status='replace')
+        write(77,*) nfm_size
+      close(77)
+      allocate(nfm(nfm_size,nfm_size,nfm_size))
+      nfm_res=(real(box_size)/nfm_size)
+      nfm_inv_res=1./nfm_res
+      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
+        nfm(k,j,i)%x(1)=nfm_res*real(2*i-1)/2.-(box_size/2.)
+        nfm(k,j,i)%x(2)=nfm_res*real(2*j-1)/2.-(box_size/2.)
+        nfm(k,j,i)%x(3)=nfm_res*real(2*k-1)/2.-(box_size/2.)
+      end do ; end do ; end do
+      urms_norm=0. !0 the root mean squared velocity
+      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
+        !get the velocity field - Taylor Green Vortex
+        nfm(k,j,i)%u(1)=sin(abc_k*nfm(k,j,i)%x(1))*cos(abc_k*nfm(k,j,i)%x(2))*cos(abc_k*nfm(k,j,i)%x(3))
+        nfm(k,j,i)%u(2)=-cos(abc_k*nfm(k,j,i)%x(1))*sin(abc_k*nfm(k,j,i)%x(2))*cos(abc_k*nfm(k,j,i)%x(3))
+        nfm(k,j,i)%u(3)=0.      
+        urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
+      end do ; end do ; end do
+      urms_norm=sqrt(urms_norm/(nfm_size**3))
+      write(*,'(a)') ' velocity field calculated, printing to ./data/TG_mesh.dat'
+      open(unit=92,file='./data/TG_mesh.dat',form='unformatted',status='replace',access='stream')
+        write(92) nfm(nfm_size/2,nfm_size/2,1:nfm_size)%x(1)
+        write(92) nfm(:,:,:)%u(1)
+        write(92) nfm(:,:,:)%u(2)
+        write(92) nfm(:,:,:)%u(3)
+      close(92)
+    end subroutine
     !**********************************************************
     subroutine print_KS_Mesh
+      !PRINT THE NORMAL FLUID TO FILE AND DETERMINE U_RMS
       implicit none
       integer :: i, j, k
       !print dimensions to file for matlab

@@ -4,16 +4,16 @@ shots 100
 mesh_shots 5000
 recon_shots 5
 pcount 300
-dt 1E-6
-delta 0.001
+dt 1E-5
+delta 1E-3
 box_size 0.1
 velocity Off
 initf random_loops
-line_count 10
+line_count 5
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-normal_velocity KS
+normal_velocity ABC
 binary_print T
 smoothed_field T
 smoothing_length 1.
