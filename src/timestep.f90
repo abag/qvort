@@ -138,7 +138,7 @@ module timestep
     !magnetic field
     if (magnetic) then
       call mag_tension(i,u_B) !mag.mod
-      u=u+1E-5*u_B
+      u=u+1E-4*u_B
     end if
   end subroutine
   !**************************************************************************

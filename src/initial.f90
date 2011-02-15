@@ -155,7 +155,7 @@ module initial
           case('zero')
             select case(force)
               case ('off')
-                call fatal_error('initial.mod',&
+                call warning_message('initial.mod',&
                 'no superfluid velocity, no normal velocity, no forcing')
             end select
         end select

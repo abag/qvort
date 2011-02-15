@@ -52,6 +52,7 @@ program run
       end if
       if (switch_off_recon.eqv..false.) call precon2 !line.mod
       call premove !line.mod 
+      !if (magnetic) call B_smooth !mag.mod
     end if
     !print*, 'here3'
     if(periodic_bc) call enforce_periodic !periodic.mod

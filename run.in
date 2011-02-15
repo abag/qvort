@@ -3,21 +3,21 @@ nsteps 100000
 shots 100
 mesh_shots 5000
 recon_shots 5
-pcount 300
+pcount 100
 dt 1E-5
-delta 1E-3
+delta 3E-3
 box_size 0.1
 velocity Off
-initf random_loops
+initf single_line
 line_count 5
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-normal_velocity ABC
+normal_velocity shear
 binary_print T
 smoothed_field T
 smoothing_length 1.
 sm_size 64
 magnetic T
-tree_theta 0.6
+tree_theta 0.8
 

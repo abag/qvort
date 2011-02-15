@@ -45,6 +45,11 @@ module normal_fluid
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/urms_norm !size of box scaled by urms
           close(77)
+        case('shear')
+          call setup_shear !normal_fluid.mod
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/urms_norm !size of box scaled by urms
+          close(77)
         case('KS')
           call setup_KS !ksmodel.mod
           call print_KS_Mesh !normal_fluid.mod
@@ -87,6 +92,8 @@ module normal_fluid
           u(1)=sin(abc_k*x(1))*cos(abc_k*x(2))*cos(abc_k*x(3))
           u(2)=-cos(abc_k*x(1))*sin(abc_k*x(2))*cos(abc_k*x(3))
           u(3)=0.
+        case('shear')
+          u(1)=exp(-(4*x(3)/box_size)**2)
         case('KS')
           !multi-scale model of turbulence
           call get_KS_flow(x,u)
@@ -280,6 +287,40 @@ module normal_fluid
         !get the velocity field - Taylor Green Vortex
         nfm(k,j,i)%u(1)=sin(abc_k*nfm(k,j,i)%x(1))*cos(abc_k*nfm(k,j,i)%x(2))*cos(abc_k*nfm(k,j,i)%x(3))
         nfm(k,j,i)%u(2)=-cos(abc_k*nfm(k,j,i)%x(1))*sin(abc_k*nfm(k,j,i)%x(2))*cos(abc_k*nfm(k,j,i)%x(3))
+        nfm(k,j,i)%u(3)=0.      
+        urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
+      end do ; end do ; end do
+      urms_norm=sqrt(urms_norm/(nfm_size**3))
+      write(*,'(a)') ' velocity field calculated, printing to ./data/TG_mesh.dat'
+      open(unit=92,file='./data/TG_mesh.dat',form='unformatted',status='replace',access='stream')
+        write(92) nfm(nfm_size/2,nfm_size/2,1:nfm_size)%x(1)
+        write(92) nfm(:,:,:)%u(1)
+        write(92) nfm(:,:,:)%u(2)
+        write(92) nfm(:,:,:)%u(3)
+      close(92)
+    end subroutine
+   !**********************************************************
+    subroutine setup_shear
+      !SET UP 2D SHEAR FLOW FOR NORMAL FLUID FLOW AND PRINT TO FILE
+      implicit none
+      integer :: i, j, k
+      !print dimensions to file for matlab
+      open(unit=77,file='./data/nfm_dims.log',status='replace')
+        write(77,*) nfm_size
+      close(77)
+      allocate(nfm(nfm_size,nfm_size,nfm_size))
+      nfm_res=(real(box_size)/nfm_size)
+      nfm_inv_res=1./nfm_res
+      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
+        nfm(k,j,i)%x(1)=nfm_res*real(2*i-1)/2.-(box_size/2.)
+        nfm(k,j,i)%x(2)=nfm_res*real(2*j-1)/2.-(box_size/2.)
+        nfm(k,j,i)%x(3)=nfm_res*real(2*k-1)/2.-(box_size/2.)
+      end do ; end do ; end do
+      urms_norm=0. !0 the root mean squared velocity
+      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
+        !get the velocity field - shear flow
+        nfm(k,j,i)%u(1)=exp(-(4*nfm(k,j,i)%x(3)/box_size)**2)
+        nfm(k,j,i)%u(2)=0.
         nfm(k,j,i)%u(3)=0.      
         urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
       end do ; end do ; end do

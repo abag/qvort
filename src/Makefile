@@ -62,7 +62,7 @@ tree.o: tree.f90 general.o cdata.o
 #
 smoothing.o: smoothing.f90 tree.o general.o cdata.o
 #
-mag.o: mag.f90 general.o cdata.o
+mag.o: mag.f90 general.o cdata.o smoothing.o tree.o
 #
 quasip.o: quasip.f90 hamiltonian.o general.o cdata.o timestep.o normal_fluid.o output.o tree.o stiff_solver.o
 #

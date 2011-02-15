@@ -27,4 +27,7 @@ end
 %return
 %plot slices of field+isosurface
 mesh_slices(x,wx,wy,wz,msize,'smoothed')
+%current
+[jx jy jz]=curl(wx,wy,wz);
+mesh_slices(x,jx,jy,jz,msize,'current')
 
