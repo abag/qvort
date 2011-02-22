@@ -1,6 +1,6 @@
-function compressible
+function norm_init
 close all
-filename='data/ABC_mesh.dat';
+filename='data/norm_init_mesh.dat';
 load data/nfm_dims.log;
 msize=nfm_dims(1)
 if (msize==0) 
@@ -22,6 +22,6 @@ uy=reshape(uy,msize,msize,msize);
 uz=reshape(uz,msize,msize,msize);
 unorm=max(sqrt(ux.^2+uy.^2+uz.^2));
 %plot slices of field+isosurface
-mesh_slices(x,ux,uy,uz,msize,'forcing: vel field')
+mesh_slices(x,ux,uy,uz,msize,'initial normal fluid')
 
   

@@ -52,8 +52,8 @@ program run
       end if
       if (switch_off_recon.eqv..false.) call precon2 !line.mod
       call premove !line.mod 
-      !if (magnetic) call B_smooth !mag.mod
     end if
+    if (magnetic) call B_smooth !mag.mod
     !print*, 'here3'
     if(periodic_bc) call enforce_periodic !periodic.mod
     !---------------once all algorithms have been run--------------
@@ -74,7 +74,8 @@ program run
       call print_info !output.mod
       if (magnetic) call B_ts !mag.mod
       if (mod(itime, mesh_shots)==0) then
-        if (magnetic) call Bstretch(itime/mesh_shots)
+        if (magnetic.and.full_B_print) call print_full_B(itime/mesh_shots)
+!mag.f90
         !print the mesh to a binary file
         call print_mesh(itime/mesh_shots) !output.mod
         if (smoothed_field) call print_smooth_mesh(itime/mesh_shots)!smoothing.mod

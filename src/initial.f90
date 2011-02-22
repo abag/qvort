@@ -23,6 +23,9 @@ module initial
     !based on the smallest separation possible in the code
     write(*,'(a)') ' ---------------------TIME-STEP--------------------' 
     call timestep_check !initial.mod
+    if (dt_adapt) then
+      write(*,'(a)') ' using an adpative timestepping routine - in testing!'
+    end if
     if (phonon_emission) then
       write(*,'(a)') ' ------------------PHONON EMISSION--------------------' 
       write(*,'(a,f6.2,a,f8.1)') ' simulating phonon emission, cutoff is ', 100*phonon_percent, '% of max:', 2/delta
@@ -190,7 +193,18 @@ module initial
     if (magnetic) then
       write(*,'(a)') ' ---------------------ACTING AS A MAGNETIC FIELD----------------------'
       write(*,'(a, f6.3, a)') ' initial field strength ', B_init, ' G'
+      if (B_nu>epsilon(0.)) then
+        write(*,'(a, f10.6, a)') ' magnetic diffusivity ', B_nu, ' cm^3/s'
+      else
+        call fatal_error('init.mod','B_nu cannot be 0')
+      end if
+      if (B_3D_nu) then
+        write(*,*)'diffusion is three dimensional'
+      else
+        write(*,*)'diffusion only acts along flux ropes'
+      end if
       f(:)%B=B_init
+      if (full_B_print) write(*,*) 'printing full B field to file'
     end if 
   end subroutine
   !**********************************************************************
@@ -622,7 +636,7 @@ module initial
         call ghostp !we must call this routine at the start of adding every wave 
                     !the routines normalf, binormalf rely on correct ghostpoints
         !on a loop so wavenumbers must be an integer
-        wave_number=2+0.4*k !starting wavenumber is 2
+        wave_number=2+k !starting wavenumber is 2
         amp=prefactor*(wave_number**wave_slope)
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)

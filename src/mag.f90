@@ -32,19 +32,37 @@ module mag
   end subroutine
   !**********************************************************************
   subroutine B_smooth()
+    !use greens function for diffusion operator to smooth the field
+    !use a 5 point footprint
     implicit none
-    real, allocatable :: B(:)
-    integer :: i
+    real, allocatable :: B(:) ! a dummy field to populate with smoothed B
+    real, dimension(5) :: dist, greenf !greens function coefficients
+    integer :: behind, bbehind, infront, iinfront !helpers
+    integer :: i ! for looping
     allocate(B(pcount))
     do i=1, pcount
       if (f(i)%infront==0) then
         B(i)=0. !empty particle
       else
-        !locally smooth the field
-        B(i)=0.25*(f(f(i)%behind)%B+2*f(i)%B+f(f(i)%infront)%B)
+        behind=f(i)%behind ; bbehind=f(behind)%behind
+        infront=f(i)%infront ; iinfront=f(infront)%infront
+        dist(2)=dist_gen(f(i)%ghostb,f(i)%x)
+        dist(4)=dist_gen(f(i)%ghosti,f(i)%x)
+        dist(1)=dist_gen(f(behind)%ghostb,f(behind)%x)+dist(2)
+        dist(5)=dist_gen(f(infront)%ghosti,f(infront)%x)+dist(4)
+        dist(3)=0. !the particle itself 
+        greenf(:)=exp(-(dist(:)**2)/(4*B_nu*dt))
+        if (B_3D_nu) then
+          greenf=greenf/(3*sum(greenf)-2*greenf(3))
+        else
+          greenf=greenf/sum(greenf)
+        end if
+        B(i)=greenf(1)*f(bbehind)%B+greenf(2)*f(behind)%B+greenf(3)*f(i)%B+&
+             greenf(4)*f(infront)%B+greenf(5)*f(iinfront)%B
       end if
     end do
-    f(:)%B=B
+    f(:)%B=B(:)
+    deallocate(B)
   end subroutine
   !**********************************************************************
   subroutine B_ts
@@ -53,21 +71,20 @@ module mag
       if (itime==shots) then
         write(71,*) '%--------t--------Bmax---------Bmin------------Brms-------'
       end if
-      write(71,'(f13.7,f13.7,f13.7,f13.7)') t, maxval(f(:)%B), minval(f(:)%B), Brms
+      write(71,'(f13.7,f13.7,f13.7,f13.7)') t, maxval(f(:)%B,mask=f(:)%infront>0), minval(f(:)%B,mask=f(:)%infront>0), Brms
     close(71)
   end subroutine
   !**********************************************************************
-  subroutine Bstretch(filenumber)
+  subroutine print_full_B(filenumber)
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
     integer :: i
-    write(unit=print_file,fmt="(a,i4.4,a)")"./data/Bstretch",filenumber,".log"
-    open(unit=98,file=print_file,status='replace')
-    do i=1,pcount
-      if (f(i)%infront==0) cycle
-      write(98,*) f(i)%B
-    end do
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/full_B",filenumber,".dat"
+    open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+      write(98) pcount
+      write(98) t
+      write(98) f(:)%B
     close(98)
   end subroutine
 end module

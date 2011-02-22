@@ -13,7 +13,10 @@ module timestep
     !implement adams bashforth time-stepping scheme to move particles
     implicit none
     real :: u(3) !dummy variable used to store velocities
+    real :: adap_x(3) !dummy variable to check timestep
+    real :: dummy_max_error, max_error !maximum error between 2nd and 3rd order method
     integer :: i
+    max_error=0.
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
       call calc_velocity(u,i)
@@ -29,10 +32,28 @@ module timestep
       else
         !second order adams-bashforth
         f(i)%x(:)=f(i)%x(:)+twenty_three_twelve*dt*f(i)%u(:)-four_thirds*dt*f(i)%u1(:)+five_twelths*dt*f(i)%u2(:)
+        if (dt_adapt) then !adaptive timestep (read in from cdata)
+          adap_x(:)=f(i)%x(:)+three_twos*dt*f(i)%u(:)-one_half*dt*f(i)%u1(:)
+          dummy_max_error=dist_gen(f(i)%x,adap_x)
+          if (dummy_max_error>max_error) max_error=dummy_max_error
+        end if
       end if
       f(i)%u2(:)=f(i)%u1(:) !store our old velocities 
       f(i)%u1(:)=f(i)%u(:)
     end do
+    !adjust timestep
+    if (dt_adapt) then
+      !at present done every 5 timesteps this needs to be experimented with
+      if (mod(itime,5)==0) then
+        dt=dt*(1E-5/(2*max_error))**(1./3.)
+        open(unit=34,file='data/adaptive_error.log',position='append')
+          write(34,*) t, max_error, (1E-6/(2*max_error))**(1./3.), dt
+        close(34)
+        !min and max timestep need to be set in run.in
+        if (dt<1E-8) dt=1E-8 !min timestep
+        if (dt>1E-5) dt=1E-5 !max timestep
+      end if
+    end if 
   end subroutine
   !*************************************************
   subroutine calc_velocity(u,i)
@@ -136,10 +157,11 @@ module timestep
       call mirror_flux_check(i,u) !mirror.mod
     end if
     !magnetic field
-    if (magnetic) then
-      call mag_tension(i,u_B) !mag.mod
-      u=u+1E-4*u_B
-    end if
+   ! if (magnetic) then
+      !This needs to be imporved make the coefficient a variable in run.in
+      !call mag_tension(i,u_B) !mag.mod
+      !u=u+1E-5*u_B
+   ! end if
   end subroutine
   !**************************************************************************
   subroutine mesh_velocity

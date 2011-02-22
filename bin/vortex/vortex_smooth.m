@@ -124,7 +124,7 @@ dmax=floor((s(2)-10)/2);
 dump=p(dmin:dmax);
 dumk=k(dmin:dmax);
 s=size(k);
-slope=polyfit(log(k(60:s(2))),log(p(60:s(2))),1);
+slope=polyfit(log(k(40:s(2))),log(p(40:s(2))),1);
 dummp=log(k)*slope(1)+slope(2);
 switch option
   case 'plot'

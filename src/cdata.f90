@@ -73,6 +73,7 @@ module cdata
   logical :: mirror_bc=.false.
   character(len=30), protected :: velocity, initf, boundary
   logical, protected :: binary_print=.true.
+  logical, protected :: dt_adapt=.false.
   !--specific initial conditions selected in run.in - give these default values--
   integer, protected :: line_count=1
   integer, protected :: wave_count=1
@@ -117,6 +118,7 @@ module cdata
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
+  logical, protected :: full_B_print=.false. !prints the full magnetic field to file
   logical, protected :: recon_info=.false. !more in depth reconnection information
   logical, protected :: smoothed_field=.false. !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
@@ -125,6 +127,8 @@ module cdata
   !----------------ENABLE THE FILAMENTS TO ACT AS MAGNETIC FLUX TUBES-------------
   logical, protected :: magnetic=.false.  
   real, protected :: B_init=1.  
+  real, protected :: B_nu=0.1  
+  logical, protected :: B_3D_nu=.false.  
   !----------------------------code testing---------------------------------------
   logical, protected :: switch_off_recon=.false.
   contains
@@ -172,6 +176,9 @@ module cdata
           case ('binary_print')
              !print to binary (T) or formatted data (F)
              read(buffer, *, iostat=ios) binary_print !print binary var data
+          case ('dt_adapt')
+             !adpative timestep, primarily for magnetic runs with tension
+             read(buffer, *, iostat=ios) dt_adapt !adpative dt
           case ('delta')
              !resolution, real number
              read(buffer, *, iostat=ios) delta !spatial resolution
@@ -266,6 +273,12 @@ module cdata
              read(buffer, *, iostat=ios) magnetic !act as a magnetic field
           case ('B_init')
              read(buffer, *, iostat=ios) B_init !initial field strength
+          case ('B_nu')
+             read(buffer, *, iostat=ios) B_nu !magnetic diffusivity
+          case ('B_3D_nu')
+             read(buffer, *, iostat=ios) B_3D_nu !is diffusion 3D?
+          case ('full_B_print')
+             read(buffer, *, iostat=ios) full_B_print !print full B info
           case default
              !print *, 'Skipping invalid label at line', line
           end select

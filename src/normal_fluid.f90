@@ -69,7 +69,7 @@ module normal_fluid
       if (normal_fluid_cutoff<100.) then
         write(*,'(a,f6.3)') ' normal fluid is turned off when t=',normal_fluid_cutoff 
       end if
-      write(*,'(a,f8.4)') 'normal fluid rms velocity is: ', urms_norm
+      write(*,'(a,f8.4)') ' normal fluid rms velocity is: ', urms_norm
     end subroutine
     !************************************************************
     subroutine get_normal_velocity(x,u)
@@ -93,7 +93,7 @@ module normal_fluid
           u(2)=-cos(abc_k*x(1))*sin(abc_k*x(2))*cos(abc_k*x(3))
           u(3)=0.
         case('shear')
-          u(1)=exp(-(4*x(3)/box_size)**2)
+          u(1)=exp(-(6*x(3)/box_size)**2)
         case('KS')
           !multi-scale model of turbulence
           call get_KS_flow(x,u)
@@ -257,8 +257,8 @@ module normal_fluid
         urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
       end do ; end do ; end do
       urms_norm=sqrt(urms_norm/(nfm_size**3))
-      write(*,'(a)') ' velocity field calculated, printing to ./data/ABC_mesh.dat'
-      open(unit=92,file='./data/ABC_mesh.dat',form='unformatted',status='replace',access='stream')
+      write(*,'(a)') ' velocity field calculated, printing to ./data/norm_init_mesh.dat'
+      open(unit=92,file='./data/norm_init_mesh.dat',form='unformatted',status='replace',access='stream')
         write(92) nfm(nfm_size/2,nfm_size/2,1:nfm_size)%x(1)
         write(92) nfm(:,:,:)%u(1)
         write(92) nfm(:,:,:)%u(2)
@@ -291,8 +291,8 @@ module normal_fluid
         urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
       end do ; end do ; end do
       urms_norm=sqrt(urms_norm/(nfm_size**3))
-      write(*,'(a)') ' velocity field calculated, printing to ./data/TG_mesh.dat'
-      open(unit=92,file='./data/TG_mesh.dat',form='unformatted',status='replace',access='stream')
+      write(*,'(a)') ' velocity field calculated, printing to ./data/norm_init_mesh.dat'
+      open(unit=92,file='./data/norm_init_mesh.dat',form='unformatted',status='replace',access='stream')
         write(92) nfm(nfm_size/2,nfm_size/2,1:nfm_size)%x(1)
         write(92) nfm(:,:,:)%u(1)
         write(92) nfm(:,:,:)%u(2)
@@ -319,14 +319,14 @@ module normal_fluid
       urms_norm=0. !0 the root mean squared velocity
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         !get the velocity field - shear flow
-        nfm(k,j,i)%u(1)=exp(-(4*nfm(k,j,i)%x(3)/box_size)**2)
+        nfm(k,j,i)%u(1)=exp(-(nfm(k,j,i)%x(3)**2)/box_size)
         nfm(k,j,i)%u(2)=0.
         nfm(k,j,i)%u(3)=0.      
         urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
       end do ; end do ; end do
       urms_norm=sqrt(urms_norm/(nfm_size**3))
-      write(*,'(a)') ' velocity field calculated, printing to ./data/TG_mesh.dat'
-      open(unit=92,file='./data/TG_mesh.dat',form='unformatted',status='replace',access='stream')
+      write(*,'(a)') ' velocity field calculated, printing to ./data/norm_init_mesh.dat'
+      open(unit=92,file='./data/norm_init_mesh.dat',form='unformatted',status='replace',access='stream')
         write(92) nfm(nfm_size/2,nfm_size/2,1:nfm_size)%x(1)
         write(92) nfm(:,:,:)%u(1)
         write(92) nfm(:,:,:)%u(2)

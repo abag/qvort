@@ -178,4 +178,39 @@ module diagnostic
     end if
     deallocate(curvi) !deallocate helper array
   end subroutine
+  !*************************************************
+  subroutine structure_function() !THIS NEEDS TESTING!!!!
+    !get the structure functions of the mesh velocities]
+    !presumes a periodic velocity field!
+    implicit none
+    real, allocatable :: sfunction(:)
+    integer :: i, j, k
+    integer :: lag
+    integer :: peri, perj, perk
+    allocate(sfunction(mesh_size-1))
+    sfunction=0 !empty this
+    do k=1, mesh_size ; do j=1, mesh_size ; do i=1, mesh_size
+      do lag=1, mesh_size-1
+        if (i-lag<1) then        
+          peri=mesh_size+i-lag
+        else
+          peri=i-lag
+        end if
+        if (j-lag<1) then        
+          perj=mesh_size+j-lag
+        else
+          perj=j-lag
+        end if
+        if (k-lag<1) then        
+          perk=mesh_size+k-lag
+        else
+          perk=k-lag
+        end if
+        sfunction(lag)=sfunction(lag)+(mesh(k,j,i)%u_sup(1)-mesh(perk,j,i)%u_sup(1))
+        sfunction(lag)=sfunction(lag)+(mesh(k,j,i)%u_sup(1)-mesh(k,perj,i)%u_sup(1))
+        sfunction(lag)=sfunction(lag)+(mesh(k,j,i)%u_sup(1)-mesh(k,j,peri)%u_sup(1))
+      end do
+    end do ; end do ; end do
+    deallocate(sfunction)
+  end subroutine
 end module

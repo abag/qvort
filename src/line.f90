@@ -17,7 +17,7 @@ module line
     end if
     old_pcount=pcount
     total_length=0. !zero this
-    if (magnetic) Brms=sqrt(sum(f(:)%B**2)/pcount) !rms of magnetic field
+    if (magnetic) Brms=sqrt(sum(f(:)%B**2,mask=f(:)%infront>0)/count(mask=f(:)%infront>0)) !rms of magnetic field
     do i=1, old_pcount
       if (i>size(f)) then
         !bug check
@@ -70,11 +70,7 @@ module line
         !finally address the magnetic issue
         if (magnetic) then
           if (f(i)%B<5.*Brms) then
-              if (f(i)%B>1000) then
-               print*, 'arghh'
-               print*, i, f(i)%B
-              end if
-              f(par_new)%B=f(i)%B
+              f(par_new)%B=2*f(i)%B
               f(i)%B=2*f(i)%B
           else
             f(par_new)%B=f(i)%B
@@ -276,7 +272,7 @@ module line
       counter=counter+1
     end do
     ! If loop is too small destroy
-    if (counter<4) then
+    if (counter<6) then
       next=particle 
       do i=1, pcount
         store_next=f(next)%infront

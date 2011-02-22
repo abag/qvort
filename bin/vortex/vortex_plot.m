@@ -111,7 +111,7 @@ if dims(4)==1
   y=fread(fid,number_of_particles,'float64');
   z=fread(fid,number_of_particles,'float64');
   f=fread(fid,number_of_particles,'int');
-  u=fread(fid,number_of_particles,'float64');
+  u=fread(fid,number_of_particles,'float64')
 else 
   fid=fopen(filename);
   if fid<0
@@ -197,11 +197,7 @@ for j=1:number_of_particles
             end
             plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(ceil(u(j)),:),'LineWidth',2.0)
           else
-            if j==1253 
-              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'.r','LineWidth',2)
-            else
-              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)
-            end
+            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)
           end
         end
       else
