@@ -1,5 +1,5 @@
 module line
-  !ANYTHING THAT ALTERS THE VORTEX FILAMENT (GEOMETRICALLY) SHOULD BE HERE
+  !>ANYTHING THAT ALTERS THE VORTEX FILAMENT (GEOMETRICALLY) SHOULD BE HERE
   use cdata
   use general
   use periodic
@@ -128,10 +128,10 @@ module line
     end do
   end subroutine
   !******************************************************************
+  !>find the closest particle to i using N^2 operation
+  !>we need to do particles on the boundary as well (periodic)
   subroutine pclose
     implicit none
-    !find the closest particle to i using N^2 operation
-    !we need to do particles on the boundary as well (periodic)
     integer :: i, j
     real :: dist
     do i=1, pcount

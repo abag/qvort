@@ -111,7 +111,7 @@ if dims(4)==1
   y=fread(fid,number_of_particles,'float64');
   z=fread(fid,number_of_particles,'float64');
   f=fread(fid,number_of_particles,'int');
-  u=fread(fid,number_of_particles,'float64')
+  u=fread(fid,number_of_particles,'float64');
 else 
   fid=fopen(filename);
   if fid<0

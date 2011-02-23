@@ -13,7 +13,7 @@ line_count 10
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-normal_velocity ABC
+normal_velocity xflow
 binary_print T
 smoothed_field T
 smoothing_length 1.

@@ -6,7 +6,7 @@ module normal_fluid
     !parameters used in get_normal_fluid
     real, parameter, private :: vel_xflow=1.
     real, parameter, private :: abc_A=1., abc_B=1., abc_C=1.
-    real, private :: abc_k
+    real, private :: norm_k
     real, private :: urms_norm
     !normal fluid mesh - all grid based normal velocities use this (e.g. Navier Stokes future)
     type norm_fluid_grid
@@ -26,27 +26,33 @@ module normal_fluid
       !setup everything needed to use a normal fluid
       !in here we print to file the timescale of the flow
       implicit none
-      abc_k=2.*pi/box_size !wavenumber used in a number of normal fluids (rename/make more general?)
+      norm_k=2.*pi/box_size !wavenumber used in a number of normal fluid
       write(*,*) 'normal fluid velocity field is: ', trim(normal_velocity)
       select case(normal_velocity)
         case('xflow')
+          urms_norm=vel_xflow
           write(*,'(a,f6.3)') ' u(x)=', vel_xflow
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/vel_xflow !time-taken to cross box
           close(77)
         case('ABC')
           write(*,'(a,f6.3,a,f6.3,a,f6.3)') ' A=', abc_A, ' B=', abc_B, ' C=', abc_C
-          call setup_ABC !normal_fluid.mod
+          call setup_gen_normalf !normal_fluid.mod
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/urms_norm !size of box scaled by urms
           close(77)
         case('taylor-green')
-          call setup_TG !normal_fluid.mod
+          call setup_gen_normalf !normal_fluid.mod
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/urms_norm !size of box scaled by urms
           close(77)
         case('shear')
-          call setup_shear !normal_fluid.mod
+          call setup_gen_normalf !normal_fluid.mod
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/urms_norm !size of box scaled by urms
+          close(77)
+        case('galloway-proctor')
+          call setup_gen_normalf !normal_fluid.mod
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/urms_norm !size of box scaled by urms
           close(77)
@@ -70,6 +76,7 @@ module normal_fluid
         write(*,'(a,f6.3)') ' normal fluid is turned off when t=',normal_fluid_cutoff 
       end if
       write(*,'(a,f8.4)') ' normal fluid rms velocity is: ', urms_norm
+      write(*,'(a)') ' normal fluid timescale printed to ./data/normal_timescale.log'
     end subroutine
     !************************************************************
     subroutine get_normal_velocity(x,u)
@@ -84,16 +91,20 @@ module normal_fluid
           u=0. ; u(1)=vel_xflow !flow in the x direction
         case('ABC')
           !commonly used toy model - turbulence/dynamo
-          u(1)=abc_B*cos(abc_k*x(2))+abc_C*sin(abc_k*x(3))
-          u(2)=abc_C*cos(abc_k*x(3))+abc_A*sin(abc_k*x(1))
-          u(3)=abc_A*cos(abc_k*x(1))+abc_B*sin(abc_k*x(2))
+          u(1)=abc_B*cos(norm_k*x(2))+abc_C*sin(norm_k*x(3))
+          u(2)=abc_C*cos(norm_k*x(3))+abc_A*sin(norm_k*x(1))
+          u(3)=abc_A*cos(norm_k*x(1))+abc_B*sin(norm_k*x(2))
         case('taylor-green')
           !The Taylor-Green Vortex
-          u(1)=sin(abc_k*x(1))*cos(abc_k*x(2))*cos(abc_k*x(3))
-          u(2)=-cos(abc_k*x(1))*sin(abc_k*x(2))*cos(abc_k*x(3))
+          u(1)=sin(norm_k*x(1))*cos(norm_k*x(2))*cos(norm_k*x(3))
+          u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
           u(3)=0.
         case('shear')
           u(1)=exp(-(6*x(3)/box_size)**2)
+        case('galloway-proctor')
+          u(1)=-sin(norm_k*x(2)+cos(t))
+          u(2)=-cos(norm_k*x(1)+sin(t))
+          u(3)=sin(norm_k*x(1)+sin(t))+cos(norm_k*x(2)+cos(t))
         case('KS')
           !multi-scale model of turbulence
           call get_KS_flow(x,u)
@@ -230,10 +241,10 @@ module normal_fluid
         write(92) nfm(:,:,:)%u(2)
         write(92) nfm(:,:,:)%u(3)
       close(92)
-    end subroutine
+    end subroutine 
     !**********************************************************
-    subroutine setup_ABC
-      !SET UP THE ABC NORMAL FLUID FLOW AND PRINT TO FILE
+    subroutine setup_gen_normalf
+      !SET UP GENERAL (SIMPLE) ANALYTIC NORMAL FLUIDS
       implicit none
       integer :: i, j, k
       !print dimensions to file for matlab
@@ -250,78 +261,8 @@ module normal_fluid
       end do ; end do ; end do
       urms_norm=0. !0 the root mean squared velocity
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
-        !get the velocity field - ABC flow
-        nfm(k,j,i)%u(1)=abc_B*cos(abc_k*nfm(k,j,i)%x(2))+abc_C*sin(abc_k*nfm(k,j,i)%x(3))
-        nfm(k,j,i)%u(2)=abc_C*cos(abc_k*nfm(k,j,i)%x(3))+abc_A*sin(abc_k*nfm(k,j,i)%x(1))
-        nfm(k,j,i)%u(3)=abc_A*cos(abc_k*nfm(k,j,i)%x(1))+abc_B*sin(abc_k*nfm(k,j,i)%x(2))        
-        urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
-      end do ; end do ; end do
-      urms_norm=sqrt(urms_norm/(nfm_size**3))
-      write(*,'(a)') ' velocity field calculated, printing to ./data/norm_init_mesh.dat'
-      open(unit=92,file='./data/norm_init_mesh.dat',form='unformatted',status='replace',access='stream')
-        write(92) nfm(nfm_size/2,nfm_size/2,1:nfm_size)%x(1)
-        write(92) nfm(:,:,:)%u(1)
-        write(92) nfm(:,:,:)%u(2)
-        write(92) nfm(:,:,:)%u(3)
-      close(92)
-    end subroutine
-   !**********************************************************
-    subroutine setup_TG
-      !SET UP THE TAYLOR GREEN NORMAL FLUID FLOW AND PRINT TO FILE
-      implicit none
-      integer :: i, j, k
-      !print dimensions to file for matlab
-      open(unit=77,file='./data/nfm_dims.log',status='replace')
-        write(77,*) nfm_size
-      close(77)
-      allocate(nfm(nfm_size,nfm_size,nfm_size))
-      nfm_res=(real(box_size)/nfm_size)
-      nfm_inv_res=1./nfm_res
-      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
-        nfm(k,j,i)%x(1)=nfm_res*real(2*i-1)/2.-(box_size/2.)
-        nfm(k,j,i)%x(2)=nfm_res*real(2*j-1)/2.-(box_size/2.)
-        nfm(k,j,i)%x(3)=nfm_res*real(2*k-1)/2.-(box_size/2.)
-      end do ; end do ; end do
-      urms_norm=0. !0 the root mean squared velocity
-      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
-        !get the velocity field - Taylor Green Vortex
-        nfm(k,j,i)%u(1)=sin(abc_k*nfm(k,j,i)%x(1))*cos(abc_k*nfm(k,j,i)%x(2))*cos(abc_k*nfm(k,j,i)%x(3))
-        nfm(k,j,i)%u(2)=-cos(abc_k*nfm(k,j,i)%x(1))*sin(abc_k*nfm(k,j,i)%x(2))*cos(abc_k*nfm(k,j,i)%x(3))
-        nfm(k,j,i)%u(3)=0.      
-        urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
-      end do ; end do ; end do
-      urms_norm=sqrt(urms_norm/(nfm_size**3))
-      write(*,'(a)') ' velocity field calculated, printing to ./data/norm_init_mesh.dat'
-      open(unit=92,file='./data/norm_init_mesh.dat',form='unformatted',status='replace',access='stream')
-        write(92) nfm(nfm_size/2,nfm_size/2,1:nfm_size)%x(1)
-        write(92) nfm(:,:,:)%u(1)
-        write(92) nfm(:,:,:)%u(2)
-        write(92) nfm(:,:,:)%u(3)
-      close(92)
-    end subroutine
-   !**********************************************************
-    subroutine setup_shear
-      !SET UP 2D SHEAR FLOW FOR NORMAL FLUID FLOW AND PRINT TO FILE
-      implicit none
-      integer :: i, j, k
-      !print dimensions to file for matlab
-      open(unit=77,file='./data/nfm_dims.log',status='replace')
-        write(77,*) nfm_size
-      close(77)
-      allocate(nfm(nfm_size,nfm_size,nfm_size))
-      nfm_res=(real(box_size)/nfm_size)
-      nfm_inv_res=1./nfm_res
-      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
-        nfm(k,j,i)%x(1)=nfm_res*real(2*i-1)/2.-(box_size/2.)
-        nfm(k,j,i)%x(2)=nfm_res*real(2*j-1)/2.-(box_size/2.)
-        nfm(k,j,i)%x(3)=nfm_res*real(2*k-1)/2.-(box_size/2.)
-      end do ; end do ; end do
-      urms_norm=0. !0 the root mean squared velocity
-      do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
-        !get the velocity field - shear flow
-        nfm(k,j,i)%u(1)=exp(-(nfm(k,j,i)%x(3)**2)/box_size)
-        nfm(k,j,i)%u(2)=0.
-        nfm(k,j,i)%u(3)=0.      
+        !get the velocity field - shearing wave
+        call get_normal_velocity(nfm(k,j,i)%x,nfm(k,j,i)%u)
         urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
       end do ; end do ; end do
       urms_norm=sqrt(urms_norm/(nfm_size**3))

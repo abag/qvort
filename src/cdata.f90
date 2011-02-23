@@ -1,18 +1,21 @@
+!>THIS MODULE HOLDS ALL THE VARIABLES GLOBALLY, ALL MODULES WILL NEED THIS
+!>THIS ROUTINE CONTAINS SOME IMPORTANT ROUTINES TO READ IN THE RUNTIME PARAMETERS
+!>IN RUN.IN AS WELL AS SETTING THE RANDOM NUMBER GENERATOR
 module cdata
-  !THIS MODULE HOLDS ALL THE VARIABLES GLOBALLY, ALL MODULES WILL NEED THIS
-  !THIS ROUTINE CONTAINS SOME IMPORTANT ROUTINES TO READ IN THE RUNTIME PARAMETERS
-  !IN RUN.IN AS WELL AS SETTING THE RANDOM NUMBER GENERATOR
   !**********VORTEX FILAMENT******************************************************
-  type qvort !our main structure
-    real :: x(3) !position
-    real :: u(3), u1(3), u2(3) !stored velocities (adam bash)
-    real :: u_sup(3) !nice to have the just the superfluid veloctity even with normal fluid/forcing
+  !>our main structure which holds vortex points
+  !!@param x information about the aggregates
+  type qvort 
+    !> position of the vortex point
+    real :: x(3)
+    real :: u(3), u1(3), u2(3) !> stored velocities (adam bash)
+    real :: u_sup(3) !> nice to have the just the superfluid veloctity even with normal fluid/forcing
     real :: ghosti(3), ghostb(3)
-    integer :: infront, behind !to form a line/loop
-    integer :: closest !nearest particle, used in reconnection
-    real :: closestd !distance to nearest particle
-    real :: delta
-    real :: B !magnetic field strength
+    integer :: infront, behind !> to form a line/loop
+    integer :: closest !> nearest particle, used in reconnection
+    real :: closestd !> distance to nearest particle
+    real :: delta !> possibly redundant, consider removing
+    real :: B !> magnetic field strength
   end type
   type(qvort), allocatable :: f(:) !main vector
   integer :: pcount !number of particles in the simulation

@@ -1,5 +1,5 @@
 program run
-  !THE MAIN PROGRAM
+  !>THE MAIN PROGRAM
   use cdata
   use initial
   use output
@@ -111,3 +111,17 @@ program run
   end do
   !deallocate(f,mesh) !tidy up
 end program
+!------------MAIN PAGE FOR DOXYGEN IS HERE----------------
+!>\mainpage My Personal Index Page
+!>
+!>\section intro_sec Introduction
+!>
+!>This is the introduction.
+!>
+!>\section install_sec Installation
+!>
+!>\subsection step1 Step 1: Opening the box
+!> 
+!>etc...
+
+
