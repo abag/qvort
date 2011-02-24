@@ -1,5 +1,6 @@
+!> Module which contains all the routines/call to routines which setup and
+!!restart the code.
 module initial
-  !INITIAL/RESTART CONDITIONS
   use cdata
   use normal_fluid
   use forcing
@@ -7,9 +8,10 @@ module initial
   use smoothing
   contains
   !*************************************************************************
+  !>Prints and sets up intial conditions
   subroutine init_setup()
-    !prints and sets up intial conditions
     use quasip
+    use mag !not strictly needed as mag used in timestep.mod used in quasip.mod 
     implicit none
     logical :: restart
     write(*,'(a)') ' ---------------------VORTEX PARAMETERS------------------' 
@@ -18,7 +20,13 @@ module initial
     !check particle separation has been set
     if (delta<epsilon(0.)) call fatal_error('init.mod','delta must be set in run.in')
     !check that the particle count (pcount) has been set
-    if (init_pcount<4) call fatal_error('init.mod','you must set enough intial particles')
+    if (quasip_only) then
+      if (init_pcount>0) call fatal_error('init.mod','must have pcount=0 for quasip_only')
+    else
+      if (init_pcount<5) then
+        call fatal_error('init.mod','you must set enough intial particles')
+      end if 
+    end if
     !we must check the timestep is sufficient to resolve the motion
     !based on the smallest separation possible in the code
     write(*,'(a)') ' ---------------------TIME-STEP--------------------' 
@@ -138,6 +146,7 @@ module initial
         call setup_quasip !quasip.mod
       end if
     else
+      if (quasip_only) call fatal_error('init.mod','must have quasi_pcount>0 for quasip_only')
       write(*,*) 'no particles in the code'
     end if
     write(*,'(a)') ' ---------------------VELOCITY CALCULATION----------------------' 
@@ -190,22 +199,7 @@ module initial
     if (recon_info) write(*,*) 'printing extra reconnection information to file'
     if (switch_off_recon) call warning_message('init.mod','reconnections switched off: I HOPE YOU KNOW WHAT YOUR DOING!')
     if (smoothed_field) call setup_smoothing_mesh !smoothing.mod
-    if (magnetic) then
-      write(*,'(a)') ' ---------------------ACTING AS A MAGNETIC FIELD----------------------'
-      write(*,'(a, f6.3, a)') ' initial field strength ', B_init, ' G'
-      if (B_nu>epsilon(0.)) then
-        write(*,'(a, f10.6, a)') ' magnetic diffusivity ', B_nu, ' cm^3/s'
-      else
-        call fatal_error('init.mod','B_nu cannot be 0')
-      end if
-      if (B_3D_nu) then
-        write(*,*)'diffusion is three dimensional'
-      else
-        write(*,*)'diffusion only acts along flux ropes'
-      end if
-      f(:)%B=B_init
-      if (full_B_print) write(*,*) 'printing full B field to file'
-    end if 
+    if (magnetic) call setup_mag !mag.f90
   end subroutine
   !**********************************************************************
   subroutine data_restore

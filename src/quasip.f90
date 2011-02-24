@@ -234,6 +234,10 @@ module quasip
     end do
   end subroutine 
   !************************************************************
+  !> calculate the velocity at each particle
+  !> note we can set this in here to be the velocity induced by
+  !> the superfluid vortices but this is unphysical
+  !> really this should be false by default - consider putting in run.in
   subroutine velocity_fluidp(i,u)
     !CALCULATE THE VELOCITY INDUCED BY THE VORTICES
     implicit none 
@@ -241,8 +245,8 @@ module quasip
     real, intent(OUT) :: u(3)
     real :: u_sup(3), u_norm(3)
     integer :: peri, perj, perk
-    logical :: superfluid_on=.true. !set to false to only use normal fluid
-      u_sup=0. !must be zeroed for intially
+    logical :: superfluid_on=.false. !set to false to only use normal fluid
+    u_sup=0. !must be zeroed for intially
     if (superfluid_on) then
       select case(velocity)
         case('LIA','BS')
@@ -292,9 +296,14 @@ module quasip
     open(unit=78,file='data/par_ts.log',position='append')
     if (itime==shots) then
       write(78,*) '%-var--t-----maxu---maxdu----urms---qp_sep--'
+      if (quasip_only) write(*,*) '%-var--t-----maxu---maxdu----urms---qp_sep--'
     end if
     write(78,'(i5.3,f6.2,f8.5,f8.5,f8.5,f8.5)') &
-itime/shots,t,qp_maxu,qp_maxdu,qp_urms,qp_sep
+    itime/shots,t,qp_maxu,qp_maxdu,qp_urms,qp_sep
+    if (quasip_only) then
+      write(*,'(i5.3,f6.2,f8.5,f8.5,f8.5,f8.5)') &
+      itime/shots,t,qp_maxu,qp_maxdu,qp_urms,qp_sep
+    end if
     close(78)
     select case(particle_type)
       case('quasi')

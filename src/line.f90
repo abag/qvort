@@ -12,8 +12,10 @@ module line
     integer :: par_new
     integer :: old_pcount, i
     !check that we have particles
-    if (count(mask=f(:)%infront>0)==0) then
-      call fatal_error('line.mod:pinsert','vortex line length is 0, run over')
+    if (quasip_only.eqv..false.) then
+      if (count(mask=f(:)%infront>0)==0) then
+        !call fatal_error('line.mod:pinsert','vortex line length is 0, run over')
+      end if
     end if
     old_pcount=pcount
     total_length=0. !zero this

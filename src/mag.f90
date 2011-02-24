@@ -4,8 +4,30 @@ module mag
   use general
   use smoothing
   use tree
+  logical, private :: diffusion_on=.false.
   contains
- !**********************************************************************
+  !**********************************************************************
+  subroutine setup_mag()
+    implicit none
+    write(*,'(a)') ' ---------------------ACTING AS A MAGNETIC FIELD----------------------'
+    write(*,'(a, f6.3, a)') ' initial field strength ', B_init, ' G'
+    if (B_nu>epsilon(0.)) then
+      diffusion_on=.true.
+      write(*,'(a, f10.6, a)') ' magnetic diffusivity ', B_nu, ' cm^3/s'
+      !check our magnetic diffusivity cfl condition
+      write(*,'(a,f10.4)') ' angetic CFL number:', delta**2/(B_nu*dt)
+      if (B_3D_nu) then
+        write(*,*)'diffusion is three dimensional'
+      else
+        write(*,*)'diffusion only acts along flux ropes'
+      end if
+    else
+      write(*,*) 'magnetic diffusivity is not acting on flux ropes'
+    end if
+    f(:)%B=B_init
+    if (full_B_print) write(*,*) 'printing full B field to file'
+  end subroutine
+  !**********************************************************************
   subroutine mag_tension(i,u)
     implicit none
     integer,intent(IN) :: i !particle
@@ -31,14 +53,15 @@ module mag
     end if
   end subroutine
   !**********************************************************************
-  subroutine B_smooth()
+  subroutine B_diffusion()
     !use greens function for diffusion operator to smooth the field
     !use a 5 point footprint
     implicit none
     real, allocatable :: B(:) ! a dummy field to populate with smoothed B
-    real, dimension(5) :: dist, greenf !greens function coefficients
+    real, dimension(5) :: prefact, dist, greenf !greens function coefficients
     integer :: behind, bbehind, infront, iinfront !helpers
     integer :: i ! for looping
+    if (diffusion_on.eqv..false.) return
     allocate(B(pcount))
     do i=1, pcount
       if (f(i)%infront==0) then
@@ -51,12 +74,22 @@ module mag
         dist(1)=dist_gen(f(behind)%ghostb,f(behind)%x)+dist(2)
         dist(5)=dist_gen(f(infront)%ghosti,f(infront)%x)+dist(4)
         dist(3)=0. !the particle itself 
-        greenf(:)=exp(-(dist(:)**2)/(4*B_nu*dt))
+        greenf(:)=exp(-(dist(:)**2)/(4*B_nu*dt)) !exponential part of G(x,x')
+        prefact(1)=dist(1)-dist(2) !dist_gen(f(bbehind)%x,f(bbehind)%ghosti)
+        prefact(2)=dist(2) !dist_gen(f(behind)%x,f(behind)%ghosti)
+        prefact(3)=dist(4) !dist_gen(f(i)%x,f(i)%ghosti)
+        prefact(4)=dist(5)-dist(4) !dist_gen(f(infront)%x,f(infront)%ghosti)
+        prefact(5)=dist_gen(f(iinfront)%x,f(iinfront)%ghosti) !not calc. previously
         if (B_3D_nu) then
-          greenf=greenf/(3*sum(greenf)-2*greenf(3))
+          prefact=0.125*prefact/sqrt(pi*B_nu*dt) !3D correction to above
         else
-          greenf=greenf/sum(greenf)
+          prefact=0.5*prefact/sqrt(pi*B_nu*dt) !1D correction
         end if
+        greenf=greenf*prefact
+        if (any(isnan(greenf))) call fatal_error('mag.mod:B_diffusion',&
+        'serious problem, is B_nu 0?')
+        if (greenf(3)>1.) call fatal_error('mag.mod:B_diffusion',&
+        'B_nu is too small for current particle resolution')
         B(i)=greenf(1)*f(bbehind)%B+greenf(2)*f(behind)%B+greenf(3)*f(i)%B+&
              greenf(4)*f(infront)%B+greenf(5)*f(iinfront)%B
       end if

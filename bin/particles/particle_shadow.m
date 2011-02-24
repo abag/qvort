@@ -1,6 +1,4 @@
 function particle_shadow(filenumber)
-%add the arrow 3d directory to the path for script
-addpath bin/arrow3D
 disp('plotting 2 particle trajecties with shadow effect')
 if nargin==1
   pnumber=1;
@@ -11,7 +9,7 @@ if filenumber<2
 end
 start_fnumber=max(1,filenumber-20);
 for i=start_fnumber:filenumber
-  filename=sprintf('data/par%03d.log',i);
+  filename=sprintf('data/par%04d.log',i);
   fid=fopen(filename);
   %read the time
   tline=fgetl(fid);

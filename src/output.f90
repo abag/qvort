@@ -19,9 +19,11 @@ module output
     close(77)
   end subroutine
   !**********************************************************************
+  !>print information to screen/file
   subroutine print_info()
-    !print information to screen/file
     implicit none
+    !> print full filament to file for matlab plotting
+    call printf(itime/shots) !output.mod
     open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
       write(*,*) '--var--------t-------pcount-------recon----avg_d-----length&
@@ -51,8 +53,8 @@ remove_count
     close(79)
   end subroutine
   !**********************************************************************
+  !>print the f (filament) array as (un)formatted data for use with gnuplot/matlab
   subroutine printf(filenumber)
-    !print the f array as (un)formatted data for use with gnuplot/matlab
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
@@ -85,8 +87,8 @@ remove_count
     end if
   end subroutine
   !**********************************************************************
+  !>print the g (particles) array as (un)formatted data for use with gnuplot/matlab
   subroutine printg(filenumber)
-    !print the g (particles) array as (un)formatted data for use with gnuplot/matlab
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
@@ -112,8 +114,9 @@ remove_count
     end if
   end subroutine
   !**********************************************************************
+  !>store everything needed to restart the code
+  !>\bug does this really work anymore? need to check fully
   subroutine data_dump
-    !store everything needed to restart the code
     implicit none
     open(unit=53,file="./data/var.dat",FORM='unformatted',status='replace')
       write(53) pcount
@@ -126,8 +129,8 @@ remove_count
     close(53)
   end subroutine
   !**********************************************************************
-  subroutine sdata_dump
-    !store everything needed to restart the code - special edition :-)
+  !>store everything needed to restart the code - special edition :-)
+  subroutine sdata_dump   
     implicit none
     write(*,*) 'dumping to special data file, current time is=', t
     open(unit=53,file="./data/special.dat",FORM='unformatted',status='replace')
@@ -138,8 +141,10 @@ remove_count
     close(53)
   end subroutine
   !**********************************************************************
+  !>print the mesh to a binary file to be read in by matlab
+  !!\todo the vapor print call in here is not elegant, may not be needed anyway
+  !!as we have paraview output from matlab
   subroutine print_mesh(filenumber)
-    !print the mesh to a binary file
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
@@ -177,28 +182,27 @@ remove_count
     end if
   end subroutine
   !**********************************************************************
+  !>print the velocity  array as unformatted data for use matlab
+  !!\todo would be better to print as binary data
   subroutine print_velocity(filenumber)
-    !print the velocity  array as unformatted data for use matlab
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
     logical :: sup_only=.true.
     integer :: i
-    if (vel_print) then !set in run.in false by default
-      write(unit=print_file,fmt="(a,i4.4,a)")"./data/uu",filenumber,".dat"
-      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
-        write(98) t
-        write(98) pcount
-        if (sup_only) then
-          write(98) f(:)%u_sup(1)
-          write(98) f(:)%u_sup(2)
-          write(98) f(:)%u_sup(3)
-        else
-          write(98) f(:)%u(1)
-          write(98) f(:)%u(2)
-          write(98) f(:)%u(3)
-        end if
-      close(98)
-    end if
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/uu",filenumber,".dat"
+    open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+      write(98) t
+      write(98) pcount
+      if (sup_only) then
+        write(98) f(:)%u_sup(1)
+        write(98) f(:)%u_sup(2)
+        write(98) f(:)%u_sup(3)
+      else
+        write(98) f(:)%u(1)
+        write(98) f(:)%u(2)
+        write(98) f(:)%u(3)
+      end if
+    close(98)
   end subroutine
 end module

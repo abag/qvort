@@ -4,6 +4,7 @@ fid=fopen(filename);
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
 if dims(4)==1
+  %binary read
   t=fread(fid,1,'float64');
   number_of_particles=fread(fid,1,'int');
   x=fread(fid,number_of_particles,'float64');

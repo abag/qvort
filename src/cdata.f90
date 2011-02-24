@@ -111,6 +111,7 @@ module cdata
   integer :: quasi_pcount=0 !number of particles (quasi or fluid)
   character(len=20), protected :: particle_type='fluid' !fluid/interial/quasi particles
   character(len=20), protected :: initg='random' !initial particle configuration
+  logical :: quasip_only=.false. !only evolve quasi_particles in the code
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
@@ -128,10 +129,10 @@ module cdata
   integer, protected :: sm_size=64 !size of smoothing mesh
   !----------------------------magnetic field-------------------------------------
   !----------------ENABLE THE FILAMENTS TO ACT AS MAGNETIC FLUX TUBES-------------
-  logical, protected :: magnetic=.false.  
-  real, protected :: B_init=1.  
-  real, protected :: B_nu=0.1  
-  logical, protected :: B_3D_nu=.false.  
+  logical, protected :: magnetic=.false. !no by defult
+  real, protected :: B_init=1. !initial field strength 
+  real, protected :: B_nu=0. !switched off by default
+  logical, protected :: B_3D_nu=.false. !1/3D diffusion 
   !----------------------------code testing---------------------------------------
   logical, protected :: switch_off_recon=.false.
   contains
@@ -232,6 +233,8 @@ module cdata
              read(buffer, *, iostat=ios) quasi_pcount !number of particles
           case ('particle_type')
              read(buffer, *, iostat=ios) particle_type !particle type (quasi/fluid)
+          case ('quasip_only')
+             read(buffer, *, iostat=ios) quasip_only !only evolve particles
           case ('tree_theta')
              read(buffer, *, iostat=ios) tree_theta !tree code, opening angle
           case ('tree_print')
