@@ -1,5 +1,6 @@
 !> Module which contains all the routines/call to routines which setup and
-!!restart the code.
+!!restart the code. Initial conditions for filament set in run.in for more 
+!!information on the options see \ref INIT
 module initial
   use cdata
   use normal_fluid
@@ -8,9 +9,11 @@ module initial
   use smoothing
   contains
   !*************************************************************************
-  !>Prints and sets up intial conditions
+  !>Prints and sets up intial conditions - will give warnings/errors if there
+  !>are any conflicting options set in run.in
   subroutine init_setup()
     use quasip
+    use particles
     use mag !not strictly needed as mag used in timestep.mod used in quasip.mod 
     implicit none
     logical :: restart
@@ -20,8 +23,8 @@ module initial
     !check particle separation has been set
     if (delta<epsilon(0.)) call fatal_error('init.mod','delta must be set in run.in')
     !check that the particle count (pcount) has been set
-    if (quasip_only) then
-      if (init_pcount>0) call fatal_error('init.mod','must have pcount=0 for quasip_only')
+    if (particles_only) then
+      if (init_pcount>0) call fatal_error('init.mod','must have pcount=0 for particles_only')
     else
       if (init_pcount<5) then
         call fatal_error('init.mod','you must set enough intial particles')
@@ -109,8 +112,6 @@ module initial
           call setup_linked_wave_loop !init.mod
         case('wave_line')
           call setup_wave_line !init.mod
-        case('line_motion')
-          call setup_line_motion !init.mod
         case('tangle')
           call setup_tangle !init.mod
         case('criss-cross')
@@ -137,16 +138,27 @@ module initial
     !do we employ forcing on the boundary?
     write(*,'(a)') ' -----------------------FORCING-----------------------' 
     call setup_forcing !forcing,mod
-    !are there particles in the code?
-    write(*,'(a)') ' ------------------------PARTICLES-----------------------' 
+    !are there quasi particles in the code?
+    write(*,'(a)') ' ------------------------QUASI PARTICLES-----------------------' 
     if (quasi_pcount>0) then
       if (restart) then
-        write(*,*) 'particles have been restored from dump file, see above'
+        write(*,*) 'quasi particles have been restored from dump file, see above'
       else 
         call setup_quasip !quasip.mod
       end if
     else
-      if (quasip_only) call fatal_error('init.mod','must have quasi_pcount>0 for quasip_only')
+      write(*,*) 'no quasi particles in the code'
+    end if
+    !are there particles in the code?
+    write(*,'(a)') ' ------------------------PARTICLES-----------------------' 
+    if (part_count>0) then
+      if (restart) then
+        write(*,*) 'particles have been restored from dump file, see above'
+      else 
+        call setup_particles !particles.mod
+      end if
+    else
+      if (particles_only) call fatal_error('init.mod','must have part_count>0 for particles_only')
       write(*,*) 'no particles in the code'
     end if
     write(*,'(a)') ' ---------------------VELOCITY CALCULATION----------------------' 
@@ -182,6 +194,9 @@ module initial
           'runnning with tree velocity but tree_theta is zero') !cdata.mod
         end if
         write(*,*) 'using tree approximation to Biot-Savart integral - scales like O(NlogN)'
+        if (tree_theta>0.6) then
+          call warning_message('init_setup','tree_theta>0.6, the vortices may be unstable')
+        end if
      case default
        print*, 'correct value for velocity in run.in has not been set'
        print*, 'options are: LIA, BS, Tree'
@@ -198,10 +213,15 @@ module initial
     if (two_dim>0) write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
     if (recon_info) write(*,*) 'printing extra reconnection information to file'
     if (switch_off_recon) call warning_message('init.mod','reconnections switched off: I HOPE YOU KNOW WHAT YOUR DOING!')
-    if (smoothed_field) call setup_smoothing_mesh !smoothing.mod
+    !----------------------gaussian smoothing of field------------------------------
+    if (sm_size>0) call setup_smoothing_mesh !smoothing.mod
+    !----------------------------magnetic field-------------------------------------
     if (magnetic) call setup_mag !mag.f90
   end subroutine
   !**********************************************************************
+  !>restart the code code periodically writes all the main variables to a file
+  !>./data/dump.dat, if this is detected at startup then the code will restart
+  !>from that data file
   subroutine data_restore
     !restart the code
     use stiff_solver
@@ -219,12 +239,15 @@ module initial
       if (quasi_pcount>0) then
         allocate(g(quasi_pcount))
         read(63) g
-        write(*,'(a,i4.1,a)') ' restored ', quasi_pcount,' particles'
-        select case(particle_type)
-          case('quasi')
-            !finally intialise the backwards difference coefficients array
-            call set_BDF_coeff !stiff_solver.mod
-        end select
+        write(*,'(a,i4.1,a)') ' restored ', quasi_pcount,' quasi particles'
+        !finally intialise the backwards difference coefficients array
+        call set_BDF_coeff !stiff_solver.mod
+      end if
+      read(63) part_count
+      if (part_count>0) then
+        allocate(p(part_count))
+        read(63) p
+        write(*,'(a,i4.1,a)') ' restored ', part_count,' particles'
       end if
     close(63)
     nstart=dummy_itime+1
@@ -234,8 +257,9 @@ module initial
     end if
   end subroutine
   !*************************************************************************
+  !>set up a single loop in the x-y plane, it's size is dictated by the initial 
+  !>number of particles set and the size of \f$\delta\f$
   subroutine setup_single_loop
-    !a loop in the x-y plane
     implicit none
     real :: velocity
     real :: radius
@@ -261,9 +285,10 @@ module initial
       f(i)%u1=0. ; f(i)%u2=0.
     end do   
   end subroutine
-  !*************************************************************************
+  !****************************************************************************
+  !>set up a single line from -z to z, number of particles is automatically adjusted
+  !>to box size and \f$\delta\f$
   subroutine setup_single_line
-    !a line from the lop of the box to the bottom, no curvature
     implicit none
     integer :: pcount_required
     integer :: i
@@ -294,8 +319,8 @@ module initial
     end do
   end subroutine
   !*************************************************************************
+  !>draw cardoid (http://en.wikipedia.org/wiki/Cardioid) in the x-y plane
   subroutine setup_cardoid
-    !a cardoid (http://en.wikipedia.org/wiki/Cardioid) in the x-y plane
     implicit none
     real :: velocity
     real :: radius
@@ -319,8 +344,9 @@ module initial
     end do   
   end subroutine
   !*************************************************************************
+  !>two loops in the x-y plane their sizes are dictated by the initial 
+  !>number of particles set and the size of \f$\delta\f$
   subroutine setup_leap_frog
-    !two loops in the x-y plane
     implicit none
     real :: radius
     integer :: i 
@@ -361,8 +387,9 @@ module initial
     end do    
   end subroutine
   !*************************************************************************
+  !>anti parallel lines from -z to z which drives the crow instability
+  !>particle count automatically adjusted
   subroutine setup_crow
-    !anti parallel lines (instability)
     implicit none
     integer :: pcount_required
     integer :: i 
@@ -410,6 +437,7 @@ module initial
     end do    
   end subroutine
   !*************************************************************************
+  !>two linked loops which drive a reconnection
   subroutine setup_linked_filaments
     !two linked loops 
     implicit none
@@ -454,6 +482,7 @@ module initial
     end do    
   end subroutine
   !*************************************************************************
+  !>two unlinked loops which move towards each other driving a reconnection
   subroutine setup_colliding_loops
     !two linked loops 
     implicit none
@@ -498,8 +527,8 @@ module initial
     end do    
   end subroutine
   !*************************************************************************
+  !>four unlinked loops as in Kivotedes 2001, PRL
   subroutine setup_kivotedes
-    !four unlinked loops as in Kivotedes 2001, PRL
     implicit none
     real :: radius
     integer :: i 
@@ -574,9 +603,9 @@ module initial
     end do
   end subroutine
   !*************************************************************************
+  !>clustered loops, helical/planar waves added with
+  !>specific spectrum all set in run.in
   subroutine setup_wave_loop
-    !clustered loops, helical/planar waves added with
-    !specific spectrum all set in run.in
     implicit none
     real :: wave_number, prefactor
     real :: amp, random_shift
@@ -656,10 +685,9 @@ module initial
     end do !closes the i loop
     close(34)
   end subroutine
- !*************************************************************************
+  !*************************************************************************
+  !>linked loops, helical/planar waves added with specific spectrum all set in run.in
   subroutine setup_linked_wave_loop
-    !linked loops, helical/planar waves added with
-    !specific spectrum all set in run.in
     implicit none
     real :: wave_number, prefactor
     real :: amp, random_shift
@@ -751,9 +779,9 @@ module initial
     close(34)
   end subroutine
   !*************************************************************************
+  !>lines from the lop of the box to the bottom, helical/planar waves added with
+  !>specific spectrum all set in run.in
   subroutine setup_wave_line
-    !lines from the lop of the box to the bottom, helical/planar waves added with
-    !specific spectrum all set in run.in
     implicit none
     real :: wave_number, prefactor
     real :: amp, random_shift
@@ -851,71 +879,6 @@ module initial
         close(34)
       end if 
     end do !closes the i loop
-  end subroutine
-  !*************************************************************************
-  subroutine setup_line_motion
-    !THIS IS A REDUNDANT ROUTINE IT SHOULD BE REMOVED SOON
-    !3 lines from the top of the box to the bottom,
-    !given none zero curvature so they move, wave pertubations added
-    implicit none
-    real :: rand1, rand2, rand3, rand4
-    real :: random_shift
-    integer :: pcount_required
-    integer :: line_size, line_position
-    integer :: i, j
-
-    if (periodic_bc) then
-      !work out the number of particles required for single line
-      !given the box size specified in run.i
-      pcount_required=3*nint(box_size/(0.75*delta)) !75%
-      write(*,*) 'changing size of pcount to fit with box_length and delta'
-      write(*,*) 'pcount is now', pcount_required
-      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
-    else
-      call fatal_error('init.mod:setup_line_motion', &
-      'periodic boundary conditions required')
-    end if
-    line_size=int(pcount/3)
-    do i=1, 3
-      call random_number(rand1)
-      call random_number(rand2)
-      call random_number(rand3)
-      call random_number(rand4)
-      rand1=(rand1-.5)*box_size*0.1
-      if (rand4<0.5) then
-        rand4=-1.
-      else
-        rand2=1.
-      end if
-      call random_number(random_shift)
-      do j=1, line_size
-        line_position=j+(i-1)*line_size
-        if (rand2<0.5) then
-          f(line_position)%x(1)=rand4*(box_size/10.)*sin(pi*real(2*j-1)/(2.*line_size))
-          f(line_position)%x(2)=rand1+2.*delta*sin((random_shift+1)*(real(j-1)/line_size)*8*pi)+&
-          delta*sin((random_shift+1.2)*(real(j-1)/line_size)*9*pi)+&
-          0.5*delta*sin((random_shift+1.3)*(real(j-1)/line_size)*10*pi)
-          f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
-        else
-          f(line_position)%x(1)=rand1+2.*delta*sin((random_shift+1)*(real(j-1)/line_size)*8*pi)+&
-          delta*sin((random_shift+1.2)*(real(j-1)/line_size)*9*pi)+&
-          0.5*delta*sin((random_shift+1.3)*(real(j-1)/line_size)*10*pi)
-          f(line_position)%x(2)=rand4*(box_size/10.)*sin(pi*real(2*j-1)/(2.*line_size))
-          f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
-        end if
-        if(j==1) then
-          f(line_position)%behind=i*line_size
-          f(line_position)%infront=line_position+1
-        else if (j==line_size) then
-          f(line_position)%behind=line_position-1
-          f(line_position)%infront=(i-1)*line_size+1
-        else
-          f(line_position)%behind=line_position-1
-          f(line_position)%infront=line_position+1
-        end if
-        f(line_position)%u1=0. ; f(line_position)%u2=0.
-      end do
-    end do
   end subroutine
   !*************************************************************************
   subroutine setup_random_loops
@@ -1187,3 +1150,16 @@ module initial
     end if
   end subroutine
 end module
+!******************************************************************
+!>\page INIT Initial condition for filament
+!!Initial condition for filament is set in run.in throught the parameter initf\n
+!!Options are:\n
+!!- \p single_loop - Single loop in the x-y plane (z=0). The size of the loop is dictated by the number of intial particles set.
+!!- \p single_line - Single line from -z to +z (x=y=0). The number of particles needed is set by the box size and delta, pcount is automatically adjusted to fit this.
+!!- \p random_loops - multiple random loops (number set by the parameter \p line_count) distributed throughout the box. The size of the loops is dictated by the number of loops and the number of intial particles set. You must ensure \p pcount is a multiple of the number of loops
+!!- \p crow - Two lines from -z to +z (x=y=0), anti-parallel to trigger the
+!!crow instability. The number of particles needed is set by the box size and
+!!delta, pcount is automatically adjusted to fit this.
+!!- \p leap-frog - two loops in the x-y plane at z=-delta, z=delta this sets
+!!the loops leapfrogging (not with LIA). 
+

@@ -1,12 +1,17 @@
+!>all routines related to the filaments acting as magnetic flux tubes are in this
+!>module
 module mag
-  !MAGNETIC FIELD 
   use cdata
   use general
   use smoothing
   use tree
+  !>@param diffusion_on a flag set on if diffusion had been set to a none
+  !>zero value in run.in, this helps subsequent smoothing routine
   logical, private :: diffusion_on=.false.
   contains
   !**********************************************************************
+  !>sets up the magnetic field and check there are no conflicting options
+  !>arguments set in run.in
   subroutine setup_mag()
     implicit none
     write(*,'(a)') ' ---------------------ACTING AS A MAGNETIC FIELD----------------------'
@@ -28,6 +33,10 @@ module mag
     if (full_B_print) write(*,*) 'printing full B field to file'
   end subroutine
   !**********************************************************************
+  !>simulate the effect of the lorentz force by adding in magnetic tension 
+  !>to velocity calculations
+  !>\f[\mathbf{J} \times \mathbf{B}=(\nabla \times \mathbf{B}) \times \mathbf{B}
+  !>=B^2 d\hat{\mathbf{B}}/ds\f]
   subroutine mag_tension(i,u)
     implicit none
     integer,intent(IN) :: i !particle
@@ -53,9 +62,15 @@ module mag
     end if
   end subroutine
   !**********************************************************************
+  !>use greens function for diffusion operator to smooth the field
+  !>use a 5 point footprint, can be done in one or three dimensions
+  !>in one dimension this is given by
+  !>\f[B(\mathbf{s}_i,t+\Delta t)=\sum_{j=i-2}^{i+2}\exp(-(\mathbf{s}_i
+  !>-\mathbf{s}_j)^2/4\nu \Delta t)\frac{B_j}{2\sqrt{\pi\nu\Delta t/\ell_j^2}}\f]
+  !>in three dimensions the 2 in the denominator is an 8 select this in run.in
+  !>via the parameter B_3d_nu, the magnitude of the diffusion is set by the
+  !>parameter B_nu in run.in 
   subroutine B_diffusion()
-    !use greens function for diffusion operator to smooth the field
-    !use a 5 point footprint
     implicit none
     real, allocatable :: B(:) ! a dummy field to populate with smoothed B
     real, dimension(5) :: prefact, dist, greenf !greens function coefficients
@@ -98,6 +113,7 @@ module mag
     deallocate(B)
   end subroutine
   !**********************************************************************
+  !>print time series information for the magnetic field
   subroutine B_ts
     implicit none
     open(unit=71,file='data/B_ts.log',position='append')
@@ -108,6 +124,7 @@ module mag
     close(71)
   end subroutine
   !**********************************************************************
+  !>print full magnetic field information at a particular timestep
   subroutine print_full_B(filenumber)
     implicit none
     integer, intent(IN) :: filenumber

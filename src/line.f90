@@ -1,20 +1,29 @@
+!>all routines which alter the geometry of the vortex filament/flux tube should
+!>be contained in this module
 module line
-  !>ANYTHING THAT ALTERS THE VORTEX FILAMENT (GEOMETRICALLY) SHOULD BE HERE
   use cdata
   use general
   use periodic
   contains
+  !>insert new points to maintain the resolution of the line,
+  !>this will mean the point separation lies between \f$\delta\f$
+  !>and \f$\delta/2\f$ to ensure the curvature is not affected by this the new point
+  !>\f$ \mathbf{s}_{i'} \f$ is positioned between i, i+1 at position
+  !>\f[ \mathbf{s}_{i'}=\frac{1}{2}(\mathbf{s}_i+\mathbf{s}_{i+1})+\left( \sqrt{R^2_{i'}
+  !!-\frac{1}{4}\ell_{i+1}^2}-R_{i'} \right)\frac{\mathbf{s}_{i'}''}{|\mathbf{s}_{i'}''|},\f]
+  !! where \f$R_{i'}=|\mathbf{s}_{i'}''|^{-1}\f$.
+  !!If the filaments are magnetic flux tubes then the stretching is taken
+  !!into account by doubling the field strength
   subroutine pinsert
-    !insert particles to maintain a ~constant resolution
     implicit none    
     type(qvort), allocatable, dimension(:) :: tmp
     real :: disti, curv, f_ddot(3)
     integer :: par_new
     integer :: old_pcount, i
     !check that we have particles
-    if (quasip_only.eqv..false.) then
+    if (particles_only.eqv..false.) then
       if (count(mask=f(:)%infront>0)==0) then
-        !call fatal_error('line.mod:pinsert','vortex line length is 0, run over')
+        call fatal_error('line.mod:pinsert','vortex line length is 0, run over')
       end if
     end if
     old_pcount=pcount
@@ -85,10 +94,11 @@ module line
     !print*, maxloc(f(:)%B), maxval(f(:)%B), f(maxloc(f(:)%B))%Bstretch
   end subroutine
   !*************************************************************************
+  !>remove points along the filament if they are compressed to the point where
+  !>the separation between the point i and i+2 is less than \f$\delta\f$
+  !>if phonon emission is set to true in run.in then particles with high 
+  !>curvature are removed, smoothing the loop to mimic dissipation at large k
   subroutine premove
-    !maximum curvature cutoff based on an equilateral triangle with side
-    !of length delta is \sqrt(3)/delta. This routine will remove particles
-    !whose curvature is too high
     implicit none
     real :: distii
     integer :: infront, tinfront
@@ -130,8 +140,9 @@ module line
     end do
   end subroutine
   !******************************************************************
-  !>find the closest particle to i using N^2 operation
-  !>we need to do particles on the boundary as well (periodic)
+  !>find the closest particle to i using N^2 operation this is
+  !>done by looping over all particles and caling distf from general.mod
+  !>\todo we need to do particles on the boundary as well (periodic)
   subroutine pclose
     implicit none
     integer :: i, j
@@ -151,8 +162,10 @@ module line
     end do
   end subroutine
   !******************************************************************
-  subroutine precon
-    !THE ROUTINE THAT RECONNECTS FILAMENTS WHICH BECOME CLOSE
+  !>reconnect filaments if they become too close removing the two points
+  !>which are reconnected, the two closest points. This is routine
+  !>is not used in the code at present but could be useful for flux tube sims.
+  subroutine precon_dissapitive
     implicit none
     real :: distr, min_distr !reconnection distances
     real :: dot_val, tangent1(3), tangent2(3) !used to determine if filaments parallel
@@ -206,8 +219,8 @@ module line
     end do
   end subroutine
   !******************************************************************
-  subroutine precon2
-    !THE ROUTINE THAT RECONNECTS FILAMENTS WHICH BECOME CLOSE
+  !>reconnect filaments if they become too close
+  subroutine precon
     implicit none
     real :: distr, min_distr !reconnection distances
     real :: dot_val, tangent1(3), tangent2(3) !used to determine if filaments parallel
@@ -259,9 +272,9 @@ module line
     end do
   end subroutine
   !**************************************************
+  !>removes loops with less than 6 particles
+  !>this is needed to ensure derivatives can be calculated correctly
   subroutine loop_killer(particle)
-    !removes loops with less than three particles
-    !this is needed to ensure derivatives can be calculated correctly
     implicit none
     integer :: particle, next
     integer :: store_next
@@ -287,7 +300,9 @@ module line
     end if
   end subroutine
   !**************************************************
-   subroutine same_loop_test(i,j,same_loop)
+  !>a routine to test if two points are on the same loop
+  !>returns a logical arguement with the answer
+  subroutine same_loop_test(i,j,same_loop)
      use Cdata
      implicit none
      integer,intent(IN) :: i,j

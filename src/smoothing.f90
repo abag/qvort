@@ -1,25 +1,33 @@
+!>all routines used to smooth the field onto the mesh, using tree methods
+!>if the code is running as a vortex filament this is simply the vorticity
+!>if a flux tube this smooths the magnetic field
 module smoothing
-  ! CONTAINS ALL THE ROUTINES USED TO SMOOTH THE FIELD ONTO A MESH
-  ! USING TREE CODE METHODS - THIS IS EITHER VORTICITY OR MAGNETIC FIELD
-  ! VORTICITY USED TO LOOK FOR BUNDLING OF FILAMENTS, MAGNETIC FIELD JxB
   use cdata 
   use general
   use tree
   implicit none
+  !> mesh points on the smoothed mesh
+  !>@param x the position of the mesh point
+  !>@param w the smoothed field either vorticity or magnetic
   type smoothing_grid
      private
-     real :: x(3) !position
-     real :: w(3) !vorticity/magnetic field 
+     real :: x(3)
+     real :: w(3)
   end type
   !use the abbreviation sm (smoothed mesh)
-  real, private :: sm_res !resolution of mesh
-  real, private :: sm_sigma !smoothing length
+  !>resolution of the smoothed mesh
+  real, private :: sm_res 
+  !>the smoothing length, set in terms of \f$\delta\f$ in run.in
+  real, private :: sm_sigma 
+  !>the array to calculate smoothed fields on  
   type(smoothing_grid), allocatable, private :: sm(:,:,:)
   contains
   !************************************************************
+  !>set up the smoothing mesh, if set in run.in
   subroutine setup_smoothing_mesh
     implicit none
     integer :: i, j, k
+    write(*,'(a)') ' -------------------------SMOOTHING----------------------------' 
     sm_sigma=smoothing_length*delta
     if (tree_theta>0) then
       write(*,'(a,i4.2,a)') ' creating a ', sm_size,' ^3 mesh to smooth \omega/B field onto'
@@ -27,6 +35,7 @@ module smoothing
     else
       call fatal_error('smoothing.mod','tree theta must be +ve to use smoothing')
     end if
+    if (sm_size<16) call warning_message('smoothing.mod','sm_size<16 results will be poor')
     !print dimensions to file for matlab
     open(unit=77,file='./data/sm_dims.log',status='replace')
       write(77,*) sm_size
@@ -42,8 +51,8 @@ module smoothing
     !0 the vorticity/magnetic field array
   end subroutine
   !**********************************************************************
+  !>print the smoothed mesh to a binary file for plotting with matlab/paraview
   subroutine print_smooth_mesh(filenumber)
-    !print the mesh to a binary file
     implicit none
     integer, intent(IN) :: filenumber
     character (len=50) :: print_file
@@ -57,6 +66,7 @@ module smoothing
     close(92)
   end subroutine
   !************************************************************
+  !>get the smoothed field on the smoothed mesh 
   subroutine get_smoothed_field
     implicit none
     integer :: i, j, k
@@ -70,6 +80,7 @@ module smoothing
     !now need to print this to file
   end subroutine
   !**********************************************************
+  !>given a specific position x, get the smoothed field wsmooth
   recursive subroutine tree_smooth(x,vtree,shift,wsmooth)
     implicit none
     real, intent(IN) :: x(3) !the position we want the velocity at

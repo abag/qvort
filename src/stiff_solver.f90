@@ -29,13 +29,14 @@ module stiff_solver
     real :: predict_x(3), predict_p(3) !future prediction of p used to adjust timestep
     integer :: useorder !the order of the backwards difference scheme
     integer :: j !used for looping
-    t_int=t !intially set the internal time to be the global time
-    do while (t_int<t+dt) !loop until internal time is 'ready'
+    !t_int=t !intially set the internal time to be the global time
+    !do while (t_int<t+dt) !loop until internal time is 'ready'
       !first check if we can achieve the order asked for
       !THIS NEEDS TO BE IMPROVED TO TAKE ACCOUNT FOR INTERNAL TIME LOOP
       useorder=min(order,itime) !take the minimum of the order and the itime loop
       !get the momentum/position derivatives
       call velocity_quasip(i,rdot,pdot) !hamiltonian.mod
+      g(i)%rdot=rdot ; g(i)%pdot=pdot !store for printing to ts
       !predict the future value of p
       do j=1,3
         predict_p(j)=(dt_int*pdot(j)-dot_product(BDF_coeff(useorder,2:7),g(i)%pold(1:6,j)))/BDF_coeff(useorder,1)
@@ -64,7 +65,7 @@ module stiff_solver
       !finally the most recent
       g(i)%xold(1,:)=g(i)%x ; g(i)%pold(1,:)=g(i)%p
       t_int=t_int+dt_int !increment internal timestep
-    end do
+    !end do
   end subroutine
   !*********************************************************************
   subroutine BDF_dt_adjust

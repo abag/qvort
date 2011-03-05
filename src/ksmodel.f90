@@ -1,19 +1,30 @@
+!>all the routines required to setup and subsequently calculate the KS model
+!>at a given position and time. This is used as as a normal fluid in the code.
+!>The KS model is a model of a turbulent like velocity field created throught the
+!>summation of random fourier modes
+!!\f[
+!!\mathbf{u}_n({\mathbf{x}},t)= \sum_{n=1}^{N_\textrm{KS}}\left(\mathbf{A}_n \times \mathbf{k}_n
+!!\cos\phi_n + {\bf B}_n \times \mathbf{k}_n \sin\phi_n \right),
+!!\f]
+!!where \f$\phi_n=\mathbf{k}_n\cdot\mathbf{x}+\omega_n t\f$, \f$N_\textrm{KS}\f$ is the number of
+!!modes, \f$\mathbf{k}_n\f$ and \f$\omega_n=k_n u_n\f$ are their wave vectors and frequencies.
+
 module KSmodel
-  !ALL THE ROUTINES REQUIRED TO USE THE KS MODEL TURBULENT (LIKE) VELOCITY FIELD
   use cdata
   use general
-    !arrays needed for the duration of the simualtion
+    !>arrays needed for the duration of the simualtion
     real,private,dimension(:,:),allocatable :: unit_k,k,A,B
     real,private,dimension(:,:),allocatable :: cross1,cross2
     real,private,dimension(:,:),allocatable:: addition !helper array for get_KS_flow
     real,private,dimension(:),allocatable :: omega !turnover time
-    !arrays needed for the setup only
+    !>arrays needed for the setup only
     real,private,dimension(:,:),allocatable :: orderK
     real,private,dimension(:),allocatable  ::  klengths,kk,delk,KS_energy 
     contains 
     !************************************************************
+    !>return the KS flow (u) at a given position x, t is a global
+    !>variable which is used in here (flow is time dependent)
     subroutine get_KS_flow(x,u)
-      !Use our vectors to put together our KS velocity field
       implicit none
       real,intent(in)     :: x(3)
       real,intent(out)    :: u(3)
@@ -34,6 +45,9 @@ module KSmodel
       end do
     end subroutine get_KS_flow
     !************************************************************
+    !>the main routine to setup the KS flow, only performed once
+    !>at the start of a run. KS vectors held within this module to
+    !>be used by the get_KS_flow routine.
     subroutine setup_KS
       implicit none
       real :: arg
@@ -112,6 +126,7 @@ module KSmodel
       deallocate(orderK,kk,delk,KS_energy,klengths)
     end subroutine
     !*****************************************************************
+    !>generate the KS wavenumbers
     subroutine wavenumbers
       implicit none
       real,dimension(3) :: angle,dir_in
@@ -171,8 +186,8 @@ module KSmodel
       end do
     end subroutine
     !*************************************************************************
+    !>bubble sorting algorithm used to order random KS modes
     subroutine order(ad_, i_N, i_ord, B)
-      !Bubble sorting algorithm
       implicit none
       integer, intent(in) :: i_N, i_ord
       real, intent(in)  :: ad_(i_N)
@@ -194,10 +209,10 @@ module KSmodel
       end do
     end subroutine order
     !*************************************************************
+    !>Get our A's & B's that are perpendicular to k for each
+    !>of our N wave-vectors k. This is done by making 2 extra random
+    !>vectors, j & l and taking the cross product of these with k
     subroutine calc_KS_amplitudes
-      !Get our A's & B's that are perpendicular to k for each
-      !of our N wave-vectors k. This is done by making 2 extra random
-      !vectors, j & l and taking the cross product of these with k
       implicit none
       real :: j(3),l(3),newa(3),newa2(3)
       real,allocatable :: ampA(:),ampB(:)

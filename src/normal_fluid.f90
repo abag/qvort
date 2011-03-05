@@ -1,5 +1,9 @@
+!>normal fluid component in the equation of motion, if the filament acts as a vortex
+!>velocity enters as \f$\mathbf{u}=\alpha \mathbf{s}' \times (\mathbf{u}_\mathrm{n}-\mathbf{u}_\mathrm{s})+
+!>\alpha' \mathbf{s}' \times [\mathbf{s}' \times (\mathbf{u}_\mathrm{n}-\mathbf{u}_\mathrm{s})]\f$
+!>if the filament is a magnetic flux tube or a material line then the normaly velocity is used directly.
+!>for further information on the normal fluid options see \ref NF
 module normal_fluid
-  !NORMAL FLUID COMPONENT IN THE EQUATION OF MOTION
   use cdata
   use general
   use ksmodel
@@ -8,22 +12,28 @@ module normal_fluid
     real, parameter, private :: abc_A=1., abc_B=1., abc_C=1.
     real, private :: norm_k
     real, private :: urms_norm
-    !normal fluid mesh - all grid based normal velocities use this (e.g. Navier Stokes future)
+    !>normal fluid mesh - all grid based normal velocities use this (e.g. Navier Stokes future)
+    !>@param x the position on the grid
+    !>@param u the velocity
+    !>@param v a scalar used in the compressible flow case
+    !>@param div the divergence of the velocity field at x
     type norm_fluid_grid
       private
-      real :: x(3) !position
-      real :: u(3) !velocity 
-      real :: v !scalar - compressible flow uses this
-      real :: div !divergence - check div of vel field
+      real :: x(3)
+      real :: u(3)
+      real :: v
+      real :: div 
     end type
     !use the abbreviation nfm (normal fluid mesh)
-    integer, private, parameter :: nfm_size=64 !to be used with below
+    !>the size of the normal fluid mesh, put in run.in soon
+    integer, private, parameter :: nfm_size=64 
     real, private :: nfm_res, nfm_inv_res !resolution/inv resolution of normal fluid mesh
+    !>the normal fluid mesh
     type(norm_fluid_grid), allocatable, private :: nfm(:,:,:)
     contains 
     !************************************************************
+    !>setup everything needed to use a normal fluid
     subroutine setup_normal_fluid
-      !setup everything needed to use a normal fluid
       !in here we print to file the timescale of the flow
       implicit none
       norm_k=2.*pi/box_size !wavenumber used in a number of normal fluid
@@ -79,8 +89,9 @@ module normal_fluid
       write(*,'(a)') ' normal fluid timescale printed to ./data/normal_timescale.log'
     end subroutine
     !************************************************************
+    !>get the velocity (u) of the normal fluid at a position (x)
+    !>see the normal fluid page for more information
     subroutine get_normal_velocity(x,u)
-      !get the normal fluid at a position x
       implicit none
       real, intent(IN) :: x(3) !position of the particle
       real, intent(OUT) :: u(3) !velocity at x
@@ -117,6 +128,8 @@ module normal_fluid
       end select
     end subroutine
     !**********************************************************
+    !>(linear) interpolation of the normal fluid velocity from a mesh
+    !>needed for certain selections of velocity
     subroutine nfm_interpolation(x,u)
       implicit none
       real, intent(IN) :: x(3) !position
@@ -150,6 +163,8 @@ module normal_fluid
                  dx*dy*dz*nfm(iz+1,iy+1,ix+1)%u
     end subroutine
     !**********************************************************
+    !>setup a compressible velocity field by taking the gradient 
+    !>of a random scalar field
     subroutine setup_compressible
       implicit none
       real :: u_rms
@@ -243,8 +258,9 @@ module normal_fluid
       close(92)
     end subroutine 
     !**********************************************************
+    !>set up simple normal fluid models (ones with an analytic form)
+    !>and print this field (discretized on a cubic mesh) to a binary file
     subroutine setup_gen_normalf
-      !SET UP GENERAL (SIMPLE) ANALYTIC NORMAL FLUIDS
       implicit none
       integer :: i, j, k
       !print dimensions to file for matlab
@@ -275,8 +291,8 @@ module normal_fluid
       close(92)
     end subroutine
     !**********************************************************
+    !>print the KS velocity field (on a cubic mesh) to a binary file
     subroutine print_KS_Mesh
-      !PRINT THE NORMAL FLUID TO FILE AND DETERMINE U_RMS
       implicit none
       integer :: i, j, k
       !print dimensions to file for matlab
@@ -307,3 +323,14 @@ module normal_fluid
       close(92)
     end subroutine
 end module
+!>\page NF Normal fluid velocity field
+!!Normal fluid velocity field is set in run.in throught the parameter normal_velocity\n
+!!Options are:\n
+!!- \p zero - no flow, friction only
+!!- \p ABC - \f$u=(B\cos(x),C\sin(y))\f$ \n
+!!- \p xflow - \f$u=(u_x,0,0)\f$ \n
+!!- \p taylor-green \n
+!!- \p KS - multi-scale model of turbulence see KSmodel
+!!- \p shear - \f$u=(0,0,u_0\exp(-z^2))\f$ \n
+!!- \p galloway-proctor \n
+!!- \p compressible - a compressible flow \f$u=\nabla\phi\f$, where \f$\phi\f$ is a random scalar field

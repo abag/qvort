@@ -1,58 +1,114 @@
-!>THIS MODULE HOLDS ALL THE VARIABLES GLOBALLY, ALL MODULES WILL NEED THIS
-!>THIS ROUTINE CONTAINS SOME IMPORTANT ROUTINES TO READ IN THE RUNTIME PARAMETERS
-!>IN RUN.IN AS WELL AS SETTING THE RANDOM NUMBER GENERATOR
+!>hold main variable globally, all other modules will need this module included
+!>to access the filament/particle arrays and other important variables
+!>also contains important routines for initialising random number generator and
+!>reading in runfile
 module cdata
   !**********VORTEX FILAMENT******************************************************
   !>our main structure which holds vortex points
-  !!@param x information about the aggregates
+  !!@param x position of the vortex poin  
+  !!@param u velocity of the vortex point
+  !!@param u1 @param u2 stored velocities for Adams-Bashforth
+  !!@param u_sup nice to have the just the superfluid veloctity even with normal fluid/forcing
+  !!@param ghosti @param ghostb ghost particles for periodic b.c's
+  !!@param infront @param behind flag to make points an orientated filament
+  !!@param closest closest particle, used in reconnections
+  !!@param closestd separation between closest particle and particle 
+  !!@param B magnetic field strength
   type qvort 
-    !> position of the vortex point
     real :: x(3)
-    real :: u(3), u1(3), u2(3) !> stored velocities (adam bash)
-    real :: u_sup(3) !> nice to have the just the superfluid veloctity even with normal fluid/forcing
+    real :: u(3), u1(3), u2(3) 
+    real :: u_sup(3) 
     real :: ghosti(3), ghostb(3)
-    integer :: infront, behind !> to form a line/loop
-    integer :: closest !> nearest particle, used in reconnection
-    real :: closestd !> distance to nearest particle
-    real :: delta !> possibly redundant, consider removing
-    real :: B !> magnetic field strength
+    integer :: infront, behind 
+    integer :: closest
+    real :: closestd
+    real :: delta
+    real :: B 
   end type
-  type(qvort), allocatable :: f(:) !main vector
-  integer :: pcount !number of particles in the simulation
+  !>main filament vector
+  type(qvort), allocatable :: f(:) 
+  !>number of vortex points in the simulation - size of f is pcount
+  integer :: pcount 
   !**********MESH STRUCTURE********************************************************
+  !>mesh structure - normal and superfluid velocities are calculated on the mesh
+  !>which runs from -box_size /2 to box_size/2 to with mesh_size^3
+  !>points, note by setting mesh_size>0 mesh is switched on
+  !>mesh velocities calculated every mesh_shots timesteps
+  !>@param x position of mesh point
+  !>@param u_sup superfluid velocity at meshpoint
+  !>@param u_norm normal velocity at meshpoint
   type grid
-    real :: x(3) !position
-    real :: u_sup(3) !velocity (superfluid)
-    real :: u_norm(3) !velocity (normal fluid)
+    real :: x(3) 
+    real :: u_sup(3) 
+    real :: u_norm(3) 
   end type
+  !>3D allocatable mesh
   type(grid), allocatable :: mesh(:,:,:)
-  real :: mesh_delta !mesh resolution
-  !**********PARTICLE STRUCTURE****************************************************
-  type quasi !quasi particle structure
-    real :: x(3) !position
-    real :: xold(6,3) !old positions used for backwards difference
-    real :: u(3), u1(3), u2(3) !stored velocities (adam bash)
-    real :: p(3) !momentum
-    real :: pold(6,3) !old momentum used for backwards difference
-    real :: rdot_old(3) !used for angle calculation
+  !>the mesh resolution box_size/mesh_size^3
+  real :: mesh_delta
+  !**********QUASI PARTICLE STRUCTURE****************************************************
+  !>particle structure - all quasi particle information held within
+  !>@param x the position of the particle
+  !>@param xold array of 6 previous positions used in backwards difference scheme, for stiff problems
+  !>@param p momentum of particle - only used when a quasi particle
+  !>@param pold array of 6 previous momenta used in backwards difference scheme
+  !>param rdot_old old quasi particle velocity
+  !>param energy energy of a quasi particle
+  !>param rdot current change of position stored for diagnostic printing
+  !>param pdot current change of momentum stored for diagnostic printing
+  type quasi 
+    real :: x(3) 
+    real :: xold(6,3) 
+    real :: p(3) 
+    real :: pold(6,3) 
     real :: energy
+    real :: rdot(3)
+    real :: pdot(3)
   end type
-  type(quasi), allocatable :: g(:) !vector of particles
+  !>vector of quasi particles
+  type(quasi), allocatable :: g(:)
+  !**********PARTICLE STRUCTURE****************************************************
+  !>particle structure - all particle information held within
+  !>@param x the position of the particle
+  !>@param u the velocity of the particle
+  !>@param u1 @param u2 old velocities for Adams-Bashforth timestepping
+  type particella
+    real :: x(3) 
+    real :: u(3), u1(3), u2(3) 
+  end type
+  !>vector of particles
+  type(particella), allocatable :: p(:)  
   !**************TIME PARAMS*******************************************************
-  real :: t=0. !hold the current time globally
-  integer :: itime !current timestep
-  integer :: nstart=1 !integer loop starts from (altered by reading in stored data)
+  !>time held globally
+  real :: t=0. 
+  !>current timestep
+  integer :: itime 
+  !>integer loop starts from (altered by reading in stored data - i.e. restarting)
+  integer :: nstart=1 
   !***********DIAGNOSTIC INFO******************************************************
-  integer :: recon_count=0 !total number of reconnections
-  integer :: remove_count=0 !total number of particle removals
-  real :: total_length !total length of filaments
-  real :: avg_sep !average separation of the particles
-  real :: maxu,maxdu !velocity information
-  real :: energy !vortex energy
-  real :: kappa_bar !mean curvature
+  !>total number of reconnections
+  integer :: recon_count=0 
+  !>total number of particle removals due to contraction of filament
+  integer :: remove_count=0 
+  !>total length of filaments
+  real :: total_length
+  !>average separation of the vortex points 
+  real :: avg_sep
+  !>maximum velocity
+  real :: maxu
+  !>maximum velocity change - acceleration x dt 
+  real :: maxdu
+  !>vortex energy
+  real :: energy 
+  !>mean curvature
+  real :: kappa_bar 
   real :: kappa_min, kappa_max !min/max curvature
-  real :: Brms !rms of magnetic field
-  integer :: self_rcount=0, vv_rcount=0 !self or vortex vortex reconnection count 
+  !>rms of magnetic field
+  real :: Brms 
+  !>self reconnection count
+  integer :: self_rcount=0 
+  !>vortex vortex reconnection count 
+  integer :: vv_rcount=0 
   !***********CONSTANTS************************************************************
   !some constants - precompute for speed
   real, parameter :: pi=3.14159265358979324
@@ -68,16 +124,18 @@ module cdata
   integer, protected :: nsteps, shots, recon_shots=1
   integer, protected :: init_pcount
   real, protected ::  delta
+  !>timestep
   real :: dt
   real, protected :: box_size=0.
   real, protected :: quant_circ=9.97E-4
-  real , protected :: corea=8.244023E-9 
+  real , protected :: corea=8.244023E-9
+  !>are boundaries periodic?  
   logical :: periodic_bc=.false.
+  !>are boundaries solid?
   logical :: mirror_bc=.false.
   character(len=30), protected :: velocity, initf, boundary
   logical, protected :: binary_print=.true.
   logical, protected :: dt_adapt=.false.
-  !--specific initial conditions selected in run.in - give these default values--
   integer, protected :: line_count=1
   integer, protected :: wave_count=1
   real, protected :: wave_slope=-1.5
@@ -104,14 +162,18 @@ module cdata
   real, protected :: force_amp=0.
   real, protected :: force_freq=0.  
   !-----------------special data dumps-------------------------------------------
-  !do we want to dump 'f' at a specific time, i.e. before a reconnection etc.
+  !do we want to dump 'f' at a specific timeu1, i.e. before a reconnection etc.
   real, protected :: special_dump=0. !special dump time
   integer :: int_special_dump=0. !special dump time integer
+  !---------------------quasi particles------------------------------------------------
+  integer :: quasi_pcount=0 !number of quasi particles
+  character(len=20), protected :: initg='random' !initial quasi particle configuration
   !---------------------particles------------------------------------------------
-  integer :: quasi_pcount=0 !number of particles (quasi or fluid)
+  integer :: part_count !number of particles 
+  real :: part_stokes=0. !the stokes number of the particles
   character(len=20), protected :: particle_type='fluid' !fluid/interial/quasi particles
-  character(len=20), protected :: initg='random' !initial particle configuration
-  logical :: quasip_only=.false. !only evolve quasi_particles in the code
+  character(len=20), protected :: initp='random' !initial particle configuration
+  logical, protected :: particles_only=.false. !only evolve particles in the code
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
@@ -124,9 +186,10 @@ module cdata
   logical, protected :: vel_print=.false. !prints the full velocity information to file
   logical, protected :: full_B_print=.false. !prints the full magnetic field to file
   logical, protected :: recon_info=.false. !more in depth reconnection information
-  logical, protected :: smoothed_field=.false. !gaussian smoothing of vorticity/B field
+  !-------------------------------smoothing-------------------------------------------
+  !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
-  integer, protected :: sm_size=64 !size of smoothing mesh
+  integer, protected :: sm_size=0 !size of smoothing mesh - 0 by default which deactivates smoothing
   !----------------------------magnetic field-------------------------------------
   !----------------ENABLE THE FILAMENTS TO ACT AS MAGNETIC FLUX TUBES-------------
   logical, protected :: magnetic=.false. !no by defult
@@ -137,8 +200,8 @@ module cdata
   logical, protected :: switch_off_recon=.false.
   contains
   !*************************************************************************************************  
+  !>read the file run.in obtaining all parameters at runtime, avoiding the need to recompile the code
   subroutine read_run_file()
-  ! this subroutine reads the file run.in obtaining key runtime parameters
     implicit none
     ! input related variables
     character(len=100) :: buffer, label
@@ -214,7 +277,9 @@ module cdata
           case ('initf')
              read(buffer, *, iostat=ios) initf !initial setup of filaments
           case ('initg')
-             read(buffer, *, iostat=ios) initg !initial setup of particles
+             read(buffer, *, iostat=ios) initg !initial setup of quasi particles
+          case ('initp')
+             read(buffer, *, iostat=ios) initp !initial setup of particles
           case ('line_count')
              read(buffer, *, iostat=ios) line_count !used in certain intial conditions
           case ('force')
@@ -230,11 +295,15 @@ module cdata
           case ('special_dump')
              read(buffer, *, iostat=ios) special_dump !special dump
           case ('quasi_pcount')
-             read(buffer, *, iostat=ios) quasi_pcount !number of particles
+             read(buffer, *, iostat=ios) quasi_pcount !number of quasi particles
+          case ('part_count')
+             read(buffer, *, iostat=ios) part_count !number of particles
           case ('particle_type')
-             read(buffer, *, iostat=ios) particle_type !particle type (quasi/fluid)
-          case ('quasip_only')
-             read(buffer, *, iostat=ios) quasip_only !only evolve particles
+             read(buffer, *, iostat=ios) particle_type !particle type (fluid/intertial)
+          case ('particles_only')
+             read(buffer, *, iostat=ios) particles_only !only evolve particles
+          case ('part_stokes')
+             read(buffer, *, iostat=ios) part_stokes !stokes number of inertial particles
           case ('tree_theta')
              read(buffer, *, iostat=ios) tree_theta !tree code, opening angle
           case ('tree_print')
@@ -269,8 +338,6 @@ module cdata
              read(buffer, *, iostat=ios) recon_info !extra reconnection information
           case ('switch_off_recon')
              read(buffer, *, iostat=ios) switch_off_recon !for test cases only!
-          case ('smoothed_field')
-             read(buffer, *, iostat=ios) smoothed_field !gaussian smoothing of vorticity
           case ('smoothing_length')
              read(buffer, *, iostat=ios) smoothing_length !length we are smoothing over (delta)
           case ('sm_size')
@@ -292,6 +359,8 @@ module cdata
     end do
   end subroutine
   !*************************************************************************************************  
+  !>print error message to screen and stop the run
+  !!provide a location of error and the message to print
   subroutine fatal_error(location,message)
     implicit none      
     character(len=*) :: location
@@ -302,6 +371,8 @@ module cdata
     stop
   end subroutine
   !*************************************************************************************************  
+  !>print a warning message to screen - will not stop the code
+  !!provide a location of error and the message to print
   subroutine warning_message(location,message)
     implicit none      
     character(len=*) :: location
@@ -311,6 +382,7 @@ module cdata
     write (*,*) '------------------------------------------------------------'
   end subroutine
   !*************************************************************************************************  
+  !>generate a new random seed, or read one in from ./data if restating code
   subroutine init_random_seed()
      !CREATE A NEW RANDOM SEED, UNLESS RESTARTING CODE
      integer :: i, n=8, clock

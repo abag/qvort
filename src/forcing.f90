@@ -1,10 +1,14 @@
+!> all the routines to employ forcing in the code note this is different to the normal velocity for a vortex system
+!> normal fluid enters as \f$\mathbf{u}=\alpha \mathbf{s}' \times (\mathbf{u}_\mathrm{n}-\mathbf{u}_\mathrm{s})+
+!>\alpha' \mathbf{s}' \times [\mathbf{s}' \times (\mathbf{u}_\mathrm{n}-\mathbf{u}_\mathrm{s})]\f$ whereas forcing is directly
+!>added to vortex velocity i.e. \f$\mathbf{u}=\mathbf{u}_\mathrm{force}\f$
 module forcing
-  !THIS MODULE CONTAINS ALL THE ROUTINES TO EMPLOY FORCING IN THE CODE
   use cdata
+  !> @param force_direction a helper vector to force a particle in 3 spatial dimensions
   real, private :: force_direction(3)=0. 
   contains
+  !>check all the necessary conditions to use forcing are set in run.in
   subroutine setup_forcing()
-    !essentially check all the necessary conditions to use forcing are set in run.in
     implicit none
     select case(force)
       case('off')
@@ -30,8 +34,9 @@ module forcing
       end select
   end subroutine
   !***********************************************
+  !>force the particles - an additional velocity at position
+  !>of f(i)%x
   subroutine get_forcing(i,u)
-    !force the particles - an additional velocity
     implicit none
     integer, intent(IN) :: i
     real, intent(OUT) :: u(3)

@@ -1,5 +1,5 @@
+!>timestepping and velocity routines are contained in this module
 module timestep
-  !ANYTHING RELATED TO VELOCITY SHOULD ENTER HERE
   use cdata
   use general
   use normal_fluid
@@ -9,8 +9,14 @@ module timestep
   use mag
   contains
   !*************************************************
+  !>implement adams bashforth time-stepping scheme to move particles
+  !>\f[
+  !! \mathbf{s}_{i}^{n+1}=\mathbf{s}_{i}^{n}+\frac{\Delta t}{12}(23\mathbf{u}_{i}^{n}
+  !! -16\mathbf{u}_{i}^{n-1}+5\mathbf{u}_{i}^{n-2})+\mathcal{O}(\Delta t^4)
+  !>\f]
+  !>adaptive timestep can be set in run.in in which case a comparison between 2nd and 3rd
+  !>order scheme is used to estimate error and hence adjust the timestep
   subroutine pmotion()
-    !implement adams bashforth time-stepping scheme to move particles
     implicit none
     real :: u(3) !dummy variable used to store velocities
     real :: adap_x(3) !dummy variable to check timestep
@@ -56,9 +62,10 @@ module timestep
     end if 
   end subroutine
   !*************************************************
+  !>get the velocity of each particle subject to the superfluid velocity
+  !>plus any normal fluid/forcing, if a magnetic field tension force is also
+  !>accounted for
   subroutine calc_velocity(u,i)
-    !get the velocity of each particle subject to the superfluid velocity
-    !plus any normal fluid/forcing
     implicit none
     integer, intent(IN) :: i
     real :: u(3), u_norm(3), u_force(3), u_bs(3), u_mir(3), u_B(3) !velocities
@@ -164,6 +171,8 @@ module timestep
    ! end if
   end subroutine
   !**************************************************************************
+  !>if the mesh size is set to be larger than 0 in run.in then we calculate both
+  !>the normal and superfluid velocities at the mesh points to print to file
   subroutine mesh_velocity
     !get the velocity at each point on the mesh for spectra etc.
     implicit none
@@ -212,6 +221,14 @@ module timestep
     end do
   end subroutine
   !**************************************************************************
+  !>the desingularised biot savart integral 
+  !>\f[
+  !>\frac{d\mathbf{s}_i}{dt}=\frac{\Gamma}{4\pi} \ln \left(\frac{\sqrt{\ell_i
+  !>\ell_{i+1}}}{a}\right)\mathbf{s}_i' \times \mathbf{s}_i'' 
+  !>+\frac{\Gamma}{4 \pi} \oint_{\cal L'} \frac{(\mathbf{s}_i-\mathbf{r}) }
+  !>{\vert \mathbf{s}_i - \mathbf{r} \vert^3}
+  !>\times {\bf d}\mathbf{r}
+  !>\f] note the LIA part is calculated in calc_velocity
   subroutine biot_savart(i,u)
     implicit none
     integer, intent(IN) :: i !the particle we want the velocity at
@@ -234,8 +251,8 @@ module timestep
     end do
   end subroutine
   !**************************************************************************
+  !>as above but shifts the particles (by a vector shift) for periodicity
   subroutine biot_savart_shift(i,u,shift)
-    !as above but shifts the particles for periodicity
     implicit none
     integer, intent(IN) :: i !the particle we want the velocity at
     real :: u(3) !the velocity at i (non-local)#
@@ -259,8 +276,13 @@ module timestep
     end do
   end subroutine
   !**************************************************************************
+  !>calculate the velocity field at a point x induced by the vortices now using
+  !>more general biot savart integral
+  !>\f[\frac{\Gamma}{4 \pi} \oint_{\cal L} \frac{(\mathbf{s}_i-\mathbf{r}) }
+  !>{\vert \mathbf{s}_i - \mathbf{r} + \epsilon \vert^3}
+  !>\times {\bf d}\mathbf{r}
+  !>\f]
   subroutine biot_savart_general(x,u)
-    !calculate the velocity field at a point x induced by the vortices
     implicit none
     real, intent(IN) :: x(3)
     real, intent(OUT) :: u(3)
@@ -283,8 +305,9 @@ module timestep
     end do
   end subroutine
   !**************************************************************************
+  !>as above but allows a shift for periodicity
+  !>\todo makes above redundent so look into removal
   subroutine biot_savart_general_shift(x,u,shift)
-    !as above but allows a shift for periodicity if works can get rid of above
     implicit none
     real, intent(IN) :: x(3)
     real, intent(OUT) :: u(3)

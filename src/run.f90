@@ -6,6 +6,7 @@ program run
   use periodic
   use timestep
   use quasip
+  use particles
   use line
   use diagnostic
   use quasip
@@ -14,7 +15,6 @@ program run
   use smoothing
   use mag
   implicit none
-  integer :: i
   logical :: can_stop=.false.
   call init_random_seed !cdata.mod
   !read in parameters
@@ -38,7 +38,7 @@ program run
     !print*, 'here1'
     if (mod(itime,mesh_shots)==0) then
       call mesh_velocity !timestep.mod
-      if (smoothed_field) call get_smoothed_field !smoothing.mod
+      if (sm_size>0) call get_smoothed_field !smoothing.mod
     end if
     !print*, 'here2'
     !---------------------line operations--------------------------
@@ -50,7 +50,7 @@ program run
       else
         call pclose !line.mod
       end if
-      if (switch_off_recon.eqv..false.) call precon2 !line.mod
+      if (switch_off_recon.eqv..false.) call precon !line.mod
       call premove !line.mod 
     end if
     if (magnetic) call B_diffusion !mag.mod
@@ -69,14 +69,15 @@ program run
     if (mod(itime, shots)==0) then
       !store data to a binary file for reload
       call data_dump !output.mod
-      if(quasip_only.eqv..false.) call print_info !output.mod
+      if(particles_only.eqv..false.) call print_info !output.mod
       if (magnetic) call B_ts !mag.mod
       if (mod(itime, mesh_shots)==0) then
         if (magnetic.and.full_B_print) call print_full_B(itime/mesh_shots)
 !mag.f90
         !print the mesh to a binary file
         call print_mesh(itime/mesh_shots) !output.mod
-        if (smoothed_field) call print_smooth_mesh(itime/mesh_shots)!smoothing.mod
+        !print the smoothed mesh to binary file
+        if (sm_size>0) call print_smooth_mesh(itime/mesh_shots)!smoothing.mod
         !can also print full velocity field for statistics 
         if (vel_print) call print_velocity(itime/mesh_shots)!output.mod
         call one_dim_vel(itime/mesh_shots) !diagnostics.mod
@@ -86,6 +87,7 @@ program run
     !print*, 'here5'
     !---do we have particles in the code - if so evolve them
     if (quasi_pcount>0) call quasip_evolution !quasip.mod
+    if (part_count>0) call particles_evolution !particles.mod
     !-------------------remove the tree----------------------------
     if (tree_theta>0) then
       call empty_tree(vtree) !empty the tree to avoid a memory leak
@@ -93,7 +95,10 @@ program run
       nullify(vtree) !just in case!
     end if
     !---------------------close mirror array-----------------------
-    if (mirror_bc) call mirror_close !mirror.mod
+    if (mirror_bc) then
+      !call mirror_checker !mirror.mod THIS DOESNT EXIST!!!!?
+      call mirror_close !mirror.mod
+    end if
     !---------------------special data dump------------------------
     if ((itime/=0).and.(itime==int_special_dump)) call sdata_dump
     !---------------------can we exit early------------------------

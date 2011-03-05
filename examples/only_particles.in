@@ -1,0 +1,21 @@
+--------------required parameters------------
+nsteps 50000
+shots 500
+mesh_shots 5000
+recon_shots 5
+pcount 0
+dt 1E-5
+delta 1E-3
+box_size .1
+velocity Off
+initf single_loop
+line_count 10
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+particles_only T
+particle_type inertial
+part_count 100
+part_stokes 1.
+normal_velocity ABC
+binary_print T

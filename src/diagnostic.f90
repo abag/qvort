@@ -1,10 +1,12 @@
+!> diagnostic routines purely for vortex filament, if acting as a magnetic field diagnostics done within the module
+!> mag, particle diagnostics contained within quasip.mod
 module diagnostic
-  !KEY DIAGNOSTICS - MAINLY TO PRINT TO SCREEN
-  !ENERGY REALLY IS INVALID WITH PERIODIC BOUNDARY CONDITIONS
   use cdata
   use general
   contains
   !*************************************************
+  !>get the maximum velocity and change of velocity
+  !>on the filament
   subroutine velocity_info()
     implicit none
     real, allocatable :: uinfo(:,:)
@@ -17,8 +19,11 @@ module diagnostic
     deallocate(uinfo)
   end subroutine
   !*************************************************
+  !>calculate the energy of the vortex filament using
+  !>the trapezium rule, not valid with periodic b.c.'s
+  !>\f[ E=\frac{1}{2} \int_V \mathbf{u}^2 dV=
+  !>=\Gamma \oint_{\cal L} \mathbf{u} \cdot \mathbf{s} \times \mathbf{s}' d\xi \f]
   subroutine energy_info()
-    !trapezium rule to calculate the integral
     implicit none
     real :: sdot(3), sdoti(3)
     integer :: infront
@@ -35,8 +40,8 @@ module diagnostic
     end do
   end subroutine
   !*************************************************
+  !> get normal/superfluid velocity for a 1D strip
   subroutine one_dim_vel(filenumber)
-    !print off a velocity spectrum in 1 dimension
     use tree
     use timestep
     implicit none
@@ -80,8 +85,8 @@ module diagnostic
     close(32)
   end subroutine
   !*************************************************
+  !> get normal/superfluid velocity for a 2D slice
   subroutine two_dim_vel(filenumber)
-    !print off a velocity spectrum in 1 dimension
     use tree
     use timestep
     implicit none
@@ -128,8 +133,10 @@ module diagnostic
     close(32)
   end subroutine
   !*************************************************
+  !>caculate the mean, min, max curvature of the filament
+  !>if set in run.in will also bin the curvatures to plot a 
+  !>histogram
   subroutine curv_info()
-    !caculate the mean, min, max curvature of the vortex system
     implicit none
     real, allocatable :: curvi(:)
     integer :: i, j
@@ -179,9 +186,10 @@ module diagnostic
     deallocate(curvi) !deallocate helper array
   end subroutine
   !*************************************************
+  !>get the structure functions of the mesh velocities
+  !>@warning not completed yet
   subroutine structure_function() !THIS NEEDS TESTING!!!!
-    !get the structure functions of the mesh velocities]
-    !presumes a periodic velocity field!
+    
     implicit none
     real, allocatable :: sfunction(:)
     integer :: i, j, k

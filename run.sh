@@ -17,9 +17,9 @@ OPTIONS:
 
         -c|--compile
                     Recompile the code - useful if run.in has been changed.
-        -d|--double
-                    Recompile the code using double precision.
-
+        -p|--protect
+                    If --force is used the protect flag protects the random
+                    seed from being removed
         -q|--quiet
                     Use nohup to run the code in the background. This means 
                     the job will continue to run even if the terminal is closed.
@@ -45,7 +45,7 @@ run_quiet() {
 }
 
 # Get command line options
-options=`getopt -o compile,double,quiet,force,help -n run.sh -- "$@"`
+options=`getopt -o compile,protect,quiet,force,help -n run.sh -- "$@"`
 
 # If no options, show the help
 #if [ $# == 0 ]; then
@@ -55,7 +55,7 @@ options=`getopt -o compile,double,quiet,force,help -n run.sh -- "$@"`
 
 eval set -- "$options"
 COMPILE=0
-DOUBLE=0
+PROTECT=0
 QUIET=0
 RESTART=0
 FORCE=0
@@ -64,7 +64,7 @@ while true
 do
   case "$1" in
     -c|--compile) COMPILE=1; shift;;
-    -d|--double) DOUBLE=1; shift;;
+    -p|--protect) PROTECT=1; shift;;
     -q|--quite) QUIET=1; shift;;
     -f|--force) FORCE=1; shift;;
     -r|--restart) RESTART=1; shift;;
@@ -94,8 +94,19 @@ else
 fi
 if [ $FORCE -eq 1 ]; then
   if [ -e ./data/ts.log ]; then
-    echo "emptying data"
-    rm data/*
+    if [ $PROTECT -eq 1 ]; then
+      echo "emptying data but protecting random seed"
+      if [ -e ./data/seed.dat ]; then
+        mv data/seed.dat .
+        rm data/*
+        mv seed.dat ./data
+      else
+        echo "there is no seed to protect!"
+      fi
+    else
+      echo "emptying data"
+      rm data/*
+    fi
   fi
   if [ -e ./STOP ]; then
     echo "removing STOP file"

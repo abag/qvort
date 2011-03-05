@@ -1,10 +1,10 @@
+!>all the routines used to keep the code periodic
 module periodic
-  !ALL THE ROUTINES NEEDED TO KEEP THE CODE PERIODIC
   use cdata
   contains 
   !******************************************************************
+  !>dummy routine, calls get_ghost_p below
   subroutine ghostp
-    !dummy routine, calls get_ghost_p below
     implicit none
     integer :: i
     do i=1, pcount
@@ -13,10 +13,10 @@ module periodic
     end do
   end subroutine
   !******************************************************************
+  !>set the ghost particles, essentially these are the positions of the
+  !!particles infront/behind, if they are at the other side of the box 
+  !!due to periodic b.c. this position must be adjusted
   subroutine get_ghost_p(i,ginfront,gbehind)
-    !set the ghost particles, essentially these are the positions of the
-    !particles infront/behind, if they are at the other side of the box 
-    !due to periodic b.c. this position must be adjusted
     implicit none
     integer, intent(IN) :: i
     real :: ginfront(3), gbehind(3)
@@ -61,8 +61,9 @@ module periodic
     end if
   end subroutine
   !******************************************************************
+  !>if a point/particle leaves one side of the box, 
+  !>reinsert it on the opposite side
   subroutine enforce_periodic()
-    !if a particle leaves one side of the box, reinsert it on the opposite side
     implicit none
     integer :: i
     do i=1, pcount

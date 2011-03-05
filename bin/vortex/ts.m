@@ -136,4 +136,32 @@ if exist('data/par_ts.log');
         print('-depsc','./particle_information.eps')
       end
  end
- 
+ if exist('data/qp_ts.log');
+   C=load('data/qp_ts.log');
+   t=C(:,2) ; qpmaxu=C(:,3) ; qpmaxpdot=C(:,4) ; qpurms=C(:,5) ; 
+   switch option
+     case 'print'
+       figure('visible','off');
+     otherwise
+       figure('Name', 'quasi particle information')      
+   end
+   subplot(2,2,1)
+      plot(t,qpmaxu,'-c','LineWidth',2);
+      set(gca,'FontSize',14)
+      xlabel('t','FontSize',14)
+      ylabel('max u','FontSize',14)
+    subplot(2,2,2)
+      plot(t,qpmaxpdot,'-r','LineWidth',2);
+      set(gca,'FontSize',14)
+      xlabel('t','FontSize',14)
+      ylabel('max dp/dt','FontSize',14)
+    subplot(2,2,3)
+      plot(t,qpurms,'-y','LineWidth',2);
+      set(gca,'FontSize',14)
+      xlabel('t','FontSize',14)
+      ylabel('urms','FontSize',14)
+      if option=='print'
+        disp('printing to quasi_information.eps')
+        print('-depsc','./quasi_information.eps')
+      end
+ end

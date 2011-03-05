@@ -1,9 +1,11 @@
+!>The main output routines from the code/specifc modules may contain there own
+!>output, however main routines for printing structures should be in here 
 module output
-  !MAIN OUTPUT ROUTINES USED IN THE CODE
   use cdata
   use tree
   contains
   !**********************************************************************
+  !> print various dimensions/flags to file for matlab to read in for plotting
   subroutine print_dims()
     implicit none
     open(unit=77,file='./data/dims.log',status='replace')
@@ -15,6 +17,7 @@ module output
       else
         write(77,*) 0
       end if
+      write(77,*) part_count
       write(77,*) quasi_pcount
     close(77)
   end subroutine
@@ -22,7 +25,6 @@ module output
   !>print information to screen/file
   subroutine print_info()
     implicit none
-    !> print full filament to file for matlab plotting
     call printf(itime/shots) !output.mod
     open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
@@ -87,14 +89,14 @@ remove_count
     end if
   end subroutine
   !**********************************************************************
-  !>print the g (particles) array as (un)formatted data for use with gnuplot/matlab
+  !>print the g (quasi particles) array as (un)formatted data for use with gnuplot/matlab
   subroutine printg(filenumber)
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
     integer :: i
     if (binary_print) then
-      write(unit=print_file,fmt="(a,i4.4,a)")"./data/par",filenumber,".log"
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/quasi_par",filenumber,".log"
       open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
         write(98) t
         write(98) quasi_pcount
@@ -103,7 +105,7 @@ remove_count
         write(98) g(:)%x(3)
       close(98)
     else  
-      write(unit=print_file,fmt="(a,i4.4,a)")"./data/par",filenumber,".log"
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/quasi_par",filenumber,".log"
       open(unit=98,file=print_file,status='replace')
         write(98,*) t
         write(98,*) quasi_pcount
@@ -113,9 +115,36 @@ remove_count
       close(98)
     end if
   end subroutine
+    !**********************************************************************
+  !>print the p (particles) array as (un)formatted data for use with gnuplot/matlab
+  subroutine printp(filenumber)
+    implicit none
+    integer, intent(IN) :: filenumber
+    character (len=40) :: print_file
+    integer :: i
+    if (binary_print) then
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/par",filenumber,".log"
+      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+        write(98) t
+        write(98) part_count
+        write(98) p(:)%x(1)
+        write(98) p(:)%x(2)
+        write(98) p(:)%x(3)
+      close(98)
+    else  
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/par",filenumber,".log"
+      open(unit=98,file=print_file,status='replace')
+        write(98,*) t
+        write(98,*) part_count
+        do i=1, part_count
+          write(98,*) p(i)%x(1:3)
+        end do
+      close(98)
+    end if
+  end subroutine
   !**********************************************************************
   !>store everything needed to restart the code
-  !>\bug does this really work anymore? need to check fully
+  !>\todo does this really work anymore? need to check fully
   subroutine data_dump
     implicit none
     open(unit=53,file="./data/var.dat",FORM='unformatted',status='replace')
@@ -126,6 +155,8 @@ remove_count
       write(53) f
       write(53) quasi_pcount
       if (quasi_pcount>0) write(53) g
+      write(53) part_count
+      if (part_count>0) write(53) p
     close(53)
   end subroutine
   !**********************************************************************
@@ -138,6 +169,10 @@ remove_count
       write(53) itime
       write(53) t
       write(53) f
+      write(53) quasi_pcount
+      if (quasi_pcount>0) write(53) g
+      write(53) part_count
+      if (part_count>0) write(53) p
     close(53)
   end subroutine
   !**********************************************************************

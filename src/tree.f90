@@ -1,26 +1,43 @@
+!>all the tree routines used by the code are contained within this module,
+!>pointers are used to create a linked list, be very careful to avoid memory
+!>leaks!
 module tree
    ! CONTAINS ALL THE ROUTINES USED TO EVALUATE THE BIOT-SAVART INTEGRAL
    ! USING TREE CODE METHODS - A WARNING, POINTERS ARE USED HEAVILY HERE
    ! SO BE VERY CAREFUL, MEMORY LEAKS ARE A DISTINCT POSSIBILITY!
    use cdata
    use general
+   !>the tree structure, uses pointers
+   !>@param posx @param posy @param posz bottem left corner of box
+   !>@param width the width of the mesh 
+   !>@param fbl child cell front bottom left, @param fbr child cell front bottom right
+   !>@param ftl child cell front top left @param ftr child cell front top right
+   !>@param bbl child cell back bottom left, @param bbr child cell back bottom right
+   !>@param btl child cell back top left @param btr child cell back top right
+   !>@param all particles in the cell
+   !>@param centx @param centy @param centz the center of 'mass' of the cell
+   !>@param circ the total circulation (vector) of the cell
+   !>@param B the total magnetic field vector of the cell
    type node
-      real :: posx,posy,posz !bottem left corner of box
-      real :: width !width (obviously)
-      integer :: pcount !particle count in this box
+      real :: posx,posy,posz 
+      real :: width 
+      integer :: pcount 
       type (node), pointer :: fbl, fbr !front (y) bottom left, right (child)
       type (node), pointer :: ftl, ftr !front (y) top left, right (child)
       type (node), pointer :: bbl, bbr !back (y) bottom left, right (child)
       type (node), pointer :: btl, btr !back (y) top left, right (child)
-      type (qvort), allocatable :: parray(:) !the particles in that mesh
-      real :: centx, centy, centz !centres of 'mass'
+      type (qvort), allocatable :: parray(:) 
+      real :: centx, centy, centz 
       real :: circ(3) !total circulation vector
       real :: B(3) !if we have a magentic field
    end type node
-   type (node), pointer :: vtree  ! our vortex tree
-   !how many evaluations are required to calculate the tree vel field
+   !>the vortex point tree
+   type (node), pointer :: vtree 
+   !>how many evaluations are required to calculate the tree vel field
    integer, protected :: eval_counter
   contains
+  !>An array to set the main node of the tree and then call the recurisive 
+  !>subroutine build_tree this is called in the main program
   subroutine construct_tree()
     allocate(vtree)
     allocate(vtree%parray(pcount))
@@ -53,6 +70,9 @@ module tree
     end select
   end subroutine
   !**************************************************************************
+  !>called by above, build the tree, continue to subdivide until a cell is empty
+  !>or contains only one particle - octree structure used each new cell is created
+  !>by the routine below new_tree
   recursive subroutine build_tree(vtree)
     implicit none
     type(node), pointer :: vtree
@@ -95,6 +115,8 @@ module tree
     end if
   end subroutine
   !********************************************************************************
+  !>allocate a new cell, populate with particles and calculate centre of mass, 
+  !>total circulation vector and magnetic field vector
   subroutine new_tree(vtree,posx,posy,posz,width, loc_pcount,parray)
     !create a new tree
     implicit none
@@ -147,8 +169,8 @@ module tree
     call build_tree(vtree) !recall the routine that builds the tree
   end subroutine
   !********************************************************************************
+  !>empty out the tree structure to avoid a memory leak - repeatedly calls dead_tree
   recursive subroutine empty_tree(vtree)
-    !empty out the tree structure to avoid a memory leak
     implicit none
     type (node), pointer :: vtree
     if(vtree%pcount>1) then
@@ -164,6 +186,7 @@ module tree
     end if
   end subroutine
   !********************************************************************************
+  !>deallocate a tree
   subroutine dead_tree(vtree)
     !chop down that tree (metaphorically) 
     implicit none
@@ -174,6 +197,8 @@ module tree
     nullify(vtree)
   end subroutine
   !********************************************************************************
+  !>find the closest particle using the tree structure, theoretically should be NlogN
+  !>repeatedly calls closest_tree
   subroutine pclose_tree
     !loop over all the particles and find the closest one to i using the tree mesh
     implicit none
@@ -186,6 +211,7 @@ module tree
     !stop
   end subroutine
   !********************************************************************************
+  !>recurisve routine used by pclose_tree to find the closest particle to i
   recursive subroutine closest_tree(i,vtree)
     !find the nearest particle to i
     implicit none
@@ -220,6 +246,10 @@ module tree
      end if
    end subroutine
 !************************************************************************
+   !>get the tree code approximation to the biot savart integral, giving
+   !>the induced velocity at particle i due to all other vortices, accepts 
+   !>an arguement shift, which allows you to shift the position of the
+   !>vortices for periodic boundary conditions
    recursive subroutine tree_walk(i,vtree,shift,u)
      implicit none
      integer, intent(IN) :: i !the particle we are interested in
@@ -270,6 +300,8 @@ module tree
      end if 
    end subroutine
 !************************************************************************
+   !>a more general form of above, where a position is an input
+   !>this is used to calculate the superfluid velocity at mesh points
    recursive subroutine tree_walk_general(x,vtree,shift,u)
      implicit none
      real, intent(IN) :: x(3) !the position we want the velocity at
