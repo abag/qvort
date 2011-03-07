@@ -1,3 +1,6 @@
+!>contains all the routines associated with the hamiltonian for a quasi-particle
+!>given by \f[ E=\sqrt{\epsilon^2_p+\Delta^2_0} +\mathbf{p} \cdot \mathbf{v}_s \f] we can then calculate \f$ \dot{\mathbf{r}},\dot{\mathbf{p}}\f$ by taking the
+!>derivative of this with respect to \f$\mathbf{r}\f$ and \f$\mathbf{p}\f$
 module hamiltonian
   use cdata
   use general
@@ -14,12 +17,13 @@ module hamiltonian
   real, private, parameter :: unitdt=2.9e-6 !unit time for matlab  ode solver 
   contains
   !***************************************************************************************
+  !>get the rate of change of position (rdot) and momenta (pdot) using 
+  !>the hamiltonian for the quasi-particle
+  !>\f[ \dot{\mathbf{r}}=\frac{\epsilon_p}{\sqrt{\epsilon_p^2+\delta_0^2}}
+  !>+\frac{\mathbf{p}}{m^*}+\mathbf{u}_s(\mathbf{r},t)\f]
+  !>\f[ \dot{\mathbf{p}}=-\frac{\partial}{\partial \mathbf{r}}
+  !>\left [ \mathbf{p} \cdot \mathbf{u}_s(\mathbf{r},t) \right ]\f]
   subroutine velocity_quasip(i,rdot,pdot)
-    !for each particle we 
-    ! 1. define the hamiltonian
-       !in order to do this we require the velocity (vortex) derivatives in all 3 dimension (7 evaluations)
-    ! 2. intially update the particles using an euler step
-    ! 3. build up to solving the stiff problem 
     implicit none
     integer, intent(IN) :: i
     real, intent(OUT) :: rdot(3), pdot(3)
@@ -92,8 +96,8 @@ module hamiltonian
     g(i)%energy=sqrt(epsilonp**2+delta_gap**2)+dot_product(g(i)%p,u_sup)
   end subroutine
   !******************************************************************************************************
+   !>a generalised version of the above routine for use with a specified position 
   subroutine velocity_quasip_gen(pos,mom,rdot,pdot)
-    !a generalised version of the above routine for use with a specified position 
     implicit none
     real, intent(IN) :: pos(3), mom(3)
     real, intent(OUT) :: rdot(3), pdot(3)
@@ -164,8 +168,9 @@ module hamiltonian
     pdot(3)=-dot_product(mom,du_sup_z)
   end subroutine
   !*******************************************************************************************************
+  !>this routine gives not only rdot and pdot but also the full jacobian
+  !>for use in the matlab stiff ode solver
   subroutine velocity_quasip_jacobian(i,rdot,pdot,jac)
-    !this routine gives not only rdot and pdot but also the full jacobian
     !ANDREW THIS IS NOT FINISHED!!!!!!!!!!!!!!!!!
     implicit none
     integer, intent(IN) :: i

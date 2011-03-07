@@ -78,6 +78,29 @@ module cdata
   end type
   !>vector of particles
   type(particella), allocatable :: p(:)  
+  !**********SPH STRUCTURE****************************************************
+  !>SPH particle structure
+  !>@param x the position of the particle
+  !>@param m the mass of the particle
+  !>@param rho the density at the particle position
+  !>@param drhodh \f$ \partial \rho_i / \partial h_i\f$
+  !>@param P the pressure at i
+  !>@param h the smoothing length associated with the particle
+  !>@param u the velocity of the particle
+  !>@param a the acceleration of the particle
+  !>@param u1 @param u2 old velocities for Adams-Bashforth timestepping
+  !>@param a1 @param a2 old velocities for Adams-Bashforth timestepping
+  type smooth_particle
+    real :: x(3)
+    real :: m
+    real :: rho, drhodh
+    real :: P
+    real :: h
+    real :: u(3), u1(3), u2(3) 
+    real :: a(3), a1(3), a2(3) 
+  end type
+  !>vector of SPH particles
+  type(smooth_particle), allocatable :: s(:)  
   !**************TIME PARAMS*******************************************************
   !>time held globally
   real :: t=0. 
@@ -174,6 +197,10 @@ module cdata
   character(len=20), protected :: particle_type='fluid' !fluid/interial/quasi particles
   character(len=20), protected :: initp='random' !initial particle configuration
   logical, protected :: particles_only=.false. !only evolve particles in the code
+  !----------------------------SPH-----------------------------------------------
+  integer :: SPH_count !number of SPH particles in the code, this may reduce due to mergers
+  real :: SPH_mass=0. !initial mass of the particle set to 0 which stops code runnning
+  character(len=20) :: SPH_init='random' !initial setup of SPH particles
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
@@ -352,6 +379,12 @@ module cdata
              read(buffer, *, iostat=ios) B_3D_nu !is diffusion 3D?
           case ('full_B_print')
              read(buffer, *, iostat=ios) full_B_print !print full B info
+           case ('SPH_count')
+             read(buffer, *, iostat=ios) SPH_count !how many SPH particles in the code
+          case ('SPH_mass')
+             read(buffer, *, iostat=ios) SPH_mass!initial mass of SPH particles
+          case ('SPH_init')
+             read(buffer, *, iostat=ios) SPH_init!initial SPH setup
           case default
              !print *, 'Skipping invalid label at line', line
           end select

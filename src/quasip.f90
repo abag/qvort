@@ -12,8 +12,8 @@ module quasip
   real :: qp_max_u=0., qp_max_pdot=0., qp_urms=0. !velocity/momenta information
   contains
   !************************************************************
+  !>setup the quasi particles initial positions and momenta
   subroutine setup_quasip
-    !SET UP THE QUASI PARTICLES INTIAL POSITION (VELOCITY)
     implicit none
     integer :: i
     allocate(g(quasi_pcount))
@@ -56,9 +56,8 @@ module quasip
     call set_BDF_coeff !stiff_solver.mod
   end subroutine
   !************************************************************
+  !>evolve the quasi particles and print to file
   subroutine quasip_evolution
-    !PUT TOGETHER ALL THE NORMAL/QUASI PARTICLE ROUTINES TO EVOLVE
-    !PARTICLES IN THE CODE AND THEN PERFORM ANALYSIS
     implicit none
     integer :: i
     call timestep_quasip
@@ -73,8 +72,9 @@ module quasip
     !any other business in here
   end subroutine  
   !******************QUASI-PARTICLES*****************************
+  !>timestep the quasi particles by calling the backwards difference scheme in 
+  !>stiff_solver module
   subroutine timestep_quasip
-    !TIMESTEP THE QUASI-PARTICLES USING VARIOUS SCHEMES
     implicit none
     integer, parameter :: order=6 !order of backwards difference scheme
     integer :: i !used to loop over particles
@@ -119,9 +119,8 @@ module quasip
     end do
   end subroutine 
   !************************************************************
-  !>quasi particle diagnostics, /todo this needs to be redone as
-  !>at present it is a hangover from the fluid particle routine
-  !>make use of stored momenta and position
+  !>quasi particle diagnostics, maxium velocity and rate of change of
+  !>momentum (rdot, pdot)
   subroutine diagnostics_quasip
     implicit none
     real :: energy !quasi_particles energy

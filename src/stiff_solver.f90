@@ -1,14 +1,16 @@
+!>all routines to solve stiff ode problems
+!>in particular this is used for reflection of quasi particles
 module stiff_solver
-  !CONTAINS ALL THE ROUTINES FOR SOLVING THE STIFF ODE SOLVER REQIURED BY QUASI PARTICLES
   use cdata
   use hamiltonian
   real, allocatable, private :: eta(:) !used for adjusting timestep
   real, dimension(6,7), private :: BDF_coeff !array of backwards diffference coefficients
   real, private :: t_int, dt_int ! internal time,timestep 
   contains
+  !>set the coefficients for the backwards difference scheme, used only
+  !>if solving quasi-particles.
   subroutine set_BDF_coeff()
     implicit none
-    !SET THE BDF COEFFICIENTS ACCORDING TO:http://www.scholarpedia.org/article/Backward_differentiation_formulas
     BDF_coeff(1,:)=(/1., -1., 0., 0., 0., 0.,0./)
     BDF_coeff(2,:)=(/3./2., -2., 1./2., 0., 0., 0.,0./)
     BDF_coeff(3,:)=(/11./6., -3., 3./2., -1./3., 0., 0.,0./)
@@ -20,6 +22,10 @@ module stiff_solver
     write(*,*) 'allocated adaptive timestep array'
   end subroutine
   !******************************************************************************************
+  !>backwards difference method, usefule for stiff ODE's for a 
+  !>detailed description of the method see
+  !>http://www.scholarpedia.org/article/Backward_differentiation_formulas
+  !>order is set in quasi_timestep.
   subroutine BDF(i,order)
     implicit none
     integer, intent(IN) :: order !the requested order of the BDF
@@ -68,6 +74,8 @@ module stiff_solver
     !end do
   end subroutine
   !*********************************************************************
+  !>adjust the timestep based on the angle between future momentum vector
+  !>of quasi particle and current momentum vector
   subroutine BDF_dt_adjust
     implicit none
     real :: dt_min=1E-20

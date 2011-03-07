@@ -7,6 +7,7 @@ module initial
   use forcing
   use periodic
   use smoothing
+    use sph
   contains
   !*************************************************************************
   !>Prints and sets up intial conditions - will give warnings/errors if there
@@ -15,6 +16,7 @@ module initial
     use quasip
     use particles
     use mag !not strictly needed as mag used in timestep.mod used in quasip.mod 
+    use sph
     implicit none
     logical :: restart
     write(*,'(a)') ' ---------------------VORTEX PARAMETERS------------------' 
@@ -158,7 +160,12 @@ module initial
         call setup_particles !particles.mod
       end if
     else
-      if (particles_only) call fatal_error('init.mod','must have part_count>0 for particles_only')
+      if (particles_only) then
+        if (SPH_count==0) then 
+          call fatal_error('init.mod','must have part_count>0 &
+                            or SPH_count>0 for particles_only')
+        end if
+      end if
       write(*,*) 'no particles in the code'
     end if
     write(*,'(a)') ' ---------------------VELOCITY CALCULATION----------------------' 
@@ -216,7 +223,19 @@ module initial
     !----------------------gaussian smoothing of field------------------------------
     if (sm_size>0) call setup_smoothing_mesh !smoothing.mod
     !----------------------------magnetic field-------------------------------------
-    if (magnetic) call setup_mag !mag.f90
+    if (magnetic) call setup_mag !mag.mod
+    !------------------------------SPH----------------------------------
+    if (SPH_count>0) then
+      call setup_SPH !sph.mod
+    else
+      !must check for printing to screen
+      if (particles_only) then
+        if (part_count==0) then 
+          call fatal_error('init.mod','must have part_count>0 &
+                            or SPH_count>0 for particles_only')
+        end if
+      end if
+    end if
   end subroutine
   !**********************************************************************
   !>restart the code code periodically writes all the main variables to a file

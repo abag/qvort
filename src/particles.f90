@@ -199,12 +199,15 @@ module particles
     open(unit=78,file='data/par_ts.log',position='append')
     if (itime==shots) then
       write(78,*) '%-var--t-----maxu---maxdu----urms---part_sep--'
-      if (particles_only) write(*,*) '%-var--t-----maxu---maxdu----urms---part_sep--'
+      if (particles_only) then
+      !printing to screen overidden by SPH aspects of code
+      if (SPH_count==0) write(*,*) '%-var--t-----maxu---maxdu----urms---part_sep--'
+      end if
     end if
     write(78,'(i5.3,f6.2,f8.5,f8.5,f8.5,f8.5)') &
     itime/shots,t,part_maxu,part_maxdu,part_urms,part_sep
     if (particles_only) then
-      write(*,'(i5.3,f6.2,f8.5,f8.5,f8.5,f8.5)') &
+      if (SPH_count==0) write(*,'(i5.3,f6.2,f8.5,f8.5,f8.5,f8.5)') &
       itime/shots,t,part_maxu,part_maxdu,part_urms,part_sep
     end if
     close(78)

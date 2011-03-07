@@ -14,6 +14,7 @@ program run
   use mirror
   use smoothing
   use mag
+  use sph
   implicit none
   logical :: can_stop=.false.
   call init_random_seed !cdata.mod
@@ -88,6 +89,8 @@ program run
     !---do we have particles in the code - if so evolve them
     if (quasi_pcount>0) call quasip_evolution !quasip.mod
     if (part_count>0) call particles_evolution !particles.mod
+    if (SPH_count>0) call SPH_evolution !sph.mod
+    !print*, 'here6'
     !-------------------remove the tree----------------------------
     if (tree_theta>0) then
       call empty_tree(vtree) !empty the tree to avoid a memory leak

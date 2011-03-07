@@ -19,6 +19,7 @@ module output
       end if
       write(77,*) part_count
       write(77,*) quasi_pcount
+      write(77,*) SPH_count
     close(77)
   end subroutine
   !**********************************************************************
@@ -115,7 +116,7 @@ remove_count
       close(98)
     end if
   end subroutine
-    !**********************************************************************
+  !**********************************************************************
   !>print the p (particles) array as (un)formatted data for use with gnuplot/matlab
   subroutine printp(filenumber)
     implicit none
@@ -143,6 +144,34 @@ remove_count
     end if
   end subroutine
   !**********************************************************************
+  !>print the s (SPH particles) array as (un)formatted data for use with gnuplot/matlab
+  subroutine print_SPH(filenumber)
+    implicit none
+    integer, intent(IN) :: filenumber
+    character (len=40) :: print_file
+    integer :: i
+    if (binary_print) then
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/SPH_par",filenumber,".log"
+      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+        write(98) t
+        write(98) SPH_count
+        write(98) s(:)%x(1)
+        write(98) s(:)%x(2)
+        write(98) s(:)%x(3)
+        write(98) s(:)%rho
+      close(98)
+    else  
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/SPH_par",filenumber,".log"
+      open(unit=98,file=print_file,status='replace')
+        write(98,*) t
+        write(98,*) SPH_count
+        do i=1, SPH_count
+          write(98,*) s(i)%x(1:3), s(i)%rho
+        end do
+      close(98)
+    end if
+  end subroutine
+  !**********************************************************************
   !>store everything needed to restart the code
   !>\todo does this really work anymore? need to check fully
   subroutine data_dump
@@ -157,6 +186,8 @@ remove_count
       if (quasi_pcount>0) write(53) g
       write(53) part_count
       if (part_count>0) write(53) p
+      write(53) SPH_count
+      if (SPH_count>0) write(53) s
     close(53)
   end subroutine
   !**********************************************************************
@@ -173,6 +204,8 @@ remove_count
       if (quasi_pcount>0) write(53) g
       write(53) part_count
       if (part_count>0) write(53) p
+      write(53) SPH_count
+      if (SPH_count>0) write(53) s
     close(53)
   end subroutine
   !**********************************************************************
