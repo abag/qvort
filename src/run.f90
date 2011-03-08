@@ -97,11 +97,13 @@ program run
       deallocate(vtree%parray) ; deallocate(vtree)
       nullify(vtree) !just in case!
     end if
+    !print*, 'here7'
     !---------------------close mirror array-----------------------
     if (mirror_bc) then
       !call mirror_checker !mirror.mod THIS DOESNT EXIST!!!!?
       call mirror_close !mirror.mod
     end if
+    !print*, 'here8'
     !---------------------special data dump------------------------
     if ((itime/=0).and.(itime==int_special_dump)) call sdata_dump
     !---------------------can we exit early------------------------
@@ -112,6 +114,7 @@ program run
         stop
       end if
     end if
+    !print*, 'here9'
     !--------------------------------------------------------------
     t=t+dt !finish by incrementing time 
   end do

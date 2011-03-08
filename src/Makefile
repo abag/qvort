@@ -74,7 +74,7 @@ mirror.o: mirror.f90 general.o cdata.o
 #
 stiff_solver.o: stiff_solver.f90 hamiltonian.o general.o cdata.o
 #
-sph.o: sph.f90 general.o cdata.o normal_fluid.o output.o
+sph.o: sph.f90 general.o cdata.o normal_fluid.o output.o forcing.o
 #
 hamiltonian.o: hamiltonian.f90 tree.o timestep.o output.o general.o cdata.o
 #

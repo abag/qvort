@@ -3,6 +3,7 @@ module sph
   use cdata
   use general
   use output
+  use forcing
   contains
   !************************************************************
   !>setup the particles in as set by initp
@@ -16,7 +17,9 @@ module sph
     allocate(s(SPH_count))
     write(*,'(a)') ' --------------------SPH--------------------' 
     write(*,'(a,i4.1,a)') ' initialising ', SPH_count, ', particles '
-    write(*,'(a,a,a,e14.7)') ' initial setup ', trim(SPH_init), ' with mass ', SPH_mass
+    write(*,'(a,a,a,e14.7)') ' initial setup ', trim(SPH_init), ', with mass ', SPH_mass
+    write(*,'(a,f10.5)') ' adiabatic index, gamma= ', SPH_gamma
+    write(*,*) ' forcing will be applied to particles is selected'
     select case(SPH_init)
       case('sphere')
         !particles in random positions
@@ -28,6 +31,7 @@ module sph
           s(i)%x(2)=rs*sin(rthet)*sin(rphi)
           s(i)%x(3)=rs*cos(rthet)
           s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
         end do
       case('random')
         !particles in random positions
@@ -38,6 +42,37 @@ module sph
           s(i)%x(2)=box_size*s(i)%x(2)-box_size/2.
           s(i)%x(3)=box_size*s(i)%x(3)-box_size/2.
           s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+        end do
+      case('plane')
+        !particles in planes at \pm z
+        do i=1, SPH_count
+          call random_number(s(i)%x(1)) ; call random_number(s(i)%x(2))
+          s(i)%x(1)=box_size*s(i)%x(1)-box_size/2.
+          s(i)%x(2)=box_size*s(i)%x(2)-box_size/2.
+          if (i<floor(real(SPH_count)/2.)) then
+            s(i)%x(3)=-0.48*box_size
+          else
+            s(i)%x(3)=0.48*box_size
+          end if
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+        end do
+      case('corner')
+        !particles in corners
+        do i=1, SPH_count
+          call random_number(s(i)%x(1))
+          call random_number(s(i)%x(2)) ; call random_number(s(i)%x(3))
+          s(i)%x(1)=0.1*(box_size*s(i)%x(1)-box_size/2.)
+          s(i)%x(2)=0.1*(box_size*s(i)%x(2)-box_size/2.)
+          s(i)%x(3)=0.1*(box_size*s(i)%x(3)-box_size/2.)
+          if (i<floor(real(SPH_count)/2.)) then
+            s(i)%x=s(i)%x+0.4*box_size
+          else
+            s(i)%x=s(i)%x-0.4*box_size
+          end if
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
         end do
       case default
         call fatal_error('setup_SPH','SPH_init not set to available value')
@@ -93,7 +128,7 @@ module sph
         else if (s(i)%x(1)<(-box_size/2.)) then
           s(i)%x(1)=s(i)%x(1)+box_size
         end if
-        !-------------y------------------
+        !-------------y------------------    write(*,'(a,a,a,e14.7)') ' initial setup ', trim(SPH_init), ' with mass ', SPH_mass
         if (s(i)%x(2)>(box_size/2.)) then
           s(i)%x(2)=s(i)%x(2)-box_size
         else if (s(i)%x(2)<(-box_size/2.)) then
@@ -120,7 +155,7 @@ module sph
     implicit none
     integer :: i,j
     integer :: peri, perj, perk !used to loop in periodic cases
-    real, dimension(3) :: shift(3)
+    real, dimension(3) :: shift, force
     do i=1, SPH_count
       s(i)%a=0.
       do j=1, SPH_count
@@ -137,6 +172,8 @@ module sph
            end do ; end do ;end do
         end if
       end do
+      call get_forcing_gen(s(i)%x,force)
+      s(i)%a=s(i)%a+force
     end do
   end subroutine
   !************************************************************
@@ -146,6 +183,8 @@ module sph
     integer :: i
     do i=1, SPH_count
       s(i)%rho=0.
+      call sph_get_rho(i)
+      s(i)%h=(s(i)%rho/s(i)%m)**(-1./3.)
       call sph_get_rho(i)
       s(i)%h=(s(i)%rho/s(i)%m)**(-1./3.)
       call sph_get_rho(i)
@@ -159,7 +198,7 @@ module sph
     implicit none
     integer, intent(IN) :: i
     integer :: peri, perj, perk !used to loop in periodic cases
-    real, dimension(3) :: shift(3)
+    real, dimension(3) :: shift
     real :: dist !distance between particles 
     integer :: j !for looping
     s(i)%rho=0.
@@ -178,12 +217,12 @@ module sph
     end do
   end subroutine 
   !************************************************************
-  !>get the pressure at i using current density \todo out gamma in run.in
+  !>get the pressure at i using current density uses SPH_gamma from
+  !>run.in as the adiabatic index (the default is 5/3)
   subroutine sph_get_P(i)
     implicit none
-    real, parameter :: gamm=5./3. !adiabatic index
     integer, intent(IN) :: i
-    s(i)%P=s(i)%rho**gamm
+    s(i)%P=s(i)%rho**SPH_gamma
   end subroutine 
   !************************************************************
   !>get the derivative of the density of the particle i wrt h

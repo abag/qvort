@@ -199,8 +199,9 @@ module cdata
   logical, protected :: particles_only=.false. !only evolve particles in the code
   !----------------------------SPH-----------------------------------------------
   integer :: SPH_count !number of SPH particles in the code, this may reduce due to mergers
-  real :: SPH_mass=0. !initial mass of the particle set to 0 which stops code runnning
-  character(len=20) :: SPH_init='random' !initial setup of SPH particles
+  real,protected :: SPH_mass=0. !initial mass of the particle set to 0 which stops code runnning
+  character(len=20),protected :: SPH_init='random' !initial setup of SPH particles
+  real,protected :: SPH_gamma=5./3. !adiabatic index
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
@@ -385,6 +386,8 @@ module cdata
              read(buffer, *, iostat=ios) SPH_mass!initial mass of SPH particles
           case ('SPH_init')
              read(buffer, *, iostat=ios) SPH_init!initial SPH setup
+          case ('SPH_gamma')
+             read(buffer, *, iostat=ios) SPH_gamma!adiabatic index in SPH sims.
           case default
              !print *, 'Skipping invalid label at line', line
           end select

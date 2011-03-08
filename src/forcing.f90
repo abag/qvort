@@ -71,4 +71,32 @@ module forcing
         u=force_direction*force_amp
     end select
   end subroutine
+  !***********************************************
+  !>a general forcing routine which accepts a position
+  subroutine get_forcing_gen(x,u)
+    implicit none
+    real, intent(IN) :: x(3)
+    real, intent(OUT) :: u(3)
+    select case(force)
+      case('off')
+        u=0.
+      case('top_boundary')
+        if ((x(3)-box_size/2.)>-1.5*delta) then
+          !particle is sufficiently close to top boundary to force
+          u=0.
+          !sinusoidal forcing in the x direction
+          u(1)=delta*force_amp*sin(force_freq*t/(2*pi))
+        end if
+      case('delta_corr')
+        !at each time and position generate a new random vector
+        call random_number(force_direction)
+        force_direction=force_direction*2.-1.
+        !normalise it
+        force_direction=force_direction/sqrt(dot_product(force_direction,force_direction))
+        !use this as the forcing
+        u=force_direction*force_amp
+      case default
+        call fatal_error('forcing.mod','this forcing function is not compatable with a general call')
+    end select
+  end subroutine
 end module

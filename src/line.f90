@@ -25,6 +25,8 @@ module line
       if (count(mask=f(:)%infront>0)==0) then
         call fatal_error('line.mod:pinsert','vortex line length is 0, run over')
       end if
+    else
+     return !we don't need to run this routine if pcount=0
     end if
     old_pcount=pcount
     total_length=0. !zero this

@@ -7,14 +7,16 @@ dt 1E-5
 delta 1E-3
 box_size 1E-2
 velocity Off
-initf single_line
+initf single_loop
 line_count 1
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-SPH_count 200
-SPH_mass .1
-SPH_init sphere
+!force delta_corr
+force_amp 1.
+SPH_count 40
+SPH_mass .001
+SPH_gamma 5./3.
+SPH_init corner
 binary_print F
 particles_only T
-curv_hist T
