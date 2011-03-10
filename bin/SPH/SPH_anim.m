@@ -11,8 +11,8 @@ elseif nargin<3
   disp('skip set to 1')
   skip=1;
 end
-figure('visible','off');
 for i=start:skip:final
+  figure('visible', 'off')
   SPH_plot(i)
   fOUT=sprintf('data/SPH%03d.png',i)
   print('-dpng',fOUT)

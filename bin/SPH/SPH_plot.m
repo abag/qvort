@@ -1,4 +1,4 @@
-function vortex_plot(filenumber)
+function SPH_plot(filenumber)
 filename=sprintf('data/SPH_par%04d.log',filenumber);
 fid=fopen(filename);
 %get the dimensions information from dims.log
@@ -35,7 +35,7 @@ range=ceil(10*max(rho)-10*min(rho))+1;
 cmap=colormap(jet(range));
 store_caxis=([min(rho) max(rho)]);
 for i=1:number_of_particles
-  plot3(x(i),y(i),z(i),'o','MarkerEdgeColor','k','MarkerFaceColor',cmap(1+ceil(10*rho(i)-10*min(rho)),:))
+  plot3(x(i),y(i),z(i),'o','MarkerEdgeColor','k','MarkerFaceColor',cmap(1+ceil(10*rho(i)-10*min(rho)),:),'MarkerSize',4)
   hold on
 end
 axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]); 
@@ -43,3 +43,8 @@ box on
 caxis(store_caxis)
 colorbar
 set(gca,'FontSize',16)
+s1='t=';
+s2=num2str(time);
+str=strcat(s1,s2);
+text(-.6*dims(2),.6*dims(2),.7*dims(2),str,'FontSize',12)
+

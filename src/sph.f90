@@ -19,7 +19,8 @@ module sph
     write(*,'(a,i4.1,a)') ' initialising ', SPH_count, ', particles '
     write(*,'(a,a,a,e14.7)') ' initial setup ', trim(SPH_init), ', with mass ', SPH_mass
     write(*,'(a,f10.5)') ' adiabatic index, gamma= ', SPH_gamma
-    write(*,*) ' forcing will be applied to particles is selected'
+    write(*,'(a,f10.5)') ' gravitational constant= ', SPH_G
+    write(*,*) 'forcing will be applied to particles is selected'
     select case(SPH_init)
       case('sphere')
         !particles in random positions
@@ -58,6 +59,19 @@ module sph
           s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
           s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
         end do
+      case('figure8')
+        if (SPH_count/=3) call fatal_error('SPH','SPH_count must be 3')
+        s(1)%x(1)=0.9700000436
+        s(2)%x(1)=-0.9700000436
+        s(1)%x(2)=-0.2430875
+        s(2)%x(2)=0.2430875
+        s(1)%x(3)=0.
+        s(2)%x(3)=0.
+        s(3)%x=0.
+        do i=1,SPH_count
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+        end do
       case('corner')
         !particles in corners
         do i=1, SPH_count
@@ -87,38 +101,36 @@ module sph
   !>evolve the SPH particles
   subroutine SPH_evolution
     implicit none
-    integer :: i,j !for looping
+    integer :: i !for looping
     !firstly evolve h  due to motion of particles
     call sph_get_h !sph.mod
     !note this also sets rho and P at each particle
     !now get the acceleration at each particle
     call sph_get_acc
-    do j=1,3
+    do i=1,SPH_count
       !---------timestep the velocity--------------
       if (maxval(abs(s(i)%a1))==0) then
-        s(:)%u(j)=s(:)%u(j)+dt*s(:)%a(j) !euler
+        s(i)%u=s(i)%u+dt*s(i)%a !euler
       else if (maxval(abs(s(i)%a2))==0) then
         !first order adams-bashforth
-        s(:)%u(j)=s(:)%u(j)+three_twos*dt*s(:)%a(j)-one_half*dt*s(:)%a1(j)
+        s(i)%u=s(i)%u+three_twos*dt*s(i)%a-one_half*dt*s(i)%a1
       else
         !second order adams-bashforth
-        s(:)%u(j)=s(:)%u(j)+twenty_three_twelve*dt*s(:)%a(j)-four_thirds*dt*s(:)%a1(j)+five_twelths*dt*s(:)%a2(j)
+        s(i)%u=s(i)%u+twenty_three_twelve*dt*s(i)%a-four_thirds*dt*s(i)%a1+five_twelths*dt*s(i)%a2
       end if
       !---------timestep the position--------------
       if (maxval(abs(s(i)%u1))==0) then
-        s(:)%x(j)=s(:)%x(j)+dt*s(:)%u(j) !euler
+        s(i)%x=s(i)%x+dt*s(i)%u !euler
       else if (maxval(abs(s(i)%u2))==0) then
         !first order adams-bashforth
-        s(:)%x(j)=s(:)%x(j)+three_twos*dt*s(:)%u(j)-one_half*dt*s(:)%u1(j)
+        s(i)%x=s(i)%x+three_twos*dt*s(i)%u-one_half*dt*s(i)%u1
       else
         !second order adams-bashforth
-        s(:)%x(j)=s(:)%x(j)+twenty_three_twelve*dt*s(:)%u(j)-four_thirds*dt*s(:)%u1(j)+five_twelths*dt*s(:)%u2(j)
+        s(i)%x=s(i)%x+twenty_three_twelve*dt*s(i)%u-four_thirds*dt*s(i)%u1+five_twelths*dt*s(i)%u2
       end if
+      s(i)%a2(:)=s(i)%a1(:) ; s(i)%a1(:)=s(i)%a(:) !store old acceleration 
+      s(i)%u2(:)=s(i)%u1(:) ; s(i)%u1(:)=s(i)%u(:)!store old velocities 
     end do
-    s(i)%a2(:)=s(i)%a1(:) !store old acceleration 
-    s(i)%a1(:)=s(i)%a(:)
-    s(i)%u2(:)=s(i)%u1(:) !store old velocities 
-    s(i)%u1(:)=s(i)%u(:)
     !----------------enforce periodicity----------------------
     if (periodic_bc) then
       do i=1,SPH_count
@@ -156,19 +168,24 @@ module sph
     integer :: i,j
     integer :: peri, perj, perk !used to loop in periodic cases
     real, dimension(3) :: shift, force
+    real :: dist
     do i=1, SPH_count
       s(i)%a=0.
       do j=1, SPH_count
          if (i==j) cycle
+         dist=dist_gen(s(i)%x,s(j)%x)
          s(i)%a=s(i)%a-s(j)%m*(s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x,s(i)%h)
          s(i)%a=s(i)%a-s(j)%m*(s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x,s(j)%h)
+         !-------------------------SELF-GRAVITY------------------------------
+         s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(i)%h)/(2.*dist)
+         s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(j)%h)/(2.*dist)
          !periodic boundaries
          if (periodic_bc) then 
            do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
              if (peri==0.and.perj==0.and.perk==0) cycle
              shift=(/peri*box_size,perj*box_size,perk*box_size/)
-             s(i)%a=s(i)%a-s(j)%m*(s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(i)%h)
-             s(i)%a=s(i)%a-s(j)%m*(s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(j)%h)
+             s(i)%a=s(i)%a-s(j)%m*(s(i)%f*s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(i)%h)
+             s(i)%a=s(i)%a-s(j)%m*(s(j)%f*s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(j)%h)
            end do ; end do ;end do
         end if
       end do
@@ -181,14 +198,17 @@ module sph
   subroutine sph_get_h
     implicit none
     integer :: i
+    integer :: neighnumb=10
+    real :: eta
+    eta=(0.75*neighnumb/pi)**(0.333333333333)
     do i=1, SPH_count
-      s(i)%rho=0.
       call sph_get_rho(i)
-      s(i)%h=(s(i)%rho/s(i)%m)**(-1./3.)
+      s(i)%h=eta*(s(i)%m/s(i)%rho)**(0.333333333333)
       call sph_get_rho(i)
-      s(i)%h=(s(i)%rho/s(i)%m)**(-1./3.)
-      call sph_get_rho(i)
+      call sph_get_drhodh(i) !for correction term below    
       call sph_get_P(i)
+      !set the correction term according to springel 2010 (review)
+      s(i)%f=1./(1+(s(i)%h/(3*s(i)%rho))*s(i)%drhodh)
     end do
   end subroutine
   !************************************************************
@@ -238,19 +258,20 @@ module sph
     end do
   end subroutine  
   !************************************************************
-  !>the smoothing kernal a cubic spline is used Springel 2010
+  !>the smoothing kernal M4 cubic spline
   real function sph_W(r,h)
     implicit none
     real, intent(IN) :: r, h
     real :: q !ration of distance between particles and smoothing length
-    q=r/(2*h)
-    if (q<0) then
-      sph_W=(8/pi)*(1-6*(q**2-q**3))
-    else if (q<1) then
-      sph_W=(8/pi)*2*(1-q)**3
+    q=r/h
+    if (q<1) then
+      sph_W=1-1.5*q**2+0.75*q**3
+    else if (q<2) then
+      sph_W=0.25*(2-q)**3
     else 
       sph_W=0.
     end if
+    sph_W=sph_W*(1/(pi*h**3))
   end function
   !************************************************************
   !>derivative of the smoothing kernal wrt h
@@ -258,14 +279,15 @@ module sph
     implicit none
     real, intent(IN) :: r, h
     real :: q !ratio of distance between particles and smoothing length
-    q=r/(2*h)
-    if (q<0) then
-      sph_dWdh=(r/(2*h**2))*(8/pi)*(12*q-18*q**2)
-    else if (q<1) then
-      sph_dWdh=(r/(2*h**2))*(8/pi)*6*(1-q)**2
+    q=r/h
+    if (q<1) then
+      sph_dWdh=-3+7.5*q**2-4.5*q**3
+    else if (q<2) then
+      sph_dWdh=-6+12*q-7.5*q**2+1.5*q**3
     else 
       sph_dWdh=0.
     end if
+    sph_dWdh=sph_dWdh*(1/(pi*h**4))
   end function
   !************************************************************
   !>gradient of the smoothing kernal wrt h
@@ -275,15 +297,46 @@ module sph
     real, intent(IN) :: xi(3), xj(3) !particle positions
     real, intent(IN) :: h
     real :: r, q !ratio of distance between particles and smoothing length
+    logical, parameter :: no_clumping=.false.
     r=dist_gen(xi,xj)
-    q=r/(2*h)
-    if (q<0) then
-      sph_grad_W=(xi-xj)*(8/pi)*(-12*q+18*q**2)/(2*r*h)
-    else if (q<1) then
-      sph_grad_W=-(xi-xj)*(8/pi)*6*((1-q)**2)/(2*r*h)
+    q=r/h
+    if (no_clumping) then
+      if (q<2/3) then
+        sph_grad_W=(xi-xj)
+      else if (q<1) then
+        sph_grad_W=(xi-xj)*(3*q-2.25*q**2)
+      else if (q<2) then
+        sph_grad_W=-(xi-xj)*0.75*(2-q)**2
+      else
+        sph_grad_W=0.
+      end if
     else
-      sph_grad_W=0.
+      if (q<1) then
+        sph_grad_W=(xi-xj)*(3*q-2.25*q**2)
+      else if (q<2) then
+        sph_grad_W=(xi-xj)*0.75*(2-q)**2
+      else
+        sph_grad_W=0.
+      end if
+    end if 
+    sph_grad_W=sph_grad_W*(-1/(pi*r*h**4))
+  end function
+  !************************************************************
+  !>gravitiational kernal
+  function sph_phi(r,h)
+    implicit none
+    real, dimension(3) :: sph_phi
+    real, intent(IN) :: r, h
+    real :: q !ratio of distance between particles and smoothing length
+    q=r/h
+    if (q<1) then
+      sph_phi=(4./3.)*q-1.2*q**3+0.5*q**4
+    else if (q<2) then
+      sph_phi=(8./3.)*q-3*q**2+1.2*q**3-(q**4)/6.-(q**(-2))/15.
+    else
+      sph_phi=q**(-2)
     end if
+    sph_phi=sph_phi/(h**2)
   end function
   !************************************************************
   !>diagnostics for SPH code
@@ -299,14 +352,14 @@ module sph
     SPH_urms=sqrt(sum(uinfo(:,1)**2)/SPH_count)
     open(unit=78,file='data/SPH_ts.log',position='append')
     if (itime==shots) then
-      write(78,*) '%-var--t----------maxu---------maxdu---------urms-----'
-      if (particles_only) write(*,*) '%-var--t--------maxu------maxdu-------urms-----'
+      write(78,*) '%-var-----t----------maxu---------maxdu---------urms------minh---'
+      if (particles_only) write(*,*) '%-var-----t--------maxu------maxdu-------urms------minh--'
     end if
-    write(78,'(i5.3,f6.2,f15.8,f15.8,f15.8)') &
-    itime/shots,t,SPH_maxu,SPH_maxdu,SPH_urms
+    write(78,'(i5.3,f9.2,f15.8,f15.8,f15.8,f15.8)') &
+    itime/shots,t,SPH_maxu,SPH_maxdu,SPH_urms,minval(s%h)
     if (particles_only) then
-      write(*,'(i5.3,f6.2,f12.8,f13.5,f12.8)') &
-      itime/shots,t,SPH_maxu,SPH_maxdu,SPH_urms
+      write(*,'(i5.3,f9.2,f12.8,f10.5,f10.5,f10.4)') &
+      itime/shots,t,SPH_maxu,SPH_maxdu,SPH_urms,minval(s%h)
     end if
     close(78)
   end subroutine

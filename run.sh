@@ -123,13 +123,9 @@ if [ $RESTART -eq 1 ]; then
   echo code will restart if possible
 else
   if [ -f ./data/var.dat ]; then
-    echo deleting varfile
-    rm ./data/var.dat 
+    echo emptying data directory
+    rm ./data/* 
   fi
-  #if [ -f ./data/seed.dat ]; then
-  #  echo deleting random seed data
-  #  rm ./data/seed.dat 
-  #fi
 fi
 if [ $COMPILE -eq 1 ]; then
   # Recompile

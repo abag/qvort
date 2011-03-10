@@ -86,6 +86,7 @@ module cdata
   !>@param drhodh \f$ \partial \rho_i / \partial h_i\f$
   !>@param P the pressure at i
   !>@param h the smoothing length associated with the particle
+  !>@param f the correction to the smoothing length
   !>@param u the velocity of the particle
   !>@param a the acceleration of the particle
   !>@param u1 @param u2 old velocities for Adams-Bashforth timestepping
@@ -96,6 +97,7 @@ module cdata
     real :: rho, drhodh
     real :: P
     real :: h
+    real :: f
     real :: u(3), u1(3), u2(3) 
     real :: a(3), a1(3), a2(3) 
   end type
@@ -202,6 +204,7 @@ module cdata
   real,protected :: SPH_mass=0. !initial mass of the particle set to 0 which stops code runnning
   character(len=20),protected :: SPH_init='random' !initial setup of SPH particles
   real,protected :: SPH_gamma=5./3. !adiabatic index
+  real,protected :: SPH_G !gravitational constant
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
@@ -388,6 +391,8 @@ module cdata
              read(buffer, *, iostat=ios) SPH_init!initial SPH setup
           case ('SPH_gamma')
              read(buffer, *, iostat=ios) SPH_gamma!adiabatic index in SPH sims.
+          case ('SPH_G')
+             read(buffer, *, iostat=ios) SPH_G !gravitational constant
           case default
              !print *, 'Skipping invalid label at line', line
           end select

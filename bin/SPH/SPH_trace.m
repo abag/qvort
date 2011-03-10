@@ -69,12 +69,13 @@ for i=1:filenumber
 end
 for j=1:pnumber
     for i=1:filenumber-1
+      alpha_coeff=(i/(filenumber-1))^4;
       dist=sqrt((parray(j,i,1)-parray(j,i+1,1))^2+(parray(j,i,2)-parray(j,i+1,2))^2+(parray(j,i,3)-parray(j,i+1,3))^2);
       if (dist<dims(2)/2.) || (dims(2)==0.)
         if surface==1
-          [x1 y1 z1]=cylind(dims(1)/3,20, squeeze(parray(j,i,:))',squeeze(parray(j,i+1,:))');
+          [x1 y1 z1]=cylind(dims(2)/500.,20, squeeze(parray(j,i,:))',squeeze(parray(j,i+1,:))');
           h=surf(x1,y1,z1);
-          set(h,'FaceColor',c(j,:),'EdgeColor',c(j,:),'FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+          set(h,'FaceColor',c(j,:),'EdgeColor',c(j,:),'FaceAlpha',alpha_coeff,'EdgeAlpha',0.01) ;
         else
           plot3([parray(j,i,1) parray(j,i+1,1)],[parray(j,i,2) parray(j,i+1,2)],[parray(j,i,3) parray(j,i+1,3)],'Color',c(j,:),'LineWidth',2)
         end 
