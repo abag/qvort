@@ -5,14 +5,14 @@ recon_shots 1
 pcount 0
 dt .005
 delta 1E-5
-box_size 1E2
+box_size 1E3
 velocity Off
 initf single_loop
 line_count 1
-boundary open
+boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-SPH_count 400
+SPH_count 50
 SPH_mass 1
 SPH_gamma 5./3.
 SPH_G 8.

@@ -4,6 +4,9 @@ module sph
   use general
   use output
   use forcing
+  implicit none
+  integer,private :: pg_k !>periodic gravity fourier sum
+  real,private :: pg_alpha,pg_alpha2 !>periodic gravity \f$\alpha\f$ (\f$\alpha^2\f$)
   contains
   !************************************************************
   !>setup the particles in as set by initp
@@ -96,6 +99,13 @@ module sph
     s(:)%h=box_size/10.
     !now improve this guess
     call sph_get_h !sph.mod
+    !finally account for periodic bc's and gravity
+    if (periodic_bc) then
+      pg_k=floor(sqrt(40.*(pi**2)/box_size**2))
+      if (pg_k>0) call fatal_error('SPH','box_size too small for periodic_bc')
+      pg_alpha=2./box_size
+      pg_alpha2=pg_alpha**2
+    end if
   end subroutine
   !************************************************************
   !>evolve the SPH particles
@@ -140,7 +150,7 @@ module sph
         else if (s(i)%x(1)<(-box_size/2.)) then
           s(i)%x(1)=s(i)%x(1)+box_size
         end if
-        !-------------y------------------    write(*,'(a,a,a,e14.7)') ' initial setup ', trim(SPH_init), ' with mass ', SPH_mass
+        !-------------y------------------ 
         if (s(i)%x(2)>(box_size/2.)) then
           s(i)%x(2)=s(i)%x(2)-box_size
         else if (s(i)%x(2)<(-box_size/2.)) then
@@ -167,13 +177,14 @@ module sph
     implicit none
     integer :: i,j
     integer :: peri, perj, perk !used to loop in periodic cases
-    real, dimension(3) :: shift, force
+    real, dimension(3) :: shift, force, pg
     real :: dist
     do i=1, SPH_count
       s(i)%a=0.
       do j=1, SPH_count
          if (i==j) cycle
          dist=dist_gen(s(i)%x,s(j)%x)
+         !-------------------------HYDRODYNAMICS-----------------------------
          s(i)%a=s(i)%a-s(j)%m*(s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x,s(i)%h)
          s(i)%a=s(i)%a-s(j)%m*(s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x,s(j)%h)
          !-------------------------SELF-GRAVITY------------------------------
@@ -187,11 +198,38 @@ module sph
              s(i)%a=s(i)%a-s(j)%m*(s(i)%f*s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(i)%h)
              s(i)%a=s(i)%a-s(j)%m*(s(j)%f*s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(j)%h)
            end do ; end do ;end do
+           !periodic gravity
+           call get_per_G(s(i)%x,s(j)%x,dist,pg)
+           s(i)%a=s(i)%a+SPH_G*s(j)%m*pg !add in force due to per. G
         end if
       end do
       call get_forcing_gen(s(i)%x,force)
       s(i)%a=s(i)%a+force
     end do
+  end subroutine
+  !************************************************************
+  !>periodic gravity using Ewald method
+  subroutine get_per_G(xi,xj,r,f)
+    real, intent(IN) :: xi(3), xj(3) !particle positions
+    real, intent(IN) :: r !distance between particles
+    real, intent(OUT) :: f(3) !force due to periodic G
+    real :: shift(3), rr(3) !nL, r_ij
+    real :: dist !distance between r, nL
+    integer :: i, peri, perj, perk !for looping
+    rr=xi-xj
+    f=0. !0 the force
+    do i=1, 3
+      do peri=-i,i ; do perj=-i,i ; do perk=-i,i
+         if (peri==0.and.perj==0.and.perk==0) cycle
+         shift=(/peri*box_size,perj*box_size,perk*box_size/)
+         dist=dist_gen(rr,shift)
+         if (dist<3.6*box_size) then
+           f=-((rr-shift)/(dist**3))*(erfc(pg_alpha*dist)+&
+              (2*pg_alpha/rootpi)*rr*exp(-pg_alpha2*(dist**2)))
+         end if
+      end do ; end do ;end do
+    end do 
+    f=(f+rr/(r**3))
   end subroutine
   !************************************************************
   !>get the correct smoothing length for each particle

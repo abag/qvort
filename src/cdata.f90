@@ -137,6 +137,7 @@ module cdata
   !***********CONSTANTS************************************************************
   !some constants - precompute for speed
   real, parameter :: pi=3.14159265358979324
+  real, parameter :: rootpi=1.77245385090551
   real, parameter :: one_half = (1./2.)
   real, parameter :: three_twos=(3./2.)
   real, parameter :: twenty_three_twelve=(23./12.)
