@@ -1,6 +1,6 @@
 --------------required parameters------------
-nsteps 1000
-shots 10
+nsteps 10000
+shots 100
 recon_shots 1
 pcount 0
 dt .005
@@ -12,10 +12,11 @@ line_count 1
 boundary open
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-SPH_count 400
-SPH_mass 1
-SPH_gamma 5./3.
-SPH_G 8.
+SPH_count 40
+SPH_mass 1.
+SPH_gamma 1.66
+SPH_G 1.
 SPH_init sphere
+SPH_init_r 0.33
 binary_print F
 particles_only T

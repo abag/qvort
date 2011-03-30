@@ -61,6 +61,11 @@ module normal_fluid
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/urms_norm !size of box scaled by urms
           close(77)
+        case('sod')
+          call setup_gen_normalf !normal_fluid.mod
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/urms_norm !size of box scaled by urms
+          close(77)
         case('galloway-proctor')
           call setup_gen_normalf !normal_fluid.mod
           open(unit=77,file='./data/normal_timescale.log',status='replace')
@@ -112,6 +117,12 @@ module normal_fluid
           u(3)=0.
         case('shear')
           u(1)=exp(-(6*x(3)/box_size)**2)
+        case('sod')
+          if (x(1)<box_size/3.) then
+            u(1)=0.5*tanh(10.*(x(1)+box_size/5.)/box_size)+0.5
+          else 
+            u(1)=0.
+          end if
         case('galloway-proctor')
           u(1)=-sin(norm_k*x(2)+cos(t))
           u(2)=-cos(norm_k*x(1)+sin(t))

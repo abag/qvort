@@ -8,6 +8,7 @@ module mag
   !>@param diffusion_on a flag set on if diffusion had been set to a none
   !>zero value in run.in, this helps subsequent smoothing routine
   logical, private :: diffusion_on=.false.
+  real, private :: B_E=0. !magnetic energy
   contains
   !**********************************************************************
   !>sets up the magnetic field and check there are no conflicting options
@@ -20,7 +21,7 @@ module mag
       diffusion_on=.true.
       write(*,'(a, f10.6, a)') ' magnetic diffusivity ', B_nu, ' cm^3/s'
       !check our magnetic diffusivity cfl condition
-      write(*,'(a,f10.4)') ' angetic CFL number:', delta**2/(B_nu*dt)
+      write(*,'(a,f10.4)') ' magnetic CFL number:', delta**2/(B_nu*dt)
       if (B_3D_nu) then
         write(*,*)'diffusion is three dimensional'
       else
@@ -30,6 +31,7 @@ module mag
       write(*,*) 'magnetic diffusivity is not acting on flux ropes'
     end if
     f(:)%B=B_init
+    !"f(1:20)%B=4*B_init
     if (full_B_print) write(*,*) 'printing full B field to file'
   end subroutine
   !**********************************************************************
@@ -75,9 +77,11 @@ module mag
     real, allocatable :: B(:) ! a dummy field to populate with smoothed B
     real, dimension(5) :: prefact, dist, greenf !greens function coefficients
     integer :: behind, bbehind, infront, iinfront !helpers
-    integer :: i ! for looping
+    integer :: i, j ! for looping
     if (diffusion_on.eqv..false.) return
+    B_E=0. !0 the magnetic energy
     allocate(B(pcount))
+   
     do i=1, pcount
       if (f(i)%infront==0) then
         B(i)=0. !empty particle
@@ -95,21 +99,34 @@ module mag
         prefact(3)=dist(4) !dist_gen(f(i)%x,f(i)%ghosti)
         prefact(4)=dist(5)-dist(4) !dist_gen(f(infront)%x,f(infront)%ghosti)
         prefact(5)=dist_gen(f(iinfront)%x,f(iinfront)%ghosti) !not calc. previously
-        if (B_3D_nu) then
-          prefact=0.125*prefact/sqrt(pi*B_nu*dt) !3D correction to above
-        else
-          prefact=0.5*prefact/sqrt(pi*B_nu*dt) !1D correction
-        end if
+        prefact=0.5*prefact/sqrt(pi*B_nu*dt) !1D correction
         greenf=greenf*prefact
-        if (any(isnan(greenf))) call fatal_error('mag.mod:B_diffusion',&
-        'serious problem, is B_nu 0?')
+        if (B_3D_nu) then
+          greenf=greenf/(3.*sum(greenf)-2*greenf(3)) !account for 3d diffusion
+        else
+          greenf=greenf/sum(greenf) !normalise the integral should be 1
+        end if
+        if (any(isnan(greenf))) then
+          print*, itime
+          print*, i, behind, infront, bbehind, iinfront
+          print*, f(i)%x
+          print*, 'ghost infront',f(i)%ghosti!, f(i)%ghostb
+          print*, 'ghost behind',f(i)%ghostb
+          print*, 'f(infront)%ghosti',f(infront)%ghosti 
+          print*, 'dist', dist
+          print*, 'greenf',greenf
+          call fatal_error('mag.mod:B_diffusion',&
+          'serious problem, is B_nu 0?')
+        end if
         if (greenf(3)>1.) call fatal_error('mag.mod:B_diffusion',&
-        'B_nu is too small for current particle resolution')
+          'B_nu is too small for current particle resolution')
         B(i)=greenf(1)*f(bbehind)%B+greenf(2)*f(behind)%B+greenf(3)*f(i)%B+&
              greenf(4)*f(infront)%B+greenf(5)*f(iinfront)%B
       end if
+      B_E=B_E+B(i)*dist(4)
     end do
     f(:)%B=B(:)
+    !print*, greenf, sum(greenf)
     deallocate(B)
   end subroutine
   !**********************************************************************
@@ -118,9 +135,12 @@ module mag
     implicit none
     open(unit=71,file='data/B_ts.log',position='append')
       if (itime==shots) then
-        write(71,*) '%--------t--------Bmax---------Bmin------------Brms-------'
+        write(71,*) '%--------t--------Bmax---------Bmin------------Brms--------B_energy-----'
       end if
-      write(71,'(f13.7,f13.7,f13.7,f13.7)') t, maxval(f(:)%B,mask=f(:)%infront>0), minval(f(:)%B,mask=f(:)%infront>0), Brms
+      write(71,'(f13.7,f13.7,f13.7,f13.7, f13.7)') t, maxval(f(:)%B,mask=f(:)%infront>0), minval(f(:)%B,mask=f(:)%infront>0), &
+                                            Brms, B_E
+      write(*,'(f13.7,f13.7,f13.7,f13.7)',advance='yes')  maxval(f(:)%B,mask=f(:)%infront>0), &
+                                                           minval(f(:)%B,mask=f(:)%infront>0), Brms, B_E
     close(71)
   end subroutine
   !**********************************************************************

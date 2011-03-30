@@ -65,14 +65,17 @@ module line
         !get second derivative at i
         call get_deriv_2(i,f_ddot) !general.mod
         curv=sqrt(dot_product(f_ddot,f_ddot)) !get the curvature
-        f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)+&
-                     (sqrt(curv**2-0.25*disti**2)-curv)*curv*f_ddot
-        !f(par_new)%x=(f(i)%x+f(i)%ghosti)/2.
+        if (curv**2-0.25*disti**2>0.) then
+          !could be negative, avoid this
+          f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)+&
+                       (sqrt(curv**2-0.25*disti**2)-curv)*curv*f_ddot
+        else
+          f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)
+        end if
         !average the current velocity
         f(par_new)%u=0.5*(f(i)%u+f(f(i)%infront)%u) 
         !zero the older velocities
         f(par_new)%u1=0. ; f(par_new)%u2=0.
-
         !set correct infront and behinds & ghostzones
         f(par_new)%behind=i ; f(par_new)%infront=f(i)%infront
         call get_ghost_p(par_new,f(par_new)%ghosti, f(par_new)%ghostb) !periodic.mod
@@ -93,7 +96,6 @@ module line
     end do
     !calculate average separation of particles
     avg_sep=total_length/old_pcount
-    !print*, maxloc(f(:)%B), maxval(f(:)%B), f(maxloc(f(:)%B))%Bstretch
   end subroutine
   !*************************************************************************
   !>remove points along the filament if they are compressed to the point where

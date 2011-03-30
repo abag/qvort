@@ -29,15 +29,28 @@ module output
     call printf(itime/shots) !output.mod
     open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
-      write(*,*) '--var--------t-------pcount-------recon----avg_d-----length&
+      if (magnetic) then
+        write(*,'(a)',advance='yes') '--var--------t-------pcount-------recon----avg_d-----length&
+                  --------maxu---------maxdu-----num eval----curv------removed-------Bmax--------&
+                 -Bmin----------Brms--------B_energy--'
+      else
+        write(*,'(a)',advance='yes') '--var--------t-------pcount-------recon----avg_d-----length&
                   --------maxu---------maxdu-----num eval----curv------removed'
+      end if
       write(78,*) '%--var--------t-------pcount-------recon----avg_d-----length&
                    --------maxu---------maxdu-----num eval----curv------removed'
     end if
-    write(*,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2,i13.1)') &
-itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
-total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
-remove_count
+    if (magnetic) then
+      write(*,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2,i13.1)',advance='no') &
+      itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
+      total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
+      remove_count
+    else
+      write(*,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2,i13.1)') &
+      itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
+      total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
+      remove_count
+    end if
     write(78,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2,i13.1)') &
 itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
 total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&

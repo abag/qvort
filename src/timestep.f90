@@ -21,7 +21,14 @@ module timestep
     real :: u(3) !dummy variable used to store velocities
     real :: adap_x(3) !dummy variable to check timestep
     real :: dummy_max_error, max_error !maximum error between 2nd and 3rd order method
+    real :: rot_r, rot_theta !for differential rotation
     integer :: i
+    !begin by testing if we have special velocity field Rotate
+    select case(velocity)
+      case('Rotate')
+        call differential_rotation
+        return !exit the routine once applied
+    end select    
     max_error=0.
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
@@ -328,6 +335,21 @@ module timestep
       u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
       u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
       u=u+u_bs !add on the non-local contribution of i
+    end do
+  end subroutine
+  !**************************************************************************
+  !>apply differential rotation to all the particles
+  subroutine differential_rotation()
+    real :: rot_r, rot_theta !for cylindrical coords
+    integer :: i !for looping
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !check for 'empty' particles
+      rot_r=sqrt(f(i)%x(1)**2+f(i)%x(2)**2)
+      rot_theta=atan2(f(i)%x(2),f(i)%x(1))
+      rot_theta=rot_theta+dt*(0.728*exp(-1.6666*(rot_r/box_size)**2))
+      if (rot_theta>pi) rot_theta=rot_theta-2*pi
+      f(i)%x(1)=rot_r*cos(rot_theta) 
+      f(i)%x(2)=rot_r*sin(rot_theta) 
     end do
   end subroutine
 end module

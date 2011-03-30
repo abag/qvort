@@ -204,6 +204,7 @@ module cdata
   integer :: SPH_count !number of SPH particles in the code, this may reduce due to mergers
   real,protected :: SPH_mass=0. !initial mass of the particle set to 0 which stops code runnning
   character(len=20),protected :: SPH_init='random' !initial setup of SPH particles
+  real,protected :: SPH_init_r=0.1 !used for some initial SPH conditions
   real,protected :: SPH_gamma=5./3. !adiabatic index
   real,protected :: SPH_G !gravitational constant
   !---------------------tree-code------------------------------------------------
@@ -394,6 +395,8 @@ module cdata
              read(buffer, *, iostat=ios) SPH_gamma!adiabatic index in SPH sims.
           case ('SPH_G')
              read(buffer, *, iostat=ios) SPH_G !gravitational constant
+          case ('SPH_init_r')
+             read(buffer, *, iostat=ios) SPH_init_r !initial sphere radius
           case default
              !print *, 'Skipping invalid label at line', line
           end select
@@ -409,6 +412,7 @@ module cdata
     character(len=*) :: message
     write (*,*) '-------------------------FATAL ERROR-------------------------'
     write (*,*) trim(location) , ": " , trim(message)
+    write (*,*) "FYI: t= ", t, "iteration number= ", itime 
     write (*,*) '-------------------------------------------------------------'
     stop
   end subroutine

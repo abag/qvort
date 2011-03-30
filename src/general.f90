@@ -184,6 +184,32 @@ module general
     cross_product(3)=a(1)*b(2)-a(2)*b(1)
   end function
   !*********************************************************************
+  !> a routine to find any NANs in the positions of all the allocated main
+  !> arrays
+  subroutine NAN_finder
+    implicit none
+    if (allocated(f)) then
+      if (any(isnan(f%x(1))).or.any(isnan(f%x(2))).or.any(isnan(f%x(3)))) then
+        call fatal_error('run.x','there is a NAN in the (filament) f%x array')
+      end if
+    end if
+    if (allocated(g)) then
+      if (any(isnan(g%x(1))).or.any(isnan(g%x(2))).or.any(isnan(g%x(3)))) then
+        call fatal_error('run.x','there is a NAN in the (quasi particle) g%x array')
+      end if
+    end if
+    if (allocated(p)) then
+      if (any(isnan(p%x(1))).or.any(isnan(p%x(2))).or.any(isnan(p%x(3)))) then
+        call fatal_error('run.x','there is a NAN in the (particle) p%x array')
+      end if
+    end if
+    if (allocated(s)) then
+      if (any(isnan(s%x(1))).or.any(isnan(s%x(2))).or.any(isnan(s%x(3)))) then
+        call fatal_error('run.x','there is a NAN in the (SPH) s%x array')
+      end if
+    end if
+  end subroutine
+  !*********************************************************************
   !> a routine purely used for code testing finds empty particles 
   subroutine zero_finder(location)
     implicit none

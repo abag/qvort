@@ -14,7 +14,7 @@ case 'empty'
   return
 end
 A=load('data/B_ts.log');
-t=A(:,1) ; B_max=A(:,2) ; B_min=A(:,3) ; B_rms=A(:,4) ;
+t=A(:,1) ; B_max=A(:,2) ; B_min=A(:,3) ; B_rms=A(:,4) ; B_E=A(:,5); 
 switch option
   case 'print'
     figure('visible','off');
@@ -25,17 +25,22 @@ end
     plot(t,B_max,'-r','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
-    ylabel('B_max','FontSize',14)
+    ylabel('B_{max}','FontSize',14)
   subplot(2,2,2)
     plot(t,B_min,'-b','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
-    ylabel('B_min','FontSize',14)
+    ylabel('B_{min}','FontSize',14)
   subplot(2,2,3)
     plot(t,B_rms,'-m','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
-    ylabel('B_rms','FontSize',14)
+    ylabel('B_{rms}','FontSize',14)
+  subplot(2,2,4)
+    plot(t,B_E,'-k','LineWidth',2);
+    set(gca,'FontSize',14)
+    xlabel('t','FontSize',14)
+    ylabel('E_{mag}','FontSize',14)
 if option=='print'
     disp('printing to magnetic_information.eps')
     print('-depsc','./magnetic_information.eps')

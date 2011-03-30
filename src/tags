@@ -83,6 +83,7 @@ energy	cdata.f90	/^  real :: energy /;"	v	module:cdata
 energy_info	diagnostic.f90	/^  subroutine energy_info(/;"	s	module:diagnostic
 enforce_periodic	periodic.f90	/^  subroutine enforce_periodic(/;"	s	module:periodic
 eta	stiff_solver.f90	/^  real, allocatable, private :: eta(/;"	v	module:stiff_solver
+f	cdata.f90	/^    real :: f$/;"	k	type:smooth_particle
 f	cdata.f90	/^  type(qvort), allocatable :: f(/;"	v	module:cdata
 fatal_error	cdata.f90	/^  subroutine fatal_error(/;"	s	module:cdata
 fbl	tree.f90	/^      type (node), pointer :: fbl,/;"	k	type:node
@@ -102,6 +103,7 @@ get_forcing	forcing.f90	/^  subroutine get_forcing(/;"	s	module:forcing
 get_forcing_gen	forcing.f90	/^  subroutine get_forcing_gen(/;"	s	module:forcing
 get_ghost_p	periodic.f90	/^  subroutine get_ghost_p(/;"	s	module:periodic
 get_normal_velocity	normal_fluid.f90	/^    subroutine get_normal_velocity(/;"	s	module:normal_fluid
+get_per_G	sph.f90	/^  subroutine get_per_G(/;"	s	module:sph
 get_smoothed_field	smoothing.f90	/^  subroutine get_smoothed_field$/;"	s	module:smoothing
 ghostb	cdata.f90	/^    real :: ghosti(3), ghostb(/;"	k	type:qvort
 ghosti	cdata.f90	/^    real :: ghosti(/;"	k	type:qvort
@@ -178,6 +180,9 @@ pdot	cdata.f90	/^    real :: pdot(/;"	k	type:quasi
 periodic	periodic.f90	/^module periodic$/;"	m
 periodic_bc	cdata.f90	/^  logical :: periodic_bc=/;"	v	module:cdata
 pfermi	hamiltonian.f90	/^  real, parameter :: pfermi=/;"	v	module:hamiltonian
+pg_alpha	sph.f90	/^  real,private :: pg_alpha,/;"	v	module:sph
+pg_alpha2	sph.f90	/^  real,private :: pg_alpha,pg_alpha2 /;"	v	module:sph
+pg_k	sph.f90	/^  integer,private :: pg_k /;"	v	module:sph
 pi	cdata.f90	/^  real, parameter :: pi=/;"	v	module:cdata
 pinsert	line.f90	/^  subroutine pinsert$/;"	s	module:line
 pmotion	timestep.f90	/^  subroutine pmotion(/;"	s	module:timestep
@@ -212,6 +217,7 @@ read_run_file	cdata.f90	/^  subroutine read_run_file(/;"	s	module:cdata
 recon_count	cdata.f90	/^  integer :: recon_count=/;"	v	module:cdata
 remove_count	cdata.f90	/^  integer :: remove_count=/;"	v	module:cdata
 rho	cdata.f90	/^    real :: rho,/;"	k	type:smooth_particle
+rootpi	cdata.f90	/^  real, parameter :: rootpi=/;"	v	module:cdata
 run	run.f90	/^program run$/;"	p
 s	cdata.f90	/^  type(sm/;"	v	module:cdata
 same_loop_test	line.f90	/^  subroutine same_loop_test(/;"	s	module:line
@@ -258,6 +264,7 @@ sph_get_drhodh	sph.f90	/^  subroutine sph_get_drhodh(/;"	s	module:sph
 sph_get_h	sph.f90	/^  subroutine sph_get_h$/;"	s	module:sph
 sph_get_rho	sph.f90	/^  subroutine sph_get_rho(/;"	s	module:sph
 sph_grad_W	sph.f90	/^  function sph_grad_W(/;"	f	module:sph
+sph_phi	sph.f90	/^  function sph_phi(/;"	f	module:sph
 stiff_solver	stiff_solver.f90	/^module stiff_solver$/;"	m
 structure_function	diagnostic.f90	/^  subroutine structure_function(/;"	s	module:diagnostic
 t	cdata.f90	/^  real :: t=/;"	v	module:cdata

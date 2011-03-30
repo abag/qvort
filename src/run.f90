@@ -1,6 +1,6 @@
 !>The main program, runs the qvort code
 program run
-  use cdata
+  use cdata 
   use initial
   use output
   use periodic
@@ -12,10 +12,11 @@ program run
   use quasip
   use tree
   use mirror
-  use smoothing
+  use smoothing 
   use mag
   use sph
   implicit none
+  integer :: i
   logical :: can_stop=.false.
   call init_random_seed !cdata.mod
   !read in parameters
@@ -44,6 +45,10 @@ program run
     !print*, 'here2'
     !---------------------line operations--------------------------
     call pinsert !line.mod
+    if (magnetic) then
+      !------------------magnetic diffusion------------
+      if (B_nu>epsilon(0.)) call B_diffusion !mag.mod
+    end if
     if (mod(itime, recon_shots)==0) then
       if (tree_theta>0) then
         !we may need to empty the tree and then redraw it at this point
@@ -54,7 +59,6 @@ program run
       if (switch_off_recon.eqv..false.) call precon !line.mod
       call premove !line.mod 
     end if
-    if (magnetic) call B_diffusion !mag.mod
     !print*, 'here3'
     if(periodic_bc) call enforce_periodic !periodic.mod
     !---------------once all algorithms have been run--------------
@@ -71,7 +75,6 @@ program run
       !store data to a binary file for reload
       call data_dump !output.mod
       if(particles_only.eqv..false.) call print_info !output.mod
-      if (magnetic) call B_ts !mag.mod
       if (mod(itime, mesh_shots)==0) then
         if (magnetic.and.full_B_print) call print_full_B(itime/mesh_shots)
 !mag.f90
@@ -84,6 +87,7 @@ program run
         call one_dim_vel(itime/mesh_shots) !diagnostics.mod
         call two_dim_vel(itime/mesh_shots) !diagnostics.mod
       end if
+      if (magnetic) call B_ts !mag.mod
     end if
     !print*, 'here5'
     !---do we have particles in the code - if so evolve them
@@ -115,7 +119,8 @@ program run
       end if
     end if
     !print*, 'here9'
-    !--------------------------------------------------------------
+    !--------------------final sanity checks----------------------
+    call NAN_finder !general.mod
     t=t+dt !finish by incrementing time 
   end do
   !deallocate(f,mesh) !tidy up

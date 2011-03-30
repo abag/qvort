@@ -14,7 +14,7 @@ elseif nargin<3
 end
 figure('visible','off');
 for i=start:skip:final
-  vortex_plot(i)
+  vortex_plot(i,'rainbow','dark','overhead')
   fOUT=sprintf('data/var%03d.png',i)
   print('-dpng',fOUT)
 end

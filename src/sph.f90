@@ -7,6 +7,7 @@ module sph
   implicit none
   integer,private :: pg_k !>periodic gravity fourier sum
   real,private :: pg_alpha,pg_alpha2 !>periodic gravity \f$\alpha\f$ (\f$\alpha^2\f$)
+  real, private :: pg_inv_vol !1/volume of box
   contains
   !************************************************************
   !>setup the particles in as set by initp
@@ -27,10 +28,11 @@ module sph
     select case(SPH_init)
       case('sphere')
         !particles in random positions
+        write(*,'(a,f10.5)') ' radius of sphere= ', SPH_init_r*box_size
         do i=1, SPH_count
           call random_number(rs)
           call random_number(rthet) ; call random_number(rphi)
-          rs=rs*box_size/10. ; rthet=rthet*pi ; rphi=rphi*2*pi
+          rs=rs*box_size*SPH_init_r ; rthet=rthet*pi ; rphi=rphi*2*pi
           s(i)%x(1)=rs*sin(rthet)*cos(rphi)
           s(i)%x(2)=rs*sin(rthet)*sin(rphi)
           s(i)%x(3)=rs*cos(rthet)
@@ -102,9 +104,10 @@ module sph
     !finally account for periodic bc's and gravity
     if (periodic_bc) then
       pg_k=floor(sqrt(40.*(pi**2)/box_size**2))
-      if (pg_k>0) call fatal_error('SPH','box_size too small for periodic_bc')
+      if (pg_k>1) call fatal_error('SPH','box_size too small for periodic_bc')
       pg_alpha=2./box_size
       pg_alpha2=pg_alpha**2
+      pg_inv_vol=1./(box_size**3)
     end if
   end subroutine
   !************************************************************
@@ -213,22 +216,39 @@ module sph
     real, intent(IN) :: xi(3), xj(3) !particle positions
     real, intent(IN) :: r !distance between particles
     real, intent(OUT) :: f(3) !force due to periodic G
-    real :: shift(3), rr(3) !nL, r_ij
+    real :: shift(3), rr(3), pgk(3) !nL, r_ij
     real :: dist !distance between r, nL
     integer :: i, peri, perj, perk !for looping
     rr=xi-xj
     f=0. !0 the force
+    !sum in real space
+    !THIS REALLY NEEDS TESTING!!!!!!!!!!!!!!!!!!!!!!!
     do i=1, 3
       do peri=-i,i ; do perj=-i,i ; do perk=-i,i
          if (peri==0.and.perj==0.and.perk==0) cycle
          shift=(/peri*box_size,perj*box_size,perk*box_size/)
          dist=dist_gen(rr,shift)
          if (dist<3.6*box_size) then
-           f=-((rr-shift)/(dist**3))*(erfc(pg_alpha*dist)+&
+           f=f-((rr-shift)/(dist**3))*(erfc(pg_alpha*dist)+&
               (2*pg_alpha/rootpi)*rr*exp(-pg_alpha2*(dist**2)))
          end if
       end do ; end do ;end do
-    end do 
+    end do
+    !sum in fourier space
+    if (pg_k>0) then
+       pgk=(/1.,0.,0./)
+       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
+       pgk=(/-1.,0.,0./)
+       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
+       pgk=(/0.,1.,0./)
+       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
+       pgk=(/0.,-1.,0./)
+       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
+       pgk=(/0.,0.,1./)
+       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
+       pgk=(/0.,0.,-1./)
+       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
+    end if
     f=(f+rr/(r**3))
   end subroutine
   !************************************************************

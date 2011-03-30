@@ -94,6 +94,8 @@ module initial
           call setup_single_loop !init.mod
         case('single_line')
           call setup_single_line !init.mod
+        case('ellipse')
+          call setup_ellipse !init.mod
         case('random_loops')
           call setup_random_loops !init.mod
         case('crow')
@@ -195,6 +197,8 @@ module initial
         write(*,*) 'using local induction approximation - scales like O(N)'
       case('BS')
         write(*,*) 'using full Biot-Savart integral - scales like O(N^2)'
+      case('Rotate')
+        write(*,*) 'by-passing all other velocity fields: prescribing differential rotation'      
       case('Tree')
         if (tree_theta<epsilon(0.)) then 
           call fatal_error('init.mod:init_setup', & 
@@ -206,7 +210,7 @@ module initial
         end if
      case default
        print*, 'correct value for velocity in run.in has not been set'
-       print*, 'options are: LIA, BS, Tree'
+       print*, 'options are: LIA, BS, Tree,Rotate'
        call fatal_error('init.mod:init_setup', & 
         'correct value for "velocity" in run.in has not been set') !cdata.mod
     end select
@@ -304,6 +308,37 @@ module initial
       f(i)%u1=0. ; f(i)%u2=0.
     end do   
   end subroutine
+    !*************************************************************************
+  !>set up an ellips in the x-y plane, it's size is dictated by the initial 
+  !>number of particles set and the size of \f$\delta\f$ 
+  !>\todo put eccentricity in run.in
+  subroutine setup_ellipse
+    implicit none
+    real :: velocity
+    real :: radius! not really a radius just a helper
+    real, parameter :: elip_a=1.5, elip_b=0.5
+    integer :: i 
+    radius=(0.5*pcount*delta)/(2*pi) !50% of potential size 
+    velocity=(quant_circ/(4*pi*radius))*log(8E8*radius)
+    write(*,*) 'initf: ellipse, parameters a/b:', elip_a, elip_b
+    write(*,*) 'eccentricity is:', sqrt((elip_a**2-elip_b**2)/elip_a**2)
+    
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount
+      f(i)%x(1)=elip_a*radius*sin(pi*real(2*i-1)/pcount)
+      f(i)%x(2)=elip_b*radius*cos(pi*real(2*i-1)/pcount)
+      f(i)%x(3)=0.
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do   
+  end subroutine
   !****************************************************************************
   !>set up a single line from -z to z, number of particles is automatically adjusted
   !>to box size and \f$\delta\f$
@@ -323,8 +358,8 @@ module initial
       'periodic boundary conditions required')
     end if
     do i=1, pcount
-      f(i)%x(1)=0.
-      f(i)%x(2)=0.
+      f(i)%x(1)=0. !box_size/3
+      f(i)%x(2)=0. !-box_size/3
       f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
@@ -1156,7 +1191,8 @@ module initial
     implicit none
     real :: delta_min, dt_max
     select case(velocity)
-      case('Off')
+      case('Off','Rotate')
+        write(*,'(a)') ' dt not checked as not solving for a vortex'
         return
     end select
     delta_min=delta/2.
