@@ -120,6 +120,9 @@ module initial
           call setup_tangle !init.mod
         case('criss-cross')
           call setup_criss_cross !init.mod
+        !--------all SPH initial conditions below here--------
+        case('SPH_loop')
+          call setup_SPH_loop !init.mod
         case default
           call fatal_error('cdata.mod:init_setup', &
                          'invalid choice for initf parameter') !cdata.mod
@@ -198,7 +201,13 @@ module initial
       case('BS')
         write(*,*) 'using full Biot-Savart integral - scales like O(N^2)'
       case('Rotate')
-        write(*,*) 'by-passing all other velocity fields: prescribing differential rotation'      
+        write(*,*) 'by-passing all other velocity fields: prescribing differential rotation'
+      case('SPH')
+         if (SPH_count>0) then
+            write(*,'(a)') ' using SPH particles for velocity field'
+          else
+            call fatal_error('initial.mod',' SPH_count must be >0 to use this condition')            
+          end if
       case('Tree')
         if (tree_theta<epsilon(0.)) then 
           call fatal_error('init.mod:init_setup', & 
@@ -224,6 +233,11 @@ module initial
     if (two_dim>0) write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
     if (recon_info) write(*,*) 'printing extra reconnection information to file'
     if (switch_off_recon) call warning_message('init.mod','reconnections switched off: I HOPE YOU KNOW WHAT YOUR DOING!')
+    if (boxed_vorticity) then
+      write(*,'(a,i5.3,a)') 'calculating boxed vorticity every ',mesh_shots, ' timesteps'
+      write(*,'(a,i5.3)') 'size of mesh: ',boxed_vorticity_size
+      write(*,'(a)') 'I recommend that you fine tune the mesh size using the matlab routine: vorticity_field.m'
+    end if
     !----------------------gaussian smoothing of field------------------------------
     if (sm_size>0) call setup_smoothing_mesh !smoothing.mod
     !----------------------------magnetic field-------------------------------------
@@ -291,7 +305,6 @@ module initial
     velocity=(quant_circ/(4*pi*radius))*log(8E8*radius)
     write(*,*) 'initf: single loop, radius of loop:', radius
     write(*,*) 'velocity should be:', velocity
-    
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
@@ -1159,6 +1172,51 @@ module initial
       end if
     end do
   end subroutine
+!*************************************************************************
+  !>set up a single loop in the x-y plane, it's size is dictated by the initial 
+  !>number of particles set and the size of \f$\delta\f$, this matches with the 
+  !>initial SPH condition SPH_loop
+  subroutine setup_SPH_loop
+    implicit none
+    real :: radius
+    integer :: i 
+    !check that the velocity field is SPH
+    select case(velocity)
+      case('SPH')
+        !we are OK
+      case default
+        call fatal_error('init.mod','must have SPH velocity field set for this initial condition')
+    end select
+    !check that the initial SPH condition is a loop
+    select case(SPH_init)
+      case('loop')
+        !we are OK
+      case default
+        call fatal_error('init.mod','must have SPH initial condition set to loop')
+    end select
+    !finally check that the initial number of particles are the same
+    if (pcount/=SPH_count) then
+      call fatal_error('init.mod','must have pcount=SPH_count')
+    end if
+    radius=(0.75*pcount*delta)/(2*pi) !75% of potential size 
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount
+      f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
+      f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
+      f(i)%x(3)=0.
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+      !set the sph particle
+      f(i)%sph=i
+    end do   
+  end subroutine
 !****************************************************************
   subroutine setup_mesh
     implicit none
@@ -1191,7 +1249,7 @@ module initial
     implicit none
     real :: delta_min, dt_max
     select case(velocity)
-      case('Off','Rotate')
+      case('Off','Rotate','SPH')
         write(*,'(a)') ' dt not checked as not solving for a vortex'
         return
     end select

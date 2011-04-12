@@ -14,7 +14,7 @@ module sph
   subroutine setup_SPH
     implicit none
     integer :: i
-    real :: rs, rthet, rphi !for sphere intial conditions
+    real :: rs, rthet, rphi !for some intial conditions
     !check that the mass of the particles has been set in run.in
     if (SPH_mass<epsilon(0.)) call fatal_error('setup_SPH',&
                               'mass of SPH particles not set')
@@ -90,6 +90,17 @@ module sph
           else
             s(i)%x=s(i)%x-0.4*box_size
           end if
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+        end do
+      case('loop')
+        !this initial condition is set to interface with the filamemt
+        !rs is based on filament separation
+        rs=(0.75*SPH_count*delta)/(2*pi) !75% of potential size    
+        do i=1, SPH_count      
+          s(i)%x(1)=rs*sin(pi*real(2*i-1)/SPH_count)
+          s(i)%x(2)=rs*cos(pi*real(2*i-1)/SPH_count)
+          s(i)%x(3)=0.
           s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
           s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
         end do

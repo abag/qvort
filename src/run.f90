@@ -15,6 +15,7 @@ program run
   use smoothing 
   use mag
   use sph
+  use matrix
   implicit none
   integer :: i
   logical :: can_stop=.false.
@@ -68,6 +69,9 @@ program run
       call velocity_info !diagnostics.mod
       call energy_info !diagnostics.mod
       call curv_info !diagnostics.mod
+      if (mod(itime, mesh_shots)==0) then
+        if (boxed_vorticity) call get_boxed_vorticity !diganostics.mod
+      end if 
     end if
     !print*, 'here4'
     !--------------now do all data output--------------------------
@@ -121,6 +125,7 @@ program run
     !print*, 'here9'
     !--------------------final sanity checks----------------------
     call NAN_finder !general.mod
+    !print*, 'here10'
     t=t+dt !finish by incrementing time 
   end do
   !deallocate(f,mesh) !tidy up

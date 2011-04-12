@@ -19,6 +19,46 @@ module diagnostic
     deallocate(uinfo)
   end subroutine
   !*************************************************
+  !>get the boxed vorticity by summing circulation vectors in
+  !> a mesh
+  subroutine get_boxed_vorticity()
+    implicit none
+    real, allocatable :: vort_mesh(:,:,:,:)
+    real, allocatable :: vmeshx(:)
+    real :: organised_length
+    integer :: i,j,k !for looping over mesh
+    integer :: vi !for looping over filament
+    allocate(vort_mesh(boxed_vorticity_size,boxed_vorticity_size,boxed_vorticity_size,3))
+    allocate(vmeshx(boxed_vorticity_size+1))
+    !--------------------set the dimensions of the box-----------------
+    do i=1,boxed_vorticity_size+1
+      vmeshx(i)=-box_size/2.+box_size*(i-1)/boxed_vorticity_size;
+    end do
+    !------------------now loop over mesh and set the vorticity---------------
+    vort_mesh=0. !0 this to begin with 
+    do i=1,boxed_vorticity_size ; do j=1, boxed_vorticity_size ; do k=1, boxed_vorticity_size
+      do vi=1,pcount
+        if (f(vi)%infront==0) cycle !check for 'empty' particles
+        !does particle lie within meshpoint?
+        if ((f(vi)%x(1)>vmeshx(i)).and.(f(vi)%x(1)<=vmeshx(i+1))) then
+          if ((f(vi)%x(2)>vmeshx(j)).and.(f(vi)%x(2)<=vmeshx(j+1))) then
+            if ((f(vi)%x(3)>vmeshx(k)).and.(f(vi)%x(3)<=vmeshx(k+1))) then
+              vort_mesh(k,j,i,:)=vort_mesh(k,j,i,:)+(f(vi)%ghosti-f(vi)%x);
+            end if
+          end if
+        end if
+      end do 
+    end do ; end do ; end do
+    !WE MAY WANT TO PRINT TO FILE HERE!!!!!
+    !now sum the vorticity mesh
+    organised_length=sum(vort_mesh)
+    !print this length to file
+    open(unit=72,file='data/organised_line_length.log',position='append')
+      write(72,*) t, organised_length
+    close(72)
+    deallocate(vort_mesh) ; deallocate(vmeshx)
+  end subroutine
+  !*************************************************
   !>calculate the energy of the vortex filament using
   !>the trapezium rule, not valid with periodic b.c.'s
   !>\f[ E=\frac{1}{2} \int_V \mathbf{u}^2 dV=

@@ -12,6 +12,8 @@ module cdata
   !!@param ghosti @param ghostb ghost particles for periodic b.c's
   !!@param infront @param behind flag to make points an orientated filament
   !!@param closest closest particle, used in reconnections
+  !!@param sph particle attached to, 0 if not
+  !!@param sph2 neighbouring sph particles for hermite interpolation
   !!@param closestd separation between closest particle and particle 
   !!@param B magnetic field strength
   type qvort 
@@ -21,6 +23,7 @@ module cdata
     real :: ghosti(3), ghostb(3)
     integer :: infront, behind 
     integer :: closest
+    integer :: sph
     real :: closestd
     real :: delta
     real :: B 
@@ -219,6 +222,8 @@ module cdata
   logical, protected :: vel_print=.false. !prints the full velocity information to file
   logical, protected :: full_B_print=.false. !prints the full magnetic field to file
   logical, protected :: recon_info=.false. !more in depth reconnection information
+  logical, protected :: boxed_vorticity=.false. !smoothed vorticity in a box
+  integer, protected :: boxed_vorticity_size=32 !how big is the mesh for boxed vorticity
   !-------------------------------smoothing-------------------------------------------
   !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
@@ -351,6 +356,10 @@ module cdata
              read(buffer, *, iostat=ios) wave_type !for wave_spec initial conditions
           case ('curv_hist')
              read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
+          case ('boxed_vorticity')
+             read(buffer, *, iostat=ios) boxed_vorticity !do we want vorticity on a mesh?
+          case ('boxed_vorticity_size')
+             read(buffer, *, iostat=ios) boxed_vorticity_size !what is the size of this mesh?
           case ('mirror_print')
              read(buffer, *, iostat=ios) mirror_print !print the mirror filaments
           case ('vel_print')

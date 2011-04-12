@@ -7,6 +7,7 @@ module timestep
   use tree
   use mirror
   use mag
+  use matrix
   contains
   !*************************************************
   !>implement adams bashforth time-stepping scheme to move particles
@@ -27,6 +28,9 @@ module timestep
     select case(velocity)
       case('Rotate')
         call differential_rotation
+        return !exit the routine once applied
+      case('SPH')
+        call SPH_f_interface 
         return !exit the routine once applied
     end select    
     max_error=0.
@@ -340,6 +344,7 @@ module timestep
   !**************************************************************************
   !>apply differential rotation to all the particles
   subroutine differential_rotation()
+    implicit none
     real :: rot_r, rot_theta !for cylindrical coords
     integer :: i !for looping
     do i=1, pcount
@@ -352,4 +357,108 @@ module timestep
       f(i)%x(2)=rot_r*sin(rot_theta) 
     end do
   end subroutine
+  !**************************************************************************
+  !>use SPH particle velocity field
+  subroutine SPH_f_interface()
+    implicit none
+    real :: u_interp(3) !interpolated velocity
+    real :: disti, distb, t_herm !distances
+    real :: mbehind, minfront
+    real :: positions(4,3)
+    real :: Kxstarx(4), Kxstarx_helper(4)
+    real :: Kxx(4,4), Kxxinv(4,4) !gaussian process
+    integer :: i, j, k !for looping
+    integer :: minv_EF
+    integer :: next
+    integer :: infront, iinfront, behind, bbehind
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !empty particle
+      if (f(i)%sph/=0) then 
+        !particle is fixed to it's sph particle
+        f(i)%x=s(f(i)%sph)%x
+      else
+        !cubic hermite interpolation 
+        !find particles infront, behind for interpolation
+        !----------------infront-----------------
+        next=f(i)%infront
+        do j=1, pcount
+          if (f(next)%sph==0) then
+            next=f(next)%infront
+          else
+            infront=next
+            exit
+          end if
+        end do
+        !----------------iinfront-----------------
+        next=f(infront)%infront
+        do j=1, pcount
+          if (f(next)%sph==0) then
+            next=f(next)%infront
+          else
+            iinfront=next
+            exit
+          end if
+        end do
+        !----------------behind-----------------
+        next=f(i)%behind
+        do j=1, pcount
+          if (f(next)%sph==0) then
+            next=f(next)%behind
+          else
+            behind=next
+            exit
+          end if
+        end do
+        !----------------bbehind-----------------
+        next=f(behind)%behind
+        do j=1, pcount
+          if (f(next)%sph==0) then
+            next=f(next)%behind
+          else
+            bbehind=next
+            exit
+          end if
+        end do
+        positions(1,:)=f(bbehind)%x
+        positions(2,:)=f(behind)%x
+        positions(3,:)=f(infront)%x
+        positions(4,:)=f(iinfront)%x
+        !-----------------GP-----------------
+        do j=1, 4
+          do k=1,4
+            Kxx(j,k)=covariance(dist_gen_sq(positions(j,:),positions(k,:)))
+          end do
+          Kxstarx(j)=covariance(dist_gen_sq(f(i)%x,positions(j,:)))
+        end do
+        !inverse matrix
+        call findinv(Kxx, Kxxinv, 4, minv_EF) !matrix.mod
+        if (minv_EF<0) then
+          print*, '------------------matrix---------------'
+          do j=1, 4
+            print*, Kxx(j,:)
+          end do
+          print*, '------------------particles---------------'
+          do j=1, 4
+            print*, positions(j,:)
+          end do
+          print*, '------------------neighbours---------------'
+          print*, 'i=',i,bbehind, behind, infront, iinfront
+          call fatal_error('here','matrix printed above')
+        end if 
+        do j=1, 4
+          Kxstarx_helper(j)=sum(Kxstarx*Kxxinv(j,:))
+        end do
+        f(i)%x=Kxstarx_helper(1)*positions(1,:)+&
+               Kxstarx_helper(2)*positions(2,:)+&
+               Kxstarx_helper(3)*positions(3,:)+&
+               Kxstarx_helper(4)*positions(4,:)
+      end if
+    end do
+  end subroutine
+  !*************************************
+  real function covariance(dist2)
+    implicit none
+    real, intent(IN) :: dist2
+    covariance=exp(-dist2/((5*delta)**2))
+  end function
 end module

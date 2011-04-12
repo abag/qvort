@@ -1,21 +1,17 @@
 --------------required parameters------------
 nsteps 10000
-shots 10
+shots 100
 recon_shots 1
-pcount 300
-dt 2E-2
+pcount 100
+dt 1E-4
 delta 0.001
-box_size 0.1
-velocity Rotate
-initf ellipse
-line_count 10
+box_size 0.05
+velocity Off
+initf single_line
+line_count 1
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-normal_velocity sod
-alpha 1.21 -0.3883
-mesh_size 32
-mesh_shots 10
-tree_theta 0.4
-binary_print T 
-vel_print T
+binary_print F
+switch_off_recon F
+boxed_vorticity T

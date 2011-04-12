@@ -65,6 +65,7 @@ module line
         !get second derivative at i
         call get_deriv_2(i,f_ddot) !general.mod
         curv=sqrt(dot_product(f_ddot,f_ddot)) !get the curvature
+        curv=curv**(-1) !actually we want the inverse
         if (curv**2-0.25*disti**2>0.) then
           !could be negative, avoid this
           f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)+&
@@ -83,7 +84,7 @@ module line
         call get_ghost_p(f(i)%infront,f(f(i)%infront)%ghosti, f(f(i)%infront)%ghostb) !periodic.mod         
         f(i)%infront=par_new
         call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb) !periodic.mod         
-        !finally address the magnetic issue
+        !address the magnetic issue
         if (magnetic) then
           if (f(i)%B<5.*Brms) then
               f(par_new)%B=2*f(i)%B
@@ -92,6 +93,18 @@ module line
             f(par_new)%B=f(i)%B
           end if
         end if 
+        !finally account for SPH matching
+        select case(velocity)
+          case('SPH')
+          !0 the associated particle information
+          f(par_new)%sph=0
+        end select
+        disti=distf(i,f(f(i)%infront)%infront)
+        !print*, i, disti/delta
+        !print*,'--------------------'
+        !print*, i, f(i)%sph
+        !print*, par_new, f(par_new)%sph
+        !print*, f(par_new)%infront, f(f(par_new)%infront)%sph
       end if
     end do
     !calculate average separation of particles
@@ -121,9 +134,14 @@ module line
           end if
         end if
       end if  
-      if (distii<delta) then
+      if (distii<.9*delta) then
         do_remove=.true.
+        !print*, 'rem',i, distii/delta
       end if
+      select case(velocity) 
+        case('SPH')
+          if (f(infront)%sph/=0) do_remove=.false.
+      end select
       if (do_remove) then
         !print to file the curvature of this particle
         infront=f(i)%infront ; tinfront=f(f(i)%infront)%infront
