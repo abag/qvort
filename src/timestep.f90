@@ -198,7 +198,7 @@ module timestep
         do i=1, mesh_size
           !superfluid velocity
           select case(velocity)
-            case('LIA')
+            case('Off, LIA')
               if (itime==1) then
                 write(*,*) 'WARNING, LIA is being used, no superfluid velocity will be calculated on mesh'
               end if

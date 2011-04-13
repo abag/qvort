@@ -12,6 +12,8 @@ line_count 1
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
+normal_velocity KS
+mesh_size 32
 binary_print F
 switch_off_recon F
 boxed_vorticity T
