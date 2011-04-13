@@ -38,6 +38,7 @@ end
 %spectrum
 if u_mrms>0.
   mesh_spectrum(ux,uy,uz,msize,'super',0)
+  mesh_structure_func(x,ux,uy,uz,msize,'super')
 end
 if unorm_mrms>0.
   mesh_spectrum(unormx,unormy,unormz,msize,'normal',0)
