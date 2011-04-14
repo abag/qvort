@@ -62,7 +62,7 @@ module timestep
     if (dt_adapt) then
       !at present done every 5 timesteps this needs to be experimented with
       if (mod(itime,5)==0) then
-        dt=dt*(1E-5/(2*max_error))**(1./3.)
+        dt=dt*(1E-4/(2*max_error))**(1./3.)
         open(unit=34,file='data/adaptive_error.log',position='append')
           write(34,*) t, max_error, (1E-6/(2*max_error))**(1./3.), dt
         close(34)
@@ -175,11 +175,11 @@ module timestep
       call mirror_flux_check(i,u) !mirror.mod
     end if
     !magnetic field
-   ! if (magnetic) then
+    if (magnetic) then
       !This needs to be imporved make the coefficient a variable in run.in
-      !call mag_tension(i,u_B) !mag.mod
-      !u=u+1E-5*u_B
-   ! end if
+      call mag_tension(i,u_B) !mag.mod
+      u=u+1E-4*u_B
+    end if
   end subroutine
   !**************************************************************************
   !>if the mesh size is set to be larger than 0 in run.in then we calculate both

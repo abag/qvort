@@ -241,7 +241,11 @@ module initial
     !----------------------gaussian smoothing of field------------------------------
     if (sm_size>0) call setup_smoothing_mesh !smoothing.mod
     !----------------------------magnetic field-------------------------------------
-    if (magnetic) call setup_mag !mag.mod
+    if (restart) then
+      if (magnetic) write(*,*) 'restored magnetic field'
+    else
+      if (magnetic) call setup_mag !mag.mod
+    end if
     !------------------------------SPH----------------------------------
     if (SPH_count>0) then
       call setup_SPH !sph.mod

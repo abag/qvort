@@ -116,7 +116,7 @@ module general
   !!\f[
   !!\frac{d \mathbf{s}_i}{d \xi}=\frac{\mathbf{s}_{i+1}-\mathbf{s}_{i}}{\ell_i}
   !! \f]
-  real function tangentf(i)
+  function tangentf(i)
     use Cdata
     implicit none
     real, dimension(3) :: tangentf
@@ -129,7 +129,7 @@ module general
   end function
   !*********************************************************************
   !>calculate the normalised tangent vector at point i low order fininte diff.
-  real function norm_tanf(i)    
+  function norm_tanf(i)    
     use Cdata
     implicit none
     real, dimension(3) :: norm_tanf
@@ -144,7 +144,7 @@ module general
   !*********************************************************************
   !>calculate the normalised normal vector at point i:
   !>\f$\hat{\mathbf{s}''}\f$
-  real function normalf(i)
+  function normalf(i)
     use Cdata
     implicit none
     real, dimension(3) :: normalf
@@ -159,7 +159,7 @@ module general
   !*********************************************************************
   !>calculate the normalised binormal vector at point i:
   !>\f$\hat{\mathbf{s}'} \times \hat{\mathbf{s}''}\f$
-  real function binormalf(i)
+  function binormalf(i)
     use Cdata
     implicit none
     real, dimension(3) :: s_dot, s_ddot, binormalf
@@ -175,7 +175,7 @@ module general
   end function
   !*********************************************************************
   !>calculate the cross product of \f$\mathbf{a}\f$ and \f$\mathbf{b}\f$
-  real function cross_product(a,b)
+  function cross_product(a,b)
     implicit none
     real, dimension(3) :: cross_product
     real, dimension(3), intent(IN) :: a, b
