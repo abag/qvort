@@ -27,6 +27,7 @@ for i=1:s(1)
   alpha('clear')
   hold on
 end
+hold off
 axis([xmin xmax ymin ymax zmin zmax]);
 lighting phong 
-view(30,30);
+%view(30,30);
