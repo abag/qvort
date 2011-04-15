@@ -972,6 +972,9 @@ module initial
     end if
     loop_size=int(pcount/line_count)
     loop_radius=loop_size*(0.75*delta)/(2*pi) !75% of potential size
+    write(*,'(a,i5.1,a)') ' drawing ', line_count, ' random loops in the box'
+    write(*,'(a,i5.1,a)') ' each loop contains ', loop_size, ' particles'
+    write(*,'(a,f7.4)') ' radius of each loop: ', loop_radius
     do i=1, line_count
       call random_number(anglex)
       call random_number(angley)
