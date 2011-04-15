@@ -1,0 +1,19 @@
+--------------required parameters------------
+nsteps 1000000
+shots 100
+recon_shots 1
+pcount 200
+dt 2E-5
+delta 0.001
+box_size 0.05
+velocity Tree
+initf random_loops
+line_count 10
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+normal_velocity zero
+alpha 0.1 0.
+tree_theta 0.4
+binary_print T
+one_dim 8096
