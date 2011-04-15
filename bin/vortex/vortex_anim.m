@@ -1,4 +1,4 @@
-%a redundent script, superceded by new options in vortex_plot
+%script is just kept to be used by batch scipt mtlb_anim.sh
 function vortex_anim(start,final,skip)
 if nargin<1
   disp('I at least need finish filenumbers')
@@ -14,9 +14,9 @@ elseif nargin<3
 end
 figure('visible','off');
 for i=start:skip:final
-  vortex_plot(i,'rainbow','dark','overhead')
-  fOUT=sprintf('data/var%03d.png',i)
-  print('-dpng',fOUT)
+  vortex_plot(i,'line')
+  fOUT=sprintf('data/var%04d.eps',i)
+  print('-deps',fOUT)
 end
 figure('visible','on');
 close all
