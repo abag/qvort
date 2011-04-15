@@ -90,7 +90,7 @@ module diagnostic
     integer :: i, peri, perj, perk
     character (len=40) :: print_file
     if (one_dim<1) return
-    write(unit=print_file,fmt="(a,i3.3,a)")"./data/vel_slice_1D",filenumber,".log"
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/vel_slice_1D",filenumber,".log"
     open(unit=32,file=print_file)
     do i=1, one_dim
       x(1)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
@@ -135,7 +135,7 @@ module diagnostic
     integer :: i, j, peri, perj, perk
     character (len=40) :: print_file
     if (two_dim<1) return
-    write(unit=print_file,fmt="(a,i3.3,a)")"./data/vel_slice_2D",filenumber,".dat"
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/vel_slice_2D",filenumber,".dat"
     open(unit=32,file=print_file,status='replace',form='unformatted',access='stream')
     do i=1, two_dim
       do j=1, two_dim

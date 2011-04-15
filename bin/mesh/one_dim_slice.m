@@ -7,7 +7,7 @@ end
 if nargin<3
   fitnorm=fit;
 end
-filename=sprintf('data/vel_slice_1D%03d.log',filenumber);
+filename=sprintf('data/vel_slice_1D%04d.log',filenumber);
 A=load(filename);
 u2=sqrt(A(:,2).^2+A(:,3).^2+A(:,4).^2);
 if std(u2)>0.

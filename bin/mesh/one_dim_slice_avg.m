@@ -19,7 +19,7 @@ if (skip>1)
 end
 counter=1;
 for i=start:skip:final
-  filename=sprintf('data/vel_slice_1D%03d.log',i);
+  filename=sprintf('data/vel_slice_1D%04d.log',i);
   A=load(filename);
   u2=sqrt(A(:,2).^2+A(:,3).^2+A(:,4).^2);
   n=length(A);
@@ -66,7 +66,7 @@ xlabel('log k','FontSize',14)
 %NOW CLEAR ALL AND DO NORMAL FLUID
 counter=1;
 for i=start:skip:final
-  filename=sprintf('data/vel_slice_1D%03d.log',i);
+  filename=sprintf('data/vel_slice_1D%04d.log',i);
   A=load(filename);
   u2=sqrt(A(:,5).^2+A(:,6).^2+A(:,7).^2);
   if u2<=0

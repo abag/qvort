@@ -1,7 +1,7 @@
 function two_dim_slice(start,finish,fitnorm)
 for i=start:finish
   ff=i;
-  filename=sprintf('data/vel_slice_2D%03d.dat',i);
+  filename=sprintf('data/vel_slice_2D%04d.dat',i);
   fid=fopen(filename);
   if fid<0
     disp('2D slice file does not exist, exiting script')
