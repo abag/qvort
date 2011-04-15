@@ -4,7 +4,7 @@ shots 100
 mesh_shots 100
 recon_shots 1
 pcount 10000
-dt 2E-5
+dt 1E-5
 delta 0.001
 box_size 0.05
 velocity Tree
