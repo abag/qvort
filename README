@@ -27,3 +27,5 @@ make
 when compiled the manual can be compiled by typing
 
 acroread manual.pdf
+
+An improved manual can created using doxygen - see http://www.stack.nl/~dimitri/doxygen/index.html for more details
