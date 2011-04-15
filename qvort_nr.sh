@@ -1,10 +1,39 @@
 #!/bin/bash
-#check you have given me an argument
-if test -z "$1"
-then
-  echo "No destination directory set"
+usage() {
+cat <<EOF
+qvort_nr.sh
+---------
+
+DESCRIPTION:
+
+Clone the qvort code to another directory
+
+USAGE:
+
+        run.sh [OPTIONS] new_directory
+
+OPTIONS:        
+        -h
+                    Show usage information.
+EOF
+}
+# Get command line options
+options=`getopt -o compile,protect,quiet,force,help -n run.sh -- "$@"`
+# If no options, show the help
+if [ $# == 0 ]; then
+  echo "No destination directory set, showing help"
+  usage
   exit 1
 fi
+eval set -- "$options"
+while true
+do
+  case "$1" in
+    -h|--help) usage; exit 1;;
+    --) shift ; break ;;
+    *) echo "Invalid flag" ; exit 1 ;;
+  esac
+done
 #THE MOST IMPORTANT LINE IN THIS SCRIPT MAKE SURE IT IS SET CORRECTLY
 PRJ_HOME=${HOME}/Work/code/qvort
 #i will check it at least exists
@@ -64,11 +93,13 @@ if [ ! -d "data" ]; then
   mkdir data
 fi
 #finally create a new startup.m file which contains link to PRJ_HOME
-echo "%to plot a single snapshot run vortex_plot(filenumber)" > startup.m
-echo "%e.g. vortex_plot(1)" >> startup.m
-echo "%to get time series information run ts" >>startup.m
-echo "disp('adding all qvort paths')" >>startup.m
-echo "addpath(genpath('$PRJ_HOME'))" >>startup.m
-echo "disp('type help startup to get simple plotting commands for qvort')" >>startup.m
-echo "successfully cloned qvort to $rundir"
+if [ ! -f "startup.m" ]; then
+  echo "%to plot a single snapshot run vortex_plot(filenumber)" > startup.m
+  echo "%e.g. vortex_plot(1)" >> startup.m
+  echo "%to get time series information run ts" >>startup.m
+  echo "disp('adding all qvort paths')" >>startup.m
+  echo "addpath(genpath('$PRJ_HOME'))" >>startup.m
+  echo "disp('type help startup to get simple plotting commands for qvort')" >>startup.m
+  echo "successfully cloned qvort to $rundir"
+fi
 
