@@ -1,31 +1,12 @@
-to compile the code type
+to compile the code type (note > denotes terminal input)
 
-make
+>make
 
 to run the code type
 
-./run.sh
+>./run.sh
 
-to visualise first open matlab, type
+For a more complete documentation please run 
 
-matlab
-
-to visualise snapshots of the simulation in the matlab window type
-
-vortex_plot(n)
-
-where n is the snapshot you wish to visualise (1,10,999,etc.)
-
-to visualise time series information type the following in the matlab window
-
-ts
-
-for more information please consult the documentation in ./doc, to compile the manual type
-
-make
-
-when compiled the manual can be compiled by typing
-
-acroread manual.pdf
-
-An improved manual can created using doxygen - see http://www.stack.nl/~dimitri/doxygen/index.html for more details
+>doxygen Doxyfile
+>firefox ./doc/html/index.html

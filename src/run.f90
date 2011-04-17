@@ -131,18 +131,50 @@ program run
   !deallocate(f,mesh) !tidy up
 end program
 !------------MAIN PAGE FOR DOXYGEN IS HERE----------------
-!>\mainpage My Personal Index Page
+!>\mainpage Qvort Main Page
 !>\author Andrew Baggaley
 !>\date 2010-2011
-!>\bug Mirror boundary coniditions
-!>\section intro_sec Introduction
+!>\section intro_sec Running the code
+!>to compile the code type (note > denotes terminal input)
 !>
-!>This is the introduction.
+!>>make
 !>
-!>\section install_sec Installation
+!>to run the code type
 !>
-!>\subsection step1 Step 1: Opening the box
-!> 
-!>etc...
-
-
+!>>./run.sh
+!>
+!>more options for starting the code can be found by typing
+!>
+!>>./run.sh -h
+!>\section Plotting
+!>The main visualisation routines for the code are written in matlab,
+!>to visualise first open matlab, type
+!>
+!>>matlab -nosplash -nojvm
+!>
+!>note this confines matlab to a terminal as opposed to the full matlab window.
+!>To visualise snapshots of the simulation in the matlab window type
+!>
+!>>vortex_plot(n)
+!>
+!>where n is the snapshot you wish to visualise (1,10,999,etc.). This is a little slow
+!>for a large number of vortex points, type 
+!>
+!>>help vortex_plot 
+!>
+!>for other options, this also includes information on making a movie from the output.
+!>To visualise time series information type the following in the matlab window
+!>
+!>>ts
+!>\subsection Gnuplot
+!>\section Scripts
+!>I recommend linking the scripts located in ./scripts into you bin, e.g. 
+!>
+!>> ln -s ./scripts/* ~/Bin
+!>
+!>this will allow you to use the qvort_nr (new run) script which is the optimal way to 
+!>launch a new run. Once the script is in your path simply type
+!>
+!>>qvort_nr dir
+!>
+!>where dir is the directory you wish to create the newrun in. 
