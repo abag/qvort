@@ -1275,11 +1275,15 @@ end module
 !!Initial condition for filament is set in run.in throught the parameter initf\n
 !!Options are:\n
 !!- \p single_loop - Single loop in the x-y plane (z=0). The size of the loop is dictated by the number of intial particles set.
+!!\image html single_loop_thumb.png
 !!- \p single_line - Single line from -z to +z (x=y=0). The number of particles needed is set by the box size and delta, pcount is automatically adjusted to fit this.
+!!\image html single_line_thumb.png
 !!- \p random_loops - multiple random loops (number set by the parameter \p line_count) distributed throughout the box. The size of the loops is dictated by the number of loops and the number of intial particles set. You must ensure \p pcount is a multiple of the number of loops
 !!- \p crow - Two lines from -z to +z (x=y=0), anti-parallel to trigger the
 !!crow instability. The number of particles needed is set by the box size and
 !!delta, pcount is automatically adjusted to fit this.
+!!\image html crow_thumb.png
 !!- \p leap-frog - two loops in the x-y plane at z=-delta, z=delta this sets
 !!the loops leapfrogging (not with LIA). 
+!!\image html leap-frog_thumb.png
 

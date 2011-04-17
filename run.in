@@ -1,15 +1,15 @@
 --------------required parameters------------
 nsteps 1000000
-shots 100
+shots 1
 mesh_shots 100
 recon_shots 1
-pcount 10000
+pcount 200
 dt 1E-5
 delta 0.001
 box_size 0.05
 velocity Tree
-initf random_loops
-line_count 1000
+initf crow
+line_count 50
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
