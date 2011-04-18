@@ -10,3 +10,7 @@ For a more complete documentation please run
 
 >doxygen Doxyfile
 >firefox ./doc/html/index.html
+
+Or go to:
+
+http://www.staff.ncl.ac.uk/a.w.baggaley/doxy/html/

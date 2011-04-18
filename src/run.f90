@@ -167,6 +167,16 @@ end program
 !>
 !>>ts
 !>\subsection Gnuplot
+!>To do very simply visualisation of the filaments set the following arguement
+!>in run.in, binary_print F, this will now output formatted data, if there are
+!>then x number of files to process run the following command
+!>
+!>>./scripts/animate_gnuplot.sh x
+!>
+!>this will create x very rough snapshots which can be animated with the
+!>following line:
+!>
+!>>animate data/*.png 
 !>\section Scripts
 !>I recommend linking the scripts located in ./scripts into you bin, e.g. 
 !>

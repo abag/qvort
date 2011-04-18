@@ -4,8 +4,15 @@
 !>added to vortex velocity i.e. \f$\mathbf{u}=\mathbf{u}_\mathrm{force}\f$
 module forcing
   use cdata
+  use general
   !> @param force_direction a helper vector to force a particle in 3 spatial dimensions
   real, private :: force_direction(3)=0. 
+  !> @param LS_k Large scale forcing wavenumber
+  !> @param LS_A Large scale forcing - vector perp to k
+  !> @param LS_B Large scale forcing - vector perp to k
+  real, private :: LS_k(3), LS_A(3), LS_B(3)
+  !> @param LS_k2 Large scale forcing squared wavenumber
+  real :: LS_k2
   contains
   !>check all the necessary conditions to use forcing are set in run.in
   subroutine setup_forcing()
@@ -28,6 +35,8 @@ module forcing
         ' forcing direction changed every ', ceiling(force_freq), 'timesteps'
       case('delta_corr')
         write(*,'(a,f5.3)') 'delta correlated (time/space) forcing with amplitude ', force_amp
+      case('LS_force')
+        write(*,'(a,f5.3)') 'large scale forcing (similar to KS) with amplitude ', force_amp
       case default
         call fatal_error('forcing.mod:setup_forcing', &
         'incorrect forcing parameter set in run.in') !cdata.mod
@@ -69,7 +78,53 @@ module forcing
         force_direction=force_direction/sqrt(dot_product(force_direction,force_direction))
         !use this as the forcing
         u=force_direction*force_amp
+      case('LS_force')
+        !this has it's own subroutine
+        if (i==1) then
+          !only do this once per time-step
+          call get_LS_kAB!forcing.mod
+          if (mod(itime,shots)==0) then
+            !print to file
+            open(unit=47,file='./data/LS_forcing.log',position='append')
+              write(47,*) LS_k, LS_A, LS_B
+            close(47)
+          end if 
+        end if
+        u=cross_product(LS_A,LS_k)*sin(dot_product(LS_k,f(i)%x))+cross_product(LS_B,LS_k)*cos(dot_product(LS_k,f(i)%x))/LS_k2
+        !use this as the forcing-multiply by amplitude
+        u=u*force_amp
     end select
+  end subroutine
+  !***********************************************
+  !>Large scale forcing routine, very similar to KS with one
+  !>random large scale mode, this sets up k, A and B for use in
+  !>main forcing routine
+  subroutine get_LS_kAB
+    real,dimension(3) ::  newa, newb, unitk !helper 
+    integer :: i
+    !create random vectors
+    call random_number(newa) ; call random_number(newb)
+    newa=2.*newa-1. ; newa2=2.*newa2-1.
+    newa=newa/(sqrt(sum(newa**2))) ; newb=newb/(sqrt(sum(newb**2)))
+    !generate random wavevector
+    LS_k=.0
+    do while (sum(LS_k)<epsilon(0.))
+      do i=1,3
+        call random_number(LS_k(i))
+        if (LS_k(i)<0.33333) then
+          LS_k(i)=1.
+        else if (LS_k(i)<0.666) then
+          LS_k(i)=-1
+        else
+          LS_k(i)=0.
+        end if
+      end do
+    end do
+    LS_k=LS_k*2*pi/box_size !scale by 2\pi for periodicity - box size must enter here
+    LS_k2=sqrt(sum(LS_k**2))
+    unitk=LS_k/LS_k2 !unit vector
+    !create A and B by taking cross product of newa/b with unit k
+    LS_A=cross_product(newa,unitk) ; LS_B=cross_product(newb,unitk)
   end subroutine
   !***********************************************
   !>a general forcing routine which accepts a position
@@ -96,7 +151,20 @@ module forcing
         !use this as the forcing
         u=force_direction*force_amp
       case default
-        call fatal_error('forcing.mod','this forcing function is not compatable with a general call')
+        call fatal_error('forcing.mod','this forcing function is not compatible with a general call')
     end select
   end subroutine
 end module
+!> \page forcing forcing
+!!Forcing of filaments is set in run.in throught the parameter
+!!force this accepts the following arguements\n
+!!
+!!\p zero - no forcing, this is the default \n
+!!\p box_shake - correlated forcing moving box randomly with frequency set by
+!!\p force_feq in run.in \n
+!!\p delta_corr - delta correlated forcing in time and space with amplitude set
+!!by \p force_amp parameter \n
+!!\p top_boundary - sinusoidal forcing in the x direction at the top of the box
+!!with a frequency and amplitude set in run.in (force_freq, force_amp)\n
+!!\p LS_force - please document me\n
+

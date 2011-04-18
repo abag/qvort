@@ -1,5 +1,7 @@
+!>matrix all routines related to the matrix augmentation are in this module
 module matrix
   contains
+  !>get the inverse of n by n matrix
   subroutine findinv(matrix, inverse, n, errorflag)
 	implicit none
 	!declarations

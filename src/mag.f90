@@ -158,3 +158,5 @@ module mag
     close(98)
   end subroutine
 end module
+!>\page mag magnetic fields
+!>Please fill me in!

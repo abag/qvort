@@ -44,8 +44,8 @@ module initial
       write(*,'(a,f6.2,a,f8.1)') ' simulating phonon emission, cutoff is ', 100*phonon_percent, '% of max:', 2/delta
     end if
     !how is data being outputted (binary or formatted)
-    if (binary_print) then
     write(*,'(a)') ' ---------------------DATA FORMAT--------------------' 
+    if (binary_print) then
       write(*,*) 'binary data output, formatted data can be selected in run.in'
     else
       write(*,*) 'formatted data output selected in run.in'
@@ -1279,6 +1279,7 @@ end module
 !!- \p single_line - Single line from -z to +z (x=y=0). The number of particles needed is set by the box size and delta, pcount is automatically adjusted to fit this.
 !!\image html single_line_thumb.png
 !!- \p random_loops - multiple random loops (number set by the parameter \p line_count) distributed throughout the box. The size of the loops is dictated by the number of loops and the number of intial particles set. You must ensure \p pcount is a multiple of the number of loops
+!!\image html random_loops_thumb.png
 !!- \p crow - Two lines from -z to +z (x=y=0), anti-parallel to trigger the
 !!crow instability. The number of particles needed is set by the box size and
 !!delta, pcount is automatically adjusted to fit this.
@@ -1286,4 +1287,15 @@ end module
 !!- \p leap-frog - two loops in the x-y plane at z=-delta, z=delta this sets
 !!the loops leapfrogging (not with LIA). 
 !!\image html leap-frog_thumb.png
+!!- \p criss-cross - random lines criss-crossing the box
+!!\image html criss-cross_thumb.png
+!!- \p tangle - curved lines from -z to +z which will drive a tangle, 
+!!superceeded in many ways by criss-cross but kept for posterity.
+!!\image html tangle_thumb.png
+!!- \p wave_line -  lines from -z to z with wave pertubations added, these can
+!!be either helical or planar with an imposed spectra and wave count. Relevant
+!!parameters in run.in are wave_count, wave_slope (spectral slope), wave_amp 
+!!(amplitude of pertubations) and wave_type (planar or helical). Note there is
+!!also the wave_loop intial condition which is very similar.
+!!\image html wave_line_thumb.png
 

@@ -338,10 +338,10 @@ end module
 !!Normal fluid velocity field is set in run.in throught the parameter normal_velocity\n
 !!Options are:\n
 !!- \p zero - no flow, friction only
-!!- \p ABC - \f$u=(B\cos(x),C\sin(y))\f$ \n
-!!- \p xflow - \f$u=(u_x,0,0)\f$ \n
+!!- \p ABC - \f$\mathbf{u}=(\cos y+\sin z,\sin x+\cos z, \cos x+\sin y)\f$ \n
+!!- \p xflow - \f$\mathbf{u}=(u_x,0,0)\f$ \n
 !!- \p taylor-green \n
 !!- \p KS - multi-scale model of turbulence see KSmodel
-!!- \p shear - \f$u=(0,0,u_0\exp(-z^2))\f$ \n
-!!- \p galloway-proctor \n
-!!- \p compressible - a compressible flow \f$u=\nabla\phi\f$, where \f$\phi\f$ is a random scalar field
+!!- \p shear - \f$\mathbf{u}=(0,0,u_0\exp(-z^2))\f$ \n
+!!- \p galloway-proctor  \f$\mathbf{u}=(\sin(y+\cos t)),-\cos(x+\sin t),\sin(x+\sin(t))+\cos(y+\cos(t)))\f$ \n
+!!- \p compressible - a compressible flow \f$\mathbf{u}=\nabla\phi\f$, where \f$\phi\f$ is a random scalar field
