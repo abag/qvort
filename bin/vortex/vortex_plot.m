@@ -5,21 +5,28 @@
 %            rough: plots particles only advised for a large number of particles
 %            line: looks better than above a nice compromise
 %            dark: add a night time theme!
-%	         rainbow: colour code the vortex according to velocity
-%	         magnetic: colour code a magnetic flux tube according to log2(B)
+%	     rainbow: colour code the vortex according to velocity
+%	     magnetic: colour code a magnetic flux tube according to log2(B) -this automatically switches on rainbow
 %            overhead: angle the plot overhead
+%            show_points: will only work if line is set, shows points as well as lines, ignored if rainbow set
 %            print: print to file rather than screen
 %            eps: if print is set and eps is set then output eps files
-%            movie: make a movie by outputting lots of pngs
+%            movie: make a movie by outputting lots of pngs - for batch mode use vortex_anim.m
 %
 function vortex_plot(filenumber,varargin)
 optargin = size(varargin,2);
+%check filenumber has been set
+if exist('filenumber')==0
+  disp('you have not set filnumber')
+  disp('aborting code and type "help vortex_plot" for more options')
+  return
+end
 filename=sprintf('data/var%04d.log',filenumber);
 %we set the dimensions of the box here
 %this is overridden if we have periodic B.C.'s
 box_size=.005 ;
 %set options based on varargin
-rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ; magnetic=0;
+rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ; magnetic=0; show_points=0 ; 
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'rough'
@@ -34,6 +41,8 @@ for i=1:optargin
       figure('visible', 'off')
     case 'rainbow'
       rainbow=1;
+    case 'show_points'
+      show_points=1;
     case 'magnetic'
       rainbow=0; %switchoff-rainbow will be switched on later  
       magnetic=1;
@@ -203,7 +212,11 @@ for j=1:number_of_particles
             end
             plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(ceil(u(j)),:),'LineWidth',2.0)
           else
-            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2.0)
+            if show_points==1
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',2)
+            else
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2.0)
+            end 
           end
         else
           if rainbow==1
@@ -212,7 +225,11 @@ for j=1:number_of_particles
             end
             plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(ceil(u(j)),:),'LineWidth',2.0)
           else
-            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)
+            if show_points==1
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',2)
+            else
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)
+            end 
           end
         end
       else

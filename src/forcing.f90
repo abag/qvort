@@ -1,7 +1,9 @@
 !> all the routines to employ forcing in the code note this is different to the normal velocity for a vortex system
 !> normal fluid enters as \f$\mathbf{u}=\alpha \mathbf{s}' \times (\mathbf{u}_\mathrm{n}-\mathbf{u}_\mathrm{s})+
 !>\alpha' \mathbf{s}' \times [\mathbf{s}' \times (\mathbf{u}_\mathrm{n}-\mathbf{u}_\mathrm{s})]\f$ whereas forcing is directly
-!>added to vortex velocity i.e. \f$\mathbf{u}=\mathbf{u}_\mathrm{force}\f$
+!>added to vortex velocity i.e.
+!>\f$\mathbf{u}=\mathbf{u}_\textrm{vortex}+\mathbf{u}_\mathrm{force}\f$.
+!>See \ref FORCE for more details.
 module forcing
   use cdata
   use general
@@ -155,7 +157,7 @@ module forcing
     end select
   end subroutine
 end module
-!> \page forcing forcing
+!> \page FORCE Forcing
 !!Forcing of filaments is set in run.in throught the parameter
 !!force this accepts the following arguements\n
 !!

@@ -1,5 +1,5 @@
 !>all routines related to the filaments acting as magnetic flux tubes are in this
-!>module
+!>module, see \ref MAG for details of the algorithms used.
 module mag
   use cdata
   use general
@@ -175,5 +175,5 @@ module mag
     close(98)
   end subroutine
 end module
-!>\page mag magnetic fields
+!>\page MAG magnetic fields
 !>Please fill me in!

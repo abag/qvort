@@ -1,7 +1,7 @@
 !>The particles aspect of the code. At present this evolves either fluid or
 !>inertial particles in the code. The type of particle is set by the
 !>particle_type parameter in run.in Fluid/Inertial particles use the 
-!>normal fluid velocity. The initial setup of the particles is set throught the initp parameter.
+!>normal fluid velocity. The initial setup of the particles is set throught the initp parameter. See \ref PARTICLES for more details
 module particles
   use cdata
   use general
@@ -213,3 +213,21 @@ module particles
     close(78)
   end subroutine
 end module 
+!>\page PARTICLES Fluid/Inertial particles
+!!Initial condition for particles is set in run.in through the parameter initp.\n
+!!Particle count is set in run.in through the parameter part_count.\n
+!!Options are:\n
+!!- \p one_side - All particles on one side of the box
+!!\image html par_one_side_thumb.png
+!!- \p random - random positions within the box
+!!\image html par_random_thumb.png
+!!- \p pairs - Particles in pairs randomly placed within the box, can be used to look at two-particle dispersion.
+!!\image html par_pairs_thumb.png
+!!
+!!We can choose between particle type using the particle_count parameter in run.in, options available are:\n
+!!
+!!- \p fluid - Default option, massless particles \f${d\mathbf{x}_i}/{dt}=u(\mathbf{x}_i,t)\f$, the following plot shows the trajectories of 100 particles in the ABC flow:
+!!\image html ABC_stokes_0_thumb.png 
+!!- \p inertial - Particles have a mass therefore feel a stokes drag: 
+!!\f[\frac{d\mathbf{x}_i}{dt}=\mathbf{u}_i, \qquad \frac{d\mathbf{u}_i}{dt}=\frac{u(\mathbf{x}_i,t)-\mathbf{u}_i}{\tau},\f] where \f$\tau\f$ is the stokes number. Note we define the reciprocal of the stokes number in run.in via the parameter part_stokes. The following plot shows the trajectories of 100 particles in the ABC flow with a stokes number 1:
+!!\image html ABC_stokes_1_thumb.png

@@ -1272,7 +1272,7 @@ module initial
 end module
 !******************************************************************
 !>\page INIT Initial condition for filament
-!!Initial condition for filament is set in run.in throught the parameter initf\n
+!!Initial condition for filament is set in run.in through the parameter initf\n
 !!Options are:\n
 !!- \p single_loop - Single loop in the x-y plane (z=0). The size of the loop is dictated by the number of intial particles set.
 !!\image html single_loop_thumb.png

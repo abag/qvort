@@ -166,6 +166,8 @@ end program
 !>To visualise time series information type the following in the matlab window
 !>
 !>>ts
+!>
+!>More information on matlab visualisation can be found at \ref MATLAB
 !>\subsection Gnuplot
 !>To do very simply visualisation of the filaments set the following arguement
 !>in run.in, binary_print F, this will now output formatted data, if there are
@@ -188,3 +190,44 @@ end program
 !>>qvort_nr dir
 !>
 !>where dir is the directory you wish to create the newrun in. 
+!>\page MATLAB Matlab visualisation
+!>Eventually all the matlab routines should be documented here.
+!>vortex_plot.m - the main vortex plotting routine, run this with a filenumber as an input, e.g.\n
+!>
+!>>vortex_plot(1) \n
+!>
+!>the routine will also take the follwing options in the form vortex_plot(n,'option1','option2') e.g.\n
+!>
+!>options are:\n
+!>
+!>   - rough: plots particles only advised for a large number of particles \n
+!>   - line: looks better than above a nice compromise\n
+!>   - dark: add a night time theme!\n
+!>   - rainbow: colour code the vortex according to velocity\n
+!>   - magnetic: colour code a magnetic flux tube according to log2(B) -this automatically switches on rainbow\n
+!>   - overhead: angle the plot overhead\n
+!>   - show_points: will only work if line is set, shows points as well as lines, ignored if rainbow set\n
+!>   - print: print to file rather than screen\n
+!>   - eps: if print is set and eps is set then output eps files\n
+!>   - movie: make a movie by outputting lots of pngs - for batch mode use vortex_anim.m\n
+!>
+!>ts.m - read in the time series file (data/ts.log) and plot various dignostic information 
+!>if given the option print will print to .eps file rather than screen, at present the following information
+!>is plotted:
+!>
+!> - figure 1 - vortex point information
+!>   -# t vs particle count
+!>   -# t vs reconnection count
+!>   -# t vs mean particle separation (between neighbours)
+!>   -# t vs total line length
+!> - figure 2 - velocity information
+!>   -# t vs maximum velocity
+!>   -# t vs maximum change of velocity
+!> - figure 3 - number of evaluations (per point)
+!> - figure 4 - mean curvature
+!> - figure 5 - number of particles removed (not in reconnections)
+!>
+!> if fluid particle are in the code additional information will be plotted
+
+
+

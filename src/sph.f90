@@ -1,4 +1,4 @@
-!>SPH smooth paricle hydrodynamics.
+!>SPH smooth paricle hydrodynamics - see \ref SPH
 module sph
   use cdata
   use general
@@ -439,22 +439,21 @@ module sph
   subroutine SPH_f_interface()
     implicit none
     real :: u_interp(3) !interpolated velocity
-    real :: disti, distb, t_herm !distances
-    real :: mbehind, minfront
-    real :: positions(4,3)
-    real :: Kxstarx(4), Kxstarx_helper(4)
-    real :: Kxx(4,4), Kxxinv(4,4) !gaussian process
-    integer :: i, j, k !for looping
-    integer :: minv_EF
-    integer :: next
-    integer :: infront, iinfront, behind, bbehind
+    integer :: i, j !for looping
+    real :: dist !distance between particles 
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       if (f(i)%sph/=0) then 
         !particle is fixed to it's sph particle
         f(i)%x=s(f(i)%sph)%x
       else
-        !interpolate velocity field
+        u_interp=0.
+        do j=1, SPH_count
+          dist=dist_gen(f(i)%x,s(j)%x) !distance between point and sph particle
+          u_interp=u_interp+s(j)%u*s(j)%m*sph_W(dist,.95*s(j)%h)/s(j)%rho
+        end do
+        !now timestep
+        f(i)%x=f(i)%x+dt*u_interp
       end if
     end do
   end subroutine
@@ -564,7 +563,7 @@ module sph
     covariance=exp(-dist2/((5*delta)**2))
   end function
 end module
-!>\page SPH 
+!>\page SPH Smoothed Particle Hydrodynamics
 !>The M4 cubic spline kernel (Monaghan \& Lattanzio 1985) is used in many implementations of SPH, due to its simple form and its compact support.  The M4 kernel is a function of \f$s\equiv r/h\f$ only. For \f$D=1,\;2,\;{\rm and}\;3\,\f$ dimensions, it takes the form
 !>\f{eqnarray}{
 !>W (s) &=& \frac{\sigma_{\!_D}}{h^D} 

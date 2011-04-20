@@ -1,3 +1,5 @@
+%plot a PDF of the curvature of points that have been removed from
+%the filament, useful if you have set phone_emission T in run.in
 function rm_curv
 A=load('./data/removed_curv.log');
 B=load('data/curvature.log');

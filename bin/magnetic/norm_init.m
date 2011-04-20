@@ -23,7 +23,6 @@ uz=reshape(uz,msize,msize,msize);
 unorm=max(sqrt(ux.^2+uy.^2+uz.^2));
 figure('Name','u(x)')
   plot(squeeze(ux(32,32,:)))
-return
 %plot slices of field+isosurface
 mesh_slices(x,ux,uy,uz,msize,'initial normal fluid')
 

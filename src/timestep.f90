@@ -32,6 +32,7 @@ module timestep
         return !exit the routine once applied
       case('SPH')
         call SPH_f_interface  !sph.mod
+        !call SPH_f_interp !sph.mod
         return !exit the routine once applied
     end select    
     max_error=0.

@@ -339,9 +339,15 @@ end module
 !!Options are:\n
 !!- \p zero - no flow, friction only
 !!- \p ABC - \f$\mathbf{u}=(\cos y+\sin z,\sin x+\cos z, \cos x+\sin y)\f$ \n
+!! \image html NF_ABC_thumb.png
 !!- \p xflow - \f$\mathbf{u}=(u_x,0,0)\f$ \n
-!!- \p taylor-green \n
+!!- \p taylor-green - \f$\mathbf{u}=(\sin(x)\cos(y)\cos(z),-\cos(x)\sin(y)\cos(z),0)\f$\n
+!! \image html NF_TG_thumb.png
 !!- \p KS - multi-scale model of turbulence see KSmodel
+!! \image html NF_KS_thumb.png
 !!- \p shear - \f$\mathbf{u}=(0,0,u_0\exp(-z^2))\f$ \n
-!!- \p galloway-proctor  \f$\mathbf{u}=(\sin(y+\cos t)),-\cos(x+\sin t),\sin(x+\sin(t))+\cos(y+\cos(t)))\f$ \n
+!! \image html NF_shear_thumb.png
+!!- \p galloway-proctor - \f$\mathbf{u}=(\sin(y+\cos t)),-\cos(x+\sin t),\sin(x+\sin(t))+\cos(y+\cos(t)))\f$ \n
+!! \image html NF_GP_thumb.png
 !!- \p compressible - a compressible flow \f$\mathbf{u}=\nabla\phi\f$, where \f$\phi\f$ is a random scalar field
+!! \image html NF_comp_thumb.png

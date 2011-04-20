@@ -1,4 +1,5 @@
 %script is just kept to be used by batch scipt mtlb_anim.sh
+%uses vortex_plot.m to create snapshots of filament
 function vortex_anim(start,final,skip)
 if nargin<1
   disp('I at least need finish filenumbers')

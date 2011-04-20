@@ -1,4 +1,5 @@
-%read in the ts file and plot various dignostic information
+%read in the ts file and plot reconnection information
+%you must have set recon_info T in run.in
 %if given the option print will print to .eps file rather than screen
 function ts(option)
 if nargin==0     

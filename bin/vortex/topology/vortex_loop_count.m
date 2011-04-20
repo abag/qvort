@@ -1,3 +1,5 @@
+%how many distinct vortex/magnetic filaments do we have in the simulation at 
+%present
 function vortex_loop_count(filenumber)
 filename=sprintf('data/var%03d.log',filenumber)
 fid=fopen(filename);
