@@ -33,6 +33,7 @@ module mag
     f(:)%B=B_init
     !"f(1:20)%B=4*B_init
     if (full_B_print) write(*,*) 'printing full B field to file'
+    write(*,'(a,e10.4)') ' magnetic tension coefficient ', B_tension
   end subroutine
   !**********************************************************************
   !>simulate the effect of the lorentz force by adding in magnetic tension 
@@ -62,6 +63,22 @@ module mag
       call get_deriv_2(i,u)
       u=u*(f(i)%B**2)
     end if
+  end subroutine
+    !**********************************************************************
+  !>simulate the effect of the lorentz force by adding in magnetic tension 
+  !>to velocity calculations, this includes the mirror force:
+  !>\f[\mathbf{J} \times \mathbf{B}=B d{\mathbf{B}}/ds\f]
+  subroutine mag_tension_mirr(i,u)
+    implicit none
+    integer,intent(IN) :: i !particle
+    real, intent(OUT) :: u(3) !tension velocity
+    real, dimension(3) :: B_infront, B_behind
+    real :: disti, distb
+    disti=dist_gen(f(i)%ghosti,f(i)%x)
+    distb=dist_gen(f(i)%ghostb,f(i)%x)
+    B_infront=f(i)%B*(f(i)%ghosti-f(i)%x)/disti
+    B_behind=f(f(i)%behind)%B*(f(i)%x-f(i)%ghostb)/distb
+    u=2.*(B_infront-B_behind)/(disti+distb)
   end subroutine
   !**********************************************************************
   !>use greens function for diffusion operator to smooth the field

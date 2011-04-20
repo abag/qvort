@@ -5,7 +5,8 @@
 %            rough: plots particles only advised for a large number of particles
 %            line: looks better than above a nice compromise
 %            dark: add a night time theme!
-%	     rainbow: colour code the vortex according to velocity
+%	         rainbow: colour code the vortex according to velocity
+%	         magnetic: colour code a magnetic flux tube according to log2(B)
 %            overhead: angle the plot overhead
 %            print: print to file rather than screen
 %            eps: if print is set and eps is set then output eps files
@@ -18,7 +19,7 @@ filename=sprintf('data/var%04d.log',filenumber);
 %this is overridden if we have periodic B.C.'s
 box_size=.005 ;
 %set options based on varargin
-rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ;
+rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ; magnetic=0;
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'rough'
@@ -33,6 +34,12 @@ for i=1:optargin
       figure('visible', 'off')
     case 'rainbow'
       rainbow=1;
+    case 'magnetic'
+      rainbow=0; %switchoff-rainbow will be switched on later  
+      magnetic=1;
+      Bmax=128;
+      disp(sprintf('maximum field strength is %f',Bmax))
+      disp('at present you must edit this file to change this')
     case 'movie'
           disp('I am going to create a movie')
           disp('Before we begin shall I delete all the old snapshot pngs?')
@@ -167,6 +174,14 @@ if rainbow==1
   rainbow_scale=199/max(u) ;
   u=u*rainbow_scale;
   rainbowcmap=colormap(jet(200));
+end
+if magnetic==1
+  rainbow=1; %swich on rainbow
+  %scale field into a colormap
+  store_caxis=([-8 log2(Bmax)]);
+  u=floor(log2(u))+10;
+  min(u) ; max(u) ;
+  rainbowcmap=colormap(jet(floor(log2(Bmax))+11));
 end
 %now create vectors to plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for j=1:number_of_particles

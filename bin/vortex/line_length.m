@@ -15,15 +15,15 @@ figure('Position',[1 scrsz(4) scrsz(3)/1.2 scrsz(4)/2],'PaperPosition',[0.25 2.5
     xlabel('t','FontSize',14)
     ylabel('l','FontSize',14)
   subplot(1,2,2)
-    plot(log(t),log(l),'-b','LineWidth',2);
+    plot(t,log(l),'-b','LineWidth',2);
     hold on
     for i=1:sections
       start=floor((i-1)/sections*length(t)+1);
       finish=ceil(i/sections*length(t));
-      p=polyfit(log(t(start:finish)),log(l(start:finish)),1);
-      dummy_ll=p(1)*log(t(start:finish))+p(2);
-      plot(log(t(start:finish)),dummy_ll,'-.r','LineWidth',2);
-      text(log(t(floor(start/2+finish/2))),dummy_ll(floor(length(dummy_ll)/2))-0.05*(max(log(l))-min(log(l))),num2str(p(1)),'FontSize',14)
+      p=polyfit((t(start:finish)),log(l(start:finish)),1);
+      dummy_ll=p(1)*(t(start:finish))+p(2);
+      plot((t(start:finish)),dummy_ll,'-.r','LineWidth',2);
+      text((t(floor(start/2+finish/2))),dummy_ll(floor(length(dummy_ll)/2))-0.05*(max(log(l))-min(log(l))),num2str(p(1)),'FontSize',14)
     end
     hold off
     xlabel('t','FontSize',14)

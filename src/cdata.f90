@@ -233,6 +233,7 @@ module cdata
   logical, protected :: magnetic=.false. !no by defult
   real, protected :: B_init=1. !initial field strength 
   real, protected :: B_nu=0. !switched off by default
+  real, protected :: B_tension=0. !magnetic tension coeff.
   logical, protected :: B_3D_nu=.false. !1/3D diffusion 
   !----------------------------code testing---------------------------------------
   logical, protected :: switch_off_recon=.false.
@@ -392,6 +393,8 @@ module cdata
              read(buffer, *, iostat=ios) B_nu !magnetic diffusivity
           case ('B_3D_nu')
              read(buffer, *, iostat=ios) B_3D_nu !is diffusion 3D?
+          case ('B_tension')
+             read(buffer, *, iostat=ios) B_tension !magnetic tension coeff.
           case ('full_B_print')
              read(buffer, *, iostat=ios) full_B_print !print full B info
            case ('SPH_count')
