@@ -187,6 +187,7 @@ module line
   !>reconnect filaments if they become too close removing the two points
   !>which are reconnected, the two closest points. This is routine
   !>is not used in the code at present but could be useful for flux tube sims.
+  !>\todo Make this the default reconnection routine for magnetic filaments
   subroutine precon_dissapitive
     implicit none
     real :: distr, min_distr !reconnection distances
@@ -207,7 +208,7 @@ module line
         !these two could have reconnected earlier in this case j will be empty
         if (f(j)%infront==0) cycle
         parji=f(j)%infront ; parjb=f(j)%behind
-        !we can reconnect based on distance
+        !we can reconnect based on distancerecon
         !now check whether parallel
         tangent1=norm_tanf(i) ; tangent2=norm_tanf(j) !general.mod
         dot_val=dot_product(tangent1,tangent2) !intrinsic function

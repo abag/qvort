@@ -7,8 +7,7 @@ module timestep
   use tree
   use mirror
   use mag
-  use matrix
-  use sph
+  use sph_interface
   contains
   !*************************************************
   !>implement adams bashforth time-stepping scheme to move particles
@@ -31,8 +30,7 @@ module timestep
         call differential_rotation
         return !exit the routine once applied
       case('SPH')
-        call SPH_f_interface  !sph.mod
-        !call SPH_f_interp !sph.mod
+        call SPH_f_interp  !sph_interface.mod
         return !exit the routine once applied
     end select    
     max_error=0.

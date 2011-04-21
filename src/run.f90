@@ -14,8 +14,7 @@ program run
   use mirror
   use smoothing 
   use mag
-  use sph
-  use matrix
+  use sph_interface
   implicit none
   integer :: i
   logical :: can_stop=.false.
@@ -24,6 +23,7 @@ program run
   call read_run_file !cdata.mod
   !initial conditions - checks for restart?
   call init_setup !initial.mod
+  if (seg_fault) write(*,*) 'here1'
   !print dimensions info for matlab plotting
   call print_dims !output.mod
   !begin time loop
@@ -34,33 +34,39 @@ program run
     if (tree_theta>0) then
       call construct_tree !tree.mod
     end if
+    if (seg_fault) write(*,*) 'here2'
     !---------------------create mirror array----------------------
     if (mirror_bc) call mirror_init !mirror.mod
     !---------------------velocity operations----------------------
     call pmotion !timestep.mod
-    !print*, 'here1'
+    if (seg_fault) write(*,*) 'here3'
     if (mod(itime,mesh_shots)==0) then
       call mesh_velocity !timestep.mod
       if (sm_size>0) call get_smoothed_field !smoothing.mod
     end if
-    !print*, 'here2'
+    if (seg_fault) write(*,*) 'here4'
     !---------------------line operations--------------------------
     call pinsert !line.mod
     if (magnetic) then
-      !------------------magnetic diffusion------------
+      !magnetic diffusion
       if (B_nu>epsilon(0.)) call B_diffusion !mag.mod
     end if
+    if (seg_fault) write(*,*) 'here5'
     if (mod(itime, recon_shots)==0) then
       if (tree_theta>0) then
-        !we may need to empty the tree and then redraw it at this point
+        !\todo we may need to empty the tree and then redraw it at this point
         call pclose_tree !tree.mod
       else
         call pclose !line.mod
       end if
       if (switch_off_recon.eqv..false.) call precon !line.mod
-      call premove !line.mod 
+      call premove !line.mod  \todo switchoff premove in run.in
+      select case(velocity) ; case('SPH')
+          !if we have SPH particles can we latch onto them?
+          call SPH_f_latch !sph_interface.mod
+      end select
     end if
-    !print*, 'here3'
+    if (seg_fault) write(*,*) 'here6'
     if(periodic_bc) call enforce_periodic !periodic.mod
     !---------------once all algorithms have been run--------------
     t=t+dt  !increment the time
@@ -73,7 +79,7 @@ program run
         if (boxed_vorticity) call get_boxed_vorticity !diganostics.mod
       end if 
     end if
-    !print*, 'here4'
+    if (seg_fault) write(*,*) 'here7'
     !--------------now do all data output--------------------------
     if (mod(itime, shots)==0) then
       !store data to a binary file for reload
@@ -93,25 +99,25 @@ program run
       end if
       if (magnetic) call B_ts !mag.mod
     end if
-    !print*, 'here5'
+    if (seg_fault) write(*,*) 'here8'
     !---do we have particles in the code - if so evolve them
     if (quasi_pcount>0) call quasip_evolution !quasip.mod
     if (part_count>0) call particles_evolution !particles.mod
     if (SPH_count>0) call SPH_evolution !sph.mod
-    !print*, 'here6'
+    if (seg_fault) write(*,*) 'here9'
     !-------------------remove the tree----------------------------
     if (tree_theta>0) then
       call empty_tree(vtree) !empty the tree to avoid a memory leak
       deallocate(vtree%parray) ; deallocate(vtree)
       nullify(vtree) !just in case!
     end if
-    !print*, 'here7'
+    if (seg_fault) write(*,*) 'here10'
     !---------------------close mirror array-----------------------
     if (mirror_bc) then
       !call mirror_checker !mirror.mod THIS DOESNT EXIST!!!!?
       call mirror_close !mirror.mod
     end if
-    !print*, 'here8'
+    if (seg_fault) write(*,*) 'here11'
     !---------------------special data dump------------------------
     if ((itime/=0).and.(itime==int_special_dump)) call sdata_dump
     !---------------------can we exit early------------------------
@@ -122,7 +128,7 @@ program run
         stop
       end if
     end if
-    !print*, 'here9'
+    if (seg_fault) write(*,*) 'here12'
     !--------------------final sanity checks----------------------
     call NAN_finder !general.mod
     !print*, 'here10'

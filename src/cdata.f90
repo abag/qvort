@@ -236,7 +236,8 @@ module cdata
   real, protected :: B_tension=0. !magnetic tension coeff.
   logical, protected :: B_3D_nu=.false. !1/3D diffusion 
   !----------------------------code testing---------------------------------------
-  logical, protected :: switch_off_recon=.false.
+  logical, protected :: switch_off_recon=.false.!turns of reconnection algorithm
+  logical, protected :: seg_fault=.false.!use print statements to try and isolate segmentation faults
   contains
   !*************************************************************************************************  
   !>read the file run.in obtaining all parameters at runtime, avoiding the need to recompile the code
@@ -381,6 +382,8 @@ module cdata
              read(buffer, *, iostat=ios) recon_info !extra reconnection information
           case ('switch_off_recon')
              read(buffer, *, iostat=ios) switch_off_recon !for test cases only!
+          case ('seg_fault')
+             read(buffer, *, iostat=ios) seg_fault !use print statements to find segmentation faults
           case ('smoothing_length')
              read(buffer, *, iostat=ios) smoothing_length !length we are smoothing over (delta)
           case ('sm_size')
@@ -469,3 +472,22 @@ module cdata
   end subroutine 
   !**************************************************************************************************  
 end module
+!>\page BUG Code testing and bug fixing
+!>The code uses a system of messaging subroutines to kill the code
+!>these are warning message, which will print a warning message to screen
+!>and create an empty file called WARNING to let you know something has gone 
+!>wrong, but will not end the run. fatal_error on the other hand should be used 
+!>in places where the code is killed. These routines are located in cdata.mod.
+!>
+!>A routine called NAN_finder (located in general.mod) is called at the end of
+!>each timestep and trys to find NANs (not a number) in any of the main arrays.
+!>If one is called then fatal_error is called telling the user where the NAN is
+!>located.
+!>
+!>Finally a few testing flags can be set in run.in at present the following are
+!>available (set T to turn on):
+!>
+!>- \p switchoff_recon - turn off reconnection algorithm.
+!>- \p seg_fault - will use print statements place throughout run.f90 to try and
+!>help the user isolate a segmentation fault in the code.
+

@@ -83,7 +83,6 @@ done
 EXE=./src/run.x
 LOGFILE=out.log
 
-echo Going to run...
 
 if [ -d ./data ]; then
   echo ./data exists, proceeding...
@@ -138,6 +137,15 @@ if [ $COMPILE -eq 1 ]; then
     make
   fi
 fi
+
+#check that executable file exists
+if [ ! -e $EXE ] ; then
+  echo "WARNING: exectuable does not exist"
+  echo "please compile the code and re-run"
+  exit 1
+fi
+
+echo -e "\033[1mGoing to run...\033[0m"
 
 if [ $QUIET -eq 1 ]; then
   # Run quietly
