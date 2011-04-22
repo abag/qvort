@@ -182,9 +182,24 @@ end program
 !>>./scripts/animate_gnuplot.sh x
 !>
 !>this will create x very rough snapshots which can be animated with the
-!>following line:
+!>following line (if ImageMagick is installed):
 !>
-!>>animate data/*.png 
+!>>animate data/*.png
+!>
+!>In a similar manner the user can create a simple time series plot using gnuplot
+!>by typing the following into a terminal (assuming you have added the qvort scripts
+!>into your path, see below)
+!>
+!>>ts_gnuplot.sh 
+!>
+!>One thing that I find very useful is to quickly check the line length of the filament
+!>whilst connected to a remote computer over ssh. To save time/bandwith over a poor connection
+!>the user can simply run the following script to get a rough plot of the evolution of the line
+!>length inside the terminal:
+!>
+!>>ll_term.sh
+!>
+!>this script can easily be copied and modified to inform the user of other variables of interest.
 !>\section Scripts
 !>I recommend linking the scripts located in ./scripts into you bin, e.g. 
 !>
