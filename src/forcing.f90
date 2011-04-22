@@ -92,7 +92,7 @@ module forcing
             close(47)
           end if 
         end if
-        u=cross_product(LS_A,LS_k)*sin(dot_product(LS_k,f(i)%x))+cross_product(LS_B,LS_k)*cos(dot_product(LS_k,f(i)%x))/LS_k2
+        u=cross_product(LS_A,LS_k)*sin(dot_product(LS_k,f(i)%x))/LS_k2+cross_product(LS_B,LS_k)*cos(dot_product(LS_k,f(i)%x))/LS_k2
         !use this as the forcing-multiply by amplitude
         u=u*force_amp
     end select
