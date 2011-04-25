@@ -2,21 +2,24 @@
 nsteps 10000
 shots 100
 recon_shots 1
-pcount 0
-dt .005
-delta 5E-1
-box_size 1E1
+pcount 10
+dt .01
+delta 2E0
+box_size 1E2
 velocity SPH
-initf random_loops
-line_count 1
-boundary open
+initf lattice
+lattice_ratio .5
+line_count 16
+boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-SPH_count 40
+wave_count 0
+SPH_count 100
 SPH_mass 1.
-SPH_gamma 1.
+SPH_gamma 1.66
 SPH_G 0.
 SPH_init sphere
+SPH_init_r 0.1
 binary_print F
-particles_only T
-seg_fault T
+magnetic T
+

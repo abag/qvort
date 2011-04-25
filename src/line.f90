@@ -41,7 +41,6 @@ module line
       disti=dist_gen(f(i)%x,f(i)%ghosti) !general.f90
       total_length=total_length+disti !measure total length of filaments
       if (disti>delta) then               
-        !print*, 'in here' ; stop
         !we need a new particle 
         !the first step is assess where to put the particle?
         !1. is there an empty slot in out array?
@@ -99,12 +98,6 @@ module line
           !0 the associated particle information
           f(par_new)%sph=0
         end select
-        disti=distf(i,f(f(i)%infront)%infront)
-        !print*, i, disti/delta
-        !print*,'--------------------'
-        !print*, i, f(i)%sph
-        !print*, par_new, f(par_new)%sph
-        !print*, f(par_new)%infront, f(f(par_new)%infront)%sph
       end if
     end do
     !calculate average separation of particles
@@ -136,12 +129,7 @@ module line
       end if  
       if (distii<.9*delta) then
         do_remove=.true.
-        !print*, 'rem',i, distii/delta
       end if
-      select case(velocity) 
-        case('SPH')
-          if (f(infront)%sph/=0) do_remove=.false.
-      end select
       if (do_remove) then
         !print to file the curvature of this particle
         infront=f(i)%infront ; tinfront=f(f(i)%infront)%infront

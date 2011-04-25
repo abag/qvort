@@ -64,6 +64,16 @@ module sph
           s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
           s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
         end do
+      case('centre-plane')
+        !particles in y-z plane at centre of box
+        do i=1, SPH_count
+          call random_number(s(i)%x(2)) ; call random_number(s(i)%x(3))
+          s(i)%x(1)=0.
+          s(i)%x(2)=box_size*s(i)%x(2)-box_size/2.
+          s(i)%x(3)=box_size*s(i)%x(3)-box_size/2.
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+        end do
       case('figure8')
         if (SPH_count/=3) call fatal_error('SPH','SPH_count must be 3')
         s(1)%x(1)=0.9700000436
@@ -113,13 +123,13 @@ module sph
     !now improve this guess
     call sph_get_h !sph.mod
     !finally account for periodic bc's and gravity
-    if (periodic_bc) then
-      pg_k=floor(sqrt(40.*(pi**2)/box_size**2))
-      if (pg_k>1) call fatal_error('SPH','box_size too small for periodic_bc')
-      pg_alpha=2./box_size
-      pg_alpha2=pg_alpha**2
-      pg_inv_vol=1./(box_size**3)
-    end if
+    !if (periodic_bc) then
+    !  pg_k=floor(sqrt(40.*(pi**2)/box_size**2))
+    !  if (pg_k>1) call fatal_error('SPH','box_size too small for periodic_bc')
+    !  pg_alpha=2./box_size
+    !  pg_alpha2=pg_alpha**2
+    !  pg_inv_vol=1./(box_size**3)
+    !end if
   end subroutine
   !************************************************************
   !>evolve the SPH particles
@@ -205,17 +215,17 @@ module sph
          s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(i)%h)/(2.*dist)
          s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(j)%h)/(2.*dist)
          !periodic boundaries
-         if (periodic_bc) then 
-           do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
-             if (peri==0.and.perj==0.and.perk==0) cycle
-             shift=(/peri*box_size,perj*box_size,perk*box_size/)
-             s(i)%a=s(i)%a-s(j)%m*(s(i)%f*s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(i)%h)
-             s(i)%a=s(i)%a-s(j)%m*(s(j)%f*s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(j)%h)
-           end do ; end do ;end do
-           !periodic gravity
-           call get_per_G(s(i)%x,s(j)%x,dist,pg)
-           s(i)%a=s(i)%a+SPH_G*s(j)%m*pg !add in force due to per. G
-        end if
+        ! if (periodic_bc) then 
+        !   do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+        !     if (peri==0.and.perj==0.and.perk==0) cycle
+        !     shift=(/peri*box_size,perj*box_size,perk*box_size/)
+        !     s(i)%a=s(i)%a-s(j)%m*(s(i)%f*s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(i)%h)
+        !     s(i)%a=s(i)%a-s(j)%m*(s(j)%f*s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(j)%h)
+        !   end do ; end do ;end do
+        !   !periodic gravity
+        !   call get_per_G(s(i)%x,s(j)%x,dist,pg)
+        !   s(i)%a=s(i)%a+SPH_G*s(j)%m*pg !add in force due to per. G
+        ! end if
       end do
       call get_forcing_gen(s(i)%x,force)
       s(i)%a=s(i)%a+force
@@ -295,14 +305,14 @@ module sph
       dist=dist_gen(s(i)%x,s(j)%x)
       s(i)%rho=s(i)%rho+s(j)%m*sph_W(dist,s(i)%h)
       !periodic boundaries
-      if (periodic_bc) then 
-        do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
-          if (peri==0.and.perj==0.and.perk==0) cycle
-          shift=(/peri*box_size,perj*box_size,perk*box_size/)
-          dist=dist_gen(s(i)%x,s(j)%x+shift)
-          s(i)%rho=s(i)%rho+s(j)%m*sph_W(dist,s(i)%h)
-        end do ; end do ;end do
-      end if
+      !if (periodic_bc) then 
+      !  do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+      !    if (peri==0.and.perj==0.and.perk==0) cycle
+      !    shift=(/peri*box_size,perj*box_size,perk*box_size/)
+      !    dist=dist_gen(s(i)%x,s(j)%x+shift)
+      !    s(i)%rho=s(i)%rho+s(j)%m*sph_W(dist,s(i)%h)
+      !  end do ; end do ;end do
+      !end if
     end do
   end subroutine 
   !************************************************************

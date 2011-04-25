@@ -97,7 +97,11 @@ remove_count
         write(98,*) t
         write(98,*) pcount
         do i=1, pcount
-          write(98,*) f(i)%x(1:3), f(i)%infront, sqrt(f(i)%u(1)**2+f(i)%u(2)**2+f(i)%u(3)**2)
+          if (magnetic) then
+            write(98,*) f(i)%x(1:3), f(i)%infront, f(i)%B
+          else
+            write(98,*) f(i)%x(1:3), f(i)%infront, sqrt(f(i)%u(1)**2+f(i)%u(2)**2+f(i)%u(3)**2)
+          end  if
         end do
       close(98)
     end if

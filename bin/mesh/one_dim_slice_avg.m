@@ -10,9 +10,9 @@ if nargin<3
 end
 A=load('data/ts.log');
 filenumber=length(A);
-if (final==0) || (final>filenumber)
-  final=filenumber;
-end
+%if (final==0) || (final>filenumber)
+%  final=filenumber;
+%end
 fprintf('starting file: %d final file: %d \n',start,final)
 if (skip>1)
   fprintf('only processing every %d file \n',skip)

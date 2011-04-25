@@ -44,9 +44,9 @@ for i=1:optargin
     case 'show_points'
       show_points=1;
     case 'magnetic'
-      rainbow=0; %switchoff-rainbow will be switched on later  
+      rainbow=0; %switchoff-rainbow will be switched on later 
       magnetic=1;
-      Bmax=128;
+      Bmax=32;
       disp(sprintf('maximum field strength is %f',Bmax))
       disp('at present you must edit this file to change this')
     case 'movie'
@@ -185,11 +185,11 @@ if rainbow==1
   rainbowcmap=colormap(jet(200));
 end
 if magnetic==1
+  disp(sprintf('min(B)=%f,max(B)=%f',min(u),max(u)));
   rainbow=1; %swich on rainbow
   %scale field into a colormap
   store_caxis=([-8 log2(Bmax)]);
   u=floor(log2(u))+10;
-  min(u) ; max(u) ;
   rainbowcmap=colormap(jet(floor(log2(Bmax))+11));
 end
 %now create vectors to plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -210,7 +210,7 @@ for j=1:number_of_particles
             if u(j)==0
               u(j)=1;
             end
-            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(ceil(u(j)),:),'LineWidth',2.0)
+            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
           else
             if show_points==1
               plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',2)
@@ -223,7 +223,7 @@ for j=1:number_of_particles
             if u(j)==0
               u(j)=1;
             end
-            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(ceil(u(j)),:),'LineWidth',2.0)
+            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
           else
             if show_points==1
               plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',2)
@@ -240,7 +240,7 @@ for j=1:number_of_particles
             if u(j)==0
                 u(j)=1;
             end
-            set(h,'FaceColor',rainbowcmap(ceil(u(j)),:),'EdgeColor',rainbowcmap(ceil(u(j)),:),'FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+            set(h,'FaceColor',rainbowcmap(max(1,ceil(u(j))),:),'EdgeColor',rainbowcmap(max(1,ceil(u(j))),:),'FaceAlpha',0.5,'EdgeAlpha',0.1) ;
           else
             set(h,'FaceColor','m','EdgeColor','m','FaceAlpha',0.5,'EdgeAlpha',0.1) ;
           end
@@ -249,7 +249,7 @@ for j=1:number_of_particles
             if u(j)==0
                 u(j)=1;
             end
-            set(h,'FaceColor',rainbowcmap(ceil(u(j)),:),'EdgeColor',rainbowcmap(ceil(u(j)),:),'FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+            set(h,'FaceColor',rainbowcmap(max(1,ceil(u(j))),:),'EdgeColor',rainbowcmap(max(1,ceil(u(j))),:),'FaceAlpha',0.5,'EdgeAlpha',0.1) ;
           else
             if (j==1)
               %pick out a particle in a particular colour?

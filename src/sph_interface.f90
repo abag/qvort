@@ -21,7 +21,7 @@ module sph_interface
         u_interp=0.
         do j=1, SPH_count
           dist=dist_gen(f(i)%x,s(j)%x) !distance between point and sph particle
-          u_interp=u_interp+s(j)%u*s(j)%m*sph_W(dist,.95*s(j)%h)/s(j)%rho
+          u_interp=u_interp+s(j)%u*s(j)%m*sph_W(dist,s(j)%h)/s(j)%rho
         end do
         !now timestep
         f(i)%x=f(i)%x+dt*u_interp

@@ -15,7 +15,7 @@ elseif nargin<3
 end
 figure('visible','off');
 for i=start:skip:final
-  vortex_plot(i,'line','magnetic')
+  vortex_plot(i,'line')
   fOUT=sprintf('data/var%04d.eps',i)
   print('-depsc',fOUT)
 end

@@ -130,8 +130,7 @@ program run
     end if
     if (seg_fault) write(*,*) 'here12'
     !--------------------final sanity checks----------------------
-    call NAN_finder !general.mod
-    !print*, 'here10'
+    if (NAN_test) call NAN_finder !general.mod
     t=t+dt !finish by incrementing time 
   end do
   !deallocate(f,mesh) !tidy up
@@ -179,7 +178,7 @@ end program
 !>in run.in, binary_print F, this will now output formatted data, if there are
 !>then x number of files to process run the following command
 !>
-!>>./scripts/animate_gnuplot.sh x
+!>>./scripts/qvort_animate_gnuplot.sh x
 !>
 !>this will create x very rough snapshots which can be animated with the
 !>following line (if ImageMagick is installed):
@@ -190,20 +189,20 @@ end program
 !>by typing the following into a terminal (assuming you have added the qvort scripts
 !>into your path, see below)
 !>
-!>>ts_gnuplot.sh 
+!>>qvort_ts_gnuplot.sh 
 !>
 !>One thing that I find very useful is to quickly check the line length of the filament
 !>whilst connected to a remote computer over ssh. To save time/bandwith over a poor connection
 !>the user can simply run the following script to get a rough plot of the evolution of the line
 !>length inside the terminal:
 !>
-!>>ll_term.sh
+!>>qvort_ll_term.sh
 !>
 !>this script can easily be copied and modified to inform the user of other variables of interest.
 !>\section Scripts
 !>I recommend linking the scripts located in ./scripts into you bin, e.g. 
 !>
-!>> ln -s ./scripts/* ~/Bin
+!>> cp  ./scripts/qvort_* ~/Bin
 !>
 !>this will allow you to use the qvort_nr (new run) script which is the optimal way to 
 !>launch a new run. Once the script is in your path simply type

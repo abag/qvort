@@ -110,12 +110,16 @@ module initial
           call setup_kivotedes !init.mod
         case('cardoid')
           call setup_cardoid !init.mod
+        case('hypotrochoid')
+          call setup_hypotrochoid !init.mod
         case('wave_loop')
           call setup_wave_loop !init.mod
         case('linked_wave_loop')
           call setup_linked_wave_loop !init.mod
         case('wave_line')
           call setup_wave_line !init.mod
+        case('lattice')
+          call setup_lattice !init.mod
         case('tangle')
           call setup_tangle !init.mod
         case('criss-cross')
@@ -403,6 +407,35 @@ module initial
       f(i)%x(1)=radius*(2*sin(pi*real(2*i-1)/pcount)-sin(2*pi*real(2*i-1)/pcount))
       f(i)%x(2)=radius*(2*cos(pi*real(2*i-1)/pcount)-cos(2*pi*real(2*i-1)/pcount))
       f(i)%x(3)=0.0
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do   
+  end subroutine
+  !*************************************************************************
+  !>draw hypotrochoid (http://en.wikipedia.org/wiki/Hypotrochoid) in the x-y plane
+  !> with sinusoidal variation in z
+  subroutine setup_hypotrochoid
+    implicit none
+    real :: velocity
+    real :: radius, innerr
+    real :: theta
+    integer :: i 
+    radius=(0.75*pcount*delta)/(4*pi) !75% of potential size 
+    innerr=3*radius/5. !radius of inner circle
+    write(*,*) 'initf: hypotrochoid'
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount
+      theta=3*pi*(2.*i-1.)/pcount
+      f(i)%x(1)=(radius-innerr)*cos(theta)+radius*cos(theta*(radius-innerr)/innerr)
+      f(i)%x(2)=(radius-innerr)*sin(theta)-radius*sin(theta*(radius-innerr)/innerr)
+      f(i)%x(3)=10*delta*sin(4*theta)
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -952,6 +985,63 @@ module initial
     end do !closes the i loop
   end subroutine
   !*************************************************************************
+  !>lines from the lop of the box to the bottom arranged in a lattice, the number of
+  !>lines should be a square number
+  subroutine setup_lattice
+    implicit none
+    real :: xpos, ypos
+    integer :: pcount_required
+    integer :: line_size, line_position
+    integer :: counter=0
+    integer :: i, j, k
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_lattice', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if (periodic_bc) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=line_count*nint(box_size/(.75*delta))
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,'(a,i7.1)') ' pcount is now:', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_lattice', &
+      'periodic boundary conditions required')
+    end if
+    write(*,'(a,i3.1,a)') ' drawing', line_count, ' lines from -z to +z'
+    write(*,'(a,f6.3,a)') ' lines in a lattice design occupying ', lattice_ratio, ' of box area'
+    line_size=int(pcount/line_count)
+    !START THE LOOP
+    do i=1, floor(sqrt(real(line_count))) ; do k=1, floor(sqrt(real(line_count)))
+      xpos=(-box_size/2.+box_size*((2.*i-1.)/(2*sqrt(real(line_count)))))*lattice_ratio
+      ypos=(-box_size/2.+box_size*((2.*k-1.)/(2*sqrt(real(line_count)))))*lattice_ratio
+      do j=1, line_size
+        line_position=j+counter*line_size
+        f(line_position)%x(1)=xpos
+        f(line_position)%x(2)=ypos
+        f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        if(j==1) then
+          f(line_position)%behind=(counter+1)*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=counter*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0.
+      end do
+      counter=counter+1
+    end do ; end do
+    if (counter/=line_count) then
+      call fatal_error('init.mod:setup_lattice', &
+      'line_count must be a square number')  
+    end if
+  end subroutine
+  !*************************************************************************
   subroutine setup_random_loops
     implicit none
     real :: loop_radius
@@ -1292,6 +1382,10 @@ end module
 !!- \p tangle - curved lines from -z to +z which will drive a tangle, 
 !!superceeded in many ways by criss-cross but kept for posterity.
 !!\image html tangle_thumb.png
+!!- \p lattice - lines from -z to +z in a lattice desing, 
+!!line_count must be a square number, the area of the box the lattice occupies
+!!can be changed with the lattice_ratio variable in run.in.
+!!\image html lattice_thumb.png
 !!- \p wave_line -  lines from -z to z with wave pertubations added, these can
 !!be either helical or planar with an imposed spectra and wave count. Relevant
 !!parameters in run.in are wave_count, wave_slope (spectral slope), wave_amp 

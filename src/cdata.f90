@@ -166,6 +166,7 @@ module cdata
   logical, protected :: binary_print=.true.
   logical, protected :: dt_adapt=.false.
   integer, protected :: line_count=1
+  real, protected :: lattice_ratio=1
   integer, protected :: wave_count=1
   real, protected :: wave_slope=-1.5
   real, protected :: wave_amp=10.
@@ -238,6 +239,7 @@ module cdata
   !----------------------------code testing---------------------------------------
   logical, protected :: switch_off_recon=.false.!turns of reconnection algorithm
   logical, protected :: seg_fault=.false.!use print statements to try and isolate segmentation faults
+  logical, protected :: NAN_test=.true.!test for NANs in arrays
   contains
   !*************************************************************************************************  
   !>read the file run.in obtaining all parameters at runtime, avoiding the need to recompile the code
@@ -322,6 +324,8 @@ module cdata
              read(buffer, *, iostat=ios) initp !initial setup of particles
           case ('line_count')
              read(buffer, *, iostat=ios) line_count !used in certain intial conditions
+          case ('lattice_ratio')
+             read(buffer, *, iostat=ios) lattice_ratio !used in lattice initial conditions
           case ('force')
              read(buffer, *, iostat=ios) force !force the vortices
           case ('force_amp')
@@ -384,6 +388,8 @@ module cdata
              read(buffer, *, iostat=ios) switch_off_recon !for test cases only!
           case ('seg_fault')
              read(buffer, *, iostat=ios) seg_fault !use print statements to find segmentation faults
+          case ('NAN_test')
+             read(buffer, *, iostat=ios) NAN_test !test for NANs
           case ('smoothing_length')
              read(buffer, *, iostat=ios) smoothing_length !length we are smoothing over (delta)
           case ('sm_size')

@@ -5,7 +5,7 @@ fid=fopen(filename);
 dims=load('./data/dims.log');
 if dims(4)==1
   %binary read
-  t=fread(fid,1,'float64');
+  time=fread(fid,1,'float64');
   number_of_particles=fread(fid,1,'int');
   x=fread(fid,number_of_particles,'float64');
   y=fread(fid,number_of_particles,'float64');
