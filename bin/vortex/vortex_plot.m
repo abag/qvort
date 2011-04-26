@@ -46,7 +46,7 @@ for i=1:optargin
     case 'magnetic'
       rainbow=0; %switchoff-rainbow will be switched on later 
       magnetic=1;
-      Bmax=32;
+      Bmax=128;
       disp(sprintf('maximum field strength is %f',Bmax))
       disp('at present you must edit this file to change this')
     case 'movie'
