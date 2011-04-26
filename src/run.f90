@@ -199,6 +199,11 @@ end program
 !>>qvort_ll_term.sh
 !>
 !>this script can easily be copied and modified to inform the user of other variables of interest.
+!>\subsection Octave
+!>If you do not have matlab but are a user of octave there is a single octave script to plot the filament,
+!>the qvort octave path is automatically added to the path, so simply run:
+!>
+!>octave_plot(filenumber)
 !>\section Scripts
 !>I recommend linking the scripts located in ./scripts into you bin, e.g. 
 !>

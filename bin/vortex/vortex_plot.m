@@ -156,7 +156,6 @@ else
   f=uint16(f);
 end
 if (rough==1)
-    %plot3(x,y,z,'o','MarkerFaceColor','r','MarkerEdgeColor','r')
     plot3(x,y,z,'.')
     if (dims(2)>0.)
       if overhead==1         
@@ -251,7 +250,7 @@ for j=1:number_of_particles
             end
             set(h,'FaceColor',rainbowcmap(max(1,ceil(u(j))),:),'EdgeColor',rainbowcmap(max(1,ceil(u(j))),:),'FaceAlpha',0.5,'EdgeAlpha',0.1) ;
           else
-            if (j==1)
+            if (j==-1) %set this off by default
               %pick out a particle in a particular colour?
               set(h,'FaceColor','k','EdgeColor','b','FaceAlpha',0.5,'EdgeAlpha',0.1) ;
             else
@@ -260,23 +259,23 @@ for j=1:number_of_particles
           end
         end
       end
-      if (dims(2)>0.)
-        if overhead==1         
-          axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);               
-        else
-          axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);
-          box on
-        end
-      else
-        if overhead==1         
-          axis([-box_size box_size -box_size box_size]);
-        else
-          axis([-box_size box_size -box_size box_size -box_size box_size]);
-          box on
-        end
-      end
       hold on
     end
+  end
+end
+if (dims(2)>0.)
+  if overhead==1
+    axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);
+  else
+    axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);
+    box on
+  end
+else
+  if overhead==1
+    axis([-box_size box_size -box_size box_size]);
+  else
+    axis([-box_size box_size -box_size box_size -box_size box_size]);
+    box on
   end
 end
 if dark==1

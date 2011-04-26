@@ -1,0 +1,5 @@
+disp('adding qvort octave directory to path')
+addpath("./bin/octave")
+disp('use octave_plot(filenumber) to plot the filament')
+
+
