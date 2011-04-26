@@ -210,7 +210,8 @@ module cdata
   character(len=20),protected :: SPH_init='random' !initial setup of SPH particles
   real,protected :: SPH_init_r=0.1 !used for some initial SPH conditions
   real,protected :: SPH_gamma=5./3. !adiabatic index
-  real,protected :: SPH_G !gravitational constant
+  real,protected :: SPH_G=0. !gravitational constant
+  real,protected :: SPH_nu=0. !artificial viscosity
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
@@ -416,6 +417,8 @@ module cdata
              read(buffer, *, iostat=ios) SPH_gamma!adiabatic index in SPH sims.
           case ('SPH_G')
              read(buffer, *, iostat=ios) SPH_G !gravitational constant
+          case ('SPH_nu')
+             read(buffer, *, iostat=ios) SPH_nu !artificial viscosity
           case ('SPH_init_r')
              read(buffer, *, iostat=ios) SPH_init_r !initial sphere radius
           case default

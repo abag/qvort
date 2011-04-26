@@ -5,9 +5,6 @@ module sph
   use output
   use forcing
   implicit none
-  integer,private :: pg_k !>periodic gravity fourier sum
-  real,private :: pg_alpha,pg_alpha2 !>periodic gravity \f$\alpha\f$ (\f$\alpha^2\f$)
-  real, private :: pg_inv_vol !1/volume of box
   contains
   !************************************************************
   !>setup the particles in as set by initp
@@ -24,10 +21,11 @@ module sph
     write(*,'(a,a,a,e14.7)') ' initial setup ', trim(SPH_init), ', with mass ', SPH_mass
     write(*,'(a,f10.5)') ' adiabatic index, gamma= ', SPH_gamma
     write(*,'(a,f10.5)') ' gravitational constant= ', SPH_G
-    write(*,*) 'forcing will be applied to particles is selected'
+    write(*,'(a,f10.5)') ' artificial viscosity= ', SPH_nu
+    write(*,*) 'forcing will be applied to particles if selected'
     select case(SPH_init)
       case('sphere')
-        !particles in random positions
+        !particles in a random sphere
         write(*,'(a,f10.5)') ' radius of sphere= ', SPH_init_r*box_size
         do i=1, SPH_count
           call random_number(rs)
@@ -37,6 +35,23 @@ module sph
           s(i)%x(2)=rs*sin(rthet)*sin(rphi)
           s(i)%x(3)=rs*cos(rthet)
           s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+        end do
+      case('sphere-keppler')
+        !particles in random positions
+        write(*,'(a,f10.5)') ' radius of sphere= ', SPH_init_r*box_size
+        do i=1, SPH_count
+          call random_number(rs)
+          call random_number(rthet) ; call random_number(rphi)
+          rs=rs*box_size*SPH_init_r ; rthet=rthet*pi ; rphi=rphi*2*pi
+          s(i)%x(1)=rs*sin(rthet)*cos(rphi)
+          s(i)%x(2)=rs*sin(rthet)*sin(rphi)
+          s(i)%x(3)=rs*cos(rthet)
+          !set the velocity fields
+          s(i)%u(1)=cos(rphi)/(sqrt(rs)+0.1)
+          s(i)%u(2)=sin(rphi)/(sqrt(rs)+0.1)
+          s(i)%u(3)=0.
+          s(i)%u1=s(i)%u ; s(i)%u2=s(i)%u
           s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
         end do
       case('random')
@@ -122,14 +137,6 @@ module sph
     s(:)%h=box_size/10.
     !now improve this guess
     call sph_get_h !sph.mod
-    !finally account for periodic bc's and gravity
-    !if (periodic_bc) then
-    !  pg_k=floor(sqrt(40.*(pi**2)/box_size**2))
-    !  if (pg_k>1) call fatal_error('SPH','box_size too small for periodic_bc')
-    !  pg_alpha=2./box_size
-    !  pg_alpha2=pg_alpha**2
-    !  pg_inv_vol=1./(box_size**3)
-    !end if
   end subroutine
   !************************************************************
   !>evolve the SPH particles
@@ -165,30 +172,6 @@ module sph
       s(i)%a2(:)=s(i)%a1(:) ; s(i)%a1(:)=s(i)%a(:) !store old acceleration 
       s(i)%u2(:)=s(i)%u1(:) ; s(i)%u1(:)=s(i)%u(:)!store old velocities 
     end do
-    !----------------enforce periodicity----------------------
-    if (periodic_bc) then
-      do i=1,SPH_count
-        !-------------x------------------     
-        if (s(i)%x(1)>(box_size/2.)) then
-          s(i)%x(1)=s(i)%x(1)-box_size
-        else if (s(i)%x(1)<(-box_size/2.)) then
-          s(i)%x(1)=s(i)%x(1)+box_size
-        end if
-        !-------------y------------------ 
-        if (s(i)%x(2)>(box_size/2.)) then
-          s(i)%x(2)=s(i)%x(2)-box_size
-        else if (s(i)%x(2)<(-box_size/2.)) then
-          s(i)%x(2)=s(i)%x(2)+box_size
-        end if
-        !-------------z------------------
-        if (s(i)%x(3)>(box_size/2.)) then
-          s(i)%x(3)=s(i)%x(3)-box_size
-        else if (s(i)%x(3)<(-box_size/2.)) then
-          s(i)%x(3)=s(i)%x(3)+box_size
-        end if
-      end do
-      !--------------------------------
-    end if
     !finally check to see if we print
     if (mod(itime,shots)==0) then
       call diagnostics_SPH !sph.mod
@@ -201,8 +184,8 @@ module sph
     implicit none
     integer :: i,j
     integer :: peri, perj, perk !used to loop in periodic cases
-    real, dimension(3) :: shift, force, pg
-    real :: dist
+    real, dimension(3) :: shift, force, rij_hat
+    real :: dist, rho_bar
     do i=1, SPH_count
       s(i)%a=0.
       do j=1, SPH_count
@@ -212,65 +195,22 @@ module sph
          s(i)%a=s(i)%a-s(j)%m*(s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x,s(i)%h)
          s(i)%a=s(i)%a-s(j)%m*(s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x,s(j)%h)
          !-------------------------SELF-GRAVITY------------------------------
-         s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(i)%h)/(2.*dist)
-         s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(j)%h)/(2.*dist)
-         !periodic boundaries
-        ! if (periodic_bc) then 
-        !   do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
-        !     if (peri==0.and.perj==0.and.perk==0) cycle
-        !     shift=(/peri*box_size,perj*box_size,perk*box_size/)
-        !     s(i)%a=s(i)%a-s(j)%m*(s(i)%f*s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(i)%h)
-        !     s(i)%a=s(i)%a-s(j)%m*(s(j)%f*s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x+shift,s(j)%h)
-        !   end do ; end do ;end do
-        !   !periodic gravity
-        !   call get_per_G(s(i)%x,s(j)%x,dist,pg)
-        !   s(i)%a=s(i)%a+SPH_G*s(j)%m*pg !add in force due to per. G
-        ! end if
+         if (SPH_G>0.) then
+           s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(i)%h)/(2.*dist)
+           s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(j)%h)/(2.*dist)
+         end if
+         !------------------------ARTIFICIAL VISCOSITY-----------------------
+         if (SPH_nu>0.) then
+           rij_hat=(s(i)%x-s(j)%x) !unit vector between particles
+           rij_hat=rij_hat/sqrt(dot_product(rij_hat,rij_hat)) 
+           rho_bar=0.5*(s(i)%rho+s(j)%rho) !mean of density
+           s(i)%a=s(i)%a+SPH_nu*(s(j)%m/rho_bar)*dot_product(s(i)%u-s(j)%u,rij_hat)*sph_grad_W(s(i)%x,s(j)%x,s(i)%h)/2.
+           s(i)%a=s(i)%a+SPH_nu*(s(j)%m/rho_bar)*dot_product(s(i)%u-s(j)%u,rij_hat)*sph_grad_W(s(i)%x,s(j)%x,s(j)%h)/2.
+         end if
       end do
       call get_forcing_gen(s(i)%x,force)
       s(i)%a=s(i)%a+force
     end do
-  end subroutine
-  !************************************************************
-  !>periodic gravity using Ewald method
-  subroutine get_per_G(xi,xj,r,f)
-    real, intent(IN) :: xi(3), xj(3) !particle positions
-    real, intent(IN) :: r !distance between particles
-    real, intent(OUT) :: f(3) !force due to periodic G
-    real :: shift(3), rr(3), pgk(3) !nL, r_ij
-    real :: dist !distance between r, nL
-    integer :: i, peri, perj, perk !for looping
-    rr=xi-xj
-    f=0. !0 the force
-    !sum in real space
-    !THIS REALLY NEEDS TESTING!!!!!!!!!!!!!!!!!!!!!!!
-    do i=1, 3
-      do peri=-i,i ; do perj=-i,i ; do perk=-i,i
-         if (peri==0.and.perj==0.and.perk==0) cycle
-         shift=(/peri*box_size,perj*box_size,perk*box_size/)
-         dist=dist_gen(rr,shift)
-         if (dist<3.6*box_size) then
-           f=f-((rr-shift)/(dist**3))*(erfc(pg_alpha*dist)+&
-              (2*pg_alpha/rootpi)*rr*exp(-pg_alpha2*(dist**2)))
-         end if
-      end do ; end do ;end do
-    end do
-    !sum in fourier space
-    if (pg_k>0) then
-       pgk=(/1.,0.,0./)
-       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
-       pgk=(/-1.,0.,0./)
-       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
-       pgk=(/0.,1.,0./)
-       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
-       pgk=(/0.,-1.,0./)
-       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
-       pgk=(/0.,0.,1./)
-       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
-       pgk=(/0.,0.,-1./)
-       f=f-pg_inv_vol*4*pi*pgk*exp(-1./(4*pg_alpha2))*sin(dot_product(pgk,rr))
-    end if
-    f=(f+rr/(r**3))
   end subroutine
   !************************************************************
   !>get the correct smoothing length for each particle
@@ -304,15 +244,6 @@ module sph
     do j=1, sph_count
       dist=dist_gen(s(i)%x,s(j)%x)
       s(i)%rho=s(i)%rho+s(j)%m*sph_W(dist,s(i)%h)
-      !periodic boundaries
-      !if (periodic_bc) then 
-      !  do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
-      !    if (peri==0.and.perj==0.and.perk==0) cycle
-      !    shift=(/peri*box_size,perj*box_size,perk*box_size/)
-      !    dist=dist_gen(s(i)%x,s(j)%x+shift)
-      !    s(i)%rho=s(i)%rho+s(j)%m*sph_W(dist,s(i)%h)
-      !  end do ; end do ;end do
-      !end if
     end do
   end subroutine 
   !************************************************************
@@ -369,7 +300,7 @@ module sph
     sph_dWdh=sph_dWdh*(1/(pi*h**4))
   end function
   !************************************************************
-  !>gradient of the smoothing kernal wrt h
+  !>gradient of the smoothing kernal
   function sph_grad_W(xi,xj,h)
     implicit none
     real, dimension(3) :: sph_grad_W
