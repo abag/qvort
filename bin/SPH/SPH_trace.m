@@ -5,7 +5,7 @@ load ./data/dims.log
 pnumber=dims(7);
 disp(sprintf('there are %04d SPH particles in the code',pnumber))
 ts=load('data/SPH_ts.log');
-filenumber=length(ts);
+s=size(ts) ; filenumber=s(1) ;
 disp(sprintf('plotting trajectories from %04d snapshots',filenumber))
 surface=0; dark=0; printit=0; 
 for i=1:optargin

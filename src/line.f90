@@ -127,7 +127,7 @@ module line
           end if
         end if
       end if  
-      if (distii<.9*delta) then
+      if (distii<.99*delta) then
         do_remove=.true.
       end if
       if (do_remove) then
