@@ -40,7 +40,13 @@ module line
       !get the distance between the particle and the one infront
       disti=dist_gen(f(i)%x,f(i)%ghosti) !general.f90
       total_length=total_length+disti !measure total length of filaments
-      if (disti>delta) then               
+      if (delta_adapt) then
+        curv=curvature(i)
+        f(i)%delta=1.+3.*exp(50.*(-delta*curv/2.))
+      else
+        f(i)%delta=1. !set the prefactor to 1
+      end if
+      if (disti>f(i)%delta*delta) then               
         !we need a new particle 
         !the first step is assess where to put the particle?
         !1. is there an empty slot in out array?
@@ -92,6 +98,8 @@ module line
             f(par_new)%B=f(i)%B
           end if
         end if 
+        !set local delta factor to be 1 incase we are adapting it
+        f(i)%delta=1.
         !finally account for SPH matching
         select case(velocity)
           case('SPH')
@@ -127,7 +135,7 @@ module line
           end if
         end if
       end if  
-      if (distii<.99*delta) then
+      if (distii<.49*delta*(f(i)%delta+f(f(i)%infront)%delta))then
         do_remove=.true.
       end if
       if (do_remove) then
@@ -310,26 +318,4 @@ module line
       end do
     end if
   end subroutine
-  !**************************************************
-  !>a routine to test if two points are on the same loop
-  !>returns a logical arguement with the answer
-  subroutine same_loop_test(i,j,same_loop)
-     use Cdata
-     implicit none
-     integer,intent(IN) :: i,j
-     integer :: k
-     integer :: next
-     logical :: same_loop
-     !aim  of routine is to find out wether the links are on the same loop
-     same_loop=.false. !initial condition now try and prove if true
-     next=i
-     do k=1, pcount
-       next=f(k)%infront
-       if (next==j) then
-         same_loop=.true.
-         exit
-       end if
-       if (next==i) exit
-     end do
-   end subroutine
 end module

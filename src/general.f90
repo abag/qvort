@@ -183,6 +183,28 @@ module general
     cross_product(2)=a(3)*b(1)-a(1)*b(3)
     cross_product(3)=a(1)*b(2)-a(2)*b(1)
   end function
+  !**************************************************
+  !>a routine to test if two points are on the same loop
+  !>returns a logical arguement with the answer
+  subroutine same_loop_test(i,j,same_loop)
+     use Cdata
+     implicit none
+     integer,intent(IN) :: i,j
+     integer :: k
+     integer :: next
+     logical :: same_loop
+     !aim  of routine is to find out wether the links are on the same loop
+     same_loop=.false. !initial condition now try and prove if true
+     next=i
+     do k=1, pcount
+       next=f(next)%infront
+       if (next==j) then
+         same_loop=.true.
+         exit
+       end if
+       if (next==i) exit
+     end do
+   end subroutine
   !*********************************************************************
   !> a routine to find any NANs in the positions of all the allocated main
   !> arrays

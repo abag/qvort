@@ -3,6 +3,7 @@
 module diagnostic
   use cdata
   use general
+  use topology
   contains
   !*************************************************
   !>get the maximum velocity and change of velocity
@@ -78,6 +79,16 @@ module diagnostic
       (dot_product(f(i)%u,cross_product(f(i)%x,sdot))+&
        dot_product(f(infront)%u,cross_product(f(infront)%x,sdoti)))
     end do
+  end subroutine
+  !*************************************************
+  !> Call all topological routines from topology module
+  subroutine get_topo_info()
+    implicit none
+    call get_linking_number !topology.mod
+    call get_writhing_number !topology.mod
+    open(unit=78,file='./data/topology.log',position='append')
+      write(78,*) t, linking_number, writhing_number
+    close(78)
   end subroutine
   !*************************************************
   !> get normal/superfluid velocity for a 1D strip
@@ -229,7 +240,6 @@ module diagnostic
   !>get the structure functions of the mesh velocities
   !>@warning not completed yet
   subroutine structure_function() !THIS NEEDS TESTING!!!!
-    
     implicit none
     real, allocatable :: sfunction(:)
     integer :: i, j, k

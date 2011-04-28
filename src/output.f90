@@ -107,6 +107,18 @@ remove_count
     end if
   end subroutine
   !**********************************************************************
+  subroutine print_delta_adapt(filenumber)
+    implicit none
+    integer, intent(IN) :: filenumber
+    character (len=40) :: print_file
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/delta_adapt",filenumber,".dat"
+    open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+      write(98) t
+      write(98) pcount
+      write(98) f(:)%delta
+    close(98)
+  end subroutine
+  !**********************************************************************
   !>print the g (quasi particles) array as (un)formatted data for use with gnuplot/matlab
   subroutine printg(filenumber)
     implicit none
@@ -289,5 +301,16 @@ remove_count
         write(98) f(:)%u(3)
       end if
     close(98)
+  end subroutine
+  !**************************************************
+  subroutine banner_print()
+    implicit none
+    write(*,*) "                                 _   " 
+    write(*,*) "            __ ___   _____  _ __| |_ "
+    write(*,*) "           / _` \ \ / / _ \| '__| __|"
+    write(*,*) "          | (_| |\ V / (_) | |  | |_ "
+    write(*,*) "           \__, | \_/ \___/|_|   \__|"
+    write(*,*) "              |_|                    "
+    write(*,*) "                                     " 
   end subroutine
 end module

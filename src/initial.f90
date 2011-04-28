@@ -34,6 +34,8 @@ module initial
     end if
     !we must check the timestep is sufficient to resolve the motion
     !based on the smallest separation possible in the code
+    if (delta_adapt) write(*,'(a)') ' mesh discretisation is adaptive'
+    if (delta_adapt_print) write(*,'(a)') ' printing adaptive mesh information to file'
     write(*,'(a)') ' ---------------------TIME-STEP--------------------' 
     call timestep_check !initial.mod
     if (dt_adapt) then
@@ -230,6 +232,7 @@ module initial
     !any special diagnostic information?
     write(*,'(a)') ' ---------------------FURTHER DIAGNOSTICS----------------------' 
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
+    if (topo_inf) write(*,*) 'printing topological information to file'
     if (vel_print) write(*,'(a,i4.2,a)') ' printing full velocity information every: ', mesh_shots, ' timesteps'
     !final boundary conditions sanity check
     if (periodic_bc.and.mirror_bc) call fatal_error('init.mod','both periodic and mirror bcs are set')

@@ -43,7 +43,7 @@ module sph_interface
         !only do this for particles which are unassociated, i.e. f(i)%sph=0
         do j=1, SPH_count
           dist=dist_gen(f(i)%x,s(j)%x) !distance between point and sph particle
-          if (dist<delta/4.) then
+          if (dist<delta/2.) then
             f(i)%sph=j !associate point i with sph particle j
             exit !leave the loop if we have latched a point onto some density
           end if

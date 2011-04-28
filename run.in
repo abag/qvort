@@ -1,24 +1,24 @@
 --------------required parameters------------
-nsteps 10000
-shots 100
+nsteps 100000
+shots 20
 recon_shots 5
-pcount 100
-dt .0025
+pcount 0
+dt .05
 delta 1E0
 box_size 1E2
 velocity SPH
-initf lattice
+initf single_loop
 lattice_ratio .2
 line_count 16
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-SPH_count 300
-SPH_mass .5
-SPH_gamma 1.6666666666666666667
+SPH_count 500
+SPH_mass 1.
+SPH_gamma 1.6666667
 SPH_G 1.
-SPH_nu 0.1
-SPH_init sphere-keppler
+SPH_nu 5.
+SPH_init sphere
 SPH_init_r 0.4
-magnetic T
-
+particles_only T
+tree_print T

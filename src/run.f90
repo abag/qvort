@@ -18,6 +18,7 @@ program run
   implicit none
   integer :: i
   logical :: can_stop=.false.
+  call banner_print !output.mod
   call init_random_seed !cdata.mod
   !read in parameters
   call read_run_file !cdata.mod
@@ -46,6 +47,7 @@ program run
     end if
     if (seg_fault) write(*,*) 'here4'
     !---------------------line operations--------------------------
+    call get_linking_number
     call pinsert !line.mod
     if (magnetic) then
       !magnetic diffusion
@@ -75,6 +77,7 @@ program run
       call velocity_info !diagnostics.mod
       call energy_info !diagnostics.mod
       call curv_info !diagnostics.mod
+      if (topo_inf) call get_topo_info !diagnostics.mod
       if (mod(itime, mesh_shots)==0) then
         if (boxed_vorticity) call get_boxed_vorticity !diganostics.mod
       end if 
@@ -90,6 +93,7 @@ program run
 !mag.f90
         !print the mesh to a binary file
         call print_mesh(itime/mesh_shots) !output.mod
+        if (delta_adapt_print) call print_delta_adapt(itime/mesh_shots)!output.mod
         !print the smoothed mesh to binary file
         if (sm_size>0) call print_smooth_mesh(itime/mesh_shots)!smoothing.mod
         !can also print full velocity field for statistics 

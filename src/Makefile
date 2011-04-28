@@ -24,8 +24,8 @@ default: run.x
 #
 # Targets
 #
-run.x: run.f90 cdata.o forcing.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o mag.o sph.o matrix.o sph_interface.o Makefile 
-	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o forcing.o normal_fluid.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o mag.o sph.o matrix.o sph_interface.o
+run.x: run.f90 cdata.o forcing.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o mag.o sph.o sph_tree.o matrix.o sph_interface.o topology.o Makefile 
+	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o forcing.o normal_fluid.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o mag.o sph.o sph_tree.o matrix.o sph_interface.o topology.o
 #
 #
 clean: 
@@ -58,9 +58,11 @@ line.o: line.f90 general.o cdata.o
 #
 matrix.o: matrix.f90
 #
-diagnostic.o: diagnostic.f90 general.o cdata.o
+diagnostic.o: diagnostic.f90 topology.o general.o cdata.o
 #
 tree.o: tree.f90 general.o cdata.o
+#
+topology.o: topology.f90 general.o cdata.o
 #
 smoothing.o: smoothing.f90 tree.o general.o cdata.o
 #
@@ -76,7 +78,9 @@ mirror.o: mirror.f90 general.o cdata.o
 #
 stiff_solver.o: stiff_solver.f90 hamiltonian.o general.o cdata.o
 #
-sph.o: sph.f90 general.o cdata.o normal_fluid.o output.o forcing.o
+sph.o: sph.f90 sph_tree.o general.o cdata.o normal_fluid.o output.o forcing.o
+#
+sph_tree.o: sph_tree.f90 general.o cdata.o 
 #
 sph_interface.o: sph_interface.f90 sph.o general.o cdata.o normal_fluid.o output.o forcing.o matrix.o
 #

@@ -16,6 +16,7 @@ module cdata
   !!@param sph2 neighbouring sph particles for hermite interpolation
   !!@param closestd separation between closest particle and particle 
   !!@param B magnetic field strength
+  !!@param delta used for adaptive meshing along the filaments, used as a prefactor
   type qvort 
     real :: x(3)
     real :: u(3), u1(3), u2(3) 
@@ -165,6 +166,8 @@ module cdata
   character(len=30), protected :: velocity, initf, boundary
   logical, protected :: binary_print=.true.
   logical, protected :: dt_adapt=.false.
+  logical, protected :: delta_adapt=.false.
+  logical, protected :: delta_adapt_print=.false.
   integer, protected :: line_count=1
   real, protected :: lattice_ratio=1
   integer, protected :: wave_count=1
@@ -217,6 +220,7 @@ module cdata
   logical, protected :: tree_print=.false.
   !--------------------additional diagnostics------------------------------------
   logical, protected :: curv_hist=.false. !dumps binned curvature information
+  logical, protected :: topo_inf=.false. !calculate topological information
   integer, protected :: one_dim=0 !size of 1d velocity information printed to file
   integer, protected :: two_dim=0 !size of 2d velocity information printed to file
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
@@ -385,6 +389,8 @@ module cdata
              read(buffer, *, iostat=ios) two_dim !size of 2D print
           case ('recon_info')
              read(buffer, *, iostat=ios) recon_info !extra reconnection information
+          case ('topo_inf')
+             read(buffer, *, iostat=ios) topo_inf !topological information
           case ('switch_off_recon')
              read(buffer, *, iostat=ios) switch_off_recon !for test cases only!
           case ('seg_fault')
@@ -421,6 +427,10 @@ module cdata
              read(buffer, *, iostat=ios) SPH_nu !artificial viscosity
           case ('SPH_init_r')
              read(buffer, *, iostat=ios) SPH_init_r !initial sphere radius
+          case ('delta_adapt')
+             read(buffer, *, iostat=ios) delta_adapt !is the discretisation adaptive
+          case ('delta_adapt_print')
+             read(buffer, *, iostat=ios) delta_adapt_print !print apative discretisation
           case default
              !print *, 'Skipping invalid label at line', line
           end select

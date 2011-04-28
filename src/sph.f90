@@ -4,6 +4,7 @@ module sph
   use general
   use output
   use forcing
+  use sph_tree
   implicit none
   contains
   !************************************************************
@@ -30,10 +31,10 @@ module sph
         do i=1, SPH_count
           call random_number(rs)
           call random_number(rthet) ; call random_number(rphi)
-          rs=rs*box_size*SPH_init_r ; rthet=rthet*pi ; rphi=rphi*2*pi
-          s(i)%x(1)=rs*sin(rthet)*cos(rphi)
-          s(i)%x(2)=rs*sin(rthet)*sin(rphi)
-          s(i)%x(3)=rs*cos(rthet)
+          rs=rs*box_size*SPH_init_r ; rthet=rs*(2*rthet-1.) ; rphi=rphi*2*pi
+          s(i)%x(1)=sqrt(rs**2-rthet**2)*cos(rphi)
+          s(i)%x(2)=sqrt(rs**2-rthet**2)*sin(rphi)
+          s(i)%x(3)=rthet
           s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
           s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
         end do
@@ -143,11 +144,14 @@ module sph
   subroutine SPH_evolution
     implicit none
     integer :: i !for looping
+    !----------------create tree-------------------
+    call create_SPH_tree !sph_tree.mod
+    !----------------------------------------------
     !firstly evolve h  due to motion of particles
     call sph_get_h !sph.mod
     !note this also sets rho and P at each particle
     !now get the acceleration at each particle
-    call sph_get_acc
+    call sph_get_acc 
     do i=1,SPH_count
       !---------timestep the velocity--------------
       if (maxval(abs(s(i)%a1))==0) then
@@ -172,11 +176,16 @@ module sph
       s(i)%a2(:)=s(i)%a1(:) ; s(i)%a1(:)=s(i)%a(:) !store old acceleration 
       s(i)%u2(:)=s(i)%u1(:) ; s(i)%u1(:)=s(i)%u(:)!store old velocities 
     end do
-    !finally check to see if we print
+    !timestep
+    call time_check_SPH
+    !check to see if we print
     if (mod(itime,shots)==0) then
       call diagnostics_SPH !sph.mod
       call print_SPH(itime/shots) !output.mod
     end if
+    call SPH_empty_tree(stree) !empty the tree to avoid a memory leak
+    deallocate(stree%parray) ; deallocate(stree)
+    nullify(stree) !just in case!
   end subroutine
   !************************************************************
   !>get the acceleration of a particle
@@ -348,6 +357,21 @@ module sph
     end if
     sph_phi=sph_phi/(h**2)
   end function
+  !************************************************************
+  !>timestep-check SPH
+  subroutine time_check_SPH
+    implicit none
+    integer :: i
+    real :: sphdt, minsphdt
+    minsphdt=dt
+    do i=1, SPH_count
+      sphdt=sqrt(s(i)%h/(sqrt(dot_product(s(i)%a,s(i)%a))+0.0001))
+      if (sphdt<minsphdt) then
+        minsphdt=sphdt
+      end if
+    end do
+    dt=minsphdt
+  end subroutine
   !************************************************************
   !>diagnostics for SPH code
   subroutine diagnostics_SPH
