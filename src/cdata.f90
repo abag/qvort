@@ -265,6 +265,11 @@ module cdata
   real, protected :: B_nu=0. !switched off by default
   real, protected :: B_tension=0. !magnetic tension coeff.
   logical, protected :: B_3D_nu=.false. !1/3D diffusion 
+  !------------------------------filament injection-------------------------------
+  integer, protected :: inject_skip=10000000!how often we insert the vortice
+  integer, protected :: inject_size=0 !number of points used
+  real, protected :: inject_stop=1E8 !when to stop injection - arbitrarily high
+  character(len=20),protected :: inject_type='off' !how we inject loops
   !----------------------------code testing---------------------------------------
   logical, protected :: switch_off_recon=.false.!turns of reconnection algorithm
   logical, protected :: seg_fault=.false.!use print statements to try and isolate segmentation faults
@@ -461,6 +466,14 @@ module cdata
              read(buffer, *, iostat=ios) delta_adapt !is the discretisation adaptive
           case ('delta_adapt_print')
              read(buffer, *, iostat=ios) delta_adapt_print !print apative discretisation
+          case ('inject_size')
+             read(buffer, *, iostat=ios) inject_size !size of injected filaments
+          case ('inject_skip')
+             read(buffer, *, iostat=ios) inject_skip !how often we inject
+          case ('inject_type')
+             read(buffer, *, iostat=ios) inject_type !how we inject new vortices
+          case ('inject_stop')
+             read(buffer, *, iostat=ios) inject_stop !when (if ever) we stop injecting 
           case default
              !print *, 'Skipping invalid label at line', line
           end select

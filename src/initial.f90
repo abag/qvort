@@ -45,6 +45,18 @@ module initial
       write(*,'(a)') ' ------------------PHONON EMISSION--------------------' 
       write(*,'(a,f6.2,a,f8.1)') ' simulating phonon emission, cutoff is ', 100*phonon_percent, '% of max:', 2/delta
     end if
+    !loop injection
+    select case(inject_type)
+      case('off')
+        !do nothing
+      case default
+        write(*,'(a)') ' ------------------VORTEX INJECTION-------------------' 
+        write(*,'(a,i4.1,a,i3.1,a)') ' loops will be injected every ', inject_skip, ' timesteps with ', inject_size, ' points'
+        write(*,'(a,a)') ' inject type is set to: ', trim(inject_type)
+        if (inject_stop<1E6) then
+          write(*,'(a,f10.4)') ' inject will stop after t= ', inject_stop
+        end if
+    end select
     !how is data being outputted (binary or formatted)
     write(*,'(a)') ' ---------------------DATA FORMAT--------------------' 
     if (binary_print) then

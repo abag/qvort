@@ -11,6 +11,7 @@ program run
   use diagnostic
   use quasip
   use tree
+  use inject
   use mirror
   use smoothing 
   use mag
@@ -30,6 +31,10 @@ program run
   !begin time loop
   write(*,*) 'setup complete: beginning time loop'
   do itime=nstart, nsteps
+    !----------------vortex injection------------------
+    if ((mod(itime,inject_skip)==0).and.(t<inject_stop)) then
+      call vortex_inject !inject.mod
+    end if
     call ghostp !periodic.mod
     !---------------------build tree routines----------------------
     if (tree_theta>0) then
