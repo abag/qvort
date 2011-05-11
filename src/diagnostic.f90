@@ -86,9 +86,6 @@ module diagnostic
     implicit none
     call get_linking_number !topology.mod
     call get_writhing_number !topology.mod
-    open(unit=78,file='./data/topology.log',position='append')
-      write(78,*) t, linking_number, writhing_number
-    close(78)
   end subroutine
   !*************************************************
   !> get normal/superfluid velocity for a 1D strip

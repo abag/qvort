@@ -233,6 +233,10 @@ module initial
     if (vapor_print) write(*,*) 'if we have mesh(s) then we will also print to file for vapor'
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
     if (topo_inf) write(*,*) 'printing topological information to file'
+    if (energy_inf) then
+      write(*,*) 'printing energy information to file'
+      if (periodic_bc) call warning_message('init.mod','energy output is meaningless with periodic boundaries')
+    end if
     if (vel_print) then
       write(*,'(a,i4.2,a)') ' printing full velocity information every: ', mesh_shots, ' timesteps'
       select case(normal_velocity)

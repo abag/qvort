@@ -47,7 +47,6 @@ program run
     end if
     if (seg_fault) write(*,*) 'here4'
     !---------------------line operations--------------------------
-    call get_linking_number
     call pinsert !line.mod
     if (magnetic) then
       !magnetic diffusion
@@ -75,8 +74,8 @@ program run
     !---------------------diagnostic info--------------------------
     if (mod(itime, shots)==0) then
       call velocity_info !diagnostics.mod
-      call energy_info !diagnostics.mod
       call curv_info !diagnostics.mod
+      if (energy_inf) call energy_info !diagnostics.mod
       if (topo_inf) call get_topo_info !diagnostics.mod
       if (mod(itime, mesh_shots)==0) then
         if (boxed_vorticity) call get_boxed_vorticity !diganostics.mod

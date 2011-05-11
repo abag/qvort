@@ -1,8 +1,8 @@
 --------------required parameters------------
-nsteps 10000
+nsteps 50
 shots 10
 recon_shots 1
-pcount 100
+pcount 1000
 dt 2E-5
 delta 0.001
 box_size 0.1
@@ -14,9 +14,7 @@ boundary periodic
 ---delete all below for a 'standard' run-----
 normal_velocity KS
 alpha 1.21 -0.3883
-mesh_size 128
-mesh_shots 10
-tree_theta 0.4
+tree_theta 0.5
 binary_print T 
 vel_print T
 vel_print_extra T

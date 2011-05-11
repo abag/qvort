@@ -4,8 +4,6 @@ module topology
   use cdata
   use general
   implicit none
-  real :: linking_number
-  real :: writhing_number
   contains
     !>get the linking number of the current filament
     subroutine get_linking_number

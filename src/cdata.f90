@@ -154,7 +154,11 @@ module cdata
   !>self reconnection count
   integer :: self_rcount=0 
   !>vortex vortex reconnection count 
-  integer :: vv_rcount=0 
+  integer :: vv_rcount=0
+  !>linking number - http://en.wikipedia.org/wiki/Linking_number
+  real :: linking_number
+  !>writhing number - http://mathworld.wolfram.com/Writhe.html
+  real :: writhing_number
   !***********CONSTANTS************************************************************
   !some constants - precompute for speed
   real, parameter :: pi=3.14159265358979324
@@ -239,6 +243,7 @@ module cdata
   !--------------------additional diagnostics------------------------------------
   logical, protected :: curv_hist=.false. !dumps binned curvature information
   logical, protected :: topo_inf=.false. !calculate topological information
+  logical, protected :: energy_inf=.false. !calculate energy of vortex 
   integer, protected :: one_dim=0 !size of 1d velocity information printed to file
   integer, protected :: two_dim=0 !size of 2d velocity information printed to file
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
@@ -412,6 +417,8 @@ module cdata
              read(buffer, *, iostat=ios) recon_info !extra reconnection information
           case ('topo_inf')
              read(buffer, *, iostat=ios) topo_inf !topological information
+          case ('energy_inf')
+             read(buffer, *, iostat=ios) energy_inf !vortex energy - only open boundaries
           case ('switch_off_recon')
              read(buffer, *, iostat=ios) switch_off_recon !for test cases only!
           case ('seg_fault')

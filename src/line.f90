@@ -135,7 +135,7 @@ module line
           end if
         end if
       end if  
-      if (distii<.49*delta*(f(i)%delta+f(f(i)%infront)%delta))then
+      if (distii<.499*delta*(f(i)%delta+f(f(i)%infront)%delta))then
         do_remove=.true.
       end if
       if (do_remove) then
