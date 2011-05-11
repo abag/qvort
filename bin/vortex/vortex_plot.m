@@ -26,7 +26,7 @@ filename=sprintf('data/var%04d.log',filenumber);
 %this is overridden if we have periodic B.C.'s
 box_size=.005 ;
 %set options based on varargin
-rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ; magnetic=0; show_points=0 ; 
+rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ; magnetic=0; show_points=0 ; sph_associated=0 ;
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'rough'
@@ -43,10 +43,12 @@ for i=1:optargin
       rainbow=1;
     case 'show_points'
       show_points=1;
+    case 'sph_associated'
+      sph_associated=1;
     case 'magnetic'
       rainbow=0; %switchoff-rainbow will be switched on later 
       magnetic=1;
-      Bmax=128;
+      Bmax=2048;
       disp(sprintf('maximum field strength is %f',Bmax))
       disp('at present you must edit this file to change this')
     case 'movie'
@@ -128,6 +130,7 @@ if dims(4)==1
   z=fread(fid,number_of_particles,'float64');
   f=fread(fid,number_of_particles,'int');
   u=fread(fid,number_of_particles,'float64');
+  u2=fread(fid,number_of_particles,'float64');
 else 
   fid=fopen(filename);
   if fid<0
@@ -152,6 +155,7 @@ else
     z(j)=dummy_vect(3);
     f(j)=dummy_vect(4);
     u(j)=dummy_vect(5);
+    u2(j)=dummy_vect(6);
   end
   f=uint16(f);
 end
@@ -227,7 +231,15 @@ for j=1:number_of_particles
             if show_points==1
               plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',2)
             else
-              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)
+              if sph_associated==1
+                if u2(j)<1
+                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)
+                else
+                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2)  
+                end
+              else
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)  
+              end
             end 
           end
         end

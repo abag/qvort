@@ -20,7 +20,7 @@ module cdata
   type qvort 
     real :: x(3)
     real :: u(3), u1(3), u2(3) 
-    real :: u_sup(3) 
+    real :: u_sup(3), u_mf(3)
     real :: ghosti(3), ghostb(3)
     integer :: infront, behind 
     integer :: closest
@@ -85,6 +85,7 @@ module cdata
   !**********SPH STRUCTURE****************************************************
   !>SPH particle structure
   !>@param x the position of the particle
+  !>@param i i=s(i)%i used in tree neighbour list
   !>@param m the mass of the particle
   !>@param rho the density at the particle position
   !>@param drhodh \f$ \partial \rho_i / \partial h_i\f$
@@ -92,21 +93,37 @@ module cdata
   !>@param h the smoothing length associated with the particle
   !>@param f the correction to the smoothing length
   !>@param u the velocity of the particle
+  !>@param divu the divergence of the velocity field
   !>@param a the acceleration of the particle
   !>@param u1 @param u2 old velocities for Adams-Bashforth timestepping
   !>@param a1 @param a2 old velocities for Adams-Bashforth timestepping
   type smooth_particle
     real :: x(3)
+    integer :: i
     real :: m
     real :: rho, drhodh
     real :: P
     real :: h
     real :: f
+    real :: divu
     real :: u(3), u1(3), u2(3) 
-    real :: a(3), a1(3), a2(3) 
+    real :: a(3), a1(3), a2(3)
+    integer :: ncount !number of neighbours
   end type
   !>vector of SPH particles
-  type(smooth_particle), allocatable :: s(:)  
+  type(smooth_particle), allocatable :: s(:)
+  !>nearest neighbour using a linked list
+  !>linked list type1
+  type neigh_ll
+    integer :: i
+    type( neigh_ll ), pointer :: next
+  end type neigh_ll
+  !>linked list type2, which needs above
+  type use_neigh_ll
+    integer :: ncount
+    type( neigh_ll ), pointer :: list, current, previous
+  end type use_neigh_ll
+  type(use_neigh_ll), allocatable :: s_NN(:)
   !**************TIME PARAMS*******************************************************
   !>time held globally
   real :: t=0. 
@@ -214,7 +231,8 @@ module cdata
   real,protected :: SPH_init_r=0.1 !used for some initial SPH conditions
   real,protected :: SPH_gamma=5./3. !adiabatic index
   real,protected :: SPH_G=0. !gravitational constant
-  real,protected :: SPH_nu=0. !artificial viscosity
+  real,protected :: SPH_theta=0. !opening angle for SPH tree
+  integer, protected :: SPH_mesh_size=0 !mesh size for SPH
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
@@ -226,6 +244,7 @@ module cdata
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
+  logical, protected :: vel_print_extra=.false. !prints extra velocity information to file
   logical, protected :: full_B_print=.false. !prints the full magnetic field to file
   logical, protected :: recon_info=.false. !more in depth reconnection information
   logical, protected :: boxed_vorticity=.false. !smoothed vorticity in a box
@@ -375,6 +394,8 @@ module cdata
              read(buffer, *, iostat=ios) mirror_print !print the mirror filaments
           case ('vel_print')
              read(buffer, *, iostat=ios) vel_print !print the velocity information
+          case ('vel_print_extra')
+             read(buffer, *, iostat=ios) vel_print_extra !print extra velocity information
           case ('vapor_print')
              read(buffer, *, iostat=ios) vapor_print !print the velocity field for vapor
           case ('KS_slope')
@@ -423,10 +444,12 @@ module cdata
              read(buffer, *, iostat=ios) SPH_gamma!adiabatic index in SPH sims.
           case ('SPH_G')
              read(buffer, *, iostat=ios) SPH_G !gravitational constant
-          case ('SPH_nu')
-             read(buffer, *, iostat=ios) SPH_nu !artificial viscosity
           case ('SPH_init_r')
              read(buffer, *, iostat=ios) SPH_init_r !initial sphere radius
+          case ('SPH_theta')
+             read(buffer, *, iostat=ios) SPH_theta !tree opening angle
+          case ('SPH_mesh_size')
+             read(buffer, *, iostat=ios) SPH_mesh_size !SPH mesh size
           case ('delta_adapt')
              read(buffer, *, iostat=ios) delta_adapt !is the discretisation adaptive
           case ('delta_adapt_print')

@@ -3,155 +3,36 @@ module sph
   use cdata
   use general
   use output
-  use forcing
   use sph_tree
+  use sph_kernel
   implicit none
+  integer,parameter,private :: neighnumb=25 !number of neighbours to use
+  real :: h_eta=0.5*(0.75*neighnumb/pi)**(0.333333333333) !works with above
+  !**********SPH MESH STRUCTURE***********
+  !>mesh structure - at present only density stored
+  !>runs from -box_size /2 to box_size/2 to with mesh_size^3
+  !>points, note by setting mesh_size>0 mesh is switched on
+  !>@param x position of mesh point
+  !>@param rho density
+  type SPH_grid
+    real :: x(3)
+    real :: rho 
+  end type
+  !>3D allocatable mesh
+  type(SPH_grid), allocatable :: SPH_mesh(:,:,:)
   contains
-  !************************************************************
-  !>setup the particles in as set by initp
-  subroutine setup_SPH
-    implicit none
-    integer :: i
-    real :: rs, rthet, rphi !for some intial conditions
-    !check that the mass of the particles has been set in run.in
-    if (SPH_mass<epsilon(0.)) call fatal_error('setup_SPH',&
-                              'mass of SPH particles not set')
-    allocate(s(SPH_count))
-    write(*,'(a)') ' --------------------SPH--------------------' 
-    write(*,'(a,i4.1,a)') ' initialising ', SPH_count, ', particles '
-    write(*,'(a,a,a,e14.7)') ' initial setup ', trim(SPH_init), ', with mass ', SPH_mass
-    write(*,'(a,f10.5)') ' adiabatic index, gamma= ', SPH_gamma
-    write(*,'(a,f10.5)') ' gravitational constant= ', SPH_G
-    write(*,'(a,f10.5)') ' artificial viscosity= ', SPH_nu
-    write(*,*) 'forcing will be applied to particles if selected'
-    select case(SPH_init)
-      case('sphere')
-        !particles in a random sphere
-        write(*,'(a,f10.5)') ' radius of sphere= ', SPH_init_r*box_size
-        do i=1, SPH_count
-          call random_number(rs)
-          call random_number(rthet) ; call random_number(rphi)
-          rs=rs*box_size*SPH_init_r ; rthet=rs*(2*rthet-1.) ; rphi=rphi*2*pi
-          s(i)%x(1)=sqrt(rs**2-rthet**2)*cos(rphi)
-          s(i)%x(2)=sqrt(rs**2-rthet**2)*sin(rphi)
-          s(i)%x(3)=rthet
-          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
-          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
-        end do
-      case('sphere-keppler')
-        !particles in random positions
-        write(*,'(a,f10.5)') ' radius of sphere= ', SPH_init_r*box_size
-        do i=1, SPH_count
-          call random_number(rs)
-          call random_number(rthet) ; call random_number(rphi)
-          rs=rs*box_size*SPH_init_r ; rthet=rthet*pi ; rphi=rphi*2*pi
-          s(i)%x(1)=rs*sin(rthet)*cos(rphi)
-          s(i)%x(2)=rs*sin(rthet)*sin(rphi)
-          s(i)%x(3)=rs*cos(rthet)
-          !set the velocity fields
-          s(i)%u(1)=cos(rphi)/(sqrt(rs)+0.1)
-          s(i)%u(2)=sin(rphi)/(sqrt(rs)+0.1)
-          s(i)%u(3)=0.
-          s(i)%u1=s(i)%u ; s(i)%u2=s(i)%u
-          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
-        end do
-      case('random')
-        !particles in random positions
-        do i=1, SPH_count
-          call random_number(s(i)%x(1))
-          call random_number(s(i)%x(2)) ; call random_number(s(i)%x(3))
-          s(i)%x(1)=box_size*s(i)%x(1)-box_size/2.
-          s(i)%x(2)=box_size*s(i)%x(2)-box_size/2.
-          s(i)%x(3)=box_size*s(i)%x(3)-box_size/2.
-          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
-          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
-        end do
-      case('plane')
-        !particles in planes at \pm z
-        do i=1, SPH_count
-          call random_number(s(i)%x(1)) ; call random_number(s(i)%x(2))
-          s(i)%x(1)=box_size*s(i)%x(1)-box_size/2.
-          s(i)%x(2)=box_size*s(i)%x(2)-box_size/2.
-          if (i<floor(real(SPH_count)/2.)) then
-            s(i)%x(3)=-0.48*box_size
-          else
-            s(i)%x(3)=0.48*box_size
-          end if
-          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
-          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
-        end do
-      case('centre-plane')
-        !particles in y-z plane at centre of box
-        do i=1, SPH_count
-          call random_number(s(i)%x(2)) ; call random_number(s(i)%x(3))
-          s(i)%x(1)=0.
-          s(i)%x(2)=box_size*s(i)%x(2)-box_size/2.
-          s(i)%x(3)=box_size*s(i)%x(3)-box_size/2.
-          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
-          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
-        end do
-      case('figure8')
-        if (SPH_count/=3) call fatal_error('SPH','SPH_count must be 3')
-        s(1)%x(1)=0.9700000436
-        s(2)%x(1)=-0.9700000436
-        s(1)%x(2)=-0.2430875
-        s(2)%x(2)=0.2430875
-        s(1)%x(3)=0.
-        s(2)%x(3)=0.
-        s(3)%x=0.
-        do i=1,SPH_count
-          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
-          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
-        end do
-      case('corner')
-        !particles in corners
-        do i=1, SPH_count
-          call random_number(s(i)%x(1))
-          call random_number(s(i)%x(2)) ; call random_number(s(i)%x(3))
-          s(i)%x(1)=0.1*(box_size*s(i)%x(1)-box_size/2.)
-          s(i)%x(2)=0.1*(box_size*s(i)%x(2)-box_size/2.)
-          s(i)%x(3)=0.1*(box_size*s(i)%x(3)-box_size/2.)
-          if (i<floor(real(SPH_count)/2.)) then
-            s(i)%x=s(i)%x+0.4*box_size
-          else
-            s(i)%x=s(i)%x-0.4*box_size
-          end if
-          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
-          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
-        end do
-      case('loop')
-        !this initial condition is set to interface with the filamemt
-        !rs is based on filament separation
-        rs=(0.75*SPH_count*delta)/(2*pi) !75% of potential size    
-        do i=1, SPH_count      
-          s(i)%x(1)=rs*sin(pi*real(2*i-1)/SPH_count)
-          s(i)%x(2)=rs*cos(pi*real(2*i-1)/SPH_count)
-          s(i)%x(3)=0.
-          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
-          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
-        end do
-      case default
-        call fatal_error('setup_SPH','SPH_init not set to available value')
-    end select
-    s(:)%m=SPH_mass !set the masses of the particles
-    !make an initial guess for the smoothing length
-    s(:)%h=box_size/10.
-    !now improve this guess
-    call sph_get_h !sph.mod
-  end subroutine
   !************************************************************
   !>evolve the SPH particles
   subroutine SPH_evolution
     implicit none
     integer :: i !for looping
     !----------------create tree-------------------
-    call create_SPH_tree !sph_tree.mod
+    if (SPH_theta>0) call create_SPH_tree !sph_tree.mod
     !----------------------------------------------
-    !firstly evolve h  due to motion of particles
-    call sph_get_h !sph.mod
-    !note this also sets rho and P at each particle
-    !now get the acceleration at each particle
-    call sph_get_acc 
+    !do operations involving neighbouring particles
+    call sph_neighbour_loop 
+    !now get the acc. due to non local (gravity) forces
+    call sph_get_non_loc
     do i=1,SPH_count
       !---------timestep the velocity--------------
       if (maxval(abs(s(i)%a1))==0) then
@@ -183,189 +64,151 @@ module sph
       call diagnostics_SPH !sph.mod
       call print_SPH(itime/shots) !output.mod
     end if
-    call SPH_empty_tree(stree) !empty the tree to avoid a memory leak
-    deallocate(stree%parray) ; deallocate(stree)
-    nullify(stree) !just in case!
+    !do we have a mesh?
+    if (mod(itime,mesh_shots)==0) then
+      if (SPH_mesh_size>0) then
+        call mesh_print_SPH(itime/mesh_shots)  !sph.mod
+      end if
+    end if
+    if (SPH_theta>0) then
+      call SPH_empty_tree(stree) !empty the tree to avoid a memory leak
+      deallocate(stree%parray) ; deallocate(stree) ; nullify(stree)
+    end if
   end subroutine
   !************************************************************
-  !>get the acceleration of a particle
-  subroutine sph_get_acc
+  !>do all operations which only involve nearest neighbours
+  subroutine sph_neighbour_loop
+    implicit none
+    integer :: i, j
+    real, dimension(3) :: rij_hat
+    real :: dist, rho_bar, nu_sig
+    !get the nearest neighbours for all particles
+    if (SPH_theta>0) then
+      call SPH_neighbour_list !sph.mod
+    else
+      call SPH_neighbour_list_notree !sph_tree.mod
+    end if
+    do i=1, SPH_count
+      s(i)%rho=0. ; s(i)%drhodh=0. !0 these quantities
+      !%%%%%%%%%%%%%%%%% DENSITY LOOP %%%%%%%%%%%%%%%%%
+      s_NN(i)%current => s_NN(i)%list
+      do while (associated( s_NN(i)%current ))
+        j=s_NN(i)%current%i
+        dist=dist_gen(s(i)%x,s(j)%x)
+        !---------------density----------------
+        s(i)%rho=s(i)%rho+s(j)%m*sph_W(dist,s(i)%h)
+        !---------------density deriv wrt h----------------
+        s(i)%drhodh=s(i)%drhodh+s(j)%m*sph_dWdh(dist,s(i)%h)
+        !---------move down neighbour list-----
+        s_NN(i)%previous => s_NN(i)%current
+        s_NN(i)%current => s_NN(i)%current%next
+      end do
+      if (s(i)%rho<epsilon(0.)) then
+        s(i)%u=0. ; s(i)%a=0. 
+        cycle !exit the loop when particles have left the box
+      end if
+      s(i)%h=h_eta*(s(i)%m/s(i)%rho)**(0.333333333333)   
+      !---------set pressure-------
+      s(i)%P=s(i)%rho**SPH_gamma
+      !set the correction term according to springel 2010 (review)
+      s(i)%f=1./(1+(h_eta*s(i)%h/(3.*s(i)%rho))*s(i)%drhodh)
+      s(i)%a=0. ; s(i)%divu=0.
+      !%%%%%%%%%%%%%%%%% VELOCITY LOOP %%%%%%%%%%%%%%%%%
+      s_NN(i)%current => s_NN(i)%list
+      do while (associated( s_NN(i)%current ))
+        j=s_NN(i)%current%i
+        if (i/=j) then
+          dist=dist_gen(s(i)%x,s(j)%x)
+          !---------------hydrodynaics----------------
+          s(i)%a=s(i)%a-s(i)%f*s(j)%m*(s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x,s(i)%h)
+          s(i)%a=s(i)%a-s(j)%f*s(j)%m*(s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x,s(j)%h)
+          !---------------artificial viscosity-----------------
+          rij_hat=(s(i)%x-s(j)%x) !unit vector between particles
+          rij_hat=rij_hat/sqrt(dot_product(rij_hat,rij_hat)) 
+          rho_bar=0.5*(s(i)%rho+s(j)%rho) !mean of density
+          !get \nu_{sig}=c_i+c_j-v_{ij} \cdot \hat{r}_{ij}
+          nu_sig=sqrt(SPH_gamma*s(i)%P/s(i)%rho)+sqrt(SPH_gamma*s(j)%P/s(j)%rho)-dot_product(s(i)%u-s(j)%u,rij_hat)
+          s(i)%a=s(i)%a+nu_sig*(s(j)%m/rho_bar)*dot_product(s(i)%u-s(j)%u,rij_hat)*sph_grad_W(s(i)%x,s(j)%x,s(i)%h)/2.
+          s(i)%a=s(i)%a+nu_sig*(s(j)%m/rho_bar)*dot_product(s(i)%u-s(j)%u,rij_hat)*sph_grad_W(s(i)%x,s(j)%x,s(j)%h)/2.
+          !----------------compressibility------------
+          s(i)%divu=s(i)%divu+(s(j)%m/s(i)%rho)*dot_product((s(i)%u-s(j)%u),sph_grad_W(s(i)%x,s(j)%x,s(i)%h))      
+        end if
+        !---------deallocate neighbour list-----
+        s_NN(i)%previous => s_NN(i)%current
+        s_NN(i)%current => s_NN(i)%current%next
+        deallocate( s_NN(i)%previous )
+      end do
+    end do
+  end subroutine
+  !************************************************************
+  !>get the acceleration of a particle due to nonlocal forces
+  subroutine sph_get_non_loc
     implicit none
     integer :: i,j
-    integer :: peri, perj, perk !used to loop in periodic cases
-    real, dimension(3) :: shift, force, rij_hat
-    real :: dist, rho_bar
-    do i=1, SPH_count
-      s(i)%a=0.
-      do j=1, SPH_count
-         if (i==j) cycle
-         dist=dist_gen(s(i)%x,s(j)%x)
-         !-------------------------HYDRODYNAMICS-----------------------------
-         s(i)%a=s(i)%a-s(j)%m*(s(i)%P/(s(i)%rho**2))*sph_grad_W(s(i)%x,s(j)%x,s(i)%h)
-         s(i)%a=s(i)%a-s(j)%m*(s(j)%P/(s(j)%rho**2))*sph_grad_W(s(i)%x,s(j)%x,s(j)%h)
-         !-------------------------SELF-GRAVITY------------------------------
-         if (SPH_G>0.) then
-           s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(i)%h)/(2.*dist)
-           s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(j)%h)/(2.*dist)
-         end if
-         !------------------------ARTIFICIAL VISCOSITY-----------------------
-         if (SPH_nu>0.) then
-           rij_hat=(s(i)%x-s(j)%x) !unit vector between particles
-           rij_hat=rij_hat/sqrt(dot_product(rij_hat,rij_hat)) 
-           rho_bar=0.5*(s(i)%rho+s(j)%rho) !mean of density
-           s(i)%a=s(i)%a+SPH_nu*(s(j)%m/rho_bar)*dot_product(s(i)%u-s(j)%u,rij_hat)*sph_grad_W(s(i)%x,s(j)%x,s(i)%h)/2.
-           s(i)%a=s(i)%a+SPH_nu*(s(j)%m/rho_bar)*dot_product(s(i)%u-s(j)%u,rij_hat)*sph_grad_W(s(i)%x,s(j)%x,s(j)%h)/2.
-         end if
+    real :: a(3)
+    real :: dist
+    if (SPH_G>0.) then
+      do i=1, SPH_count
+        if (SPH_theta>0) then
+          !Ge tree approximation
+          a=0. !0 this before we start the walk
+          call SPH_gravity_tree_walk(i,stree,a) !sph_tree.mod
+          s(i)%a=s(i)%a+a
+        else
+          !Brute force N^2 
+          do j=1, SPH_count
+            if (i==j) cycle
+            dist=dist_gen(s(i)%x,s(j)%x)
+            s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(i)%h)/(2.*dist)
+            s(i)%a=s(i)%a-(s(i)%x-s(j)%x)*SPH_G*s(j)%m*sph_phi(dist,s(j)%h)/(2.*dist)
+          end do
+        end if
       end do
-      call get_forcing_gen(s(i)%x,force)
-      s(i)%a=s(i)%a+force
-    end do
+    end if
   end subroutine
-  !************************************************************
-  !>get the correct smoothing length for each particle
-  subroutine sph_get_h
-    implicit none
-    integer :: i
-    integer :: neighnumb=10
-    real :: eta
-    eta=(0.75*neighnumb/pi)**(0.333333333333)
+  !********************************************************
+  !generate linked list of nearest neighbours
+  subroutine SPH_neighbour_list_notree
+    integer :: i, j
+    integer :: counter
+    real :: dist
     do i=1, SPH_count
-      call sph_get_rho(i)
-      s(i)%h=eta*(s(i)%m/s(i)%rho)**(0.333333333333)
-      call sph_get_rho(i)
-      call sph_get_drhodh(i) !for correction term below    
-      call sph_get_P(i)
-      !set the correction term according to springel 2010 (review)
-      s(i)%f=1./(1+(s(i)%h/(3*s(i)%rho))*s(i)%drhodh)
+      counter=0
+      nullify(s_NN(i)%list)
+      allocate(s_NN(i)%list)
+      nullify(s_NN(i)%list%next)
+      s_NN(i)%current => s_NN(i)%list
+      do j=1, SPH_count
+        dist=dist_gen(s(i)%x,s(j)%x)
+        if (dist<2*s(i)%h) then
+          counter=counter+1
+          if (counter==1) then
+            !the first neighbour is added to the top of the list
+            s_NN(i)%current%i=j
+          else
+            !subsequent neighbours linked to this 
+            allocate( s_NN(i)%current%next )
+            nullify( s_NN(i)%current%next%next )
+            s_NN(i)%current%next%i=j
+            s_NN(i)%current => s_NN(i)%current%next
+          end if
+        end if
+      end do
+      s(i)%ncount=counter
     end do
   end subroutine
-  !************************************************************
-  !>get the density of the particle i based on the current
-  !>smoothing length
-  subroutine sph_get_rho(i)
-    implicit none
-    integer, intent(IN) :: i
-    integer :: peri, perj, perk !used to loop in periodic cases
-    real, dimension(3) :: shift
-    real :: dist !distance between particles 
-    integer :: j !for looping
-    s(i)%rho=0.
-    do j=1, sph_count
-      dist=dist_gen(s(i)%x,s(j)%x)
-      s(i)%rho=s(i)%rho+s(j)%m*sph_W(dist,s(i)%h)
-    end do
-  end subroutine 
-  !************************************************************
-  !>get the pressure at i using current density uses SPH_gamma from
-  !>run.in as the adiabatic index (the default is 5/3)
-  subroutine sph_get_P(i)
-    implicit none
-    integer, intent(IN) :: i
-    s(i)%P=s(i)%rho**SPH_gamma
-  end subroutine 
-  !************************************************************
-  !>get the derivative of the density of the particle i wrt h
-  subroutine sph_get_drhodh(i)
-    implicit none
-    integer, intent(IN) :: i
-    real :: dist !distance between particles 
-    integer :: j !for looping
-    s(i)%drhodh=0.
-    do j=1, sph_count
-      dist=dist_gen(s(i)%x,s(j)%x)
-      s(i)%drhodh=s(j)%m*sph_dWdh(dist,s(i)%h)
-    end do
-  end subroutine  
-  !************************************************************
-  !>the smoothing kernal M4 cubic spline
-  real function sph_W(r,h)
-    implicit none
-    real, intent(IN) :: r, h
-    real :: q !ration of distance between particles and smoothing length
-    q=r/h
-    if (q<1) then
-      sph_W=1-1.5*q**2+0.75*q**3
-    else if (q<2) then
-      sph_W=0.25*(2-q)**3
-    else 
-      sph_W=0.
-    end if
-    sph_W=sph_W*(1/(pi*h**3))
-  end function
-  !************************************************************
-  !>derivative of the smoothing kernal wrt h
-  real function sph_dWdh(r,h)
-    implicit none
-    real, intent(IN) :: r, h
-    real :: q !ratio of distance between particles and smoothing length
-    q=r/h
-    if (q<1) then
-      sph_dWdh=-3+7.5*q**2-4.5*q**3
-    else if (q<2) then
-      sph_dWdh=-6+12*q-7.5*q**2+1.5*q**3
-    else 
-      sph_dWdh=0.
-    end if
-    sph_dWdh=sph_dWdh*(1/(pi*h**4))
-  end function
-  !************************************************************
-  !>gradient of the smoothing kernal
-  function sph_grad_W(xi,xj,h)
-    implicit none
-    real, dimension(3) :: sph_grad_W
-    real, intent(IN) :: xi(3), xj(3) !particle positions
-    real, intent(IN) :: h
-    real :: r, q !ratio of distance between particles and smoothing length
-    logical, parameter :: no_clumping=.false.
-    r=dist_gen(xi,xj)
-    q=r/h
-    if (no_clumping) then
-      if (q<2/3) then
-        sph_grad_W=(xi-xj)
-      else if (q<1) then
-        sph_grad_W=(xi-xj)*(3*q-2.25*q**2)
-      else if (q<2) then
-        sph_grad_W=-(xi-xj)*0.75*(2-q)**2
-      else
-        sph_grad_W=0.
-      end if
-    else
-      if (q<1) then
-        sph_grad_W=(xi-xj)*(3*q-2.25*q**2)
-      else if (q<2) then
-        sph_grad_W=(xi-xj)*0.75*(2-q)**2
-      else
-        sph_grad_W=0.
-      end if
-    end if 
-    sph_grad_W=sph_grad_W*(-1/(pi*r*h**4))
-  end function
-  !************************************************************
-  !>gravitiational kernal
-  function sph_phi(r,h)
-    implicit none
-    real, dimension(3) :: sph_phi
-    real, intent(IN) :: r, h
-    real :: q !ratio of distance between particles and smoothing length
-    q=r/h
-    if (q<1) then
-      sph_phi=(4./3.)*q-1.2*q**3+0.5*q**4
-    else if (q<2) then
-      sph_phi=(8./3.)*q-3*q**2+1.2*q**3-(q**4)/6.-(q**(-2))/15.
-    else
-      sph_phi=q**(-2)
-    end if
-    sph_phi=sph_phi/(h**2)
-  end function
   !************************************************************
   !>timestep-check SPH
   subroutine time_check_SPH
     implicit none
     integer :: i
-    real :: sphdt, minsphdt
+    real :: sphdt,sphdt1,sphdt2, minsphdt
     minsphdt=dt
     do i=1, SPH_count
-      sphdt=sqrt(s(i)%h/(sqrt(dot_product(s(i)%a,s(i)%a))+0.0001))
+      if (s(i)%rho<epsilon(0.)) cycle
+      sphdt2=0.2*s(i)%h/sqrt(SPH_gamma*s(i)%P/s(i)%rho)
+      sphdt1=sqrt(s(i)%h/(sqrt(dot_product(s(i)%a,s(i)%a))+0.0001))
+      sphdt=min(sphdt1,sphdt2)
       if (sphdt<minsphdt) then
         minsphdt=sphdt
       end if
@@ -386,75 +229,238 @@ module sph
     SPH_urms=sqrt(sum(uinfo(:,1)**2)/SPH_count)
     open(unit=78,file='data/SPH_ts.log',position='append')
     if (itime==shots) then
-      write(78,*) '%-var-----t----------maxu---------maxdu---------urms------minh---'
-      if (particles_only) write(*,*) '%-var-----t--------maxu------maxdu-------urms------minh--'
+      write(78,*) '%-var-----t--------dt-------------maxu----------maxdu &
+                  --------urms------minh----max_neigh-----fbar--maxdivu'
+      if (particles_only) write(*,*) '%-var-----t------dt-----------maxu &
+                          --------maxdu------urms------minh---max_neigh----fbar--maxdivu'
     end if
-    write(78,'(i5.3,f9.2,f15.8,f15.8,f15.8,f15.8)') &
-    itime/shots,t,SPH_maxu,SPH_maxdu,SPH_urms,minval(s%h)
+    write(78,'(i5.3,f9.2,e12.4,f15.8,f15.8,f15.8,f15.8,i12.4,f12.8,f12.8)') &
+    itime/shots,t,dt,SPH_maxu,SPH_maxdu,SPH_urms,minval(s%h),maxval(s%ncount),sum(s%f)/SPH_count,maxval(s%divu)
     if (particles_only) then
-      write(*,'(i5.3,f9.2,f12.8,f10.5,f10.5,f10.4)') &
-      itime/shots,t,SPH_maxu,SPH_maxdu,SPH_urms,minval(s%h)
+      write(*,'(i5.3,f9.2,e12.4,f12.4,f10.2,f10.5,f10.4,i10.4,f10.4,f10.4)') &
+      itime/shots,t,dt,SPH_maxu,SPH_maxdu,SPH_urms,minval(s%h),maxval(s%ncount),sum(s%f)/SPH_count,maxval(s%divu)
     end if
     close(78)
   end subroutine
+  !************************************************************
+  !>setup the particles in as set by SPH_init in run.in
+  subroutine setup_SPH
+    implicit none
+    integer :: i, j
+    real :: rs, rthet, rphi !for some intial conditions
+    !check that the mass of the particles has been set in run.in
+    if (SPH_mass<epsilon(0.)) call fatal_error('setup_SPH',&
+                              'mass of SPH particles not set')
+    allocate(s(SPH_count)) !allocate main SPH particle array
+    allocate(s_NN(SPH_count)) !allocate main SPH particle array
+    write(*,'(a)') ' --------------------SPH--------------------' 
+    write(*,'(a,i7.1,a)') ' initialising ', SPH_count, ', particles '
+    write(*,'(a,a,a,e14.7)') ' initial setup ', trim(SPH_init), ', with mass ', SPH_mass
+    write(*,'(a,f10.5)') ' adiabatic index, gamma= ', SPH_gamma
+    write(*,'(a,f10.5)') ' gravitational constant= ', SPH_G
+    if (SPH_theta>epsilon(0.)) write(*,'(a,f10.5)') ' using tree, opening angle= ', SPH_theta
+    select case(SPH_init)
+      case('sphere')
+        !particles in a uniform sphere - http://en.wikipedia.org/wiki/N-sphere
+        write(*,'(a,f10.5)') ' radius of sphere= ', SPH_init_r*box_size
+        do i=1, SPH_count
+          s(i)%x(1)=rnorm(0.,1.) ; s(i)%x(2)=rnorm(0.,1.) ; s(i)%x(3)=rnorm(0.,1.)
+          call random_number(rs)
+          s(i)%x=box_size*SPH_init_r*0.5*(rs**0.333333333333)*s(i)%x/sqrt(dot_product(s(i)%x,s(i)%x))
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+          s(i)%i=i !needed for neighbour list
+        end do
+      case('sphere+noise')
+        !particles in uniform sphere with noise in velocity field
+        write(*,'(a,f10.5)') ' radius of sphere= ', SPH_init_r*box_size
+        do i=1, SPH_count
+          s(i)%x(1)=rnorm(0.,1.) ; s(i)%x(2)=rnorm(0.,1.) ; s(i)%x(3)=rnorm(0.,1.)
+          call random_number(rs)
+          s(i)%x=box_size*SPH_init_r*0.5*(rs**0.333333333333)*s(i)%x/sqrt(dot_product(s(i)%x,s(i)%x))
+          call random_number(s(i)%u) ; s(i)%u=2*(2*s(i)%u-1.)
+          s(i)%u1=s(i)%u ; s(i)%u2=s(i)%u !set the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+          s(i)%i=i !needed for neighbour list
+        end do
+      case('random_sphere')
+        !particles in a random sphere
+        write(*,'(a,f10.5)') ' radius of sphere= ', SPH_init_r*box_size
+        do i=1, SPH_count
+          call random_number(rs)
+          call random_number(rthet) ; call random_number(rphi)
+          rs=rs*box_size*SPH_init_r ; rthet=rs*(2*rthet-1.) ; rphi=rphi*2*pi
+          s(i)%x(1)=sqrt(rs**2-rthet**2)*cos(rphi)
+          s(i)%x(2)=sqrt(rs**2-rthet**2)*sin(rphi)
+          s(i)%x(3)=rthet
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+          s(i)%i=i !needed for neighbour list
+        end do
+      case('random')
+        !particles in random positions
+        do i=1, SPH_count
+          call random_number(s(i)%x(1))
+          call random_number(s(i)%x(2)) ; call random_number(s(i)%x(3))
+          s(i)%x(1)=box_size*s(i)%x(1)-box_size/2.
+          s(i)%x(2)=box_size*s(i)%x(2)-box_size/2.
+          s(i)%x(3)=box_size*s(i)%x(3)-box_size/2.
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+          s(i)%i=i !needed for neighbour list
+        end do
+      case('plane')
+        !particles in planes at \pm z
+        do i=1, SPH_count
+          call random_number(s(i)%x(1)) ; call random_number(s(i)%x(2))
+          s(i)%x(1)=box_size*s(i)%x(1)-box_size/2.
+          s(i)%x(2)=box_size*s(i)%x(2)-box_size/2.
+          if (i<floor(real(SPH_count)/2.)) then
+            s(i)%x(3)=-0.48*box_size
+          else
+            s(i)%x(3)=0.48*box_size
+          end if
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+          s(i)%i=i !needed for neighbour list
+        end do
+      case('centre-plane')
+        !particles in y-z plane at centre of box
+        do i=1, SPH_count
+          call random_number(s(i)%x(2)) ; call random_number(s(i)%x(3))
+          s(i)%x(1)=0.
+          s(i)%x(2)=box_size*s(i)%x(2)-box_size/2.
+          s(i)%x(3)=box_size*s(i)%x(3)-box_size/2.
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+          s(i)%i=i !needed for neighbour list
+        end do
+      case('figure8')
+        if (SPH_count/=3) call fatal_error('SPH','SPH_count must be 3')
+        s(1)%x(1)=0.9700000436
+        s(2)%x(1)=-0.9700000436
+        s(1)%x(2)=-0.2430875
+        s(2)%x(2)=0.2430875
+        s(1)%x(3)=0.
+        s(2)%x(3)=0.
+        s(3)%x=0.
+        do i=1,SPH_count
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+          s(i)%i=i !needed for neighbour list
+        end do
+      case('corner')
+        !particles in corners
+        do i=1, SPH_count
+          call random_number(s(i)%x(1))
+          call random_number(s(i)%x(2)) ; call random_number(s(i)%x(3))
+          s(i)%x(1)=0.1*(box_size*s(i)%x(1)-box_size/2.)
+          s(i)%x(2)=0.1*(box_size*s(i)%x(2)-box_size/2.)
+          s(i)%x(3)=0.1*(box_size*s(i)%x(3)-box_size/2.)
+          if (i<floor(real(SPH_count)/2.)) then
+            s(i)%x=s(i)%x+0.4*box_size
+          else
+            s(i)%x=s(i)%x-0.4*box_size
+          end if
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+          s(i)%i=i !needed for neighbour list
+        end do
+      case('loop')
+        !this initial condition is set to interface with the filamemt
+        !rs is based on filament separation
+        rs=(0.75*SPH_count*delta)/(2*pi) !75% of potential size    
+        do i=1, SPH_count      
+          s(i)%x(1)=rs*sin(pi*real(2*i-1)/SPH_count)
+          s(i)%x(2)=rs*cos(pi*real(2*i-1)/SPH_count)
+          s(i)%x(3)=0.
+          s(i)%u=0. ; s(i)%u1=0. ; s(i)%u2=0. !0 the velocity fields
+          s(i)%a=0. ; s(i)%a1=0. ; s(i)%a2=0. !0 the acc fields
+          s(i)%i=i !needed for neighbour list
+        end do
+      case default
+        call fatal_error('setup_SPH','SPH_init not set to available value')
+    end select
+    s(:)%m=SPH_mass !set the masses of the particles
+    !make an initial guess for the smoothing length
+    s(:)%h=box_size/10.
+    !improve the guess for h
+    !first build the tree if needed
+    if (SPH_theta>0) call create_SPH_tree !sph_tree.mod
+    !now iteratively improve smoothing length
+    do j=1, 20 !do this twenty times
+      call sph_neighbour_loop
+    end do
+    if (SPH_theta>0) then
+      call SPH_empty_tree(stree) !empty the tree to avoid a memory leak
+      deallocate(stree%parray) ; deallocate(stree) ; nullify(stree)
+    end if
+    !finally set up SPH_mesh
+    if (SPH_mesh_size>0) then
+      call setup_SPH_mesh !init.mod
+    else
+      write(*,*) 'no SPH mesh allocated'
+    end if
+    !open(unit=23,file='data/sph_correction.log',status='replace')
+    !do j=1, SPH_count
+    !  write(23,*) s(j)%f
+    !end do 
+    !close(23)
+  end subroutine
+  !****************************************************************
+  subroutine setup_SPH_mesh
+    implicit none
+    integer :: i,j,k
+    real :: res
+    if (mod(SPH_mesh_size,2)/=0) then
+      call fatal_error('sph.mod:setup_mesh', &
+      'mesh size must be a multiple of 2')
+    end if
+    if (SPH_mesh_size<16) call warning_message('sph.mod:setup_mesh','warning mesh size is small')
+    res=real(box_size)/SPH_mesh_size
+    allocate(SPH_mesh(SPH_mesh_size,SPH_mesh_size,SPH_mesh_size))
+    do k=1, SPH_mesh_size
+      do j=1, SPH_mesh_size
+        do i=1, SPH_mesh_size
+          SPH_mesh(k,j,i)%x(1)=res*real(2*i-1)/2.-(box_size/2.)
+          SPH_mesh(k,j,i)%x(2)=res*real(2*j-1)/2.-(box_size/2.)
+          SPH_mesh(k,j,i)%x(3)=res*real(2*k-1)/2.-(box_size/2.)
+          SPH_mesh(k,j,i)%rho=0. !clear the density slot
+        end do
+      end do
+    end do
+    write(*,*) 'allocated SPH mesh'
+  end subroutine
+  !****************************************************************
+  subroutine mesh_print_SPH(filenumber)
+    implicit none
+    character (len=40) :: print_file
+    integer, intent(IN) :: filenumber
+    integer :: i,j,k,si
+    real :: dist
+    !first set the elements of the mesh
+    SPH_mesh%rho=0.
+    do k=1, SPH_mesh_size
+      do j=1, SPH_mesh_size
+        do i=1, SPH_mesh_size
+          do si=1, SPH_count
+            dist=dist_gen(s(si)%x,SPH_mesh(k,j,i)%x)
+            SPH_mesh(k,j,i)%rho=SPH_mesh(k,j,i)%rho+s(si)%m*sph_W(dist,s(si)%h)
+          end do
+        end do
+      end do
+    end do
+    write(unit=print_file,fmt="(a,i3.3,a)")"./data/SPH_mesh",filenumber,".dat"
+    open(unit=92,file=print_file,form='unformatted',status='replace',access='stream')
+      write(92) t
+      write(92) SPH_mesh(SPH_mesh_size/2,SPH_mesh_size/2,1:SPH_mesh_size)%x(1)
+      write(92) SPH_mesh%rho
+    close(92)
+    if (vapor_print) then
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/SPH_vapor",filenumber,".dat"
+      open(unit=92,file=print_file,form='unformatted',status='replace',access='stream')
+        write(92) SPH_mesh%rho
+      close(92)
+    end if
+  end subroutine
 end module
-!>\page SPH Smoothed Particle Hydrodynamics
-!>The M4 cubic spline kernel (Monaghan \& Lattanzio 1985) is used in many implementations of SPH, due to its simple form and its compact support.  The M4 kernel is a function of \f$s\equiv r/h\f$ only. For \f$D=1,\;2,\;{\rm and}\;3\,\f$ dimensions, it takes the form
-!>\f{eqnarray}{
-!>W (s) &=& \frac{\sigma_{\!_D}}{h^D} 
-!>\left\{ \;\; \begin{array}{ll} 
-!>1 - \frac{3}{2}s^2 + \frac{3}{4}s^3 \;\;\;\; & \;\;0 \leq s \leq 
-!>1\,; \\ \frac{1}{4}(2-s)^3 \;\;\;\; & \;\;1 \leq s \leq 2\,; \\ 
-!>0 \;\;\;\; & \;\;s > 2 \,.
-!>\end{array} \right . 
-!>\f}
-!>where \f$\sigma_{_1}=2/3\f$, \f$\sigma_{_2}=10/7\pi\f$, and \f$\sigma_{_3}=1/\pi\f$. The first spatial derivative is
-!>\f{eqnarray}{
-!>\frac{dW}{dr}(s) &=& - \frac{\sigma_{\!_D}}{h^{D+1}}
-!>\left\{ \;\; \begin{array}{ll}
-!>3s - \frac{9}{4}s^2 \;\;\;\; & \;\;0 \leq s \leq 1\,; \\ 
-!>\frac{3}{4}(2-s)^2 \;\;\;\; & \;\;1 \leq s \leq 2\,; \\ 
-!>0 \;\;\;\; & \;\;s > 2 \,.
-!>\end{array} \right .
-!>\f}
-!>We should also investigate using the modified derivative proposed by Thomas \& Couchman (1992) to prevent the clumping instability.
-!>For `grad-h' SPH, the \f$\Omega\f$ correction kernel function is given by 
-!>\f{eqnarray}{
-!>\frac{\partial W}{\partial h}(s) = \frac{\sigma_{\!_D}}{h^{D+1}} 
-!>\left\{ \;\; \begin{array}{ll} 
-!>-D + \frac{3}{2}(D + 2)\,s^2 - \frac{3}{4}(D + 3)\,s^3 
-!>\;\;\;\; & \;\;0 \leq s \leq 1\,; \\ 
-!>-2\,D + 3\,(D + 1)\,s - \frac{3}{2}(D + 2)\,s^2 + \frac{1}{4}(D + 3)\,s^3 
-!> \;\;\;\; & \;\;1 \leq s \leq 2\,; \\ 
-!>0 \;\;\;\; & \;\;s > 2 \,.
-!>\end{array} \right . 
-!>\f}
-!> the smoothing length is set to:
-!>\f[ h_i  = \eta_{_{\rm SPH}} \left( \frac{m_i }{\rho_i}
-!>\right)^{\frac{1}{D}}\ \f]
-!>where \f$m_i\f$ is the mass of particle \f$i\f$, \f$\rho_i\f$ is the SPH density at the position of particle \f$i\f$, 
-!>\f$D\f$ is the spatial dimensionality, and \f$\eta_{_{\rm SPH}}\f$ is a parameter that controls the mean number of neighbours, 
-!>\f$\bar{N}_{_{\rm NEIB}} \simeq 2\,{\cal R}\,\eta_{_{\rm SPH}} \;,\;\; \pi\,({\cal R}\eta_{_{\rm SPH}})^2 \;,\;\;(4\pi /3)({\cal R}\eta_{_{\rm SPH}})^3\,\,\f$ in one, two and three dimensions respectively. \f${\cal R}=2\f$
-!>for the kernal choice detailed above. \f$\;\rho_i\f$ is calculated using 
-!>\f[ \rho_i = \sum \limits_{j=1}^{N}  m_j W({\bf r}_{ij},h_i), \f]
-!>where \f${\bf r}_{ij} \equiv {\bf r}_i - {\bf r}_j\f$, and the summation includes particle \f$i\f$ itself. 
-!>Since the smoothing length is needed in order to calculate the density and vice-versa, \f$h_i\f$ and \f$\rho_i\f$ are obtained by iteration.
-!>Once \f$h\f$ and \f$\rho\f$ are evaluated for all particles, the terms in the SPH fluid equations can be computed. The momentum equation is 
-!>\f{eqnarray}{
-!>\frac{d{\bf v}_i }{dt} &=& -
-!>\sum \limits_{j=1}^{N}  m_j  \left( 
-!>\frac{P_i}{\Omega_i \rho_i^2} \nabla_i W({\bf r}_{ij} ,h_i) + 
-!>\frac{P_j}{\Omega_j \rho_j^2} \nabla_i W({\bf r}_{ij} ,h_j) \right)
-!>\,,
-!>\f}
-!>where \f$P_i\f$ is the pressure of particle \f$i\f$, \f$\nabla_i W\f$ is the gradient of the kernel function at the position of particle \f$i\f$, and 
-!>\f{eqnarray}
-!>\Omega_i  &=& 1 - \frac{\partial h_i }{\partial \rho_i } 
-!>\sum \limits_{j=1}^{N}  m_j  \frac{\partial W}{\partial h}
-!>({\bf r}_{ij} , h_i )\,.
-!>\f}
-!>\f$\Omega_i\f$ is a dimensionless quantity that corrects for the spatial variability of \f$h\f$. \f$\partial h_i / \partial \rho_i\f$ is obtained explicitly. \f$\partial W / \partial h\f$ is obtained from the kernel function.
-!>We note that the gradient of the kernal function can be calculated in the following manner:
-!>\f[ \nabla_i W=\frac{\mathbf{x}_i-\mathbf{x}_j}{{\bf r}_{ij}} 
-!>\frac{\partial W}{\partial {\bf r}_{ij}} \f]
-!>and that the particle pressure can be determined from the equation of state

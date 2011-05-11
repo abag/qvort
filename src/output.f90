@@ -20,6 +20,7 @@ module output
       write(77,*) part_count
       write(77,*) quasi_pcount
       write(77,*) SPH_count
+      write(77,*) SPH_mesh_size
     close(77)
   end subroutine
   !**********************************************************************
@@ -90,6 +91,15 @@ remove_count
         else 
           write(98) sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
         end if
+        select case(velocity)
+          case('SPH')
+            write(98) real(f(:)%sph)
+          case default
+            write(98) sqrt(f(:)%u_sup(1)**2+&
+                           f(:)%u_sup(2)**2+&
+                           f(:)%u_sup(3)**2)
+        end select
+
       close(98)
     else
       write(unit=print_file,fmt="(a,i4.4,a)")"./data/var",filenumber,".log"
@@ -98,9 +108,10 @@ remove_count
         write(98,*) pcount
         do i=1, pcount
           if (magnetic) then
-            write(98,*) f(i)%x(1:3), f(i)%infront, f(i)%B
+            write(98,*) f(i)%x(1:3), f(i)%infront, f(i)%B, f(i)%sph
           else
-            write(98,*) f(i)%x(1:3), f(i)%infront, sqrt(f(i)%u(1)**2+f(i)%u(2)**2+f(i)%u(3)**2)
+            write(98,*) f(i)%x(1:3), f(i)%infront, sqrt(f(i)%u(1)**2+f(i)%u(2)**2+f(i)%u(3)**2), &
+                        sqrt(dot_product(f(i)%u_sup,f(i)%u_sup))
           end  if
         end do
       close(98)
@@ -239,8 +250,6 @@ remove_count
   end subroutine
   !**********************************************************************
   !>print the mesh to a binary file to be read in by matlab
-  !!\todo the vapor print call in here is not elegant, may not be needed anyway
-  !!as we have paraview output from matlab
   subroutine print_mesh(filenumber)
     implicit none
     integer, intent(IN) :: filenumber
@@ -280,27 +289,37 @@ remove_count
   end subroutine
   !**********************************************************************
   !>print the velocity  array as unformatted data for use matlab
-  !!\todo would be better to print as binary data
   subroutine print_velocity(filenumber)
     implicit none
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
-    logical :: sup_only=.true.
     integer :: i
     write(unit=print_file,fmt="(a,i4.4,a)")"./data/uu",filenumber,".dat"
     open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
       write(98) t
       write(98) pcount
-      if (sup_only) then
-        write(98) f(:)%u_sup(1)
-        write(98) f(:)%u_sup(2)
-        write(98) f(:)%u_sup(3)
-      else
+      write(98) f(:)%u_sup(1)
+      write(98) f(:)%u_sup(2)
+      write(98) f(:)%u_sup(3)
+    close(98)
+    if (vel_print_extra) then
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/uu_full",filenumber,".dat"
+      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+        write(98) t
+        write(98) pcount
         write(98) f(:)%u(1)
         write(98) f(:)%u(2)
         write(98) f(:)%u(3)
-      end if
-    close(98)
+      close(98)
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/uu_mf",filenumber,".dat"
+      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+        write(98) t
+        write(98) pcount
+        write(98) f(:)%u_mf(1)
+        write(98) f(:)%u_mf(2)
+        write(98) f(:)%u_mf(3)
+      close(98)
+    end if
   end subroutine
   !**************************************************
   subroutine banner_print()

@@ -2,6 +2,7 @@
 module sph_tree
    use cdata
    use general
+   use sph_kernel
    !>the tree structure, uses pointers
    !>@param posx @param posy @param posz bottem left corner of box
    !>@param width the width of the mesh 
@@ -12,7 +13,9 @@ module sph_tree
    !>@param all particles in the cell
    !>@param centx @param centy @param centz the center of 'mass' of the cell
    !>@param mass the total mass of the cell
+   !>@param h the average smoothing length of the cell
    type SPH_node
+      integer :: i !sph particle only set if pcount is 1
       real :: posx,posy,posz 
       real :: width 
       integer :: pcount 
@@ -22,11 +25,14 @@ module sph_tree
       type (SPH_node), pointer :: btl, btr !back (y) top left, right (child)
       type (smooth_particle), allocatable :: parray(:) 
       real :: centx, centy, centz 
-      real :: mass !total circulation vector
+      real :: mass !total mass 
+      real :: h
    end type SPH_node
    !>the SPH particle tree
-   type (SPH_node), pointer :: stree 
+   type (SPH_node), pointer :: stree
+   integer, private :: ncounter
   contains
+  !**************************************************************************
   !>An array to set the main node of the tree and then call the recurisive 
   !>subroutine build_tree this is called in the main program
   subroutine create_SPH_tree()
@@ -41,6 +47,7 @@ module sph_tree
     stree%centy=sum(s%x(2))/SPH_count
     stree%centz=sum(s%x(3))/SPH_count
     stree%mass=sum(s%m)
+    stree%h=sum(s%h)/SPH_count
     !now nullify its children - for safety
     nullify(stree%fbl, stree%fbr, stree%ftl, stree%ftr)
     nullify(stree%bbl, stree%bbr, stree%btl, stree%btr)
@@ -94,7 +101,7 @@ module sph_tree
   !********************************************************************************
   !>allocate a new cell, populate with particles and calculate centre of mass, 
   !>total circulation vector and magnetic field vector
-  subroutine SPH_new_tree(stree,posx,posy,posz,width, loc_pcount,parray)
+  subroutine SPH_new_tree(stree,posx,posy,posz,width,loc_pcount,parray)
     !create a new tree
     implicit none
     integer, intent(IN) :: loc_pcount
@@ -107,7 +114,7 @@ module sph_tree
     !set up this node of the tree with the input info
     stree%posx=posx ; stree%posy=posy ; stree%posz=posz
     stree%width=width ; stree%centx=0. ; stree%centy=0.
-    stree%centz=0. ; stree%mass=0.
+    stree%centz=0. ; stree%mass=0. ; stree%h=0.
     counter=0 !0 the counter
     do i=1, loc_pcount
       if((parray(i)%x(1)>=posx).and.(parray(i)%x(1)<(posx+width)).and. &
@@ -119,8 +126,10 @@ module sph_tree
         stree%centx=stree%centx+parray(i)%x(1)
         stree%centy=stree%centy+parray(i)%x(2)
         stree%centz=stree%centz+parray(i)%x(3)
-        !also account for the circulation
+        !also account for the mass
         stree%mass=stree%mass+parray(i)%m
+        !and the smoothing length
+        stree%h=stree%h+parray(i)%h
       end if
     end do
     !take the average of the positions
@@ -128,6 +137,8 @@ module sph_tree
      stree%centx=stree%centx/counter
      stree%centy=stree%centy/counter
      stree%centz=stree%centz/counter
+     !and average the smoothing length
+     stree%h=stree%h/counter
     end if
     stree%pcount=counter
     !nullify the children
@@ -164,4 +175,90 @@ module sph_tree
     nullify(stree)
   end subroutine
   !********************************************************************************
+  !>find the closest particle using the tree structure, theoretically should be NlogN
+  !>repeatedly calls SPH_tree_neighbour
+  subroutine SPH_neighbour_list
+    !loop over all the particles and find the closest one to i using the tree mesh
+    implicit none
+    integer :: i
+    do i=1, SPH_count
+      ncounter=0
+      nullify(s_NN(i)%list)
+      allocate(s_NN(i)%list)
+      nullify(s_NN(i)%list%next)
+      s_NN(i)%current => s_NN(i)%list
+      call SPH_tree_neighbour(i,stree)
+      s(i)%ncount=ncounter
+    end do
+  end subroutine
+  !********************************************************************************
+  !>recurisve routine used by SPH_neighbour list to find the neighbours of particle to i
+  recursive subroutine SPH_tree_neighbour(i,stree)
+    implicit none
+    integer, intent(IN) :: i
+    type (SPH_node), pointer :: stree
+    real :: dist !distance
+     if (stree%pcount==0) return !empty box no use
+     !work out distances opening angles etc. here
+     dist=sqrt((s(i)%x(1)-stree%centx)**2+(s(i)%x(2)-stree%centy)**2+(s(i)%x(3)-stree%centz)**2)
+     if (dist-sqrt(3.)*stree%width<2*s(i)%h) then
+       !if the box is empty exit the routine
+       if (stree%pcount==0) then 
+         return
+       elseif (stree%pcount==1) then
+         !if box only contains one particle then we add it to the neighbour list
+         ncounter=ncounter+1
+         if (ncounter==1) then
+           s_NN(i)%current%i=stree%parray(1)%i
+         else
+           allocate(s_NN(i)%current%next)
+           nullify(s_NN(i)%current%next%next)
+           s_NN(i)%current%next%i=stree%parray(1)%i
+           s_NN(i)%current => s_NN(i)%current%next
+         end if
+       else
+         !open the box up and use the child cells
+         call SPH_tree_neighbour(i,stree%fbl) ; call SPH_tree_neighbour(i,stree%fbr)
+         call SPH_tree_neighbour(i,stree%ftl) ; call SPH_tree_neighbour(i,stree%ftr)
+         call SPH_tree_neighbour(i,stree%bbl) ; call SPH_tree_neighbour(i,stree%bbr)
+         call SPH_tree_neighbour(i,stree%btl) ; call SPH_tree_neighbour(i,stree%btr)
+       end if
+     end if
+   end subroutine
+   !************************************************************************
+   !>a more general form of above, where a position is an input
+   recursive subroutine SPH_gravity_tree_walk(i,stree,a)
+     implicit none
+     integer, intent(IN) :: i !the SPH particle
+     type (SPH_node), pointer :: stree !the tree
+     real :: a(3) !the acceleration due to G at particle i
+     real :: vect(3) !helper vector
+     real :: dist, theta !helper variables
+     integer :: j=0 !the particle in the tree mesh
+
+     if (stree%pcount==0) return !empty box no use
+     !work out distances opening angles etc. here
+     dist=sqrt((s(i)%x(1)-stree%centx)**2+&
+               (s(i)%x(2)-stree%centy)**2+&
+               (s(i)%x(3)-stree%centz)**2)
+     theta=stree%width/dist !the angle to test below
+ 
+     if (stree%pcount==1.or.theta<SPH_theta) then
+       !check the distance is not 0
+       if (dist<epsilon(0.)) return 
+       !use the contribution of this cell
+       vect(1)=s(i)%x(1)-stree%centx
+       vect(2)=s(i)%x(2)-stree%centy
+       vect(3)=s(i)%x(3)-stree%centz
+       
+       a=a-vect*SPH_G*stree%mass*sph_phi(dist,s(i)%h)/(2.*dist)
+       a=a-vect*SPH_G*stree%mass*sph_phi(dist,stree%h)/(2.*dist)
+     else
+       !open the box up and use the child cells
+       call SPH_gravity_tree_walk(i,stree%fbl,a) ; call SPH_gravity_tree_walk(i,stree%fbr,a)
+       call SPH_gravity_tree_walk(i,stree%ftl,a) ; call SPH_gravity_tree_walk(i,stree%ftr,a)
+       call SPH_gravity_tree_walk(i,stree%bbl,a) ; call SPH_gravity_tree_walk(i,stree%bbr,a)
+       call SPH_gravity_tree_walk(i,stree%btl,a) ; call SPH_gravity_tree_walk(i,stree%btr,a)
+     end if 
+   end subroutine
 end module

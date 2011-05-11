@@ -92,31 +92,28 @@ else
   exit 1
 fi
 if [ $FORCE -eq 1 ]; then
-  if [ -e ./data/ts.log ]; then
-    if [ $PROTECT -eq 1 ]; then
-      echo "emptying data but protecting random seed"
-      if [ -e ./data/seed.dat ]; then
-        mv data/seed.dat .
-        rm data/*
-        mv seed.dat ./data
-      else
-        echo "there is no seed to protect!"
-      fi
-    else
-      echo "emptying data"
+  if [ $PROTECT -eq 1 ]; then
+    echo "emptying data but protecting random seed"
+    if [ -e ./data/seed.dat ]; then
+      mv data/seed.dat .
       rm data/*
+      mv seed.dat ./data
+    else
+      echo "there is no seed to protect!"
     fi
+  else
+    echo "emptying data"
+    rm data/*
   fi
-  if [ -e ./STOP ]; then
-    echo "removing STOP file"
-    rm ./STOP
-  fi
-else
-  if [ -e ./STOP ]; then
-    echo "encountered STOP file: aborting run"
-    echo "please delete the STOP file before running again"
-    exit 1
-  fi
+fi
+if [ -e ./STOP ]; then
+  echo "removing STOP file"
+  rm ./STOP
+fi
+if [ -e ./STOP ]; then
+  echo "encountered STOP file: aborting run"
+  echo "please delete the STOP file before running again"
+  exit 1
 fi
 if [ $RESTART -eq 1 ]; then
   echo code will restart if possible

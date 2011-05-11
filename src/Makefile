@@ -24,8 +24,8 @@ default: run.x
 #
 # Targets
 #
-run.x: run.f90 cdata.o forcing.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o mag.o sph.o sph_tree.o matrix.o sph_interface.o topology.o Makefile 
-	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o forcing.o normal_fluid.o initial.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o mag.o sph.o sph_tree.o matrix.o sph_interface.o topology.o
+run.x: run.f90 cdata.o forcing.o initial_cond.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o mag.o sph.o sph_tree.o sph_kernel.o matrix.o sph_interface.o topology.o Makefile 
+	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o forcing.o normal_fluid.o initial.o initial_cond.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o mag.o sph.o sph_tree.o sph_kernel.o matrix.o sph_interface.o topology.o
 #
 #
 clean: 
@@ -50,7 +50,9 @@ normal_fluid.o: normal_fluid.f90 general.o cdata.o ksmodel.o
 #
 forcing.o: forcing.f90 general.o cdata.o
 #
-initial.o: initial.f90 stiff_solver.o normal_fluid.o forcing.o cdata.o quasip.o periodic.o particles.o smoothing.o sph.o
+initial.o: initial.f90 initial_cond.o stiff_solver.o normal_fluid.o forcing.o cdata.o quasip.o periodic.o particles.o smoothing.o sph.o
+#
+initial_cond.o: initial_cond.f90 cdata.o general.o periodic.o
 #
 timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o tree.o mirror.o mag.o matrix.o sph_interface.o
 #
@@ -78,9 +80,11 @@ mirror.o: mirror.f90 general.o cdata.o
 #
 stiff_solver.o: stiff_solver.f90 hamiltonian.o general.o cdata.o
 #
-sph.o: sph.f90 sph_tree.o general.o cdata.o normal_fluid.o output.o forcing.o
+sph.o: sph.f90 sph_tree.o sph_kernel.o general.o cdata.o normal_fluid.o output.o forcing.o
 #
-sph_tree.o: sph_tree.f90 general.o cdata.o 
+sph_tree.o: sph_tree.f90 sph_kernel.o general.o cdata.o 
+#
+sph_kernel.o: sph_kernel.f90 general.o cdata.o 
 #
 sph_interface.o: sph_interface.f90 sph.o general.o cdata.o normal_fluid.o output.o forcing.o matrix.o
 #

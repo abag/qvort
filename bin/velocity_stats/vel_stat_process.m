@@ -28,6 +28,7 @@ for i=start:finish
   end
   fclose(fid);
 end
+ux
 markerx=1;
 markery=1;
 markerz=1;

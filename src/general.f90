@@ -226,6 +226,9 @@ module general
       end if
     end if
     if (allocated(s)) then
+      if (any(isnan(s%h))) then
+        call fatal_error('run.x','there is a NAN in the (SPH) s%h array')
+      end if
       if (any(isnan(s%x(1))).or.any(isnan(s%x(2))).or.any(isnan(s%x(3)))) then
         call fatal_error('run.x','there is a NAN in the (SPH) s%x array')
       end if
@@ -244,5 +247,15 @@ module general
     write(*,*) 'zero count= ', zcount
     write(*,*) 'ending run...' ; stop 
   end subroutine
+  !*********************************************************************
+  !>used to draw random variables from a \fN(0,1)\f$ distribution, 
+  !>uses box-muller algorithm
+  real function rnorm(mu,sigma2)
+    implicit none
+    real, intent(IN) :: mu, sigma2
+    real :: u1, u2
+    call random_number(u1) ;  call random_number(u2)
+    rnorm=mu+sqrt(sigma2)*sqrt(-2.*log(u1))*cos(2.*pi*u2)   
+  end function
 end module
 

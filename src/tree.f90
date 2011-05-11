@@ -206,9 +206,7 @@ module tree
     do i=1, pcount
       f(i)%closestd=100. !arbitrarily high
       call closest_tree(i,vtree)
-      !print*, i, f(i)%closest
     end do
-    !stop
   end subroutine
   !********************************************************************************
   !>recurisve routine used by pclose_tree to find the closest particle to i

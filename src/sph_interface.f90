@@ -36,18 +36,24 @@ module sph_interface
   subroutine SPH_f_latch()
     implicit none
     integer :: i, j !for looping
+    integer :: partner
     real :: dist !distance between particles 
+    real :: min_dist
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       if (f(i)%sph==0) then 
         !only do this for particles which are unassociated, i.e. f(i)%sph=0
+        min_dist=10.
         do j=1, SPH_count
           dist=dist_gen(f(i)%x,s(j)%x) !distance between point and sph particle
-          if (dist<delta/2.) then
-            f(i)%sph=j !associate point i with sph particle j
-            exit !leave the loop if we have latched a point onto some density
+          if (dist<min_dist) then
+            min_dist=dist
+            partner=j
           end if
         end do
+        if (min_dist<delta/2.) then
+          f(i)%sph=partner !associate point i with sph particle j
+        end if
       end if
     end do
   end subroutine

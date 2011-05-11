@@ -90,7 +90,7 @@ module line
         f(i)%infront=par_new
         call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb) !periodic.mod         
         !address the magnetic issue
-        if (magnetic) then
+        if ((magnetic).and.(itime>30)) then
           if (f(i)%B<5.*Brms) then
               f(par_new)%B=2*f(i)%B
               f(i)%B=2*f(i)%B
