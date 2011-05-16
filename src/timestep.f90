@@ -215,7 +215,15 @@ module timestep
                   if (peri==0.and.perj==0.and.perk==0) cycle
                   call biot_savart_general_shift(mesh(k,j,i)%x,mesh(k,j,i)%u_sup, &
                   (/peri*box_size,perj*box_size,perk*box_size/)) !timestep.mod
-                end do ; end do ;end do
+                end do ; end do ; end do
+              end if
+              if (periodic_bc_notx) then
+                !as above but we do not need the x permutations
+                do perj=-1,1 ; do perk=-1,1
+                  if (perj==0.and.perk==0) cycle
+                  call biot_savart_general_shift(mesh(k,j,i)%x,mesh(k,j,i)%u_sup, &
+                  (/0.,perj*box_size,perk*box_size/)) !timestep.mod
+                end do ; end do 
               end if
             case('Tree')
               mesh(k,j,i)%u_sup=0. !must be zeroed for all algorithms
@@ -226,7 +234,15 @@ module timestep
                   if (peri==0.and.perj==0.and.perk==0) cycle
                   call tree_walk_general(mesh(k,j,i)%x,vtree, &
                        (/peri*box_size,perj*box_size,perk*box_size/),mesh(k,j,i)%u_sup) !tree.mod
-                end do ; end do ;end do
+                end do ; end do ; end do
+              end if
+              if (periodic_bc_notx) then
+                !as above but we do not need the x permutations
+                do perj=-1,1 ; do perk=-1,1
+                  if (perj==0.and.perk==0) cycle
+                  call tree_walk_general(mesh(k,j,i)%x,vtree, &
+                       (/0.,perj*box_size,perk*box_size/),mesh(k,j,i)%u_sup) !tree.mod
+                end do ; end do
               end if
           end select
           !normal fluid

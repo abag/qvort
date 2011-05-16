@@ -43,6 +43,7 @@ module general
     integer, intent(IN) :: i
     f(i)%x=0.
     f(i)%u=0. ; f(i)%u1=0. ; f(i)%u2=0.
+    f(i)%sph=0 ; f(i)%B=0.
     f(i)%ghosti=0. ; f(i)%ghostb=0.
     f(i)%infront=0 ; f(i)%behind=0
     f(i)%closest=0 ; f(i)%closestd=0.

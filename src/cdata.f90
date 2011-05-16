@@ -182,6 +182,8 @@ module cdata
   real , protected :: corea=8.244023E-9
   !>are boundaries periodic?  
   logical :: periodic_bc=.false.
+  logical :: periodic_bc_notx=.false.
+  real :: xdim_scaling_factor=1.
   !>are boundaries solid?
   logical :: mirror_bc=.false.
   character(len=30), protected :: velocity, initf, boundary
@@ -344,6 +346,8 @@ module cdata
              read(buffer, *, iostat=ios) velocity !BS/LIA/Tree
           case ('boundary')
              read(buffer, *, iostat=ios) boundary !open/periodic/mirror
+          case ('xdim_scaling_factor')
+             read(buffer, *, iostat=ios) xdim_scaling_factor !scale x axis
           case ('normal_velocity')
              read(buffer, *, iostat=ios) normal_velocity !zero/xflow/ABC/KS
           case ('normal_fluid_cutoff')

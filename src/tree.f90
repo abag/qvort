@@ -62,6 +62,8 @@ module tree
       case('BS')
         if (periodic_bc) then
           eval_counter=27*count(mask=f(:)%infront>0)**2
+        else if (periodic_bc_notx) then
+          eval_counter=9*count(mask=f(:)%infront>0)**2
         else
           eval_counter=count(mask=f(:)%infront>0)**2
         end if

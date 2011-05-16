@@ -1,9 +1,9 @@
 --------------required parameters------------
-nsteps 5000
-shots 100
+nsteps 500000
+shots 500
 recon_shots 1
 pcount 10
-dt 2E-5
+dt 2.5E-5
 delta 0.001
 box_size 0.1
 velocity Tree
@@ -11,8 +11,10 @@ initf single_loop
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-tree_theta 0.5
-inject_type rand-yz-loop
+tree_theta 0.6
+phonon_emission T
+inject_type rand-yz-loop2
 inject_size 10
-inject_skip 200
-inject_stop .1
+inject_skip 50
+inject_stop 1.5
+xdim_scaling_factor 1.5

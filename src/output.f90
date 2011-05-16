@@ -21,6 +21,7 @@ module output
       write(77,*) quasi_pcount
       write(77,*) SPH_count
       write(77,*) SPH_mesh_size
+      write(77,*) xdim_scaling_factor
     close(77)
   end subroutine
   !**********************************************************************

@@ -80,6 +80,10 @@ for i=1:optargin
             if isempty(plotlines)
               plotlines = 'Y';
             end
+            plotdark = input('dark plots? Y/N [N]','s');
+            if isempty(plotrough)
+              plotdark = 'N';
+            end
           end
           for j=mstart:mskip:mend
               fOUT=sprintf('data/var%04d.png',j)
@@ -89,16 +93,21 @@ for i=1:optargin
                 continue
               end
               if plotlines=='Y'
-                vortex_plot(j,'line');
+                if plotdark=='Y'
+                  vortex_plot(j,'line','dark');
+                else
+                  vortex_plot(j,'line');
+                end 
               else
-                vortex_plot(j);
+                if plotdark=='Y'
+                  vortex_plot(j,'dark');
+                else
+                  vortex_plot(j);
+                end 
               end
               print('-dpng',fOUT); 
           end
           animate = input('shall I animate the pngs I created Y/N [N]','s');
-          if isempty(deleteold)
-            plotrough = 'N';
-          end
           if animate=='Y'
             unix('animate data/var*.png')
           end 
@@ -277,16 +286,18 @@ for j=1:number_of_particles
 end
 if (dims(2)>0.)
   if overhead==1
-    axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);
+    axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(9)) dims(2)/(2*dims(9))]);
   else
-    axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);
+    axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(9)) dims(2)/(2*dims(9)) -dims(2)/(2*dims(9)) dims(2)/(2*dims(9))]);
+    daspect([1 dims(9) dims(9)])
     box on
   end
 else
   if overhead==1
     axis([-box_size box_size -box_size box_size]);
   else
-    axis([-box_size box_size -box_size box_size -box_size box_size]);
+    axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(9)) dims(2)/(2*dims(9)) -dims(2)/(2*dims(9)) dims(2)/(2*dims(9))]);
+    daspect([1 dims(9) dims(9)])
     box on
   end
 end

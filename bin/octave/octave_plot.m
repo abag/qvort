@@ -60,7 +60,11 @@ for j=1:number_of_particles
     hold on
   end
 end
-axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);
+axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(9)) dims(2)/(2*dims(9)) -dims(2)/(2*dims(9)) dims(2)/(2*dims(9))]);
+daspect([1 dims(9) dims(9)])
+set(gca,'xtick',[]) 
+set(gca,'ytick',[]) 
+set(gca,'ztick',[]) 
 hold off
 grid on
 box on

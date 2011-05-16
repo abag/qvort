@@ -73,6 +73,10 @@ module initial
         case('periodic')
           periodic_bc=.true.
           write(*,'(a,f8.3)') ' running with periodic boundaries, box size:', box_size
+        case('openx')
+          periodic_bc_notx=.true.
+          write(*,'(a,f8.3)') ' running with periodic boundaries in y-z direction, box size:', box_size
+          write(*,*) ' boundaries open in the x direction, loops that have left the box will be removed'
         case('mirror')
           mirror_bc=.true.
           call warning_message('init.mod','mirror b.c.s are still in testing and will probably fail at some point in the run!')
@@ -84,8 +88,17 @@ module initial
           if (mirror_print) write(*,*) 'printing mirror filaments to file'
         case('open')
           write(*,*) 'running with open boundaries'
+        case('open-remove')
+          write(*,*) 'running with open boundaries - will remove loops which touch boundaries'
         case default
           call fatal_error('init_setup:', 'incorrect boundary parameter')
+      end select
+      !check if the box has been stretched in the x direction?
+      select case(boundary)
+        case('open-remove')
+          write(*,'(a,f8.3,a)') 'x direction is a factor ', xdim_scaling_factor, ' longer'
+        case default
+          xdim_scaling_factor=1. !overwrite what is in run.in file - maybe print to say so?
       end select
     else
       call fatal_error('init_setup:', 'box size is less than zero')

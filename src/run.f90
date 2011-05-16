@@ -73,7 +73,15 @@ program run
       end select
     end if
     if (seg_fault) write(*,*) 'here6'
-    if(periodic_bc) call enforce_periodic !periodic.mod
+    !-------------------boundary conditions------------------------
+    select case(boundary)
+      case('periodic')
+        call enforce_periodic !periodic.mod
+      case('openx')
+        call enforce_periodic_yz !periodic.mod
+      case('open-remove')
+        call enforce_open_removal !periodic.mod
+    end select
     !---------------once all algorithms have been run--------------
     t=t+dt  !increment the time
     !---------------------diagnostic info--------------------------

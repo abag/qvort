@@ -1,6 +1,7 @@
 !>all the routines used to keep the code periodic
 module periodic
   use cdata
+  use general
   contains 
   !******************************************************************
   !>dummy routine, calls get_ghost_p below
@@ -58,6 +59,30 @@ module periodic
       elseif ((f(i)%x(3)-gbehind(3))<(-box_size/2.)) then
         gbehind(3)=gbehind(3)-box_size
       end if
+    else if (periodic_bc_notx) then
+      !this could be neater!!!
+      !---------------------y------------------------------
+      if ((f(i)%x(2)-ginfront(2))>(box_size/2.)) then
+        ginfront(2)=ginfront(2)+box_size
+      elseif ((f(i)%x(2)-ginfront(2))<(-box_size/2.)) then
+        ginfront(2)=ginfront(2)-box_size
+      end if
+      if ((f(i)%x(2)-gbehind(2))>(box_size/2.)) then
+        gbehind(2)=gbehind(2)+box_size
+      elseif ((f(i)%x(2)-gbehind(2))<(-box_size/2.)) then
+        gbehind(2)=gbehind(2)-box_size
+      end if
+      !---------------------z------------------------------
+      if ((f(i)%x(3)-ginfront(3))>(box_size/2.)) then
+        ginfront(3)=ginfront(3)+box_size
+      elseif ((f(i)%x(3)-ginfront(3))<(-box_size/2.)) then
+        ginfront(3)=ginfront(3)-box_size
+      end if
+      if ((f(i)%x(3)-gbehind(3))>(box_size/2.)) then
+        gbehind(3)=gbehind(3)+box_size
+      elseif ((f(i)%x(3)-gbehind(3))<(-box_size/2.)) then
+        gbehind(3)=gbehind(3)-box_size
+      end if
     end if
   end subroutine
   !******************************************************************
@@ -85,6 +110,82 @@ module periodic
         f(i)%x(3)=f(i)%x(3)-box_size
       else if (f(i)%x(3)<(-box_size/2.)) then
         f(i)%x(3)=f(i)%x(3)+box_size
+      end if
+    end do
+  end subroutine
+  !******************************************************************
+  !>if a point/particle leaves one side of the box, 
+  !>reinsert it on the opposite side - do not do the x direction
+  !> in the x direction we simple remove the full loop
+  subroutine enforce_periodic_yz()
+    implicit none
+    integer :: i
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !empty particle
+      !-------------y------------------
+      if (f(i)%x(2)>(box_size/2.)) then
+        f(i)%x(2)=f(i)%x(2)-box_size
+      else if (f(i)%x(2)<(-box_size/2.)) then
+        f(i)%x(2)=f(i)%x(2)+box_size
+      end if
+      !-------------z------------------
+      if (f(i)%x(3)>(box_size/2.)) then
+        f(i)%x(3)=f(i)%x(3)-box_size
+      else if (f(i)%x(3)<(-box_size/2.)) then
+        f(i)%x(3)=f(i)%x(3)+box_size
+      end if
+      !-------------x------------------     
+      if (f(i)%x(1)>(box_size/2.)) then
+        call boundary_loop_remove(i)
+      else if (f(i)%x(1)<(-box_size/2.)) then
+        call boundary_loop_remove(i)
+      end if
+    end do
+  end subroutine
+  !******************************************************************
+  !> remove loops which hit the boundaries
+  subroutine enforce_open_removal()
+    implicit none
+    integer :: i
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !empty particle
+      !-------------x------------------     
+      if (f(i)%x(1)>(box_size/2.)) then
+        call boundary_loop_remove(i)
+      else if (f(i)%x(1)<(-box_size/2.)) then
+        call boundary_loop_remove(i)
+      end if
+      !-------------y------------------
+      if (f(i)%x(2)>(box_size/(2.*xdim_scaling_factor))) then
+        call boundary_loop_remove(i)
+      else if (f(i)%x(2)<(-box_size/(2.*xdim_scaling_factor))) then
+        call boundary_loop_remove(i)
+      end if
+      !-------------z------------------
+      if (f(i)%x(3)>(box_size/(2.*xdim_scaling_factor))) then
+        call boundary_loop_remove(i)
+      else if (f(i)%x(3)<(-box_size/(2.*xdim_scaling_factor))) then
+        call boundary_loop_remove(i)
+      end if
+    end do
+  end subroutine
+  !**************************************************
+  !>remove loops that have left the box in \pm x directions
+  !>this is very similar to loop_killer in line.f90
+  !!a better way would be have a separate loop count
+  !!and loop removal routine in general.mod
+  subroutine boundary_loop_remove(particle)
+    implicit none
+    integer :: particle, next
+    integer :: store_next
+    integer :: i, counter
+    next=particle 
+    do i=1, pcount
+      store_next=f(next)%infront
+      call clear_particle(next) !general.mod
+      next=store_next
+      if (next==particle) then
+        exit  
       end if
     end do
   end subroutine

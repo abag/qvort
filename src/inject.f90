@@ -6,11 +6,14 @@ module inject
   use general
   use periodic
   contains
+  !>the routine which injects the vortices into the code
   subroutine vortex_inject
     implicit none    
     type(qvort), allocatable, dimension(:) :: tmp
     real :: radius !used for loops
     real :: rand1, rand2 !random numbers
+    real :: anglex,angley,anglez
+    real,dimension(3)::dummy_xp_1, dummy_xp_2, dummy_xp_3, dummy_xp_4
     integer :: old_pcount
     integer :: i, j
     !check that inject_size is not 0
@@ -78,6 +81,92 @@ module inject
           f(i)%x(1)=-box_size/2.
           f(i)%x(2)=radius*cos(pi*real(2*i-1)/inject_size)+rand1
           f(i)%x(3)=radius*sin(pi*real(2*i-1)/inject_size)+rand2
+          if (i==old_pcount+1) then
+            f(i)%behind=pcount ; f(i)%infront=i+1
+          else if (i==pcount) then 
+            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
+          else
+            f(i)%behind=i-1 ; f(i)%infront=i+1
+          end if
+          !zero the stored velocities
+          f(i)%u1=0. ; f(i)%u2=0.
+        end do
+      case('rand-yz-loop2')
+        radius=(0.75*inject_size*delta)/(2*pi) !75% of potential size
+        !loop over particles setting spatial and 'loop' position
+        call random_number(rand1)
+        call random_number(rand2)
+        call random_number(anglex)
+        call random_number(angley)
+        call random_number(anglez)
+        anglex=(2.*anglex-1.)*2*pi!/10.
+        angley=(2.*angley-1.)*2*pi!/10.
+        anglez=(2.*anglez-1.)*2*pi!/10.
+        rand1=box_size*(rand1*2.-1.)/5.
+        rand2=box_size*(rand2*2.-1.)/5.
+        do i=old_pcount+1, pcount
+          dummy_xp_1(1)=0.
+          dummy_xp_1(2)=radius*cos(pi*real(2*i-1)/inject_size)
+          dummy_xp_1(3)=radius*sin(pi*real(2*i-1)/inject_size)
+
+          dummy_xp_2(1)=dummy_xp_1(1)
+          dummy_xp_2(2)=dummy_xp_1(2)*cos(anglex)+dummy_xp_1(3)*sin(anglex)
+          dummy_xp_2(3)=dummy_xp_1(2)*(-sin(anglex))+dummy_xp_1(3)*cos(anglex)
+
+          dummy_xp_3(1)=dummy_xp_2(1)*cos(angley)+dummy_xp_2(3)*(-sin(angley))
+          dummy_xp_3(2)=dummy_xp_2(2)
+          dummy_xp_3(3)=dummy_xp_2(1)*sin(angley)+dummy_xp_2(3)*cos(angley)
+
+          dummy_xp_4(1)=dummy_xp_3(1)*cos(anglez)+dummy_xp_3(2)*sin(anglez)
+          dummy_xp_4(2)=dummy_xp_3(1)*(-sin(anglez))+dummy_xp_3(2)*cos(anglez)
+          dummy_xp_4(3)=dummy_xp_3(3)
+    
+          f(i)%x(1)=dummy_xp_4(1)-box_size/2.2
+          f(i)%x(2)=dummy_xp_4(2)+rand1
+          f(i)%x(3)=dummy_xp_4(3)+rand2
+          if (i==old_pcount+1) then
+            f(i)%behind=pcount ; f(i)%infront=i+1
+          else if (i==pcount) then 
+            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
+          else
+            f(i)%behind=i-1 ; f(i)%infront=i+1
+          end if
+          !zero the stored velocities
+          f(i)%u1=0. ; f(i)%u2=0.
+        end do
+      case('focus-yz-loop')
+        radius=(0.75*inject_size*delta)/(2*pi) !75% of potential size
+        !loop over particles setting spatial and 'loop' position
+        call random_number(rand1)
+        call random_number(rand2)
+        call random_number(anglex)
+        call random_number(angley)
+        call random_number(anglez)
+        anglex=(2.*anglex-1.)*2*pi/10.
+        angley=(2.*angley-1.)*2*pi/10.
+        anglez=(2.*anglez-1.)*2*pi/10.
+        rand1=box_size*(rand1*2.-1.)/20.
+        rand2=box_size*(rand2*2.-1.)/20.
+        do i=old_pcount+1, pcount
+          dummy_xp_1(1)=-box_size/2.
+          dummy_xp_1(2)=radius*cos(pi*real(2*i-1)/inject_size)+rand1
+          dummy_xp_1(3)=radius*sin(pi*real(2*i-1)/inject_size)+rand2
+
+          dummy_xp_2(1)=dummy_xp_1(1)
+          dummy_xp_2(2)=dummy_xp_1(2)*cos(anglex)+dummy_xp_1(3)*sin(anglex)
+          dummy_xp_2(3)=dummy_xp_1(2)*(-sin(anglex))+dummy_xp_1(3)*cos(anglex)
+
+          dummy_xp_3(1)=dummy_xp_2(1)*cos(angley)+dummy_xp_2(3)*(-sin(angley))
+          dummy_xp_3(2)=dummy_xp_2(2)
+          dummy_xp_3(3)=dummy_xp_2(1)*sin(angley)+dummy_xp_2(3)*cos(angley)
+
+          dummy_xp_4(1)=dummy_xp_3(1)*cos(anglez)+dummy_xp_3(2)*sin(anglez)
+          dummy_xp_4(2)=dummy_xp_3(1)*(-sin(anglez))+dummy_xp_3(2)*cos(anglez)
+          dummy_xp_4(3)=dummy_xp_3(3)
+    
+          f(i)%x(1)=dummy_xp_4(1)
+          f(i)%x(2)=dummy_xp_4(2)
+          f(i)%x(3)=dummy_xp_4(3)
           if (i==old_pcount+1) then
             f(i)%behind=pcount ; f(i)%infront=i+1
           else if (i==pcount) then 
