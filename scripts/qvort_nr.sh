@@ -10,7 +10,7 @@ Clone the qvort code to another directory
 
 USAGE:
 
-        run.sh [OPTIONS] new_directory
+        qvort_nr.sh [OPTIONS] new_directory
 
 OPTIONS:        
         -h
@@ -18,7 +18,7 @@ OPTIONS:
 EOF
 }
 # Get command line options
-options=`getopt -o compile,protect,quiet,force,help -n run.sh -- "$@"`
+options=`getopt -o help -n run.sh -- "$@"`
 # If no options, show the help
 if [ $# == 0 ]; then
   echo "No destination directory set, showing help"
@@ -43,23 +43,23 @@ if [ ! -d "$PRJ_HOME" ]; then
 fi
 #now I will check if it is incorrectly assigned
 if [ ! -f "$PRJ_HOME/Doxyfile" ] ; then
-  echo "the directory you have set as qvort's home exist but is incorrect..."
+  echo "the directory you have set as qvort's home exists but is incorrect..."
   exit 1
 fi
 if [ ! -f "$PRJ_HOME/run.sh" ] ; then
-  echo "the directory you have set as qvort's home exist but is incorrect..."
+  echo "the directory you have set as qvort's home exists but is incorrect..."
   exit 1
 fi
 if [ ! -f "$PRJ_HOME/README" ] ; then
-  echo "the directory you have set as qvort's home exist but is incorrect..."
+  echo "the directory you have set as qvort's home exists but is incorrect..."
   exit 1
 fi
 if [ ! -f "$PRJ_HOME/run.in" ] ; then
-  echo "the directory you have set as qvort's home exist but is incorrect..."
+  echo "the directory you have set as qvort's home exists but is incorrect..."
   exit 1
 fi
 if [ ! -f "$PRJ_HOME/startup.m" ] ; then
-  echo "the directory you have set as qvort's home exist but is incorrect..."
+  echo "the directory you have set as qvort's home exists but is incorrect..."
   exit 1
 fi
 #where are we?

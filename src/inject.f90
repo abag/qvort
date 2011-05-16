@@ -6,6 +6,27 @@ module inject
   use general
   use periodic
   contains
+  !>check all the necessary conditions to inject vortices are set in run.in
+  subroutine setup_vortex_injection()
+    implicit none
+    select case(inject_type)
+      case('off')
+        return !leave the routine
+      case default
+        write(*,'(a)') ' ------------------VORTEX INJECTION-------------------' 
+        write(*,'(a,i4.1,a,i3.1,a)') ' loops will be injected every ', inject_skip, ' timesteps with ', inject_size, ' points'
+        write(*,'(a,a)') ' inject type is set to: ', trim(inject_type)
+        select case(inject_type)
+          case('rand-yz-loop2')
+            write(*,'(a,f7.4,a)') ' rotation applied to loops: ', rotation_factor, '*2\pi'
+        end select
+        !check if we have set an injection stop time in run.in
+        if (inject_stop<1E6) then
+          write(*,'(a,f10.4)') ' inject will stop after t= ', inject_stop
+        end if
+    end select
+  end subroutine
+  !*******************************************************************
   !>the routine which injects the vortices into the code
   subroutine vortex_inject
     implicit none    
@@ -99,9 +120,9 @@ module inject
         call random_number(anglex)
         call random_number(angley)
         call random_number(anglez)
-        anglex=(2.*anglex-1.)*2*pi!/10.
-        angley=(2.*angley-1.)*2*pi!/10.
-        anglez=(2.*anglez-1.)*2*pi!/10.
+        anglex=(2.*anglex-1.)*2*pi*rotation_factor
+        angley=(2.*angley-1.)*2*pi*rotation_factor
+        anglez=(2.*anglez-1.)*2*pi*rotation_factor
         rand1=box_size*(rand1*2.-1.)/5.
         rand2=box_size*(rand2*2.-1.)/5.
         do i=old_pcount+1, pcount

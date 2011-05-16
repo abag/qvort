@@ -186,19 +186,22 @@ module cdata
   real :: xdim_scaling_factor=1.
   !>are boundaries solid?
   logical :: mirror_bc=.false.
+  !key arguements that must be set
   character(len=30), protected :: velocity, initf, boundary
-  logical, protected :: binary_print=.true.
-  logical, protected :: dt_adapt=.false.
-  logical, protected :: delta_adapt=.false.
-  logical, protected :: delta_adapt_print=.false.
+  !-----------------arguements used by initial.mod-------------------------
   integer, protected :: line_count=1
   real, protected :: lattice_ratio=1
+  real, protected :: rotation_factor=1 !also used in injection routines
   integer, protected :: wave_count=1
   real, protected :: wave_slope=-1.5
   real, protected :: wave_amp=10.
   character(len=30), protected :: wave_type='planar' 
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
+  logical, protected :: binary_print=.true.
+  logical, protected :: dt_adapt=.false.
+  logical, protected :: delta_adapt=.false.
+  logical, protected :: delta_adapt_print=.false.
   !--------------------simulate phonon emission at high k------------------------
   logical, protected :: phonon_emission=.false. !do we want it one?
   real, protected :: phonon_percent=0.95 !what percentage of 2/delta?
@@ -364,6 +367,8 @@ module cdata
              read(buffer, *, iostat=ios) line_count !used in certain intial conditions
           case ('lattice_ratio')
              read(buffer, *, iostat=ios) lattice_ratio !used in lattice initial conditions
+          case ('rotation_factor')
+             read(buffer, *, iostat=ios) rotation_factor !used in random loops initial cond.
           case ('force')
              read(buffer, *, iostat=ios) force !force the vortices
           case ('force_amp')

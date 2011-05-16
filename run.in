@@ -17,4 +17,5 @@ inject_type rand-yz-loop2
 inject_size 10
 inject_skip 50
 inject_stop 1.5
+rotation_factor 0.
 xdim_scaling_factor 1.5

@@ -769,14 +769,15 @@ module initial_cond
     write(*,'(a,i5.1,a)') ' drawing ', line_count, ' random loops in the box'
     write(*,'(a,i5.1,a)') ' each loop contains ', loop_size, ' particles'
     write(*,'(a,f7.4)') ' radius of each loop: ', loop_radius
+    write(*,'(a,f7.4,a)') ' rotation applied to loops: ', rotation_factor, '*2\pi'
     do i=1, line_count
       call random_number(anglex)
       call random_number(angley)
       call random_number(anglez)
       call random_number(translate)
-      anglex=anglex*2*pi
-      angley=angley*2*pi
-      anglez=anglez*2*pi
+      anglex=anglex*2*pi*rotation_factor
+      angley=angley*2*pi*rotation_factor
+      anglez=anglez*2*pi*rotation_factor
       translate=(box_size*translate-box_size/2.)-loop_radius
         
       do j=1, loop_size
