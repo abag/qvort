@@ -110,7 +110,7 @@ remove_count
 
       close(98)
     else
-      write(unit=print_file,fmt="(a,i4.4,a)")"./data/var",filenumber,".log"
+      write(unit=print_file,fmt="(a,i4.4,a)") "./data/var",filenumber,".log"
       open(unit=98,file=print_file,status='replace')
         write(98,*) t
         write(98,*) pcount
@@ -123,6 +123,10 @@ remove_count
           end  if
         end do
       close(98)
+    end if
+    if (simple_plots) then
+      write(unit=print_file,fmt="(a,i4.4,a)")"./scripts/simple_plot.sh ",filenumber
+      call system(print_file)
     end if
   end subroutine
   !**********************************************************************

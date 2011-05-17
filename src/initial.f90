@@ -246,6 +246,7 @@ module initial
     end select
     !any special diagnostic information?
     write(*,'(a)') ' ---------------------FURTHER DIAGNOSTICS----------------------' 
+    if (simple_plots) write(*,*) 'producing simple plots on the fly'
     if (vapor_print) write(*,*) 'if we have mesh(s) then we will also print to file for vapor'
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
     if (topo_inf) write(*,*) 'printing topological information to file'

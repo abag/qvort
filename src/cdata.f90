@@ -259,6 +259,7 @@ module cdata
   logical, protected :: recon_info=.false. !more in depth reconnection information
   logical, protected :: boxed_vorticity=.false. !smoothed vorticity in a box
   integer, protected :: boxed_vorticity_size=32 !how big is the mesh for boxed vorticity
+  logical, protected :: simple_plots=.false. !call scripts from command line to plot on the fly
   !-------------------------------smoothing-------------------------------------------
   !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
@@ -437,6 +438,8 @@ module cdata
              read(buffer, *, iostat=ios) switch_off_recon !for test cases only!
           case ('seg_fault')
              read(buffer, *, iostat=ios) seg_fault !use print statements to find segmentation faults
+          case ('simple_plots')
+             read(buffer, *, iostat=ios) simple_plots !perform plots on the fly
           case ('NAN_test')
              read(buffer, *, iostat=ios) NAN_test !test for NANs
           case ('smoothing_length')
