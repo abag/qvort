@@ -28,6 +28,8 @@ module cdata
     real :: closestd
     real :: delta
     real :: B 
+    logical :: pinnedi=.false.
+    logical :: pinnedb=.false.
   end type
   !>main filament vector
   type(qvort), allocatable :: f(:) 

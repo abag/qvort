@@ -124,6 +124,10 @@ module line
     logical :: do_remove 
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
+      if (mirror_bc) then
+        !do not check if pinned to the wall infront
+         if (f(i)%pinnedi) cycle
+      end if
       do_remove=.false.
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)

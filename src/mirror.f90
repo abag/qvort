@@ -9,42 +9,39 @@ module mirror
   subroutine mirror_init
     !set up the mirror array
     implicit none
-    integer :: i
-    !note everything is in mirror_biot_savart is done using m(i)%infront
-    !so copying beind to infront is OK, behind is never used
+    integer :: i, store_behind
     !begin by allocating the mirror array
     allocate(m(6,pcount)) !6 faces of the cube
     !now we need to fill the array
     do i=1,6 !again 6 faces
-      m(i,:)=f(:)
+      m(i,:)=f(:) !copy all information
+      !switch behind and infront
+      store_behind=m(i,:)%infront
+      m(i,:)%infront=m(i,:)%behind
+      m(i,:)%behind=store_behind
+      !now do all reflections
       if ((i==1).or.(i==2)) then
         if (i==1) then
           m(i,:)%x(1)=box_size-m(i,:)%x(1)
-          m(i,:)%infront=m(i,:)%behind
           !reflect in positive x
         else
           m(i,:)%x(1)=-box_size-m(i,:)%x(1)
-          m(i,:)%infront=m(i,:)%behind
           !reflect in negative x
         end if
       else if ((i==3).or.(i==4)) then
         if (i==3) then
           m(i,:)%x(2)=box_size-m(i,:)%x(2)
-          m(i,:)%infront=m(i,:)%behind
           !reflect in positive y
         else
           m(i,:)%x(2)=-box_size-m(i,:)%x(2)
-          m(i,:)%infront=m(i,:)%behind
           !reflect in negative y
         end if
       else !i=5 or 6
         if (i==5) then
           m(i,:)%x(3)=box_size-m(i,:)%x(3)
-          m(i,:)%infront=m(i,:)%behind
           !reflect in positive z
         else
           m(i,:)%x(3)=-box_size-m(i,:)%x(3)
-          m(i,:)%infront=m(i,:)%behind
           !reflect in negative z
         end if
       end if
@@ -96,7 +93,7 @@ module mirror
         b_bs=2.*dot_product((m(k,j)%x-f(i)%x),(m(k,m(k,j)%infront)%x-m(k,j)%x))
         c_bs=dist_gen_sq(m(k,m(k,j)%infront)%x,m(k,j)%x) !distance sqd between j, j+1
         !add non local contribution to velocity vector
-        if (4*a_bs*c_bs-b_bs**2==0) cycle !avoid 1/0
+        if (4*a_bs*c_bs-b_bs**2<epsilon(0.)) cycle !avoid 1/0
         u_mir=cross_product((m(k,j)%x-f(i)%x),(m(k,m(k,j)%infront)%x-m(k,j)%x))
         u_mir=u_mir*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
         u_mir=u_mir*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
@@ -111,12 +108,36 @@ module mirror
     integer, intent(IN) :: i !the particle we want the velocity at
     real :: u(3) !the velocity at i
     real :: threshold !force zero flux at the boundaries
-    threshold=box_size/2.-delta/2.
+    threshold=box_size/2.-delta/4.
     if (f(i)%x(1)>threshold) u(1)=0.
     if (f(i)%x(1)<-threshold) u(1)=0.
     if (f(i)%x(2)>threshold) u(2)=0.
     if (f(i)%x(2)<-threshold) u(2)=0.
     if (f(i)%x(3)>threshold) u(3)=0.
     if (f(i)%x(3)<-threshold) u(3)=0.
+  end subroutine
+  !**************************************************************************
+  !>reconnect vortices with boundaries
+  subroutine mirror_pinning
+    implicit none
+    real :: threshold !how close to the wall do we reconnect
+    integer :: infront
+    integer :: i !for looping
+    threshold=box_size/2.-delta/4.
+    do  i=1, pcount
+      !check for empty points
+      if (f(i)%infront==0) cycle
+      !check that the vortex is not alredy pinned
+      if (f(i)%pinnedi.or.f(i)%pinnedb) cycle
+      !can we pin?
+      if ((f(i)%x(1)>threshold).or.(f(i)%x(1)<-threshold)&
+     .or.((f(i)%x(2)>threshold).or.(f(2)%x(1)<-threshold)&
+     .or.((f(i)%x(3)>threshold).or.(f(i)%x(3)<-threshold)) then
+        !yes we can pin the vortex segment
+        ifront=f(i)%infront
+        f(i)%infront=i ; f(i)%pinnedi=.true.
+        f(infront)%behind=behind ; f(ifnront)%pinnedb=.true.
+      end if
+    end do
   end subroutine
 end module
