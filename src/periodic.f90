@@ -84,25 +84,6 @@ module periodic
         gbehind(3)=gbehind(3)-box_size
       end if
     end if
-    !check for pinned points with mirror boundary conditions
-    if (mirror_bc) then
-      if (f(i)%pinnedi) then
-        if (f(i)%x(1)>(box_size/2.-delta))  ginfront(1)=box_size-ginfront(1)
-        if (f(i)%x(1)<-(box_size/2.-delta)) ginfront(1)=-box_size-ginfront(1)
-        if (f(i)%x(2)>(box_size/2.-delta))  ginfront(2)=box_size-ginfront(2)
-        if (f(i)%x(2)<-(box_size/2.-delta)) ginfront(2)=-box_size-ginfront(2)
-        if (f(i)%x(3)>(box_size/2.-delta))  ginfront(3)=box_size-ginfront(3)
-        if (f(i)%x(3)<-(box_size/2.-delta)) ginfront(3)=-box_size-ginfront(3)
-      end if
-      if (f(i)%pinnedb) then
-        if (f(i)%x(1)>(box_size/2.-delta))  gbehind(1)=box_size-gbehind(1)
-        if (f(i)%x(1)<-(box_size/2.-delta)) gbehind(1)=-box_size-gbehind(1)
-        if (f(i)%x(2)>(box_size/2.-delta))  gbehind(2)=box_size-gbehind(2)
-        if (f(i)%x(2)<-(box_size/2.-delta)) gbehind(2)=-box_size-gbehind(2)
-        if (f(i)%x(3)>(box_size/2.-delta))  gbehind(3)=box_size-gbehind(3)
-        if (f(i)%x(3)<-(box_size/2.-delta)) gbehind(3)=-box_size-gbehind(3)
-      end if
-    end if
   end subroutine
   !******************************************************************
   !>if a point/particle leaves one side of the box, 
