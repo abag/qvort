@@ -36,6 +36,7 @@ program run
       call vortex_inject !inject.mod
     end if
     call ghostp !periodic.mod
+    if (magnetic) call set_B_length1 !mag.mod
     !---------------------build tree routines----------------------
     if (tree_theta>0) then
       call construct_tree !tree.mod
@@ -52,6 +53,11 @@ program run
     end if
     if (seg_fault) write(*,*) 'here4'
     !---------------------line operations--------------------------
+    if (magnetic) then
+      !we must redo ghost particles (i think!)
+      call ghostp !periodic.mod
+      call set_B_strength !mag.mod
+    end if 
     call pinsert !line.mod
     if (magnetic) then
       !magnetic diffusion
@@ -81,6 +87,8 @@ program run
         call enforce_periodic_yz !periodic.mod
       case('open-remove')
         call enforce_open_removal !periodic.mod
+      case ('mirror')
+        call mirror_pinning !mirror.mod
     end select
     !---------------once all algorithms have been run--------------
     t=t+dt  !increment the time
@@ -124,7 +132,9 @@ program run
     !-------------------remove the tree----------------------------
     if (tree_theta>0) then
       call empty_tree(vtree) !empty the tree to avoid a memory leak
+      if (seg_fault) write(*,*) 'here9a'
       deallocate(vtree%parray) ; deallocate(vtree)
+      if (seg_fault) write(*,*) 'here9b'
       nullify(vtree) !just in case!
     end if
     if (seg_fault) write(*,*) 'here10'

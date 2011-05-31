@@ -4,6 +4,7 @@ module mirror
   use cdata
   use general
   type(qvort), allocatable, private :: m(:,:) !the mirror array
+  integer, private :: pinned_count=0
   contains
   !**************************************************************************
   subroutine mirror_init
@@ -111,12 +112,74 @@ module mirror
     integer, intent(IN) :: i !the particle we want the velocity at
     real :: u(3) !the velocity at i
     real :: threshold !force zero flux at the boundaries
-    threshold=box_size/2.-delta/2.
+    threshold=box_size/2.-delta/4.
     if (f(i)%x(1)>threshold) u(1)=0.
     if (f(i)%x(1)<-threshold) u(1)=0.
     if (f(i)%x(2)>threshold) u(2)=0.
     if (f(i)%x(2)<-threshold) u(2)=0.
     if (f(i)%x(3)>threshold) u(3)=0.
     if (f(i)%x(3)<-threshold) u(3)=0.
+  end subroutine
+  !**************************************************************************
+  !>reconnect vortices with boundaries
+  subroutine mirror_pinning
+    implicit none
+    real :: threshold !how close to the wall do we reconnect
+    real :: angle
+    integer :: infront
+    integer :: i !for looping
+    threshold=box_size/2.-delta/4.
+    do  i=1, pcount
+      !check for empty points
+      if (f(i)%infront==0) cycle
+      !check that the vortex is not alredy pinned	
+      if (f(i)%pinnedi.or.f(i)%pinnedb) cycle
+      !can we pin?
+      if ((f(i)%x(1)>threshold).or.(f(i)%x(1)<-threshold)&
+     .or.(f(i)%x(2)>threshold).or.(f(2)%x(1)<-threshold)&
+     .or.(f(i)%x(3)>threshold).or.(f(i)%x(3)<-threshold)) then
+        !now check the angle between vortex segment and the plane
+        if (f(i)%x(1)>(box_size/2.-delta))  angle=dot_product(tangentf(i),(/1.,0.,0./)) 
+        if (f(i)%x(1)<-(box_size/2.-delta)) angle=dot_product(tangentf(i),(/-1.,0.,0./)) 
+        if (f(i)%x(2)>(box_size/2.-delta))  angle=dot_product(tangentf(i),(/0.,1.,0./)) 
+        if (f(i)%x(2)<-(box_size/2.-delta)) angle=dot_product(tangentf(i),(/0.,-1.,0./)) 
+        if (f(i)%x(3)>(box_size/2.-delta))  angle=dot_product(tangentf(i),(/0.,0.,1./)) 
+        if (f(i)%x(3)<-(box_size/2.-delta)) angle=dot_product(tangentf(i),(/0.,0.,-1./)) 
+        if (angle>0.1) then !if ~perpendicular angle<0.1 so don't reconnect
+          !yes we can pin the vortex segment
+          infront=f(i)%infront
+          f(i)%infront=i ; f(i)%pinnedi=.true.
+          f(infront)%behind=infront ; f(infront)%pinnedb=.true.
+          pinned_count=pinned_count+1
+        end if
+      end if
+    end do
+    !check if small loops are created
+    do i=1, pcount
+      !check for empty points
+      if (f(i)%infront==0) cycle
+      if (f(i)%pinnedi) then
+        !check if behind is pinned
+        if ((f(f(i)%behind)%pinnedi).or.(f(f(i)%behind)%pinnedb)) then
+          !clear out particles
+          call clear_particle(f(i)%behind) !general.mod
+          call clear_particle(i)
+        end if
+      end if
+      if (f(i)%pinnedb) then
+        !check if infront is pinned
+        if ((f(f(i)%infront)%pinnedi).or.(f(f(i)%infront)%pinnedb)) then
+          !clear out particles
+          call clear_particle(f(i)%infront) !general.mod
+          call clear_particle(i)
+        end if
+      end if
+    end do
+    !--------------------print to file-------------------------------
+    if (mod(itime, shots)==0) then
+      open(unit=72,file='data/pinned_count.log',position='append')
+        write(72,*) t, pinned_count
+      close(72)
+    end if
   end subroutine
 end module

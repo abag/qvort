@@ -30,6 +30,7 @@ module line
     end if
     old_pcount=pcount
     total_length=0. !zero this
+    !we probably only need below if mod(itime,shots)==0
     if (magnetic) Brms=sqrt(sum(f(:)%B**2,mask=f(:)%infront>0)/count(mask=f(:)%infront>0)) !rms of magnetic field
     do i=1, old_pcount
       if (i>size(f)) then
@@ -37,6 +38,7 @@ module line
         print*, 'I think there is a problem' ; exit
       end if
       if (f(i)%infront==0) cycle !empty particle
+      if (mirror_bc.and.f(i)%pinnedi) cycle !pinned particle
       !get the distance between the particle and the one infront
       disti=dist_gen(f(i)%x,f(i)%ghosti) !general.f90
       total_length=total_length+disti !measure total length of filaments
@@ -46,7 +48,7 @@ module line
       else
         f(i)%delta=1. !set the prefactor to 1
       end if
-      if (disti>f(i)%delta*delta) then               
+      if (disti>f(i)%delta*delta) then  
         !we need a new particle 
         !the first step is assess where to put the particle?
         !1. is there an empty slot in out array?
@@ -90,16 +92,9 @@ module line
         f(i)%infront=par_new
         call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb) !periodic.mod         
         !address the magnetic issue
-        if ((magnetic).and.(itime>30)) then
-          if (f(i)%B<5.*Brms) then
-              f(par_new)%B=2*f(i)%B
-              f(i)%B=2*f(i)%B
-          else
-            f(par_new)%B=f(i)%B
-          end if
-        end if 
+        if (magnetic) f(par_new)%B=f(i)%B
         !set local delta factor to be 1 incase we are adapting it
-        f(i)%delta=1.
+        f(par_new)%delta=1. 
         !finally account for SPH matching
         select case(velocity)
           case('SPH')
@@ -124,6 +119,12 @@ module line
     logical :: do_remove 
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
+      if (mirror_bc) then
+        !do not test if you are pinned 
+        if (f(i)%pinnedi) cycle 
+        !or the particle infront is pinned
+        if (f(f(i)%infront)%pinnedi) cycle 
+      end if 
       do_remove=.false.
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)
@@ -151,9 +152,9 @@ module line
         call loop_killer(i)
         remove_count=remove_count+1
         !halve the magnetic field - due to contraction
-        if (magnetic) then
-          f(i)%B=f(i)%B/2.
-        end if 
+        !if (magnetic) then
+        !  f(i)%B=f(i)%B/2.
+        !end if 
       end if
     end do
   end subroutine
@@ -166,10 +167,20 @@ module line
     integer :: i, j
     real :: dist
     do i=1, pcount
-      f(i)%closestd=10. !arbitrarily high
+      if (f(i)%infront==0) cycle !empty particle
+      f(i)%closestd=100. !arbitrarily high
+      if (mirror_bc) then
+        !do not test if you are pinned 
+        if (f(i)%pinnedi.or.f(i)%pinnedb) cycle 
+      end if 
       do j=1, pcount
+        if (f(j)%infront==0) cycle !empty particle
         if ((i/=j).and.(f(i)%infront/=j).and.(f(i)%behind/=j)) then
         !the above line ensures we do not reconnect with particles infront/behind
+          if (mirror_bc) then
+            !do not test if j is pinned 
+            if (f(j)%pinnedi.or.f(j)%pinnedb) cycle 
+          end if 
           dist=distf(i,j)
           if (dist<f(i)%closestd) then
            f(i)%closest=j
@@ -267,6 +278,7 @@ module line
           !we cannot reconnect as filaments are parallel          
           !print*, 'cannot reconnect, cos(theta) is:',dot_val
         else
+          !print*, 'reconnection'
           !print*, 'i',i, f(i)%infront, f(i)%behind
           !print*, 'j',j, f(j)%infront, f(j)%behind
           !reconnect the filaments
@@ -304,6 +316,11 @@ module line
       next=f(next)%infront
       if (next==particle) exit  
       counter=counter+1
+      if (mirror_bc) then
+        !pinned particles will mess this up so exit routine
+        !we have a separate test in mirror.mod
+        if (f(next)%pinnedi.or.f(next)%pinnedb) return
+      end if
     end do
     ! If loop is too small destroy
     if (counter<6) then

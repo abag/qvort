@@ -69,11 +69,12 @@ module initial
           write(*,'(a,f8.3)') ' running with periodic boundaries in y-z direction, box size:', box_size
           write(*,*) ' boundaries open in the x direction, loops that have left the box will be removed'
         case('mirror')
+          if (magnetic) call fatal_error('init_setup','mirror bcs are not supported with magnetic fields') 
           mirror_bc=.true.
           call warning_message('init.mod','mirror b.c.s are still in testing and will probably fail at some point in the run!')
           select case(velocity)
-            case('LIA','Tree')
-              call fatal_error('init_setup','mirror bcs are not set up to work with the LIA/Tree veloctity')
+            case('Tree')
+              call fatal_error('init_setup','mirror bcs are not set up to work with the Tree veloctity')
           end select
           write(*,'(a,f8.3)') ' running with mirrored boundaries, box size:', box_size
           if (mirror_print) write(*,*) 'printing mirror filaments to file'
