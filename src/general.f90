@@ -47,6 +47,7 @@ module general
     f(i)%ghosti=0. ; f(i)%ghostb=0.
     f(i)%infront=0 ; f(i)%behind=0
     f(i)%closest=0 ; f(i)%closestd=0.
+    f(i)%pinnedi=.false. ; f(i)%pinnedb=.false.
   end subroutine
   !*********************************************************************
   !>calculate the distance between points in the f vector
@@ -211,8 +212,12 @@ module general
   !> arrays
   subroutine NAN_finder
     implicit none
+    integer :: i
     if (allocated(f)) then
       if (any(isnan(f%x(1))).or.any(isnan(f%x(2))).or.any(isnan(f%x(3)))) then
+        do i=1, pcount
+          print*, f(i)%x
+        end do
         call fatal_error('run.x','there is a NAN in the (filament) f%x array')
       end if
     end if

@@ -3,16 +3,28 @@ nsteps 10000
 shots 100
 mesh_shots 5000
 recon_shots 1
+<<<<<<< HEAD
 pcount 500
+=======
+pcount 300
+>>>>>>> 87d4f5ff4e3736a296467afd91794ffde5688e84
 dt 1E-4
 delta 1E-2
 box_size 1.
 velocity Off
+<<<<<<< HEAD
 initf random_loops
 line_count 50
 boundary open
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 normal_velocity collapse_rot
+=======
+initf single_line
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+normal_velocity ABC
+>>>>>>> 87d4f5ff4e3736a296467afd91794ffde5688e84
 magnetic T
 B_init 1.

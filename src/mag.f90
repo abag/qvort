@@ -36,6 +36,35 @@ module mag
     write(*,'(a,e10.4)') ' magnetic tension coefficient ', B_tension
   end subroutine
   !**********************************************************************
+  !>get the length between the particle and the particle infront-assign to l1
+  subroutine set_B_length1
+    implicit none
+    integer :: i
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !empty particle
+      !set l1 the distance between the particle and the one infront
+      f(i)%l1=dist_gen(f(i)%x,f(i)%ghosti) !general.f90
+      f(i)%v1=1. !set this to 1
+    end do
+  end subroutine
+  !**********************************************************************
+  !>get the length between the particle and the particle infront-assign to l2
+  subroutine set_B_strength
+    implicit none
+    integer :: i
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !empty particle
+      !set l2 the distance between the particle and the one infront
+      f(i)%l2=dist_gen(f(i)%x,f(i)%ghosti) !general.f90
+      !account for compressibility of velocity field
+      f(i)%divu=0.
+      !now timestep the volume element
+      f(i)%v2=f(i)%v1*(1.+dt*f(i)%divu)
+      !now set field strength
+      f(i)%B=f(i)%B*(f(i)%l2/f(i)%l1)*(f(i)%v1/f(i)%v2)
+    end do
+  end subroutine
+  !**********************************************************************
   !>simulate the effect of the lorentz force by adding in magnetic tension 
   !>to velocity calculations
   !>\f[\mathbf{J} \times \mathbf{B}=(\nabla \times \mathbf{B}) \times \mathbf{B}

@@ -17,6 +17,8 @@ module cdata
   !!@param closestd separation between closest particle and particle 
   !!@param B magnetic field strength
   !!@param delta used for adaptive meshing along the filaments, used as a prefactor
+  !!@param l1 l2 line length for magnetic field evolution 
+  !!@param v1 v2 volume element for magnetic field evolution in a compressible field
   type qvort 
     real :: x(3)
     real :: u(3), u1(3), u2(3) 
@@ -24,10 +26,15 @@ module cdata
     real :: ghosti(3), ghostb(3)
     integer :: infront, behind 
     integer :: closest
-    integer :: sph
+    integer :: sph  
+    logical :: pinnedi=.false.
+    logical :: pinnedb=.false.
     real :: closestd
     real :: delta
     real :: B 
+    real :: l1, l2
+    real :: divu
+    real :: v1, v2
   end type
   !>main filament vector
   type(qvort), allocatable :: f(:) 

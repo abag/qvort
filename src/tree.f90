@@ -194,6 +194,7 @@ module tree
     implicit none
     type (node), pointer :: vtree
     call empty_tree(vtree) !kill its children (if it has any)
+    !print*, vtree%pcount
     deallocate(vtree%parray)
     deallocate(vtree)
     nullify(vtree)
@@ -207,6 +208,11 @@ module tree
     integer :: i
     do i=1, pcount
       f(i)%closestd=100. !arbitrarily high
+      if (f(i)%infront==0) cycle !empty particle
+      if (mirror_bc) then
+        !do not test if you are pinned 
+        if (f(i)%pinnedi.or.f(i)%pinnedb) cycle 
+      end if 
       call closest_tree(i,vtree)
     end do
   end subroutine
@@ -234,7 +240,16 @@ module tree
            f(i)%closest=0
          else if ((i/=j).and.(f(i)%infront/=j).and.(f(i)%behind/=j)) then
            !the above line ensures we do not reconnect with particles infront/behind
-           f(i)%closest=j ; f(i)%closestd=dist
+           if (mirror_bc) then
+             !test to see if j is pinned 
+             if (f(j)%pinnedi.or.f(j)%pinnedb) then
+               !do nothing its pinned
+             else
+               f(i)%closest=j ; f(i)%closestd=dist !OK not pinned
+             end if 
+           else
+             f(i)%closest=j ; f(i)%closestd=dist
+           end if
          end if
        end if
      else

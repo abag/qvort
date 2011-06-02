@@ -162,6 +162,7 @@ module normal_fluid
           else 
             u(1)=0.
           end if
+          u(2)=0. ; u(3)=0.
         case('galloway-proctor')
           u(1)=-sin(norm_k*x(2)+cos(t))
           u(2)=-cos(norm_k*x(1)+sin(t))
@@ -211,6 +212,41 @@ module normal_fluid
               dx*(1.-dy)*dz*nfm(iz+1,iy,ix+1)%u+&
               (1.-dx)*dy*dz*nfm(iz+1,iy+1,ix)%u+&
                  dx*dy*dz*nfm(iz+1,iy+1,ix+1)%u
+    end subroutine
+    !**********************************************************
+    !>(linear) interpolation of the normal fluid divergence of vel field
+    !>needed for certain selections of velocity
+    subroutine nfm_compressibility(x,divu)
+      implicit none
+      real, intent(IN) :: x(3) !position
+      real, intent(OUT) :: divu(3) !velocity
+      real :: dx, dy, dz 
+      integer :: i !for looping
+      integer :: ix=1, iy=1, iz=1
+      integer :: midpt
+      midpt=nfm_size/2
+      !find the closest meshpoints
+
+      do i=1, nfm_size-1
+        if ((x(1)>nfm(midpt,midpt,i)%x(1)).and.(x(1)<nfm(midpt,midpt,i+1)%x(1))) ix=i
+        if ((x(2)>nfm(midpt,i,midpt)%x(2)).and.(x(2)<nfm(midpt,i+1,midpt)%x(2))) iy=i
+        if ((x(3)>nfm(i,midpt,midpt)%x(3)).and.(x(3)<nfm(i+1,midpt,midpt)%x(3))) iz=i
+      end do
+
+      !find normalised disatances in all three spacial dimensions
+      dx=abs(x(1)-nfm(iz,iy,ix)%x(1))/nfm_res
+      dy=abs(x(2)-nfm(iz,iy,ix)%x(2))/nfm_res
+      dz=abs(x(3)-nfm(iz,iy,ix)%x(3))/nfm_res
+
+      !trilinear interpolation
+      divu=(1.-dx)*(1.-dy)*(1.-dz)*nfm(iz,iy,ix)%div+&
+           dx*(1.-dy)*(1.-dz)*nfm(iz,iy,ix+1)%div+&
+           (1.-dx)*dy*(1.-dz)*nfm(iz,iy+1,ix)%div+&
+           (1.-dx)*(1.-dy)*dz*nfm(iz+1,iy,ix)%div+&
+              dx*dy*(1.-dz)*nfm(iz,iy+1,ix+1)%div+&
+              dx*(1.-dy)*dz*nfm(iz+1,iy,ix+1)%div+&
+              (1.-dx)*dy*dz*nfm(iz+1,iy+1,ix)%div+&
+                 dx*dy*dz*nfm(iz+1,iy+1,ix+1)%div
     end subroutine
     !**********************************************************
     !>setup a compressible velocity field by taking the gradient 

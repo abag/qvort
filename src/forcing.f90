@@ -24,6 +24,9 @@ module forcing
     select case(force)
       case('off')
         write(*,*) 'no forcing employed'
+      case('xflow')
+        write(*,*) 'adding an imposed flow in the x direction'
+        write(*,'(a,f6.3)') ' u(x)=', force_amp
       case('top_boundary')
         !check initial conditions
          select case(initf)
@@ -56,6 +59,9 @@ module forcing
     select case(force)
       case('off')
         u=0.
+      case('xflow')
+        u=0.
+        u(1)=force_amp
       case('top_boundary')
         if ((f(i)%x(3)-box_size/2.)>-1.5*delta) then
           !particle is sufficiently close to top boundary to force
@@ -164,6 +170,7 @@ end module
 !!force this accepts the following arguements\n
 !!
 !!\p zero - no forcing, this is the default \n
+!!\p xflow - imposed flow in the x direction, velocity set by force_amp \n
 !!\p box_shake - correlated forcing moving box randomly with frequency set by
 !!\p force_feq in run.in \n
 !!\p delta_corr - delta correlated forcing in time and space with amplitude set
