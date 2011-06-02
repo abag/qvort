@@ -11,6 +11,8 @@ end
 figure('Name',strcat('zslice-fluid: ', fluid));
   zslice(1:n,1:n)=u2(n/2,:,:);
   imagesc(interp(x,interpc),interp(x,interpc),interp2(zslice,interpc))
+  hold on
+  quiver(x,x,squeeze(ux(n/2,:,:)),squeeze(uy(n/2,:,:)),'k')
   xlabel('x','FontSize',14) ; ylabel('y','FontSize',14)
   colorbar
   set(gca,'Fontsize',14)
@@ -23,8 +25,6 @@ figure('Name',strcat('yslice-fluid: ', fluid));
 figure('Name',strcat('xslice-fluid: ', fluid));
   xslice(1:n,1:n)=u2(:,:,n/2);
   imagesc(interp(x,interpc),interp(x,interpc),interp2(xslice,interpc))
-  hold on
-  quiver(x,x,ux(:,:,n/2),uy(:,:,n/2),'k')
   xlabel('y','FontSize',14) ; ylabel('z','FontSize',14)
   colorbar
   set(gca,'Fontsize',14)

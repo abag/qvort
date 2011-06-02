@@ -25,5 +25,5 @@ figure('Name','u(x)')
   plot(squeeze(ux(32,32,:)))
 %plot slices of field+isosurface
 mesh_slices(x,ux,uy,uz,msize,'initial normal fluid')
-
-  
+figure('Name','quiver')
+ quiver(ux,uy,uz);  

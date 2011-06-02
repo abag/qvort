@@ -56,6 +56,13 @@ module normal_fluid
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/urms_norm !size of box scaled by urms
           close(77)
+        case('expand','expand_rot','collapse_rot')
+          call setup_gen_normalf !normal_fluid.mod
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/urms_norm !size of box scaled by urms
+          close(77)
+          !the normal fluid velocity is not divergence free
+          nf_compressible=.true.
         case('shear')
           call setup_gen_normalf !normal_fluid.mod
           open(unit=77,file='./data/normal_timescale.log',status='replace')
@@ -100,6 +107,8 @@ module normal_fluid
       implicit none
       real, intent(IN) :: x(3) !position of the particle
       real, intent(OUT) :: u(3) !velocity at x
+      real :: r, phi, theta !used to convert to polar coords
+      real :: u_r, u_theta !used to convert to polar coords
       select case(normal_velocity)
         case('zero')
           u=0. ! no flow
@@ -116,7 +125,37 @@ module normal_fluid
           u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
           u(3)=0.
         case('shear')
+          u=0.
           u(1)=exp(-(6*x(3)/box_size)**2)
+        case('expand')
+          u=0.
+          r=sqrt(x(1)**2+x(2)**2+x(3)**2)
+          theta=acos(x(3)/r)
+          phi=atan2(x(2),x(1))
+          u_r=r
+          u(1)=sin(theta)*cos(phi)*u_r
+          u(2)=sin(theta)*sin(phi)*u_r
+          u(3)=cos(theta)*u_r
+        case('expand_rot')
+          u=0.
+          r=sqrt(x(1)**2+x(2)**2+x(3)**2)
+          theta=acos(x(3)/r)
+          phi=atan2(x(2),x(1))
+          u_r=r
+          u_theta=1./(0.5+r)
+          u(1)=sin(theta)*cos(phi)*u_r-sin(phi)*u_theta
+          u(2)=sin(theta)*sin(phi)*u_r+cos(phi)*u_theta
+          u(3)=cos(theta)*u_r
+        case('collapse_rot')
+          u=0.
+          r=sqrt(x(1)**2+x(2)**2+x(3)**2)
+          theta=acos(x(3)/r)
+          phi=atan2(x(2),x(1))
+          u_r=-r
+          u_theta=1./(0.5+r)
+          u(1)=sin(theta)*cos(phi)*u_r-sin(phi)*u_theta
+          u(2)=sin(theta)*sin(phi)*u_r+cos(phi)*u_theta
+          u(3)=cos(theta)*u_r
         case('sod')
           if (x(1)<box_size/3.) then
             u(1)=0.5*tanh(10.*(x(1)+box_size/5.)/box_size)+0.5

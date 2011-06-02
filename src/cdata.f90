@@ -168,6 +168,8 @@ module cdata
   real, parameter :: twenty_three_twelve=(23./12.)
   real, parameter :: four_thirds=(4./3.)
   real, parameter :: five_twelths=(5./12.)
+  !*********ANYTHING ELSE**************************************************
+  logical,parameter :: nf_compressible=.false. !is the normal velocity field divergence free?
   !***********RUN.IN***************************************************************
   !parameters from run.in, given protected status so treated like parameters
   !by routines in the rest of the code...
