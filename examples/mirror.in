@@ -1,0 +1,18 @@
+--------------required parameters------------
+nsteps 500000
+shots 50
+recon_shots 1
+pcount 1000
+dt 2.5E-5
+delta 0.001
+box_size 0.1
+velocity LIA
+initf single_loop
+initf random_loops
+line_count 10
+boundary mirror
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+tree_theta 0.
+lattice_ratio 0.6
+seg_fault F
