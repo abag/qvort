@@ -46,15 +46,15 @@ module smoothing
       sm(k,j,i)%x(1)=sm_res*real(2*i-1)/2.-(box_size/2.)
       sm(k,j,i)%x(2)=sm_res*real(2*j-1)/2.-(box_size/2.)
       sm(k,j,i)%x(3)=sm_res*real(2*k-1)/2.-(box_size/2.)
-      sm(k,j,i)%w(:)=0.
+      sm(k,j,i)%w(:)=0. !0 the vorticity/magnetic field array
     end do ; end do ; end do
-    !0 the vorticity/magnetic field array
   end subroutine
   !**********************************************************************
   !>print the smoothed mesh to a binary file for plotting with matlab/paraview
   subroutine print_smooth_mesh(filenumber)
     implicit none
     integer, intent(IN) :: filenumber
+    real, allocatable :: vapor_array(:,:,:)
     character (len=50) :: print_file
     write(unit=print_file,fmt="(a,i3.3,a)")"./data/smoothed_field",filenumber,".dat"
     open(unit=92,file=print_file,form='unformatted',status='replace',access='stream')
@@ -64,20 +64,37 @@ module smoothing
       write(92) sm(:,:,:)%w(2)
       write(92) sm(:,:,:)%w(3)
     close(92)
+    if (vapor_print) then
+      allocate(vapor_array(sm_size, sm_size, sm_size))
+      vapor_array(:,:,:)=sqrt(sm(:,:,:)%w(1)**2+&
+                              sm(:,:,:)%w(2)**2+&
+                              sm(:,:,:)%w(3)**2)
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/vap_smooth",filenumber,".dat"
+      open(unit=93,file=print_file,form='unformatted',status='replace',access='stream')
+        write(93) vapor_array
+      close(93)
+      deallocate(vapor_array) 
+    end if
   end subroutine
   !************************************************************
   !>get the smoothed field on the smoothed mesh 
   subroutine get_smoothed_field
     implicit none
     integer :: i, j, k
+    integer :: peri, perj, perk !used to loop in periodic cases
     real :: w(3)
     do k=1, sm_size  ; do j=1, sm_size ; do i=1, sm_size
       w=0. !0 this before each call
-      !this is not truly periodic yet, need to loop over 27 directions
       call tree_smooth(sm(k,j,i)%x,vtree,(/0.,0.,0./),w)
+      if (periodic_bc) then
+        !we must shift the mesh in all 3 directions
+        do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+          if (peri==0.and.perj==0.and.perk==0) cycle
+          call tree_smooth(sm(k,j,i)%x,vtree,(/peri*box_size,perj*box_size,perk*box_size/),w)
+        end do ; end do ;end do
+      end if
       sm(k,j,i)%w=w
     end do ; end do ; end do
-    !now need to print this to file
   end subroutine
   !**********************************************************
   !>given a specific position x, get the smoothed field wsmooth

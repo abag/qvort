@@ -369,12 +369,12 @@ module timestep
     integer :: i !for looping
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
-      rot_r=sqrt(f(i)%x(1)**2+f(i)%x(2)**2)
-      rot_theta=atan2(f(i)%x(2),f(i)%x(1))
-      rot_theta=rot_theta+dt*(0.728*exp(-1.6666*(rot_r/box_size)**2))
+      rot_r=sqrt(f(i)%x(1)**2+f(i)%x(3)**2)
+      rot_theta=atan2(f(i)%x(3),f(i)%x(1))
+      rot_theta=rot_theta+dt*(0.728*exp(-1.6666*(6.*rot_r/box_size)**2))
       if (rot_theta>pi) rot_theta=rot_theta-2*pi
       f(i)%x(1)=rot_r*cos(rot_theta) 
-      f(i)%x(2)=rot_r*sin(rot_theta) 
+      f(i)%x(3)=rot_r*sin(rot_theta) 
     end do
   end subroutine
 end module

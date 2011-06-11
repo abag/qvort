@@ -5,13 +5,17 @@
 %            rough: plots particles only advised for a large number of particles
 %            line: looks better than above a nice compromise
 %            dark: add a night time theme!
-%	     rainbow: colour code the vortex according to velocity
-%	     magnetic: colour code a magnetic flux tube according to log2(B) -this automatically switches on rainbow
+%            annotate: add information on box size and time to plot
+%	     rainbow: colour code the vortex according to velocity/magnetic field
+%	     rainbow: colour code the vortex according to log velocity/magnetic field
+%	     magnetic: colour code a magnetic flux tube according to B, will also affext the width of tubes
+%            vmax= value:maximum field strength
+%            vmin= value:maximum field strength
 %            overhead: angle the plot overhead
+%            overhead_xz: angle the plot overhead xz plane
 %            show_points: will only work if line is set, shows points as well as lines, ignored if rainbow set
 %            print: print to file rather than screen
 %            eps: if print is set and eps is set then output eps files
-%            movie: make a movie by outputting lots of pngs - for batch mode use vortex_anim.m
 %
 function vortex_plot(filenumber,varargin)
 optargin = size(varargin,2);
@@ -26,7 +30,8 @@ filename=sprintf('data/var%04d.log',filenumber);
 %this is overridden if we have periodic B.C.'s
 box_size=.005 ;
 %set options based on varargin
-rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ; magnetic=0; show_points=0 ; sph_associated=0 ;
+rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ; magnetic=0; show_points=0 ; sph_associated=0 ; overhead_xz=0;
+log_rainbow=0 ; annotate=0 ; 
 %empty the vmax/min values
 v_max=[] ; v_min=[] ;
 for i=1:optargin
@@ -37,6 +42,8 @@ for i=1:optargin
       rough=1;
     case 'overhead'
       overhead=1;
+    case 'overhead_xz'
+      overhead_xz=1;
     case 'eps'
       ploteps=1;
     case 'print'
@@ -45,6 +52,8 @@ for i=1:optargin
       figure('visible', 'off')
     case 'rainbow'
       rainbow=1;
+    case 'log_rainbow'
+      log_rainbow=1;
     case 'show_points'
       show_points=1;
     case 'vmax='
@@ -56,67 +65,8 @@ for i=1:optargin
     case 'magnetic'
       rainbow=0; %switchoff-rainbow
       magnetic=1;
-    case 'movie'
-          disp('I am going to create a movie')
-          disp('Before we begin shall I delete all the old snapshot pngs?')
-          deleteold = input('delete old var.png files Y/N [N]','s');
-          if isempty(deleteold)
-            plotrough = 'N';
-          end
-          if deleteold=='Y'
-              unix('rm data/var*.png');
-              if ans==0
-                disp('old files succesfully removed')
-              end
-          end
-          figure('visible','off')
-          mstart=input('movie start file (as a number)');
-          mend=input('movie end file (as a number)');
-          mskip=input('skip (as a number) [1]');
-          if isempty(mskip)
-            mskip = 1 ;
-          end
-          plotrough = input('rough plots (very quick) Y/N [N]','s');
-          if isempty(plotrough)
-            plotrough = 'N';
-          end
-          if plotrough~='Y' 
-            plotlines = input('plot lines (or cylinders) Y/N [Y]','s');
-            if isempty(plotlines)
-              plotlines = 'Y';
-            end
-            plotdark = input('dark plots? Y/N [N]','s');
-            if isempty(plotrough)
-              plotdark = 'N';
-            end
-          end
-          for j=mstart:mskip:mend
-              fOUT=sprintf('data/var%04d.png',j)
-              if plotrough=='Y'
-                vortex_plot(j,'rough');
-                print('-dpng',fOUT);
-                continue
-              end
-              if plotlines=='Y'
-                if plotdark=='Y'
-                  vortex_plot(j,'line','dark');
-                else
-                  vortex_plot(j,'line');
-                end 
-              else
-                if plotdark=='Y'
-                  vortex_plot(j,'dark');
-                else
-                  vortex_plot(j);
-                end 
-              end
-              print('-dpng',fOUT); 
-          end
-          animate = input('shall I animate the pngs I created Y/N [N]','s');
-          if animate=='Y'
-            unix('animate data/var*.png')
-          end 
-          return
+    case 'annotate'
+      annotate=1
     case 'dark'
       dark=1;
     case 'line'
@@ -212,8 +162,15 @@ if rainbow==1
   rainbow_scale=199/max(u) ;
   u=u*rainbow_scale;
   rainbowcmap=colormap(jet(200));
-end
-if magnetic==1
+elseif log_rainbow==1
+  rainbow=1 ;
+  %scale velocity into a colormap
+  store_caxis=([min(log10(u(u>0))) max(log10(u))]);
+  u=log10(u)-min(log10(u(u>0)));
+  rainbow_scale=199/max(u) ;
+  u=u*rainbow_scale;
+  rainbowcmap=colormap(jet(200));
+elseif magnetic==1
   if (max(u)>v_max)
       disp('v_max is too small ; exiting script')
       return
@@ -223,7 +180,7 @@ if magnetic==1
       return
   end 
   %scale field into a colormap
-  twid=1./u
+  twid=1./u;
   store_caxis=([v_min v_max]);
   u=u-v_min;
   rainbow_scale=299/v_max ;
@@ -289,7 +246,11 @@ for j=1:number_of_particles
           end
         end
       else
-        [x1 y1 z1]=cylind(twid(j)*dims(1)/5,20, dummy_x(1,1:3),dummy_x(2,1:3));
+        if magnetic==1
+          [x1 y1 z1]=cylind(twid(j)*dims(1)/5,20, dummy_x(1,1:3),dummy_x(2,1:   3));
+        else
+            [x1 y1 z1]=cylind(dims(1)/8,20, dummy_x(1,1:3),dummy_x(2,1:3));
+        end
         h=surf(x1,y1,z1);
         if dark==1
           if rainbow==1
@@ -328,6 +289,9 @@ end
 if (dims(2)>0.)
   if overhead==1
     axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(9)) dims(2)/(2*dims(9))]);
+  elseif overhead_xz==1
+    axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(9)) dims(2)/(2*dims(9)) -dims(2)/(2*dims(9)) dims(2)/(2*dims(9))]);
+    view(0,0)
   else
     axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(9)) dims(2)/(2*dims(9)) -dims(2)/(2*dims(9)) dims(2)/(2*dims(9))]);
     daspect([1 dims(9) dims(9)])
@@ -336,6 +300,9 @@ if (dims(2)>0.)
 else
   if overhead==1
     axis([-box_size box_size -box_size box_size]);
+  elseif overhead_xz==1
+    axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(9)) dims(2)/(2*dims(9)) -dims(2)/(2*dims(9)) dims(2)/(2*dims(9))]);
+    view(0,0)
   else
     axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(9)) dims(2)/(2*dims(9)) -dims(2)/(2*dims(9)) dims(2)/(2*dims(9))]);
     daspect([1 dims(9) dims(9)])
@@ -360,13 +327,15 @@ if magnetic==1
   colorbar
 end
 grid on
-s1='t=';
-s2=num2str(time);
-str=strcat(s1,s2);
-if (dims(2)>0.)
-  text(-.6*dims(2),.6*dims(2),.7*dims(2),str,'FontSize',14)
-else
-  text(-0.06,0.06,0.07,str,'FontSize',16)
+if annotate==1
+  s1='t=';
+  s2=num2str(time);
+  str=strcat(s1,s2);
+  if (dims(2)>0.)
+    text(-.6*dims(2),.6*dims(2),.7*dims(2),str,'FontSize',14)
+  else
+    text(-0.06,0.06,0.07,str,'FontSize',16)
+  end
 end
 if printit==1
   if ploteps==1 
@@ -379,6 +348,11 @@ if printit==1
     print('-dpng', fOUT) 
   end
 end
+if annotate==0 
+  set(gca,'xtick',[])
+  set(gca,'ytick',[])
+  set(gca,'ztick',[])
+end 
 rotate3d on
 set(gca,'FontSize',14)
 %text(1.,10.5,0.55,str)

@@ -1,16 +1,22 @@
 --------------required parameters------------
 nsteps 100000
-shots 100
+shots 1000
+mesh_shots 1000
 recon_shots 1
-pcount 100
+pcount 1000
 dt 1E-4
-delta 0.5E-2
+delta 2E-2
 box_size 1.
 velocity Off
-initf single_line
+initf random_loops
+random_loops 10
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-normal_velocity shear
+tree_theta 0.4
+normal_velocity ABC
+sm_size 64
+smoothing_length 2
 magnetic T
 B_init 1.
+vapor_print T

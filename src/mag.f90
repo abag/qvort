@@ -54,6 +54,7 @@ module mag
     implicit none
     real :: divu
     integer :: i
+    B_E=0.
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       !set l2 the distance between the particle and the one infront
@@ -70,6 +71,7 @@ module mag
         !now set field strength
         f(i)%B=f(i)%B*(f(i)%l2/f(i)%l1)
       end if
+      B_E=B_E+f(i)%B*f(i)%l2
     end do
     select case(normal_velocity)
       case('shear')
