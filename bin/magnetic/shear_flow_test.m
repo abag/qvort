@@ -1,0 +1,16 @@
+dims=load('data/dims.log');
+shear=load('data/shear_y_test.log');
+t=shear(:,1);
+yy1=shear(1,2);
+bb1=shear(:,3);
+yy2=shear(1,4);
+bb2=shear(:,5);
+yy3=shear(1,6);
+bb3=shear(:,7);
+dum_bb1=sqrt(1.+((yy1^2)*exp(-yy1^2)).*t.^2);
+dum_bb2=sqrt(1.+((yy2^2)*exp(-yy2^2)).*t.^2);
+dum_bb3=sqrt(1.+((yy3^2)*exp(-yy3^2)).*t.^2);
+plot(t,bb1,t,dum_bb1,'o',t,bb2,t,dum_bb2,'o',t,bb3,t,dum_bb3,'o')
+xlabel('t','Fontsize',16)
+ylabel('B','Fontsize',16)
+set(gca,'Fontsize',16)

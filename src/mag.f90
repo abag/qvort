@@ -5,6 +5,7 @@ module mag
   use general
   use smoothing
   use tree
+  use normal_fluid
   !>@param diffusion_on a flag set on if diffusion had been set to a none
   !>zero value in run.in, this helps subsequent smoothing routine
   logical, private :: diffusion_on=.false.
@@ -51,18 +52,35 @@ module mag
   !>get the length between the particle and the particle infront-assign to l2
   subroutine set_B_strength
     implicit none
+    real :: divu
     integer :: i
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       !set l2 the distance between the particle and the one infront
       f(i)%l2=dist_gen(f(i)%x,f(i)%ghosti) !general.f90
       !account for compressibility of velocity field
-      f(i)%divu=0.
-      !now timestep the volume element
-      f(i)%v2=f(i)%v1*(1.+dt*f(i)%divu)
-      !now set field strength
-      f(i)%B=f(i)%B*(f(i)%l2/f(i)%l1)*(f(i)%v1/f(i)%v2)
+      if (nf_compressible) then
+        !get the local divergence of the velocity field
+        call get_normal_divu(f(i)%x,divu)
+        !now timestep the volume element
+        f(i)%v2=f(i)%v1*(1.+dt*divu)
+        !now set field strength
+        f(i)%B=f(i)%B*(f(i)%l2/f(i)%l1)*(f(i)%v1/f(i)%v2)
+      else
+        !now set field strength
+        f(i)%B=f(i)%B*(f(i)%l2/f(i)%l1)
+      end if
     end do
+    select case(normal_velocity)
+      case('shear')
+        if ((mod(itime,shots)==0)) then
+          open(unit=23,file='data/shear_y_test.log', position='append')
+            write(23,*) t, f(10)%x(3), f(10)%B, &
+                           f(20)%x(3), f(20)%B, &
+                           f(44)%x(3), f(44)%B
+          close(23)
+        end if
+    end select
   end subroutine
   !**********************************************************************
   !>simulate the effect of the lorentz force by adding in magnetic tension 

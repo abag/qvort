@@ -48,7 +48,7 @@ for i=1:optargin
     case 'magnetic'
       rainbow=0; %switchoff-rainbow will be switched on later 
       magnetic=1;
-      Bmax=2048;
+      Bmax=1;
       disp(sprintf('maximum field strength is %f',Bmax))
       disp('at present you must edit this file to change this')
     case 'movie'
@@ -200,7 +200,7 @@ if magnetic==1
   disp(sprintf('min(B)=%f,max(B)=%f',min(u),max(u)));
   rainbow=1; %swich on rainbow
   %scale field into a colormap
-  store_caxis=([-8 log2(Bmax)]);
+  store_caxis=([-2 log2(Bmax)]);
   u=floor(log2(u))+10;
   rainbowcmap=colormap(jet(floor(log2(Bmax))+11));
 end

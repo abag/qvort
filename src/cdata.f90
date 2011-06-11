@@ -33,7 +33,6 @@ module cdata
     real :: delta
     real :: B 
     real :: l1, l2
-    real :: divu
     real :: v1, v2
   end type
   !>main filament vector
@@ -176,7 +175,7 @@ module cdata
   real, parameter :: four_thirds=(4./3.)
   real, parameter :: five_twelths=(5./12.)
   !*********ANYTHING ELSE**************************************************
-  logical,parameter :: nf_compressible=.false. !is the normal velocity field divergence free?
+  logical :: nf_compressible=.false. !is the normal velocity field divergence free?
   !***********RUN.IN***************************************************************
   !parameters from run.in, given protected status so treated like parameters
   !by routines in the rest of the code...

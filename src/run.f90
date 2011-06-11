@@ -157,7 +157,6 @@ program run
     if (seg_fault) write(*,*) 'here12'
     !--------------------final sanity checks----------------------
     if (NAN_test) call NAN_finder !general.mod
-    t=t+dt !finish by incrementing time 
   end do
   !deallocate(f,mesh) !tidy up
 end program

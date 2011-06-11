@@ -1,12 +1,13 @@
 #!/bin/bash
   . /opt/vapor/bin/vapor-setup.sh
   filenum=$1
-  nmesh=32
+  nmesh=64
   rm -r u2*
   #vdfcreate -dimension $nmesh x$nmesh x$nmesh -numts $filenum -varnames u2 u2.vdf
-  #vdfcreate -dimension 64x64x64 -numts 100 -varnames u2 u2.vdf
-  vdfcreate -dimension 128x128x128 -numts 100 -varnames unorm unorm.vdf
-  vdfcreate -dimension 128x128x128 -numts 100 -varnames usup usup.vdf
+  vdfcreate -dimension 64x64x64 -numts 100 -varnames unorm unorm.vdf
+  vdfcreate -dimension 64x64x64 -numts 100 -varnames usup usup.vdf
+  #vdfcreate -dimension 128x128x128 -numts 100 -varnames unorm unorm.vdf
+  #vdfcreate -dimension 128x128x128 -numts 100 -varnames usup usup.vdf
   for i in `seq 1 $filenum`; do
     if [[ $i -le 9 ]] ; then
       file1=data/vap_norm00$i.dat

@@ -15,7 +15,10 @@ pristine: cleann
 	rm -rf data/*
 	rm -f *.eps *.png
 	rm -f *.mat matlab.out
-	rm STOP
+	rm -f *.vtk
+	rm -f *.vdf
+	rm -rf unorm_data usup_data
+	rm -f STOP
 linkx:
 	@for file in src/*.x; \
 	do [ -e "`basename $$file`" ] || ln -s $$file .; \

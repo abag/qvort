@@ -151,10 +151,6 @@ module line
         !check the size of the new loop
         call loop_killer(i)
         remove_count=remove_count+1
-        !halve the magnetic field - due to contraction
-        !if (magnetic) then
-        !  f(i)%B=f(i)%B/2.
-        !end if 
       end if
     end do
   end subroutine

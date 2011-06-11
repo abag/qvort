@@ -2,7 +2,7 @@ function mesh_plot(filenumber,varargin)
 close all
 optargin = size(varargin,2);
 %set options based on varargin
-slice=0 ; iso=0 ; spect=0 ; struct=0 ; print=0 ; 
+slice=0 ; iso=0 ; spect=0 ; struct=0 ; print=0 ; para=0 ; 
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'slice'
@@ -11,6 +11,8 @@ for i=1:optargin
       iso=1;
     case 'spect'
       spect=1;
+    case 'para'
+      para=1;
     case 'struct'
       struct=1;
     case 'print'
@@ -54,6 +56,17 @@ if slice==1
   end
   if unorm_mrms>0.
     mesh_slices(x,unormx,unormy,unormz,msize,'normal')
+  end
+end
+%output to paraview
+if para==1
+  if u_mrms>0.
+    disp('printing to vtk file para_sup for paraview')
+    savevtk(sqrt(ux.^2+uy.^2+uz.^2),'para_sup.vtk')
+  end
+  if unorm_mrms>0.
+    disp('printing to vtk file para_norm for paraview')
+    savevtk(sqrt(unormx.^2+unormy.^2+unormz.^2),'para_norm.vtk')
   end
 end
 %plot isosurface

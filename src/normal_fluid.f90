@@ -178,6 +178,23 @@ module normal_fluid
           'correct parameter for normal_veloctity not set')
       end select
     end subroutine
+    !************************************************************
+    !>get the divergence of the velocity (divu) of the normal fluid 
+    !!at a position (x)
+    subroutine get_normal_divu(x,divu)
+      implicit none
+      real, intent(IN) :: x(3) !position of the particle
+      real, intent(OUT) :: divu !velocity at x
+      select case(normal_velocity)
+        case('expand','expand_rot')
+          divu=3.
+          !divu=2.
+        case('collapse_rot')
+          divu=-3.
+        case default
+          divu=0.
+      end select
+    end subroutine
     !**********************************************************
     !>(linear) interpolation of the normal fluid velocity from a mesh
     !>needed for certain selections of velocity
