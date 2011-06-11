@@ -27,8 +27,12 @@ filename=sprintf('data/var%04d.log',filenumber);
 box_size=.005 ;
 %set options based on varargin
 rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ; magnetic=0; show_points=0 ; sph_associated=0 ;
+%empty the vmax/min values
+v_max=[] ; v_min=[] ;
 for i=1:optargin
-  switch cell2str(varargin(i))
+   dummy_arg=cell2str(varargin(i));
+   [dummy_arg value]=strtok(dummy_arg);
+  switch  dummy_arg
     case 'rough'
       rough=1;
     case 'overhead'
@@ -43,14 +47,15 @@ for i=1:optargin
       rainbow=1;
     case 'show_points'
       show_points=1;
+    case 'vmax='
+       v_max=str2num(value);
+     case 'vmin='
+       v_min=str2num(value);
     case 'sph_associated'
       sph_associated=1;
     case 'magnetic'
-      rainbow=0; %switchoff-rainbow will be switched on later 
+      rainbow=0; %switchoff-rainbow
       magnetic=1;
-      Bmax=1;
-      disp(sprintf('maximum field strength is %f',Bmax))
-      disp('at present you must edit this file to change this')
     case 'movie'
           disp('I am going to create a movie')
           disp('Before we begin shall I delete all the old snapshot pngs?')
@@ -122,6 +127,18 @@ for i=1:optargin
       help vortex_plot
       return
   end
+end
+if (magnetic==1) 
+   if isempty(v_max)==1
+       v_max=1.;
+   end
+    if isempty(v_min)==1
+       v_min=0.;
+    end
+    if (v_min>v_max)
+      disp('you have set v_min>v_max ; exiting script')
+      return
+    end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the dimensions information from dims.log
@@ -197,12 +214,21 @@ if rainbow==1
   rainbowcmap=colormap(jet(200));
 end
 if magnetic==1
-  disp(sprintf('min(B)=%f,max(B)=%f',min(u),max(u)));
-  rainbow=1; %swich on rainbow
+  if (max(u)>v_max)
+      disp('v_max is too small ; exiting script')
+      return
+  end 
+  if (min(u)<v_min)
+      disp('v_min is too large ; exiting script')
+      return
+  end 
   %scale field into a colormap
-  store_caxis=([-2 log2(Bmax)]);
-  u=floor(log2(u))+10;
-  rainbowcmap=colormap(jet(floor(log2(Bmax))+11));
+  twid=1./u
+  store_caxis=([v_min v_max]);
+  u=u-v_min;
+  rainbow_scale=299/v_max ;
+  u=u*rainbow_scale;
+  rainbowcmap=colormap(jet(300));
 end
 %now create vectors to plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for j=1:number_of_particles
@@ -223,6 +249,11 @@ for j=1:number_of_particles
               u(j)=1;
             end
             plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
+          elseif magnetic==1
+            if u(j)==0
+              u(j)=1;
+            end
+            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
           else
             if show_points==1
               plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',2)
@@ -232,6 +263,11 @@ for j=1:number_of_particles
           end
         else
           if rainbow==1
+            if u(j)==0
+              u(j)=1;
+            end
+            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
+          elseif magnetic==1
             if u(j)==0
               u(j)=1;
             end
@@ -253,7 +289,7 @@ for j=1:number_of_particles
           end
         end
       else
-        [x1 y1 z1]=cylind(dims(1)/10,20, dummy_x(1,1:3),dummy_x(2,1:3));
+        [x1 y1 z1]=cylind(twid(j)*dims(1)/5,20, dummy_x(1,1:3),dummy_x(2,1:3));
         h=surf(x1,y1,z1);
         if dark==1
           if rainbow==1
@@ -266,6 +302,11 @@ for j=1:number_of_particles
           end
         else
           if rainbow==1
+            if u(j)==0
+                u(j)=1;
+            end
+            set(h,'FaceColor',rainbowcmap(max(1,ceil(u(j))),:),'EdgeColor',rainbowcmap(max(1,ceil(u(j))),:),'FaceAlpha',0.5,'EdgeAlpha',0.1) ;
+          elseif magnetic==1
             if u(j)==0
                 u(j)=1;
             end
@@ -311,6 +352,10 @@ lighting phong
 camlight
 hold off
 if rainbow==1
+  caxis(store_caxis)
+  colorbar
+end
+if magnetic==1
   caxis(store_caxis)
   colorbar
 end

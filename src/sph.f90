@@ -7,7 +7,7 @@ module sph
   use sph_kernel
   implicit none
   integer,parameter,private :: neighnumb=25 !number of neighbours to use
-  real :: h_eta=0.5*(0.75*neighnumb/pi)**(0.333333333333) !works with above
+  real,parameter :: h_eta=0.5*(0.75*neighnumb/pi)**(0.333333333333) !works with above
   !**********SPH MESH STRUCTURE***********
   !>mesh structure - at present only density stored
   !>runs from -box_size /2 to box_size/2 to with mesh_size^3
