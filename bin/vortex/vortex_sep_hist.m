@@ -1,4 +1,4 @@
-function vortex_sep_hist(filenumber)
+function [f xi]=vortex_sep_hist(filenumber)
 filename=sprintf('data/var%04d.log',filenumber);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the dimensions information from dims.log
@@ -61,14 +61,14 @@ for j=1:number_of_particles
     end
   end
 end
-figure('Name','Histogram of particle separation')
- hist(sep)
- xlabel('separation','FontSize',16)
- ylabel('N','FontSize',16)
- set(gca,'FontSize',16)
-figure('Name','PDF particle separation')
- [f xi]=ksdensity(sep)
- plot(xi,f,'-k','LineWidth',2)
- xlabel('separation','FontSize',16)
- ylabel('PDF','FontSize',16)
- set(gca,'FontSize',16)
+[f xi]=ksdensity(sep)
+%figure('Name','Histogram of particle separation')
+% hist(sep)
+% xlabel('separation','FontSize',16)
+% ylabel('N','FontSize',16)
+% set(gca,'FontSize',16)
+%figure('Name','PDF particle separation') 
+ %plot(xi,f,'-k','LineWidth',2)
+ %xlabel('separation','FontSize',16)
+ %ylabel('PDF','FontSize',16)
+ %set(gca,'FontSize',16)
