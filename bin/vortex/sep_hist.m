@@ -1,7 +1,7 @@
 %a script to plot histograms of particle setparation
 %run the script with the command 'print' to print to file
-function sep_hist(option)
-if nargin==0     
+function sep_hist(start,final,skip,option)
+if nargin==3     
   option='empty';
 end
 switch option
@@ -22,40 +22,43 @@ t=ts(:,2);
 s=size(ts);
 store_caxis=([min(t) max(t)]);
 cmap=colormap(jet(s(1))) ;
-for i=1:s(1)
-  [f xi]=vortex_sep_hist(i);
-  plot(xi,f,'Color',cmap(i,:)) ; 
-end 
-%switch option
-%  case 'print'
-%    figure('visible','off');
-%  otherwise
-%    figure('Name', 'curvature PDF')      
-%end
-%for i=1:8:snap_number
-%  switch option
-%    case 'loglog'
-%      loglog(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
-%      xlabel('log \kappa','FontSize',14)
-%      ylabel('log PDF(\kappa)','FontSize',14)
-%    case 'log'
-%      plot(B(:,i,1),log(B(:,i,2)),'-','Color',cmap(i,:)) ;
-%      xlabel('\kappa','FontSize',14)
-%      ylabel('log PDF(\kappa)','FontSize',14)
-%    otherwise
-%      plot(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
-%      %plot(B(:,i,1),B(:,i,2),'-','LineWidth',2,'Color',cmap(i,:)) ;
-%      xlabel('\kappa','FontSize',14)
-%      ylabel('PDF(\kappa)','FontSize',14)
-%  end
-%  hold on   
-%end
-%hold off
-%caxis(store_caxis)
-%colorbar
-%set(gca,'FontSize',14)
-%switch option
-%  case 'print'
-%    disp('printing to curv_pdf.eps')
-%    print('-depsc','./curv_pdf.eps')
-%end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+switch option
+  case 'print'
+    figure('visible','off');
+  otherwise
+    figure('Name', 'separation PDF')      
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for i=start:skip:final
+  [f xi]=vortex_sep_hist(i,'noplot');
+  switch option
+    case 'loglog'
+      loglog(B(:,i,1),log(B(:,i,2)),'-','Color',cmap(i,:)) ;
+    case 'log'
+      semilogx(xi,f,'-','Color',cmap(i,:)) ; 
+    otherwise
+      plot(xi,f,'-','Color',cmap(i,:)) ; 
+  end
+  hold on   
+end
+hold off
+switch option
+  case 'loglog'
+    xlabel('log sep','FontSize',14)
+    ylabel('log PDF(sep)','FontSize',14)
+  case 'log'
+    xlabel('sep','FontSize',14)
+    ylabel('log PDF(sep)','FontSize',14)
+  otherwise
+    xlabel('sep','FontSize',14)
+    ylabel('PDF(sep)','FontSize',14)
+end
+caxis(store_caxis)
+colorbar
+set(gca,'FontSize',14)
+switch option
+  case 'print'
+    disp('printing to sep_pdf.eps')
+    print('-depsc','./sep_pdf.eps')
+end

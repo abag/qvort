@@ -1,4 +1,7 @@
-function [f xi]=vortex_sep_hist(filenumber)
+function [f xi]=vortex_sep_hist(filenumber,option)
+if nargin==1
+  option='plot';
+end
 filename=sprintf('data/var%04d.log',filenumber);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the dimensions information from dims.log
@@ -43,6 +46,7 @@ else
   end
   f=uint16(f);
 end
+fclose(fid);
 %now create vectors to plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 counter=1;
 for j=1:number_of_particles
@@ -61,14 +65,17 @@ for j=1:number_of_particles
     end
   end
 end
-[f xi]=ksdensity(sep)
-%figure('Name','Histogram of particle separation')
-% hist(sep)
-% xlabel('separation','FontSize',16)
-% ylabel('N','FontSize',16)
-% set(gca,'FontSize',16)
-%figure('Name','PDF particle separation') 
- %plot(xi,f,'-k','LineWidth',2)
- %xlabel('separation','FontSize',16)
- %ylabel('PDF','FontSize',16)
- %set(gca,'FontSize',16)
+[f xi]=ksdensity(sep);
+switch option
+  case 'plot'
+   figure('Name','Histogram of particle separation')
+     hist(sep);
+     xlabel('separation','FontSize',16);
+     ylabel('N','FontSize',16);
+     set(gca,'FontSize',16)
+   figure('Name','PDF particle separation') 
+     plot(xi,f,'-k','LineWidth',2)
+     xlabel('separation','FontSize',16)
+     ylabel('PDF','FontSize',16)
+     set(gca,'FontSize',16)
+end
