@@ -12,7 +12,8 @@ elseif nargin<3
   skip=1;
 end
 load data/dims.log;
-msize=dims(3);
+bsize=dims(2); %box size
+msize=dims(3); %mesh size
 if (msize==0) 
   disp('mesh size is zero exiting script')
   return
@@ -26,13 +27,14 @@ for i=start:skip:finish
     return
   end
   t(i)=fread(fid,1,'float64');
+  x=fread(fid,msize,'float64');
   unormx=fread(fid,msize^3,'float64');
   unormy=fread(fid,msize^3,'float64');
   unormz=fread(fid,msize^3,'float64');
   ux=fread(fid,msize^3,'float64');
   uy=fread(fid,msize^3,'float64');
   uz=fread(fid,msize^3,'float64');
-  u2(i)=sum(sum(sum(ux.^2+uy.^2+uz.^2)))/(2.*msize^3);
+  u2(i)=sum(sum(sum(ux.^2+uy.^2+uz.^2)))/(2.*(bsize/msize)^3);
   fclose(fid);
 end
 disp('saving t and u2 to mesh_energy.mat')
