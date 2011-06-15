@@ -34,7 +34,7 @@ for i=start:skip:finish
   ux=fread(fid,msize^3,'float64');
   uy=fread(fid,msize^3,'float64');
   uz=fread(fid,msize^3,'float64');
-  u2(i)=sum(sum(sum(ux.^2+uy.^2+uz.^2)))/(2.*(bsize/msize)^3);
+  u2(i)=sum(sum(sum(ux.^2+uy.^2+uz.^2)))/(2.*(msize/bsize)^3);
   fclose(fid);
 end
 disp('saving t and u2 to mesh_energy.mat')
