@@ -18,7 +18,7 @@ program run
   use sph_interface
   implicit none
   integer :: i
-  logical :: can_stop=.false.
+  logical :: can_stop=.false.,can_reload=.false. 
   call banner_print !output.mod
   call init_random_seed !cdata.mod
   !read in parameters
@@ -152,6 +152,16 @@ program run
       if (can_stop) then
         write(*,*) 'Encountered stop file, ending simulation'
         stop
+      end if
+    end if
+    !---------------------do we need to reload run.in------------------------
+    if (mod(itime,shots)==0) then
+      inquire(file='./RELOAD', exist=can_reload)
+      if (can_reload) then
+        write(*,*) 'Encountered reload file, reloading run.in'
+        call reload_run_file !cdata.mod
+        can_reload=.false.
+        call system('rm ./RELOAD') !remove the RELOAD file
       end if
     end if
     if (seg_fault) write(*,*) 'here12'

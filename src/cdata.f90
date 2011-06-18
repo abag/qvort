@@ -501,6 +501,125 @@ module cdata
     end do
   end subroutine
   !*************************************************************************************************  
+  !>reload the file run.in and show differences
+  subroutine reload_run_file()
+    implicit none
+    ! input related variables
+    character(len=100) :: buffer, label
+    integer :: pos
+    integer, parameter :: fh = 15
+    integer :: ios = 0
+    integer :: line = 0
+    !****************************************
+    !*******RELOAD DUMMY VARIABLES***********
+    integer :: reload_nsteps
+    integer :: reload_shots,reload_recon_shots, reload_mesh_shots
+    real ::  reload_normal_fluid_cutoff, reload_inject_stop
+    logical :: reload_curv_hist, reload_vel_print, reload_vapor_print
+    logical :: reload_topo_inf, reload_energy_inf, reload_recon_info
+    integer :: reload_one_dim, reload_two_dim
+    open(fh, file='run.in')
+    do while (ios == 0)
+       read(fh, '(A)', iostat=ios) buffer
+       if (ios == 0) then
+          line = line + 1
+          ! Find the first instance of whitespace.  Split label and data.
+          pos = scan(buffer, '     ')
+          label = buffer(1:pos)
+          buffer = buffer(pos+1:)
+          select case (label)
+          case ('nsteps')
+             read(buffer, *, iostat=ios) reload_nsteps
+             if (reload_nsteps/=nsteps) then
+               nsteps=reload_nsteps
+               write(*,'(a,i6.6)') 'RELOAD: changed nsteps to ', nsteps
+             end if
+          case ('shots')
+             read(buffer, *, iostat=ios) reload_shots
+             if (reload_shots/=shots) then
+               shots=reload_shots
+               write(*,'(a,i6.6)') 'RELOAD: changed shots to ', shots
+             end if 
+          case ('recon_shots')
+             read(buffer, *, iostat=ios) reload_recon_shots 
+             if (reload_recon_shots/=recon_shots) then
+               recon_shots=reload_recon_shots
+               write(*,'(a,i6.6)') 'RELOAD: changed recon_shots to ', recon_shots
+             end if 
+          case ('mesh_shots')
+             read(buffer, *, iostat=ios) reload_mesh_shots 
+             if (reload_mesh_shots/=mesh_shots) then
+               mesh_shots=reload_mesh_shots
+               write(*,'(a,i6.6)') 'RELOAD: changed mesh_shots to ', mesh_shots
+             end if 
+          case ('normal_fluid_cutoff')
+             read(buffer, *, iostat=ios) reload_normal_fluid_cutoff 
+             if ((reload_normal_fluid_cutoff>normal_fluid_cutoff).or. & 
+                (reload_normal_fluid_cutoff<normal_fluid_cutoff)) then
+               normal_fluid_cutoff=reload_normal_fluid_cutoff
+               write(*,'(a,f10.4)') 'RELOAD: changed normal_fluid_cutoff to ', normal_fluid_cutoff
+             end if 
+          case ('curv_hist')
+             read(buffer, *, iostat=ios) reload_curv_hist 
+             if (reload_curv_hist.neqv.curv_hist) then
+               curv_hist=reload_curv_hist
+               write(*,*) 'RELOAD: changed curv_hist to ', curv_hist
+             end if 
+          case ('vel_print')
+             read(buffer, *, iostat=ios) reload_vel_print 
+             if (reload_vel_print.neqv.vel_print) then
+               vel_print=reload_vel_print
+               write(*,*) 'RELOAD: changed vel_print to ', vel_print
+             end if 
+          case ('vapor_print')
+             read(buffer, *, iostat=ios) reload_vapor_print 
+             if (reload_vapor_print.neqv.vapor_print) then
+               vapor_print=reload_vapor_print
+               write(*,*) 'RELOAD: changed vapor_print to ', vapor_print
+             end if 
+          case ('one_dim')
+             read(buffer, *, iostat=ios) reload_one_dim
+             if (reload_one_dim/=one_dim) then
+               one_dim=reload_one_dim
+               write(*,*) 'RELOAD: changed one_dim to ', one_dim
+             end if 
+          case ('two_dim')
+             read(buffer, *, iostat=ios) reload_two_dim 
+             if (reload_two_dim/=two_dim) then
+               two_dim=reload_two_dim
+               write(*,*) 'RELOAD: changed two_dim to ', two_dim
+             end if 
+          case ('recon_info')
+             read(buffer, *, iostat=ios) reload_recon_info
+             if (reload_recon_info.neqv.recon_info) then
+               recon_info=reload_recon_info
+               write(*,*) 'RELOAD: changed recon_info to ', recon_info
+             end if 
+          case ('topo_inf')
+             read(buffer, *, iostat=ios) reload_topo_inf 
+             if (reload_topo_inf.neqv.topo_inf) then
+               topo_inf=reload_topo_inf
+               write(*,*) 'RELOAD: changed topo_inf to ', topo_inf
+             end if 
+          case ('energy_inf')
+             read(buffer, *, iostat=ios) reload_energy_inf 
+             if (reload_energy_inf.neqv.energy_inf) then
+               energy_inf=reload_energy_inf
+               write(*,*) 'RELOAD: changed energy_inf to ', energy_inf
+             end if 
+          case ('inject_stop')
+             read(buffer, *, iostat=ios) reload_inject_stop 
+             if ((reload_inject_stop>inject_stop).or. & 
+                (reload_inject_stop<inject_stop)) then
+               inject_stop=reload_inject_stop
+               write(*,'(a,f10.4)') 'RELOAD: changed inject_stop to ', inject_stop
+             end if 
+          case default
+          end select
+       end if
+    end do
+  end subroutine
+  !*************************************************************************************************  
   !>print error message to screen and stop the run
   !!provide a location of error and the message to print
   subroutine fatal_error(location,message)
@@ -572,4 +691,29 @@ end module
 !>- \p switchoff_recon - turn off reconnection algorithm.
 !>- \p seg_fault - will use print statements place throughout run.f90 to try and
 !>help the user isolate a segmentation fault in the code.
-
+!>\page RELOAD RELOAD and STOP files
+!!Whilst the code is runnning you may wish to force the code to stop runnning. One
+!!could kill the exectuable using ctrl+c, however if the code is running in the background
+!!(i.e. you have set the code running with ./run.sh -q) then this is not possible.
+!!To stop the code one can simply create a file STOP (the easiest way to do this is 
+!!with the command touch STOP), the code will then stop. \n
+!!
+!!A more important issue is changing runtime parameters whilst the code is running. You
+!!could simply kill the code, make your changes and then restart the code (./run.sh -r), however
+!!this is not neat solution.\n
+!!Instead make your changes to the run.in file and then create a reload file (touch RELOAD). This
+!!will re-read the run.in file allowing you to make changes on the fly.
+!!Note not all parameters can be changed below is a list of parameters that can be re-read
+!!- \p nsteps - number of timesteps the code runs for
+!!- \p shots - how often the code prints to file (filament only not meshes)
+!!- \p mesh_shots - how often we print mesh's (3,2 and 1D to file)
+!!- \p normal_fluid_cutoff - when (if) we turn off the normal fluid drive
+!!- \p curv_hist - print binned curvature information?
+!!- \p vel_print - print velocity information to run angela's velocity stat scripts
+!!- \p vapor_print - print meshes as binary files speciffically for vapor?
+!!- \p one_dim - 1D mesh size (runs in x-direction, y=0,z=0)
+!!- \p two_dim - 2D mesh size (in xy-plane, z=0)
+!!- \p recon_info - print specific reconnection information
+!!- \p topo_inf - calculate topological information of the filament (linking and writhe) very slow!
+!!- \p energy_inf - print energy information to file 
+!!- \p inject_stop - if (when) the code stops injecting loops (if inject has been set)
