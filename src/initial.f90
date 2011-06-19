@@ -251,6 +251,7 @@ module initial
     if (vapor_print) write(*,*) 'if we have mesh(s) then we will also print to file for vapor'
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
     if (topo_inf) write(*,*) 'printing topological information to file'
+    if (sep_inf) write(*,*) 'printing point separation info+histogram to file'
     if (energy_inf) then
       write(*,*) 'printing energy information to file'
       if (periodic_bc) call warning_message('init.mod','energy output is meaningless with periodic boundaries')
