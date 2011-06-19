@@ -234,6 +234,65 @@ module diagnostic
     deallocate(curvi) !deallocate helper array
   end subroutine
   !*************************************************
+  !>caculate the mean, min, max of separation of the vortex points
+  !>will also bin the separations to plot a histogram
+  subroutine get_sep_inf()
+    implicit none
+    real, allocatable :: sep_array(:) !point seperations
+    real :: sep_min, sep_max, sep_bar
+    integer :: i, j, counter
+    !------------histogram parameters below---------------------
+    !warning - at present the matlab routine to plot the histogram 
+    !is not adpative therefore if the number of bins is changed 
+    !the script must also be changed - warning
+    integer, parameter :: bin_num=20 !number of bins
+    real :: bin_size, bins(bin_num) !the bins of the histograms
+    real :: probability(bin_num) !the probability of that bin
+    allocate(sep_array(pcount*(pcount-1))) !allocate this array pcount*(pcount-1) size
+    sep_array=0. !0 initially
+    counter=1
+    do i=1, pcount
+      if (f(i)%infront==0) cycle
+      do j=1, pcount
+        if (f(j)%infront==0) cycle
+        sep_array(counter)=distf(i,j)
+        counter=counter+1
+      end do
+    end do
+    !compute the average/min/max of this array
+    sep_bar=sum(sep_array)/count(mask=sep_array>0.)
+    sep_max=maxval(sep_array)
+    sep_min=minval(sep_array,mask=sep_array>0)
+    !output this to file
+    open(unit=72,file='data/sep_info.log',position='append')
+      write(72,*) t, sep_bar,sep_max,sep_min
+    close(72)
+    !now create of a histogram
+
+    !first we set the bins
+    bin_size=(sep_max-sep_min)/bin_num
+    bins=0.
+    !now loop over sep_array and bins and create the histogram
+    do i=1, pcount*(pcount-1)
+      do j=1, bin_num
+        if (sep_array(i)>sep_min+(j-1)*bin_size) then
+          if (sep_array(i)<sep_min+j*bin_size) then
+            bins(j)=bins(j)+1
+          end if
+        end if
+      end do
+    end do
+    bins=bins/(count(mask=sep_array>0.)*bin_size) !normalise 
+    open(unit=79,file='data/sep_pdf.log',position='append')
+    write(79,*) '%----------------t=',t,'---------------'
+    do j=1, bin_num
+      write(79,*) sep_min+(j-1)*bin_size, bins(j) 
+    end do 
+    close(79)
+
+    deallocate(sep_array) !deallocate helper array
+  end subroutine
+  !*************************************************
   !>get the structure functions of the mesh velocities
   !>@warning not completed yet
   subroutine structure_function() !THIS NEEDS TESTING!!!!

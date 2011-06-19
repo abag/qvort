@@ -257,6 +257,7 @@ module cdata
   logical, protected :: curv_hist=.false. !dumps binned curvature information
   logical, protected :: topo_inf=.false. !calculate topological information
   logical, protected :: energy_inf=.false. !calculate energy of vortex 
+  logical, protected :: sep_inf=.false. !calculate information and histogram of point separation
   integer, protected :: one_dim=0 !size of 1d velocity information printed to file
   integer, protected :: two_dim=0 !size of 2d velocity information printed to file
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
@@ -438,6 +439,8 @@ module cdata
              read(buffer, *, iostat=ios) two_dim !size of 2D print
           case ('recon_info')
              read(buffer, *, iostat=ios) recon_info !extra reconnection information
+          case ('sep_inf')
+             read(buffer, *, iostat=ios) sep_inf !point separation
           case ('topo_inf')
              read(buffer, *, iostat=ios) topo_inf !topological information
           case ('energy_inf')
@@ -516,7 +519,7 @@ module cdata
     integer :: reload_shots,reload_recon_shots, reload_mesh_shots
     real ::  reload_normal_fluid_cutoff, reload_inject_stop
     logical :: reload_curv_hist, reload_vel_print, reload_vapor_print
-    logical :: reload_topo_inf, reload_energy_inf, reload_recon_info
+    logical :: reload_topo_inf,reload_energy_inf,reload_recon_info,reload_sep_inf
     integer :: reload_one_dim, reload_two_dim
     open(fh, file='run.in')
     do while (ios == 0)
@@ -594,6 +597,12 @@ module cdata
              if (reload_recon_info.neqv.recon_info) then
                recon_info=reload_recon_info
                write(*,*) 'RELOAD: changed recon_info to ', recon_info
+             end if
+          case ('sep_inf')
+             read(buffer, *, iostat=ios) reload_sep_inf
+             if (reload_sep_inf.neqv.sep_inf) then
+               sep_inf=reload_sep_inf
+               write(*,*) 'RELOAD: changed sep_inf to ', sep_inf
              end if 
           case ('topo_inf')
              read(buffer, *, iostat=ios) reload_topo_inf 

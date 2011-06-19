@@ -1,5 +1,5 @@
-%a script to plot histograms of curvature
-%note I assume that the number of bins is 10
+%a script to plot histograms of point separations
+%note I assume that the number of bins is 20
 %run the script with the command 'print' to print to file
 function curv_hist(option)
 if nargin==0     
@@ -18,34 +18,35 @@ case 'empty'
     help curv_hist
     return
 end
-A=load('./data/curv_pdf.log');
+A=load('./data/sep_pdf.log');
 ts=load('./data/ts.log');
 t=ts(:,2);
-s=size(A) ; snap_number=s(1)/10 ;
-B=reshape(A,10,snap_number,2) ;
+bin_number=20;
+s=size(A) ; snap_number=s(1)/bin_number ;
+B=reshape(A,bin_number,snap_number,2) ;
 store_caxis=([min(t) max(t)]);
 cmap=colormap(jet(snap_number)) ;
 switch option
   case 'print'
     figure('visible','off');
   otherwise
-    figure('Name', 'curvature PDF')      
+    figure('Name', 'separation PDF')      
 end
-for i=1:8:snap_number
+for i=1:snap_number
   switch option
     case 'loglog'
       loglog(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
-      xlabel('log \kappa','FontSize',14)
-      ylabel('log PDF(\kappa)','FontSize',14)
+      xlabel('log sep','FontSize',14)
+      ylabel('log PDF(sep)','FontSize',14)
     case 'log'
       semilogy(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
-      xlabel('\kappa','FontSize',14)
-      ylabel('log PDF(\kappa)','FontSize',14)
+      xlabel('sep','FontSize',14)
+      ylabel('log PDF(sep)','FontSize',14)
     otherwise
       plot(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
       %plot(B(:,i,1),B(:,i,2),'-','LineWidth',2,'Color',cmap(i,:)) ;
-      xlabel('\kappa','FontSize',14)
-      ylabel('PDF(\kappa)','FontSize',14)
+      xlabel('sep','FontSize',14)
+      ylabel('PDF(sep)','FontSize',14)
   end
   hold on   
 end
@@ -55,6 +56,6 @@ colorbar
 set(gca,'FontSize',14)
 switch option
   case 'print'
-    disp('printing to curv_pdf.eps')
-    print('-depsc','./curv_pdf.eps')
+    disp('printing to sep_pdf.eps')
+    print('-depsc','./sep_pdf.eps')
 end
