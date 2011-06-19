@@ -253,7 +253,7 @@ module diagnostic
     counter=1
     do i=1, pcount
       if (f(i)%infront==0) cycle
-      do j=1, pcount
+      do j=i, pcount
         if (f(j)%infront==0) cycle
         sep_array(counter)=distf(i,j)
         counter=counter+1
