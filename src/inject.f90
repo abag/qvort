@@ -9,6 +9,8 @@ module inject
   !>check all the necessary conditions to inject vortices are set in run.in
   subroutine setup_vortex_injection()
     implicit none
+    !check inject size is not too small
+    if (inject_size<5) call fatal_error('inject.mod','inject size is too small')
     select case(inject_type)
       case('off')
         return !leave the routine

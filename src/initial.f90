@@ -47,7 +47,7 @@ module initial
       write(*,'(a,f6.2,a,f8.1)') ' simulating phonon emission, cutoff is ', 100*phonon_percent, '% of max:', 2/delta
     end if
     !loop injection
-    call setup_vortex_injection
+    call setup_vortex_injection !inject.mod
     !how is data being outputted (binary or formatted)
     write(*,'(a)') ' ---------------------DATA FORMAT--------------------' 
     if (binary_print) then
