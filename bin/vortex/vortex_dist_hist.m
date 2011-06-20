@@ -47,11 +47,14 @@ else
   f=uint16(f);
 end
 fclose(fid);
-number_of_particles=uint16(number_of_particles);
-sep(number_of_particles*number_of_particles/2)=0.;
+number_of_particles=uint16(number_of_particles)
+sep(number_of_particles*(number_of_particles-1))=0.;
 %now create vectors to plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 counter=1;
 for j=1:number_of_particles
+  if mod(j,100)==0
+    disp(sprintf('processed %f particles',j))
+  end
   if round(f(j))==0
   else
     for i=j:number_of_particles

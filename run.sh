@@ -96,19 +96,19 @@ if [ $FORCE -eq 1 ]; then
     echo "emptying data but protecting random seed"
     if [ -e ./data/seed.dat ]; then
       mv data/seed.dat .
-      rm data/*
+      rm -f data/*
       mv seed.dat ./data
     else
       echo "there is no seed to protect!"
     fi
   else
     echo "emptying data"
-    rm data/*
+    rm -f data/*
   fi
-fi
-if [ -e ./STOP ]; then
-  echo "removing STOP file"
-  rm ./STOP
+  if [ -e ./STOP ]; then
+    echo "removing STOP file"
+    rm ./STOP
+  fi
 fi
 if [ -e ./STOP ]; then
   echo "encountered STOP file: aborting run"

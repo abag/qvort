@@ -1,10 +1,13 @@
-function mesh_urms_all(start,finish,skip,option)
+function mesh_urms_all(start,finish,skip,smooth_fac,option)
 if nargin<3
   disp('I do not have enough arguements to run, please supply start, final, skip')
   return
-else if nargin==3
-  option='3d'
-else
+elseif nargin==3
+  smooth_fac=1;
+  option='3d';
+elseif nargin==4
+  option='3d';
+elseif nargin>5
   disp('You have given me too many arguements, please consult the script')
   return 
 end
@@ -29,8 +32,10 @@ switch option
     plot(tt,u2,'k','LineWidth',2)
   case '2d'
     figure('Name','urms calculated from 2d mesh')
-    plot(u22,'k','LineWidth',2)
+    plot(smooth(u22,smooth_fac),'k','LineWidth',2)
 end
 set(gca,'FontSize',14)
 xlabel('t','FontSize',14)
 ylabel('E','FontSize',14)
+disp('saving to u2.mat file')
+save u2.mat u2

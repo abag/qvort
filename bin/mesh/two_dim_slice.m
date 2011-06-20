@@ -120,10 +120,6 @@ for i=1:n
     spect(r)=spect(r)+energyr(i,j)+energyi(i,j);
   end
 end
-spect(8)=spect(8)*0.82;
-spect(9)=spect(9)*0.92;
-spect(10)=spect(10)*0.94;
-spect(11)=spect(11)*0.98;
 cutoff=100;
 figure('Name','Superfluid energy spectrum')
 k=1:midpt;

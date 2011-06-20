@@ -31,7 +31,7 @@ switch option
   otherwise
     figure('Name', 'curvature PDF')      
 end
-for i=1:8:snap_number
+for i=1:snap_number
   switch option
     case 'loglog'
       loglog(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
