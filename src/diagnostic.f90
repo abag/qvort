@@ -208,6 +208,7 @@ module diagnostic
     kappa_max=maxval(curvi)
     kappa_min=minval(curvi,mask=curvi>0)
     !experimental creation of a histogram
+
     if (curv_hist) then
       !first we set the bins
       bin_size=(kappa_max-kappa_min)/bin_num

@@ -5,7 +5,7 @@
 module cdata
   !**********VORTEX FILAMENT******************************************************
   !>our main structure which holds vortex points
-  !!@param x position of the vortex poin  
+  !!@param x position of the vortex point  
   !!@param u velocity of the vortex point
   !!@param u1 @param u2 stored velocities for Adams-Bashforth
   !!@param u_sup nice to have the just the superfluid veloctity even with normal fluid/forcing
@@ -224,6 +224,7 @@ module cdata
   integer,protected :: KS_rey_int=8
   real,protected :: KS_slope=-5./3.
   integer, protected :: KS_modes=50
+  logical, protected :: KS_maximise_rey=.false.
   !-----------------forcing------------------------------------------------------
   character(len=20), protected :: force='off'
   real, protected :: force_amp=0.
@@ -431,6 +432,8 @@ module cdata
              read(buffer, *, iostat=ios) KS_slope !KS velocity field spectrum
           case ('KS_rey_int')
              read(buffer, *, iostat=ios) KS_rey_int !KS Reynolds number proxy
+          case ('KS_maximise_rey')
+             read(buffer, *, iostat=ios) KS_maximise_rey !Force 1st wavenumber to be as small as possible
           case ('KS_modes')
              read(buffer, *, iostat=ios) KS_modes !the number of KS modes
           case ('one_dim')
@@ -718,6 +721,7 @@ end module
 !!- \p mesh_shots - how often we print mesh's (3,2 and 1D to file)
 !!- \p normal_fluid_cutoff - when (if) we turn off the normal fluid drive
 !!- \p curv_hist - print binned curvature information?
+!!- \p sep_inf - print binned point separation information?
 !!- \p vel_print - print velocity information to run angela's velocity stat scripts
 !!- \p vapor_print - print meshes as binary files speciffically for vapor?
 !!- \p one_dim - 1D mesh size (runs in x-direction, y=0,z=0)

@@ -148,9 +148,12 @@ module KSmodel
         angle=floor((KS_rey_int+1)*angle)/box_size
         call random_number(dir_in)
         direction=nint(dir_in) ; direction=2*direction-1  !positive or negative directions
-        if (i==1) then
-          angle(1)=0. ; angle(2)=0. ; angle(3)=1./box_size
-          direction(3)=1
+        if (KS_maximise_rey) then
+          if (i==1) then
+            write(*,*) 'minimising smallest wavenumber: may force anisotropy'
+            angle(1)=0. ; angle(2)=0. ; angle(3)=1./box_size
+            direction(3)=1
+          end if
         end if
          
         k_option(:,i)=direction(:)*pi*2.0*angle(:) !a possible wavevector

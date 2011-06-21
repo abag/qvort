@@ -10,11 +10,11 @@ module inject
   subroutine setup_vortex_injection()
     implicit none
     !check inject size is not too small
-    if (inject_size<5) call fatal_error('inject.mod','inject size is too small')
     select case(inject_type)
       case('off')
         return !leave the routine
       case default
+        if (inject_size<5) call fatal_error('inject.mod','inject size is too small')
         write(*,'(a)') ' ------------------VORTEX INJECTION-------------------' 
         write(*,'(a,i4.1,a,i3.1,a)') ' loops will be injected every ', inject_skip, ' timesteps with ', inject_size, ' points'
         write(*,'(a,a)') ' inject type is set to: ', trim(inject_type)
