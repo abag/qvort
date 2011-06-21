@@ -6,7 +6,9 @@ else
   do_fit=1;
 end
 if nargin<3
-  fitnorm=fit;
+  if do_fit==1
+    fitnorm=fit;
+  end
 end
 if nargin<4
   fitextra=[];
@@ -54,6 +56,7 @@ imagesc(xx,yy,log(sqrt(usupx.^2+usupy.^2+usupz.^2))) ; shading interp
 axis square
 set(gca,'FontSize',14)
 xlabel('log|u|','FontSize',14)
+colormap(fireprint)
 colorbar
 
 figure('Name','2D (super) |u| slice')
@@ -65,6 +68,7 @@ clear index
 imagesc(xx,yy,uu) ; shading interp
 set(gca,'FontSize',14)
 xlabel('|u|','FontSize',14)
+colormap(fireprint)
 colorbar
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
@@ -92,6 +96,7 @@ if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
   axis square
   set(gca,'FontSize',14)
   xlabel('|u|','FontSize',14)
+  colormap(fireprint)
   colorbar
 
   figure('Name','2D (normal) |u| slice')
@@ -99,6 +104,7 @@ if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
   set(gca,'FontSize',14)
   xlabel('x','FontSize',14)
   ylabel('y','FontSize',14)
+  colormap(fireprint)
   colorbar
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -114,8 +120,8 @@ for i=1:n
   for j=1:n
     ii=i;
     jj=j;
-    if ii>midpt ; ii=n-ii+1; ; end ;
-    if jj>midpt ; jj=n-jj+1; ; end ;
+    if ii>midpt ; ii=n-ii+1;  end ;
+    if jj>midpt ; jj=n-jj+1;  end ;
     r=int16(sqrt(ii^2+jj^2));
     spect(r)=spect(r)+energyr(i,j)+energyi(i,j);
   end
@@ -147,8 +153,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure('Name','Superfluid (-5/3) compensated energy spectrum')
 comp_spec=(k.^(5/3));
-size(comp_spec)
-size(spect(1:midpt))
 loglog(k(1:midpt-cutoff),comp_spec(1:midpt-cutoff).*spect(1:midpt-cutoff),'LineWidth',2)
 xlabel('log k','FontSize',14) ; ylabel('log E(k)*k^{5/3}','FontSize',14)
 axis tight
@@ -156,8 +160,6 @@ set(gca,'FontSize',14)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure('Name','Superfluid (-1) compensated energy spectrum')
 comp_spec=(k.^1);
-size(comp_spec)
-size(spect(1:midpt))
 loglog(k(1:midpt-cutoff),comp_spec(1:midpt-cutoff).*spect(1:midpt-cutoff),'LineWidth',2)
 xlabel('log k','FontSize',14) ; ylabel('log E(k)*k','FontSize',14)
 axis tight
@@ -174,8 +176,8 @@ if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
     for j=1:n
       ii=i;
       jj=j;
-      if ii>midpt ; ii=n-ii+1; ; end ;
-      if jj>midpt ; jj=n-jj+1; ; end ;
+      if ii>midpt ; ii=n-ii+1; end ;
+      if jj>midpt ; jj=n-jj+1; end ;
       r=int16(sqrt(ii^2+jj^2));
       spectnorm(r)=spectnorm(r)+energyr(i,j)+energyi(i,j);
     end
