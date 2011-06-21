@@ -185,6 +185,7 @@ module diagnostic
   !>if set in run.in will also bin the curvatures to plot a 
   !>histogram
   subroutine curv_info()
+    use kernel_density
     implicit none
     real, allocatable :: curvi(:)
     integer :: i, j
@@ -192,9 +193,8 @@ module diagnostic
     !warning - at present the matlab routine to plot the histogram 
     !is not adpative therefore if the number of bins is changed 
     !the script must also be changed - warning
-    integer, parameter :: bin_num=10 !number of bins
-    real :: bin_size, bins(bin_num) !the bins of the histograms
-    real :: probability(bin_num) !the probability of that bin
+    integer, parameter :: bin_num=10 !number of bins used in KDE
+    real :: kdensity(bin_num), kdmesh(bin_num), bwidth !all for KDE
     allocate(curvi(pcount)) !allocate this array pcount size
     do i=1, pcount
       if (f(i)%infront==0) then
@@ -207,28 +207,18 @@ module diagnostic
     kappa_bar=sum(curvi)/count(mask=f(:)%infront>0)
     kappa_max=maxval(curvi)
     kappa_min=minval(curvi,mask=curvi>0)
-    !experimental creation of a histogram
-
+    !experimental creation of a histogram using kernel density estimation
     if (curv_hist) then
-      !first we set the bins
-      bin_size=(kappa_max-kappa_min)/bin_num
-      bins=0.
-      !now loop over particles and bins and create the histogram
-      do i=1, pcount
-        if (f(i)%infront==0) cycle
-        do j=1, bin_num
-          if (curvi(i)>kappa_min+(j-1)*bin_size) then
-            if (curvi(i)<kappa_min+j*bin_size) then
-              bins(j)=bins(j)+1
-            end if
-          end if
-        end do
+      !set the mesh over which we calculate densities
+      do j=1, bin_num
+        kdmesh(j)=kappa_min+(j-1)*(kappa_max-kappa_min)/(bin_num-1)
       end do
-      bins=bins/(count(mask=f(:)%infront>0)*bin_size) !normalise 
+      call qsort(curvi) !sort the data in ascending order
+      call get_kernel_density(curvi,pcount,kdmesh,bin_num,kdensity,bwidth)
       open(unit=79,file='data/curv_pdf.log',position='append')
       write(79,*) '%----------------t=',t,'---------------'
       do j=1, bin_num
-        write(79,*) kappa_min+(j-1)*bin_size, bins(j) 
+        write(79,*) kdmesh(j), kdensity(j)
       end do 
       close(79)
     end if

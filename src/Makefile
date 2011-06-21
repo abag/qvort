@@ -62,7 +62,7 @@ inject.o: inject.f90 general.o cdata.o
 #
 matrix.o: matrix.f90
 #
-diagnostic.o: diagnostic.f90 topology.o general.o cdata.o
+diagnostic.o: diagnostic.f90 topology.o general.o cdata.o kernel_density.o
 #
 tree.o: tree.f90 general.o cdata.o
 #
