@@ -274,6 +274,7 @@ module cdata
   !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
   integer, protected :: sm_size=0 !size of smoothing mesh - 0 by default which deactivates smoothing
+  logical, protected :: smoothing_interspace=.false. !smooth using intervortex spacing?
   !----------------------------magnetic field-------------------------------------
   !----------------ENABLE THE FILAMENTS TO ACT AS MAGNETIC FLUX TUBES-------------
   logical, protected :: magnetic=.false. !no by defult
@@ -458,6 +459,8 @@ module cdata
              read(buffer, *, iostat=ios) NAN_test !test for NANs
           case ('smoothing_length')
              read(buffer, *, iostat=ios) smoothing_length !length we are smoothing over (delta)
+          case ('smoothing_interspace')
+             read(buffer, *, iostat=ios) smoothing_interspace !use intervortex spacing as smoothing length?
           case ('sm_size')
              read(buffer, *, iostat=ios) sm_size !size of smoothing mesh
           case ('magnetic')

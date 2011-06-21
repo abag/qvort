@@ -14,14 +14,17 @@ case 'empty'
   return
 end
 A=load('data/ts.log');
+dims=load('./data/dims.log');
 t=A(:,2) ; pcount=A(:,3) ; rcount=A(:,4) ; sep=A(:,5) ; l=A(:,6) ; 
 maxu=A(:,7) ; maxdu=A(:,8) ; eval=A(:,9) ; curv=A(:,10) ;
 rmcount=A(:,11) ;
+density=l/(dims(2)^3) ; spacing=1./sqrt(density);
+
 switch option
   case 'print'
     figure('visible','off');
   otherwise
-    figure('Name', 'filament information')      
+    figure('Name', 'filament information I')      
 end
   subplot(2,2,1)
     plot(t,pcount,'-r','LineWidth',2);
@@ -78,29 +81,31 @@ switch option
   case 'print'
     figure('visible','off');
   otherwise
-    figure('Name', 'mean curvature')      
+    figure('Name', 'filament information II')      
 end
-  plot(t,curv,'-m','LineWidth',2);
-  set(gca,'FontSize',14);
-  xlabel('t','FontSize',14);
-  ylabel('curv','FontSize',14);
+  subplot(2,2,1)
+    plot(t,curv,'LineWidth',2,'Color',rgb('Chocolate'));
+    set(gca,'FontSize',14);
+    xlabel('t','FontSize',14);
+    ylabel('curv','FontSize',14);
+  subplot(2,2,2)
+    plot(t,rmcount,'-','LineWidth',2,'Color',rgb('Indigo'));
+    set(gca,'FontSize',14);
+    xlabel('t','FontSize',14);
+    ylabel('rm count','FontSize',14);
+  subplot(2,2,3)
+    plot(t,density,'-','LineWidth',2,'Color',rgb('HotPink'));
+    set(gca,'FontSize',14);
+    xlabel('t','FontSize',14);
+    ylabel('line density','FontSize',14);
+  subplot(2,2,4)
+    plot(t,spacing,'-','LineWidth',2,'Color',rgb('DarkSeaGreen'));
+    set(gca,'FontSize',14);
+    xlabel('t','FontSize',14);
+    ylabel('inter vortex spacing','FontSize',12);
 if option=='print'
-  disp('printing to mean_curvature.eps')
-  print('-depsc','./mean_curvature.eps')
-end
-switch option
-  case 'print'
-    figure('visible','off');
-  otherwise
-    figure('Name', 'removed count')      
-end
-  plot(t,rmcount,'-','LineWidth',2,'Color',rgb('Indigo'));
-  set(gca,'FontSize',14);
-  xlabel('t','FontSize',14);
-  ylabel('rm count','FontSize',14);
-if option=='print'
-  disp('printing to rm_count.eps')
-  print('-depsc','./rm_count.eps')
+  disp('printing to filament_information2.eps')
+  print('-depsc','./filament_information2.eps')
 end
 if exist('data/par_ts.log');
    B=load('data/par_ts.log');

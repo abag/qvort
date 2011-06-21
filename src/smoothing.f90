@@ -31,7 +31,11 @@ module smoothing
     sm_sigma=smoothing_length*delta
     if (tree_theta>0) then
       write(*,'(a,i4.2,a)') ' creating a ', sm_size,' ^3 mesh to smooth \omega/B field onto'
-      write(*,'(a,f8.5,a)') ' smooting length is ', sm_sigma
+      if (smoothing_interspace) then
+        write(*,'(a)') ' using adaptive smoothing length based on inter-vortex spacing'
+      else
+        write(*,'(a,f8.5,a)') ' smoothing length is ', sm_sigma
+      end if
     else
       call fatal_error('smoothing.mod','tree theta must be +ve to use smoothing')
     end if
@@ -83,6 +87,14 @@ module smoothing
     integer :: i, j, k
     integer :: peri, perj, perk !used to loop in periodic cases
     real :: w(3)
+    !define smoothing length 
+    if (smoothing_interspace) then
+      sm_sigma=sqrt((box_size**3)/total_length)
+      !smoothing lenght can be checked against ts.m
+      open(unit=78,file='data/smoothing_length.log',position='append')
+        write(78,*) t, sm_sigma
+      close(78)
+    end if
     do k=1, sm_size  ; do j=1, sm_size ; do i=1, sm_size
       w=0. !0 this before each call
       call tree_smooth(sm(k,j,i)%x,vtree,(/0.,0.,0./),w)

@@ -49,7 +49,6 @@ program run
     if (seg_fault) write(*,*) 'here3'
     if (mod(itime,mesh_shots)==0) then
       call mesh_velocity !timestep.mod
-      if (sm_size>0) call get_smoothed_field !smoothing.mod
     end if
     if (seg_fault) write(*,*) 'here4'
     !---------------------line operations--------------------------
@@ -77,6 +76,10 @@ program run
           !if we have SPH particles can we latch onto them?
           call SPH_f_latch !sph_interface.mod
       end select
+    end if
+    !---------------------smoothed field----------------------
+    if (mod(itime,mesh_shots)==0) then
+      if (sm_size>0) call get_smoothed_field !smoothing.mod
     end if
     if (seg_fault) write(*,*) 'here6'
     !-------------------boundary conditions------------------------
