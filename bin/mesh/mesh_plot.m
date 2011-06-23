@@ -3,12 +3,17 @@ close all
 optargin = size(varargin,2);
 %set options based on varargin
 slice=0 ; iso=0 ; spect=0 ; struct=0 ; print=0 ; para=0 ; 
+vort_slice=0 ; vort_iso=0 ;
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'slice'
       slice=1;
+    case 'vort_slice'
+      vort_slice=1;
     case 'iso'
       iso=1;
+    case 'vort_iso'
+      vort_iso=1;
     case 'spect'
       spect=1;
     case 'para'
@@ -58,6 +63,16 @@ if slice==1
     mesh_slices(x,unormx,unormy,unormz,msize,'normal')
   end
 end
+if vort_slice==1
+  if u_mrms>0.
+    [curlx,curly,curlz,cav] = curl(ux,uy,uz) ;
+    mesh_slices(x,curlx,curly,curlz,msize,'super-vorticity')
+  end
+  if unorm_mrms>0.
+    [curlx,curly,curlz,cav] = curl(unormx,unormy,unormz) ;
+    mesh_slices(x,curlx,curly,curlz,msize,'normal-vorticity')
+  end
+end
 %output to paraview
 if para==1
   if u_mrms>0.
@@ -76,6 +91,16 @@ if iso==1
   end
   if unorm_mrms>0.
     mesh_iso(x,unormx,unormy,unormz,msize,'normal')
+  end
+end
+if vort_iso==1
+  if u_mrms>0.
+    [curlx,curly,curlz,cav] = curl(ux,uy,uz) ;
+    mesh_iso(x,curlx,curly,curlz,msize,'super-vorticity')
+  end
+  if unorm_mrms>0.
+    [curlx,curly,curlz,cav] = curl(unormx,unormy,unormz) ;
+    mesh_iso(x,curlx,curly,curlz,msize,'normal-vorticity')
   end
 end
 %spectrum

@@ -21,8 +21,9 @@ wy=reshape(wy,msize,msize,msize);
 wz=reshape(wz,msize,msize,msize);
 if (pview==1)
   disp('printing to raw mesh for paraview/vapor')
-  savevtkvector(wx,wy,wz,'pout_smooth_vector.vtk');
-  savevtk(sqrt(wx.^2+wy.^2+wz.^2),'pout_smooth.vtk');
+  %savevtkvector(wx,wy,wz,'pout_smooth_vector.vtk');
+  %savevtk(sqrt(wx.^2+wy.^2+wz.^2),'pout_smooth.vtk');
+  writevtk(sqrt(wx.^2+wy.^2+wz.^2),'pout_smooth.vtk');
   return
 end
 %return
