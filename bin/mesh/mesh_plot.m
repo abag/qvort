@@ -77,11 +77,11 @@ end
 if para==1
   if u_mrms>0.
     disp('printing to vtk file para_sup for paraview')
-    savevtk(sqrt(ux.^2+uy.^2+uz.^2),'para_sup.vtk')
+    writevtk(sqrt(ux.^2+uy.^2+uz.^2),'para_sup.vtk')
   end
   if unorm_mrms>0.
     disp('printing to vtk file para_norm for paraview')
-    savevtk(sqrt(unormx.^2+unormy.^2+unormz.^2),'para_norm.vtk')
+    writevtk(sqrt(unormx.^2+unormy.^2+unormz.^2),'para_norm.vtk')
   end
 end
 %plot isosurface
