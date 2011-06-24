@@ -11,7 +11,9 @@ module normal_fluid
     real, parameter, private :: vel_xflow=1.
     real, parameter, private :: abc_A=1., abc_B=1., abc_C=1.
     real, private :: norm_k
+    real, private :: normal_direction(3) !used  by random_xflow
     real, private :: urms_norm
+    real, private :: t_change=-100. !a little less than 0!
     !>normal fluid mesh - all grid based normal velocities use this (e.g. Navier Stokes future)
     !>@param x the position on the grid
     !>@param u the velocity
@@ -45,6 +47,13 @@ module normal_fluid
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/vel_xflow !time-taken to cross box
           close(77)
+        case('random_xflow')
+          urms_norm=vel_xflow
+          write(*,'(a,f6.3)') ' random counterflow |u|=', vel_xflow
+          write(*,'(a,i6.6)') ' flow direction will be changed every ',normal_fluid_freq, ' timesteps'
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/vel_xflow !time-taken to cross box
+          close(77)  
         case('ABC')
           write(*,'(a,f6.3,a,f6.3,a,f6.3)') ' A=', abc_A, ' B=', abc_B, ' C=', abc_C
           call setup_gen_normalf !normal_fluid.mod
@@ -109,11 +118,26 @@ module normal_fluid
       real, intent(OUT) :: u(3) !velocity at x
       real :: r, phi, theta !used to convert to polar coords
       real :: u_r, u_theta !used to convert to polar coords
+      u=0. ! a safety check , 0 the field before we begin!
       select case(normal_velocity)
         case('zero')
           u=0. ! no flow
         case('xflow')
           u=0. ; u(1)=vel_xflow !flow in the x direction
+        case('random_xflow')
+          !do we need to generate a new direction?
+          if ((mod(itime,normal_fluid_freq)==0).or.(itime==1)) then
+            if (t>t_change) then
+              call random_number(normal_direction)
+              normal_direction=normal_direction*2.-1.
+              normal_direction=normal_direction/sqrt(dot_product(normal_direction,normal_direction))
+              open(unit=37,file='./data/random_xflow.log',position='append')
+                write(37,*) t, normal_direction
+              close(37)
+              t_change=t
+            end if
+        end if
+          u=vel_xflow*normal_direction
         case('ABC')
           !commonly used toy model - turbulence/dynamo
           u(1)=abc_B*cos(norm_k*x(2))+abc_C*sin(norm_k*x(3))

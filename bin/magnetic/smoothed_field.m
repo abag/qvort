@@ -53,4 +53,5 @@ end
 if render==1
   VolumeRender(sqrt(wx.^2+wy.^2+wz.^2)); 
 end
+rotate3d on
 

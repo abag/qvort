@@ -31,7 +31,7 @@ filename=sprintf('data/var%04d.log',filenumber);
 box_size=.005 ;
 %set options based on varargin
 rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ; magnetic=0; show_points=0 ; sph_associated=0 ; overhead_xz=0;
-log_rainbow=0 ; annotate=0 ; 
+log_rainbow=0 ; annotate=0 ; thin_line=0 ; 
 %empty the vmax/min values
 v_max=[] ; v_min=[] ;
 for i=1:optargin
@@ -71,6 +71,8 @@ for i=1:optargin
       dark=1;
     case 'line'
       linetrue=1;
+    case 'thin_line'
+      thin_line=1;  
       otherwise
       disp('invalid option in input arguements')
       disp('aborting code and printing help:')
@@ -205,17 +207,33 @@ for j=1:number_of_particles
             if u(j)==0
               u(j)=1;
             end
-            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
+            if (thin_line==1)
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.5)
+            else
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
+            end
           elseif magnetic==1
             if u(j)==0
               u(j)=1;
             end
-            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
+            if (thin_line==1)
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.5)
+            else
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
+            end
           else
             if show_points==1
-              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',2)
+              if (thin_line==1)
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',.5)
+              else
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',2.0)
+              end
             else
-              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2.0)
+              if (thin_line==1)
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',.5)
+              else
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2.0)
+              end
             end 
           end
         else
@@ -223,15 +241,27 @@ for j=1:number_of_particles
             if u(j)==0
               u(j)=1;
             end
-            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
+            if (thin_line==1)  
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.5)
+            else
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)   
+            end
           elseif magnetic==1
             if u(j)==0
               u(j)=1;
             end
-            plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
+            if (thin_line==1)  
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.5)
+            else
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)   
+            end
           else
             if show_points==1
-              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',2)
+              if thin_line==1
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',.5)
+              else
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',2)   
+              end
             else
               if sph_associated==1
                 if u2(j)<1
@@ -240,7 +270,11 @@ for j=1:number_of_particles
                   plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2)  
                 end
               else
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)  
+                if thin_line==1
+                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',.5)  
+                else
+                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)  
+                end
               end
             end 
           end

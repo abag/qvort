@@ -119,6 +119,8 @@ module initial
           call setup_random_loops !initial_cond.mod
         case('crow')
           call setup_crow !initial_cond.mod
+        case('smooth_test')
+          call setup_smooth_test !initial_cond.mod  
         case('leap-frog')
           call setup_leap_frog !initial_cond.mod
         case('linked_filaments')
