@@ -120,7 +120,9 @@ module initial
         case('crow')
           call setup_crow !initial_cond.mod
         case('smooth_test')
-          call setup_smooth_test !initial_cond.mod  
+          call setup_smooth_test !initial_cond.mod 
+        case('smooth_test_wave')
+          call setup_smooth_test_wave !initial_cond.mod  
         case('leap-frog')
           call setup_leap_frog !initial_cond.mod
         case('linked_filaments')
