@@ -78,6 +78,7 @@ if para==1
   if u_mrms>0.
     disp('printing to vtk file para_sup for paraview')
     writevtk(sqrt(ux.^2+uy.^2+uz.^2),'para_sup.vtk')
+    savevtkvector(ux,uy,uz,'para_sup_vector.vtk');
   end
   if unorm_mrms>0.
     disp('printing to vtk file para_norm for paraview')

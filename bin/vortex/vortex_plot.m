@@ -30,8 +30,8 @@ filename=sprintf('data/var%04d.log',filenumber);
 %this is overridden if we have periodic B.C.'s
 box_size=.005 ;
 %set options based on varargin
-rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0 ; eps=0 ; magnetic=0; show_points=0 ; sph_associated=0 ; overhead_xz=0;
-log_rainbow=0 ; annotate=0 ; thin_line=0 ; 
+rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0  ; magnetic=0; show_points=0 ; sph_associated=0 ; overhead_xz=0;
+log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ;
 %empty the vmax/min values
 v_max=[] ; v_min=[] ;
 for i=1:optargin
@@ -72,6 +72,7 @@ for i=1:optargin
     case 'line'
       linetrue=1;
     case 'thin_line'
+      linetrue=1;
       thin_line=1;  
       otherwise
       disp('invalid option in input arguements')
@@ -271,9 +272,9 @@ for j=1:number_of_particles
                 end
               else
                 if thin_line==1
-                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',.5)  
+                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',.1)  
                 else
-                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)  
+                  plot3(dummy_x(1:2,1),dummy_x(1:2,3),dummy_x(1:2,2),'-k','LineWidth',1.5)  
                 end
               end
             end 

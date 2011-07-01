@@ -37,7 +37,7 @@ if para==1
   disp('printing to raw mesh for paraview/vapor')
   %savevtkvector(wx,wy,wz,'pout_smooth_vector.vtk');
   %savevtk(sqrt(wx.^2+wy.^2+wz.^2),'pout_smooth.vtk');
-  writevtk(sqrt(wx.^2+wy.^2+wz.^2),'pout_smooth.vtk');
+  writevtk(sqrt(wx.^2+wy.^2+wz.^2)/1.3,'pout_smooth.vtk');
 end
 %plot slices of field+isosurface
 if slice==1

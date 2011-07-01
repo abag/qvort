@@ -1,4 +1,7 @@
-function mesh_plot(filenumber,filenumber2)
+function mesh_plot(filenumber,filenumber2,firecolor)
+if nargin<3
+  firecolor=0;
+end
 filename=sprintf('data/smoothed_field%03d.dat',filenumber);
 load data/sm_dims.log;
 msize=sm_dims(1)
@@ -16,6 +19,13 @@ wx=reshape(wx,msize,msize,msize);
 wy=reshape(wy,msize,msize,msize);
 wz=reshape(wz,msize,msize,msize);
 fclose(fid)
+zslice(1:msize,1:msize)=wz(msize/2,:,:);
+imagesc(interp(x,2),interp(x,2),interp2(zslice,2));
+if firecolor==1
+  colormap(fireprint)
+end
+colorbar
+hold on
 %now load in vortex points
 filename=sprintf('data/var%04d.log',filenumber2);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,9 +76,18 @@ for j=1:number_of_particles
   if round(f(j))==0
   else
     if z(j)*z(round(f(j)))<0
-      plot(x(j),y(j),'o')
-      hold on
+      testd=abs(z(j)-z(round(f(j))));
+      if testd<dims(2)/10
+        if z(j)>z(round(f(j)))
+          plot(x(j),y(j),'k*')
+        else
+          plot(x(j),y(j),'ko')
+        end 
+        hold on
+      end
     end
   end
 end
-
+xlabel('x','FontSize',16)
+ylabel('y','FontSize',16)
+set(gca,'FontSize',16)

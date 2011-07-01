@@ -1,4 +1,4 @@
-function two_dim_slice(filenumber,fit,fitnorm,fitextra)
+function two_dim_slice(filenumber,fit,fitnorm,fitextra,firecolor)
 close all
 if nargin<2
   do_fit=0;
@@ -12,6 +12,9 @@ if nargin<3
 end
 if nargin<4
   fitextra=[];
+end
+if nargin<5
+  firecolor=0;
 end
 filename=sprintf('data/vel_slice_2D%04d.dat',filenumber);
 fid=fopen(filename);
@@ -56,7 +59,9 @@ imagesc(xx,yy,log(sqrt(usupx.^2+usupy.^2+usupz.^2))) ; shading interp
 axis square
 set(gca,'FontSize',14)
 xlabel('log|u|','FontSize',14)
-colormap(fireprint)
+if fireprint==1
+  colormap(fireprint)
+end
 colorbar
 
 figure('Name','2D (super) |u| slice')
@@ -68,7 +73,9 @@ clear index
 imagesc(xx,yy,uu) ; shading interp
 set(gca,'FontSize',14)
 xlabel('|u|','FontSize',14)
-colormap(fireprint)
+if fireprint==1
+  colormap(fireprint)
+end
 colorbar
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
@@ -96,7 +103,9 @@ if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
   axis square
   set(gca,'FontSize',14)
   xlabel('|u|','FontSize',14)
-  colormap(fireprint)
+  if fireprint==1
+    colormap(fireprint)
+  end
   colorbar
 
   figure('Name','2D (normal) |u| slice')
@@ -104,7 +113,9 @@ if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
   set(gca,'FontSize',14)
   xlabel('x','FontSize',14)
   ylabel('y','FontSize',14)
-  colormap(fireprint)
+  if fireprint==1
+    colormap(fireprint)
+  end
   colorbar
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
