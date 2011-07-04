@@ -110,7 +110,7 @@ Ky2 = ripleyK(pointdowny,locs,[-dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2. -di
 Kz1 = ripleyK(pointupz,locs,[-dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2.]);
 Kz2 = ripleyK(pointdownz,locs,[-dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2.]);
 figure
-plot(locs, sqrt(Kx1/pi)-locs',locs, sqrt(Kx2/pi)-locs',locs, sqrt(Ky1/pi)-locs',locs, sqrt(Ky2/pi)-locs',locs, sqrt(Kz1/pi)-locs',locs, sqrt(Kz2/pi)-locs')
+plot(locs, sqrt(Kx1/pi)-locs','k',locs, sqrt(Kx2/pi)-locs','r',locs, sqrt(Ky1/pi)-locs','b',locs, sqrt(Ky2/pi)-locs','g',locs, sqrt(Kz1/pi)-locs','y',locs, sqrt(Kz2/pi)-locs','m')
 X(:,1)=sqrt(Kx1/pi); X(:,2)=sqrt(Kx2/pi);
 X(:,3)=sqrt(Ky1/pi); X(:,4)=sqrt(Ky2/pi);
 X(:,5)=sqrt(Kz1/pi); X(:,6)=sqrt(Kz2/pi);
@@ -133,8 +133,8 @@ Y(:,3)=sqrt(Ky1/pi); Y(:,4)=sqrt(Ky2/pi);
 Y(:,5)=sqrt(Kz1/pi); Y(:,6)=sqrt(Kz2/pi);
 hold on
 figure
-errorbar(locs,locs-mean(Y'),std(Y'))
+errorbar(locs,mean(Y')-locs,std(Y'))
 hold on
-errorbar(locs,locs-mean(X'),std(X')/2)
+errorbar(locs,mean(X')-locs,std(X')/2)
 %boundedline(locs,locs-mean(Y'),std(Y')','k-','alpha','transparency', 0.1)
 %boundedline(locs,locs-mean(X'),std(X')/2,'k-','alpha')
