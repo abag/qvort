@@ -1,22 +1,19 @@
-red parameters------------
-nsteps 100000
-shots 1
-recon_shots 5
-mesh_shots 2000
-pcount 100000
-dt 4.5E-6
-delta 0.0004
-box_size 0.075
+--------------required parameters------------
+nsteps 600000
+shots 10
+recon_shots 1
+pcount 1000
+dt 2E-3
+delta 0.01
+box_size 0.2
 velocity Tree
-initf criss-cross
-line_count 400
+initf random_loops
+line_count 20
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-tree_theta 0.5
-!mesh_size 128
-!binary_print T
-!smoothed_field T
-!smoothing_length 6
-!sm_size 128
-!two_dim 1024
+normal_velocity xflow
+alpha .098 .016
+tree_theta 0.4
+norm_vel_xflow .7
+anisotropy_params T

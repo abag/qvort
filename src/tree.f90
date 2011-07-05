@@ -273,6 +273,7 @@ module tree
      real :: u(3) !the velocity at particle i
      real :: vect(3) !helper vector
      real :: dist, theta !helper variables
+     real :: geo_dist !distance between centre of vorticity and centre of cell
      real :: a_bs, b_bs, c_bs, u_bs(3) !helper variables 
      integer :: j=0 !the particle in the tree mesh
      if (vtree%pcount==0) return !empty box no use
@@ -281,6 +282,12 @@ module tree
                (f(i)%x(2)-(vtree%centy+shift(2)))**2+&
                (f(i)%x(3)-(vtree%centz+shift(3)))**2)
      theta=vtree%width/dist !the most simple way we can improve this
+     if (tree_extra_correction) then
+       geo_dist=sqrt((vtree%centx-(vtree%posx+vtree%width/2.))**2+&
+                     (vtree%centy-(vtree%posy+vtree%width/2.))**2+&
+                     (vtree%centz-(vtree%posz+vtree%width/2.))**2)
+       theta=theta+geo_dist
+     end if              
      if (vtree%pcount==1.or.theta<tree_theta) then
        !use the contribution of this cell
        if (vtree%pcount==1) then

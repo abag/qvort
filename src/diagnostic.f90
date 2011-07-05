@@ -60,6 +60,28 @@ module diagnostic
     deallocate(vort_mesh) ; deallocate(vmeshx)
   end subroutine
   !*************************************************
+  !>get information on (an)isotropy of filaments
+  subroutine get_anisotropy_info()
+    implicit none
+    real :: l_para, l_perp !parallel and perpendicular densitys
+    real,dimension(3) :: r_para, r_perp, sdot !unit vectors for r parallel and perpendicular
+    integer :: i,j !for looping
+    !set r parallel and perpendicular
+    r_para=(/1.,0.,0./) ; r_perp=(/0.,1./sqrt(2.),1./sqrt(2.)/)
+    l_para=0. ; l_perp=0. !0 these
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !check for 'empty' particles
+      call get_deriv_1(i,sdot)
+      l_para=l_para+(1.-(dot_product(sdot,r_para)**2))*dist_gen(f(i)%x,f(i)%ghosti)
+      l_perp=l_perp+(1.-(dot_product(sdot,r_perp)**2))*dist_gen(f(i)%x,f(i)%ghosti)
+    end do
+    !normalise by total line_length
+    l_para=l_para/total_length ; l_perp=l_perp/total_length
+    open(unit=72,file='data/anisotropy.log',position='append')
+      write(72,*) t, l_para, l_perp
+    close(72)
+  end subroutine
+  !*************************************************
   !>calculate the energy of the vortex filament using
   !>the trapezium rule, not valid with periodic b.c.'s
   !>\f[ E=\frac{1}{2} \int_V \mathbf{u}^2 dV=

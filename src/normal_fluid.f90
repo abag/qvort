@@ -8,7 +8,6 @@ module normal_fluid
   use general
   use ksmodel
     !parameters used in get_normal_fluid
-    real, parameter, private :: vel_xflow=1.
     real, parameter, private :: abc_A=1., abc_B=1., abc_C=1.
     real, private :: norm_k
     real, private :: normal_direction(3) !used  by random_xflow
@@ -42,17 +41,17 @@ module normal_fluid
       write(*,*) 'normal fluid velocity field is: ', trim(normal_velocity)
       select case(normal_velocity)
         case('xflow')
-          urms_norm=vel_xflow
-          write(*,'(a,f6.3)') ' u(x)=', vel_xflow
+          urms_norm=norm_vel_xflow
+          write(*,'(a,f6.3)') ' u(x)=', norm_vel_xflow
           open(unit=77,file='./data/normal_timescale.log',status='replace')
-            write(77,*) box_size/vel_xflow !time-taken to cross box
+            write(77,*) box_size/norm_vel_xflow !time-taken to cross box
           close(77)
         case('random_xflow')
-          urms_norm=vel_xflow
-          write(*,'(a,f6.3)') ' random counterflow |u|=', vel_xflow
+          urms_norm=norm_vel_xflow
+          write(*,'(a,f6.3)') ' random counterflow |u|=', norm_vel_xflow
           write(*,'(a,i6.6)') ' flow direction will be changed every ',normal_fluid_freq, ' timesteps'
           open(unit=77,file='./data/normal_timescale.log',status='replace')
-            write(77,*) box_size/vel_xflow !time-taken to cross box
+            write(77,*) box_size/norm_vel_xflow !time-taken to cross box
           close(77)  
         case('ABC')
           write(*,'(a,f6.3,a,f6.3,a,f6.3)') ' A=', abc_A, ' B=', abc_B, ' C=', abc_C
@@ -123,7 +122,7 @@ module normal_fluid
         case('zero')
           u=0. ! no flow
         case('xflow')
-          u=0. ; u(1)=vel_xflow !flow in the x direction
+          u=0. ; u(1)=norm_vel_xflow !flow in the x direction
         case('random_xflow')
           !do we need to generate a new direction?
           if ((mod(itime,normal_fluid_freq)==0).or.(itime==1)) then
@@ -137,7 +136,7 @@ module normal_fluid
               t_change=t
             end if
         end if
-          u=vel_xflow*normal_direction
+          u=norm_vel_xflow*normal_direction
         case('ABC')
           !commonly used toy model - turbulence/dynamo
           u(1)=abc_B*cos(norm_k*x(2))+abc_C*sin(norm_k*x(3))

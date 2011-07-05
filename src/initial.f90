@@ -207,6 +207,7 @@ module initial
       else
         call fatal_error('cdata.mod:init_setup','tree algorithms require a positive box size')
       end if
+      if (tree_extra_correction) write(*,*) 'making extra correction to tree algorithm'
     else
       write(*,*) 'using brute force reconnection routine - scales like O(N^2)'
     end if
@@ -256,6 +257,7 @@ module initial
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
     if (topo_inf) write(*,*) 'printing topological information to file'
     if (sep_inf) write(*,*) 'printing point separation info+histogram to file'
+    if (anisotropy_params) write(*,*) 'calculating anistropy parameters and printing to file'
     if (energy_inf) then
       write(*,*) 'printing energy information to file'
       if (periodic_bc) call warning_message('init.mod','energy output is meaningless with periodic boundaries')

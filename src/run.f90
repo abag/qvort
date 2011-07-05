@@ -101,6 +101,7 @@ program run
       call curv_info !diagnostics.mod
       if (energy_inf) call energy_info !diagnostics.mod
       if (topo_inf) call get_topo_info !diagnostics.mod
+      if (anisotropy_params) call get_anisotropy_info !diagnostics.mod  
       if (mod(itime, mesh_shots)==0) then
         if (boxed_vorticity) call get_boxed_vorticity !diganostics.mod
         if (sep_inf) call get_sep_inf !diganostics.mod

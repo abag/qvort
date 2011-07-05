@@ -221,6 +221,7 @@ module cdata
   real, protected :: alpha(2)=0. !mutual friction coefficients
   real, protected :: normal_fluid_cutoff=1E8 !impossibly high time
   integer, protected :: normal_fluid_freq=1 !used for certain normal fluid flows
+  real, protected :: norm_vel_xflow=0.5
   !------------KS model--------------------------------------------
   integer,protected :: KS_rey_int=8
   real,protected :: KS_slope=-5./3.
@@ -255,6 +256,7 @@ module cdata
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
+  logical, protected :: tree_extra_correction=.true.
   !--------------------additional diagnostics------------------------------------
   logical, protected :: curv_hist=.false. !dumps binned curvature information
   logical, protected :: topo_inf=.false. !calculate topological information
@@ -271,6 +273,7 @@ module cdata
   logical, protected :: boxed_vorticity=.false. !smoothed vorticity in a box
   integer, protected :: boxed_vorticity_size=32 !how big is the mesh for boxed vorticity
   logical, protected :: simple_plots=.false. !call scripts from command line to plot on the fly
+  logical, protected :: anisotropy_params=.false. !get anistropy parameters
   !-------------------------------smoothing-------------------------------------------
   !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
@@ -369,7 +372,9 @@ module cdata
           case ('normal_fluid_cutoff')
              read(buffer, *, iostat=ios) normal_fluid_cutoff !turn off nf
           case ('normal_fluid_freq')
-             read(buffer, *, iostat=ios) normal_fluid_freq !frequency we "drive" nf             
+             read(buffer, *, iostat=ios) normal_fluid_freq !frequency we "drive" nf
+          case ('norm_vel_xflow')
+             read(buffer, *, iostat=ios) norm_vel_xflow !counterflow velocity             
           case ('alpha')
              read(buffer, *, iostat=ios) alpha !mutual friction
           case ('initf')
@@ -410,6 +415,10 @@ module cdata
              read(buffer, *, iostat=ios) tree_theta !tree code, opening angle
           case ('tree_print')
              read(buffer, *, iostat=ios) tree_print !print the tree mesh
+          case ('tree_extra_correction')
+             read(buffer, *, iostat=ios) tree_extra_correction
+          case ('anisotropy_params')
+             read(buffer, *, iostat=ios) anisotropy_params
           case ('wave_count')
              read(buffer, *, iostat=ios) wave_count !for wave_spec initial conditions
           case ('wave_slope')
