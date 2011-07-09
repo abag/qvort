@@ -10,19 +10,23 @@ module periodic
     integer :: i
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particles
-      call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb)
+      call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb,f(i)%ghostii, f(i)%ghostbb)
     end do
   end subroutine
   !******************************************************************
   !>set the ghost particles, essentially these are the positions of the
-  !!particles infront/behind, if they are at the other side of the box 
+  !!particles infront/behind and twice infront/behind
+  !!if they are at the other side of the box 
   !!due to periodic b.c. this position must be adjusted
-  subroutine get_ghost_p(i,ginfront,gbehind)
+  subroutine get_ghost_p(i,ginfront,gbehind,giinfront,gbbehind)
     implicit none
     integer, intent(IN) :: i
     real :: ginfront(3), gbehind(3)
+    real :: giinfront(3), gbbehind(3)
     ginfront(:)=f(f(i)%infront)%x(:)
     gbehind(:)=f(f(i)%behind)%x(:)
+    giinfront(:)=f(f(f(i)%infront)%infront)%x(:)
+    gbbehind(:)=f(f(f(i)%behind)%behind)%x(:)
     !if periodic then must do more in here
     if (periodic_bc) then
       !we must ensure that ginfront/gbehind is not on the other side of the box
@@ -37,6 +41,16 @@ module periodic
       elseif ((f(i)%x(1)-gbehind(1))<(-box_size/2.)) then
         gbehind(1)=gbehind(1)-box_size
       end if
+      if ((f(i)%x(1)-giinfront(1))>(box_size/2.)) then
+        giinfront(1)=giinfront(1)+box_size
+      elseif ((f(i)%x(1)-giinfront(1))<(-box_size/2.)) then
+        giinfront(1)=giinfront(1)-box_size
+      end if
+      if ((f(i)%x(1)-gbbehind(1))>(box_size/2.)) then
+        gbbehind(1)=gbbehind(1)+box_size
+      elseif ((f(i)%x(1)-gbbehind(1))<(-box_size/2.)) then
+        gbbehind(1)=gbbehind(1)-box_size
+      end if
       !---------------------y------------------------------
       if ((f(i)%x(2)-ginfront(2))>(box_size/2.)) then
         ginfront(2)=ginfront(2)+box_size
@@ -48,6 +62,16 @@ module periodic
       elseif ((f(i)%x(2)-gbehind(2))<(-box_size/2.)) then
         gbehind(2)=gbehind(2)-box_size
       end if
+      if ((f(i)%x(2)-giinfront(2))>(box_size/2.)) then
+        giinfront(2)=giinfront(2)+box_size
+      elseif ((f(i)%x(2)-giinfront(2))<(-box_size/2.)) then
+        giinfront(2)=giinfront(2)-box_size
+      end if
+      if ((f(i)%x(2)-gbbehind(2))>(box_size/2.)) then
+        gbbehind(2)=gbbehind(2)+box_size
+      elseif ((f(i)%x(2)-gbbehind(2))<(-box_size/2.)) then
+        gbbehind(2)=gbbehind(2)-box_size
+      end if
       !---------------------z------------------------------
       if ((f(i)%x(3)-ginfront(3))>(box_size/2.)) then
         ginfront(3)=ginfront(3)+box_size
@@ -58,6 +82,16 @@ module periodic
         gbehind(3)=gbehind(3)+box_size
       elseif ((f(i)%x(3)-gbehind(3))<(-box_size/2.)) then
         gbehind(3)=gbehind(3)-box_size
+      end if
+      if ((f(i)%x(3)-giinfront(3))>(box_size/2.)) then
+        giinfront(3)=giinfront(3)+box_size
+      elseif ((f(i)%x(3)-giinfront(3))<(-box_size/2.)) then
+        giinfront(3)=giinfront(3)-box_size
+      end if
+      if ((f(i)%x(3)-gbbehind(3))>(box_size/2.)) then
+        gbbehind(3)=gbbehind(3)+box_size
+      elseif ((f(i)%x(3)-gbbehind(3))<(-box_size/2.)) then
+        gbbehind(3)=gbbehind(3)-box_size
       end if
     else if (periodic_bc_notx) then
       !this could be neater!!!
@@ -72,6 +106,16 @@ module periodic
       elseif ((f(i)%x(2)-gbehind(2))<(-box_size/2.)) then
         gbehind(2)=gbehind(2)-box_size
       end if
+      if ((f(i)%x(2)-giinfront(2))>(box_size/2.)) then
+        giinfront(2)=giinfront(2)+box_size
+      elseif ((f(i)%x(2)-giinfront(2))<(-box_size/2.)) then
+        giinfront(2)=giinfront(2)-box_size
+      end if
+      if ((f(i)%x(2)-gbbehind(2))>(box_size/2.)) then
+        gbbehind(2)=gbbehind(2)+box_size
+      elseif ((f(i)%x(2)-gbbehind(2))<(-box_size/2.)) then
+        gbbehind(2)=gbbehind(2)-box_size
+      end if
       !---------------------z------------------------------
       if ((f(i)%x(3)-ginfront(3))>(box_size/2.)) then
         ginfront(3)=ginfront(3)+box_size
@@ -82,6 +126,16 @@ module periodic
         gbehind(3)=gbehind(3)+box_size
       elseif ((f(i)%x(3)-gbehind(3))<(-box_size/2.)) then
         gbehind(3)=gbehind(3)-box_size
+      end if
+      if ((f(i)%x(3)-giinfront(3))>(box_size/2.)) then
+        giinfront(3)=giinfront(3)+box_size
+      elseif ((f(i)%x(3)-giinfront(3))<(-box_size/2.)) then
+        giinfront(3)=giinfront(3)-box_size
+      end if
+      if ((f(i)%x(3)-gbbehind(3))>(box_size/2.)) then
+        gbbehind(3)=gbbehind(3)+box_size
+      elseif ((f(i)%x(3)-gbbehind(3))<(-box_size/2.)) then
+        gbbehind(3)=gbbehind(3)-box_size
       end if
     end if
     if (mirror_bc) then

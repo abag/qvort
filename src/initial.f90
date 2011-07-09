@@ -37,6 +37,12 @@ module initial
     !based on the smallest separation possible in the code
     if (delta_adapt) write(*,'(a)') ' mesh discretisation is adaptive'
     if (delta_adapt_print) write(*,'(a)') ' printing adaptive mesh information to file'
+    select case(deriv_order)
+      case('second','fourth')
+        write(*,*) 'using ', trim(deriv_order), ' order spatial derivatives' 
+      case default
+        call fatal_error('init.mod','deriv_order set to invalid value')
+    end select
     write(*,'(a)') ' ---------------------TIME-STEP--------------------' 
     call timestep_check !initial.mod
     if (dt_adapt) then
@@ -70,6 +76,9 @@ module initial
           write(*,*) ' boundaries open in the x direction, loops that have left the box will be removed'
         case('mirror')
           if (magnetic) call fatal_error('init_setup','mirror bcs are not supported with magnetic fields') 
+          if (deriv_order=='fourth') then
+            call fatal_error('init_setup','mirror bcs are not supported with fourth order derivatives') 
+          end if
           mirror_bc=.true.
           call warning_message('init.mod','mirror b.c.s are still in testing and will probably fail at some point in the run!')
           select case(velocity)

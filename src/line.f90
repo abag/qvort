@@ -86,11 +86,12 @@ module line
         f(par_new)%u1=0. ; f(par_new)%u2=0.
         !set correct infront and behinds & ghostzones
         f(par_new)%behind=i ; f(par_new)%infront=f(i)%infront
-        call get_ghost_p(par_new,f(par_new)%ghosti, f(par_new)%ghostb) !periodic.mod
+        call get_ghost_p(par_new,f(par_new)%ghosti, f(par_new)%ghostb,f(par_new)%ghostii, f(par_new)%ghostbb) !periodic.mod
         f(f(i)%infront)%behind=par_new
-        call get_ghost_p(f(i)%infront,f(f(i)%infront)%ghosti, f(f(i)%infront)%ghostb) !periodic.mod         
+        call get_ghost_p(f(i)%infront,f(f(i)%infront)%ghosti, f(f(i)%infront)%ghostb, &
+                                      f(f(i)%infront)%ghostii, f(f(i)%infront)%ghostbb) !periodic.mod         
         f(i)%infront=par_new
-        call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb) !periodic.mod         
+        call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb,f(i)%ghostii, f(i)%ghostbb) !periodic.mod         
         !address the magnetic issue
         if (magnetic) f(par_new)%B=f(i)%B
         !set local delta factor to be 1 incase we are adapting it
@@ -319,7 +320,7 @@ module line
       end if
     end do
     ! If loop is too small destroy
-    if (counter<6) then
+    if (counter<5) then
       next=particle 
       do i=1, pcount
         store_next=f(next)%infront

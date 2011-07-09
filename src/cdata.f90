@@ -10,11 +10,12 @@ module cdata
   !!@param u1 @param u2 stored velocities for Adams-Bashforth
   !!@param u_sup nice to have the just the superfluid veloctity even with normal fluid/forcing
   !!@param ghosti @param ghostb ghost particles for periodic b.c's
+  !!@param ghostii @param ghostbb ghost particles for periodic b.c's  
   !!@param infront @param behind flag to make points an orientated filament
   !!@param closest closest particle, used in reconnections
+  !!@param closestd separation between closest particle and particle 
   !!@param sph particle attached to, 0 if not
   !!@param sph2 neighbouring sph particles for hermite interpolation
-  !!@param closestd separation between closest particle and particle 
   !!@param B magnetic field strength
   !!@param delta used for adaptive meshing along the filaments, used as a prefactor
   !!@param l1 l2 line length for magnetic field evolution 
@@ -24,12 +25,13 @@ module cdata
     real :: u(3), u1(3), u2(3) 
     real :: u_sup(3), u_mf(3)
     real :: ghosti(3), ghostb(3)
+    real :: ghostii(3), ghostbb(3)
     integer :: infront, behind 
     integer :: closest
+    real :: closestd
     integer :: sph  
     logical :: pinnedi=.false.
     logical :: pinnedb=.false.
-    real :: closestd
     real :: delta
     real :: B 
     real :: l1, l2
@@ -196,6 +198,8 @@ module cdata
   logical :: mirror_bc=.false.
   !key arguements that must be set
   character(len=30), protected :: velocity, initf, boundary
+  !order of derivatives
+  character(len=30), protected :: deriv_order='second'
   !-----------------arguements used by initial.mod-------------------------
   integer, protected :: line_count=1
   real, protected :: lattice_ratio=1
@@ -351,6 +355,8 @@ module cdata
              read(buffer, *, iostat=ios) quant_circ !quantum of circulation
           case ('corea')
              read(buffer, *, iostat=ios) corea !size of vortex core
+          case ('deriv_order')
+             read(buffer, *, iostat=ios) deriv_order !order of spatial derivatives   
           case ('box_size')
              !size of box must be>0, real number
              read(buffer, *, iostat=ios) box_size !size of periodic box
