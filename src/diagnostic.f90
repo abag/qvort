@@ -64,21 +64,27 @@ module diagnostic
   subroutine get_anisotropy_info()
     implicit none
     real :: l_para, l_perp !parallel and perpendicular densitys
-    real,dimension(3) :: r_para, r_perp, sdot !unit vectors for r parallel and perpendicular
+    real :: l_l !3rd measure
+    real,dimension(3) :: r_para, r_perp !unit vectors for r parallel and perpendicular
+    real, dimension(3) :: sdot, sddot !1st and 2nd derivative
     integer :: i,j !for looping
     !set r parallel and perpendicular
     r_para=(/1.,0.,0./) ; r_perp=(/0.,1./sqrt(2.),1./sqrt(2.)/)
-    l_para=0. ; l_perp=0. !0 these
+    l_para=0. ; l_perp=0. ; l_l=0. !0 these
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
       call get_deriv_1(i,sdot)
+      call get_deriv_2(i,sddot)
       l_para=l_para+(1.-(dot_product(sdot,r_para)**2))*dist_gen(f(i)%x,f(i)%ghosti)
       l_perp=l_perp+(1.-(dot_product(sdot,r_perp)**2))*dist_gen(f(i)%x,f(i)%ghosti)
+      l_l=l_l+dot_product(cross_product(sdot,sddot),r_para)
     end do
     !normalise by total line_length
     l_para=l_para/total_length ; l_perp=l_perp/total_length
+    !normalise 3rd quantity
+    l_l=l_l*(sqrt(box_size/total_length))**3
     open(unit=72,file='data/anisotropy.log',position='append')
-      write(72,*) t, l_para, l_perp
+      write(72,*) t, l_para, l_perp, l_l
     close(72)
   end subroutine
   !*************************************************

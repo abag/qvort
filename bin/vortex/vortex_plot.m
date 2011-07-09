@@ -225,7 +225,7 @@ for j=1:number_of_particles
           else
             if show_points==1
               if (thin_line==1)
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',.5)
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',.5,'MarkerFaceColor','m')
               else
                 plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',2.0)
               end
@@ -259,7 +259,7 @@ for j=1:number_of_particles
           else
             if show_points==1
               if thin_line==1
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',.5)
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',.5,'MarkerFaceColor','k')
               else
                 plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',2)   
               end

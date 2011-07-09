@@ -51,6 +51,7 @@ end
 %now create vectors to plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 counter1(1:iteration)=1; %set counter to 1
 counter2(1:iteration)=1; %set counter to 1
+main_counter=1
 locs=linspace(dims(1),dims(2)/3,30);
 K_mean(1:2*iteration,1:30)=0.;
 Kmax=0. ; 
@@ -79,11 +80,17 @@ for i=1:iteration
 %   plot(field(i+1,:,1),field(i+1,:,2),'o')
 %   pause
   K = ripleyK(squeeze(field(i,:,1:2)),locs,[-dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2.]);
-  plot(locs,sqrt(K/pi)-locs') ; hold on
-  K_mean(i,:)=sqrt(K/pi)-locs';
+  if max(sqrt(K/pi)-locs')<0.02
+    plot(locs,sqrt(K/pi)-locs') ; hold on
+    K_mean(main_counter,:)=sqrt(K/pi)-locs';
+    main_counter=main_counter+1;
+  end
   K = ripleyK(squeeze(field(i+1,:,1:2)),locs,[-dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2.]);
-  plot(locs,sqrt(K/pi)-locs') ; hold on  
-  K_mean(i+1,:)=sqrt(K/pi)-locs';
+  if max(sqrt(K/pi)-locs')<0.02
+    plot(locs,sqrt(K/pi)-locs') ; hold on  
+    K_mean(main_counter,:)=sqrt(K/pi)-locs';
+    main_counter=main_counter+1;
+  end
   if sum(K)>Kmax
     iKmax=i;
     Kmax=sum(K);
@@ -92,16 +99,17 @@ end
 figure
 errorbar(locs,mean(K_mean),std(K_mean))
 %%%%%%%%%%%%%%%%%%%%%%%%%%RANDOM DATA%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for i=1:100
+clear K K_mean
+for i=1:200
   dumx(:,1)=rand(300,1)*dims(2)-dims(2)/2.;
   dumx(:,2)=rand(300,1)*dims(2)-dims(2)/2.;
   K = ripleyK(dumx,locs,[-dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2. -dims(2)/2. dims(2)/2.]);
   K_mean(i+1,:)=sqrt(K/pi)-locs';  
 end
 hold on
-errorbar(locs,mean(K_mean),std(K_mean))
-figure
-  subplot(2,1,1)
-  plot(field(iKmax,:,1),field(iKmax,:,2),'o')
-  subplot(2,1,2)
-  plot(field(iKmax+1,:,1),field(iKmax+1,:,2),'o')
+errorbar(locs,mean(K_mean),2*std(K_mean))
+%figure
+%  subplot(2,1,1)
+%  plot(field(iKmax,:,1),field(iKmax,:,2),'o')
+%  subplot(2,1,2)
+%  plot(field(iKmax+1,:,1),field(iKmax+1,:,2),'o')

@@ -29,6 +29,25 @@ module sph_interface
     end do
   end subroutine
   !**************************************************************************
+  !>get divergence of SPH paricles at filament points
+  subroutine SPH_f_divu(i,divu)
+    implicit none
+    real :: divu !divergence of u
+    integer :: i,j !for looping
+    real :: dist !distance between particles 
+    if (f(i)%infront==0) return !empty particle
+    if (f(i)%sph/=0) then
+      !particle is fixed to it's sph particle
+      divu=s(f(i)%sph)%divu
+    else
+      divu=0.
+      do j=1, SPH_count
+        dist=dist_gen(f(i)%x,s(j)%x) !distance between point and sph particle
+        divu=divu+s(j)%divu*s(j)%m*sph_W(dist,s(j)%h)/s(j)%rho
+      end do
+    end if
+  end subroutine
+  !**************************************************************************
   !> is there an SPH particle our filament points can 'latch' onto, this is very
   !> similar to the reconnection alogorithm in line.mod. We loop over all particles
   !> and all vortex points and test to see if the distance between them is less than
@@ -51,7 +70,7 @@ module sph_interface
             partner=j
           end if
         end do
-        if (min_dist<delta/2.) then
+        if (min_dist<delta) then
           f(i)%sph=partner !associate point i with sph particle j
         end if
       end if

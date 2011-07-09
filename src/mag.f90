@@ -51,6 +51,7 @@ module mag
   !**********************************************************************
   !>get the length between the particle and the particle infront-assign to l2
   subroutine set_B_strength
+    use sph_interface
     implicit none
     real :: divu
     integer :: i
@@ -62,11 +63,19 @@ module mag
       !account for compressibility of velocity field
       if (nf_compressible) then
         !get the local divergence of the velocity field
-        call get_normal_divu(f(i)%x,divu)
+        select case(velocity) ; case('SPH')
+          call SPH_f_divu(i,divu) !sph_interface.mod
+        case default
+          call get_normal_divu(f(i)%x,divu) !normal.mod
+        end select
         !now timestep the volume element
         f(i)%v2=f(i)%v1*(1.+dt*divu)
         !now set field strength
         f(i)%B=f(i)%B*(f(i)%l2/f(i)%l1)*(f(i)%v1/f(i)%v2)
+        if (f(i)%B>10) then
+          print*, i, f(i)%B, (f(i)%l2/f(i)%l1), f(i)%v2/f(i)%v1
+          print*, i, divu
+        end if
       else
         !now set field strength
         f(i)%B=f(i)%B*(f(i)%l2/f(i)%l1)

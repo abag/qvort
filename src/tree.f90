@@ -281,13 +281,18 @@ module tree
      dist=sqrt((f(i)%x(1)-(vtree%centx+shift(1)))**2+&
                (f(i)%x(2)-(vtree%centy+shift(2)))**2+&
                (f(i)%x(3)-(vtree%centz+shift(3)))**2)
-     theta=vtree%width/dist !the most simple way we can improve this
      if (tree_extra_correction) then
        geo_dist=sqrt((vtree%centx-(vtree%posx+vtree%width/2.))**2+&
                      (vtree%centy-(vtree%posy+vtree%width/2.))**2+&
                      (vtree%centz-(vtree%posz+vtree%width/2.))**2)
-       theta=theta+geo_dist
-     end if              
+       if (dist-geo_dist>0.) then
+         theta=vtree%width/(dist-geo_dist)
+       else
+         theta=vtree%width/dist 
+       end if
+     else
+       theta=vtree%width/dist 
+     end if
      if (vtree%pcount==1.or.theta<tree_theta) then
        !use the contribution of this cell
        if (vtree%pcount==1) then

@@ -29,6 +29,7 @@ SPH_dead_tree	sph_tree.f90	/^  subroutine SPH_dead_tree(/;"	s	module:sph_tree
 SPH_empty_tree	sph_tree.f90	/^  recursive subroutine SPH_empty_tree(/;"	s	module:sph_tree
 SPH_evolution	sph.f90	/^  subroutine SPH_evolution$/;"	s	module:sph
 SPH_f_GP	sph_interface.f90	/^  subroutine SPH_f_GP(/;"	s	module:sph_interface
+SPH_f_divu	sph_interface.f90	/^  subroutine SPH_f_divu(/;"	s	module:sph_interface
 SPH_f_interp	sph_interface.f90	/^  subroutine SPH_f_interp(/;"	s	module:sph_interface
 SPH_f_latch	sph_interface.f90	/^  subroutine SPH_f_latch(/;"	s	module:sph_interface
 SPH_gravity_tree_walk	sph_tree.f90	/^   recursive subroutine SPH_gravity_tree_walk(/;"	s	module:sph_tree
@@ -141,12 +142,14 @@ g	cdata.f90	/^  type(quasi), allocatable :: g(/;"	v	module:cdata
 general	general.f90	/^module general$/;"	m
 get_KS_flow	ksmodel.f90	/^    subroutine get_KS_flow(/;"	s	module:KSmodel
 get_LS_kAB	forcing.f90	/^  subroutine get_LS_kAB$/;"	s	module:forcing
+get_anisotropy_info	diagnostic.f90	/^  subroutine get_anisotropy_info(/;"	s	module:diagnostic
 get_boxed_vorticity	diagnostic.f90	/^  subroutine get_boxed_vorticity(/;"	s	module:diagnostic
 get_deriv_1	general.f90	/^  subroutine get_deriv_1(/;"	s	module:general
 get_deriv_2	general.f90	/^  subroutine get_deriv_2(/;"	s	module:general
 get_forcing	forcing.f90	/^  subroutine get_forcing(/;"	s	module:forcing
 get_forcing_gen	forcing.f90	/^  subroutine get_forcing_gen(/;"	s	module:forcing
 get_ghost_p	periodic.f90	/^  subroutine get_ghost_p(/;"	s	module:periodic
+get_kernel_density	kernel_density.f90	/^  subroutine get_kernel_density(/;"	s	module:kernel_density
 get_linking_number	topology.f90	/^    subroutine get_linking_number$/;"	s	module:topology
 get_normal_divu	normal_fluid.f90	/^    subroutine get_normal_divu(/;"	s	module:normal_fluid
 get_normal_velocity	normal_fluid.f90	/^    subroutine get_normal_velocity(/;"	s	module:normal_fluid
@@ -226,6 +229,7 @@ node	tree.f90	/^   type node$/;"	t	module:tree
 norm_fluid_grid	normal_fluid.f90	/^    type norm_fluid_grid$/;"	t	module:normal_fluid
 norm_k	normal_fluid.f90	/^    real, private :: norm_k$/;"	v	module:normal_fluid
 norm_tanf	general.f90	/^  function norm_tanf(/;"	f	module:general
+normal_direction	normal_fluid.f90	/^    real, private :: normal_direction(/;"	v	module:normal_fluid
 normal_fluid	normal_fluid.f90	/^module normal_fluid$/;"	m
 normalf	general.f90	/^  function normalf(/;"	f	module:general
 nstart	cdata.f90	/^  integer :: nstart=/;"	v	module:cdata
@@ -248,6 +252,7 @@ part_urms	particles.f90	/^  real :: part_maxu=0., part_maxdu=0., part_urms=/;"	v
 particella	cdata.f90	/^  type particella$/;"	t	module:cdata
 particles	particles.f90	/^module particles$/;"	m
 particles_evolution	particles.f90	/^  subroutine particles_evolution$/;"	s	module:particles
+partition	kernel_density.f90	/^  subroutine partition(/;"	s	module:kernel_density
 pclose	line.f90	/^  subroutine pclose$/;"	s	module:line
 pclose_tree	tree.f90	/^  subroutine pclose_tree$/;"	s	module:tree
 pcount	cdata.f90	/^  integer :: pcount /;"	v	module:cdata
@@ -263,7 +268,6 @@ pinned_count	mirror.f90	/^  integer, private :: pinned_count=/;"	v	module:mirror
 pinnedb	cdata.f90	/^    logical :: pinnedb=/;"	k	type:qvort
 pinnedi	cdata.f90	/^    logical :: pinnedi=/;"	k	type:qvort
 pinsert	line.f90	/^  subroutine pinsert$/;"	s	module:line
-plugin	kernel_density.f90	/^  SUBROUTINE plugin(/;"	s	module:kernel_density
 pmotion	timestep.f90	/^  subroutine pmotion(/;"	s	module:timestep
 pold	cdata.f90	/^    real :: pold(/;"	k	type:quasi
 posx	sph_tree.f90	/^      real :: posx,/;"	k	type:SPH_node
@@ -291,6 +295,7 @@ printp	output.f90	/^  subroutine printp(/;"	s	module:output
 qp_max_pdot	quasip.f90	/^  real :: qp_max_u=0., qp_max_pdot=/;"	v	module:quasip
 qp_max_u	quasip.f90	/^  real :: qp_max_u=/;"	v	module:quasip
 qp_urms	quasip.f90	/^  real :: qp_max_u=0., qp_max_pdot=0., qp_urms=/;"	v	module:quasip
+qsort	kernel_density.f90	/^  recursive subroutine qsort(/;"	s	module:kernel_density
 quasi	cdata.f90	/^  type quasi /;"	t	module:cdata
 quasi_pcount	cdata.f90	/^  integer :: quasi_pcount=/;"	v	module:cdata
 quasip	quasip.f90	/^module quasip$/;"	m
@@ -340,6 +345,8 @@ setup_quasip	quasip.f90	/^  subroutine setup_quasip$/;"	s	module:quasip
 setup_random_loops	initial_cond.f90	/^  subroutine setup_random_loops$/;"	s	module:initial_cond
 setup_single_line	initial_cond.f90	/^  subroutine setup_single_line$/;"	s	module:initial_cond
 setup_single_loop	initial_cond.f90	/^  subroutine setup_single_loop$/;"	s	module:initial_cond
+setup_smooth_test	initial_cond.f90	/^  subroutine setup_smooth_test$/;"	s	module:initial_cond
+setup_smooth_test_wave	initial_cond.f90	/^  subroutine setup_smooth_test_wave$/;"	s	module:initial_cond
 setup_smoothing_mesh	smoothing.f90	/^  subroutine setup_smoothing_mesh$/;"	s	module:smoothing
 setup_tangle	initial_cond.f90	/^  subroutine setup_tangle$/;"	s	module:initial_cond
 setup_vortex_injection	inject.f90	/^  subroutine setup_vortex_injection(/;"	s	module:inject
@@ -366,6 +373,7 @@ stiff_solver	stiff_solver.f90	/^module stiff_solver$/;"	m
 stree	sph_tree.f90	/^   type (SPH_node), pointer :: stree$/;"	v	module:sph_tree
 structure_function	diagnostic.f90	/^  subroutine structure_function(/;"	s	module:diagnostic
 t	cdata.f90	/^  real :: t=/;"	v	module:cdata
+t_change	normal_fluid.f90	/^    real, private :: t_change=/;"	v	module:normal_fluid
 t_int	stiff_solver.f90	/^  real, private :: t_int,/;"	v	module:stiff_solver
 tangentf	general.f90	/^  function tangentf(/;"	f	module:general
 three_twos	cdata.f90	/^  real, parameter :: three_twos=/;"	v	module:cdata
@@ -404,7 +412,6 @@ v	normal_fluid.f90	/^      real :: v$/;"	k	type:norm_fluid_grid
 v1	cdata.f90	/^    real :: v1,/;"	k	type:qvort
 v2	cdata.f90	/^    real :: v1, v2$/;"	k	type:qvort
 vector_angle	general.f90	/^  real function vector_angle(/;"	f	module:general
-vel_xflow	normal_fluid.f90	/^    real, parameter, private :: vel_xflow=/;"	v	module:normal_fluid
 velocity_fluidp	particles.f90	/^  subroutine velocity_fluidp(/;"	s	module:particles
 velocity_info	diagnostic.f90	/^  subroutine velocity_info(/;"	s	module:diagnostic
 velocity_quasip	hamiltonian.f90	/^  subroutine velocity_quasip(/;"	s	module:hamiltonian

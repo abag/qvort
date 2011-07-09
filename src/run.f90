@@ -55,9 +55,11 @@ program run
     if (magnetic) then
       !we must redo ghost particles (i think!)
       call ghostp !periodic.mod
-      call set_B_strength !mag.mod
+      !if (itime<2) then
+        call set_B_strength !mag.mod
+      !end if
     end if 
-    call pinsert !line.mod
+    !call pinsert !line.mod
     if (magnetic) then
       !magnetic diffusion
       if (B_nu>epsilon(0.)) call B_diffusion !mag.mod
@@ -71,10 +73,12 @@ program run
         call pclose !line.mod
       end if
       if (switch_off_recon.eqv..false.) call precon !line.mod
-      call premove !line.mod  \todo switchoff premove in run.in
+      !call premove !line.mod  \todo switchoff premove in run.in
       select case(velocity) ; case('SPH')
           !if we have SPH particles can we latch onto them?
-          call SPH_f_latch !sph_interface.mod
+      !    if (itime<2) then
+            call SPH_f_latch !sph_interface.mod
+      !    end if
       end select
     end if
     !---------------------smoothed field----------------------

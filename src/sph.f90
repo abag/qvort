@@ -388,7 +388,7 @@ module sph
     !first build the tree if needed
     if (SPH_theta>0) call create_SPH_tree !sph_tree.mod
     !now iteratively improve smoothing length
-    do j=1, 20 !do this twenty times
+    do j=1, 5 !do this twenty times
       call sph_neighbour_loop
     end do
     if (SPH_theta>0) then
@@ -401,9 +401,10 @@ module sph
     else
       write(*,*) 'no SPH mesh allocated'
     end if
+    nf_compressible=.true.
     !open(unit=23,file='data/sph_correction.log',status='replace')
     !do j=1, SPH_count
-    !  write(23,*) s(j)%f
+    !  write(23,*) s(j)%
     !end do 
     !close(23)
   end subroutine
