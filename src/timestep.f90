@@ -6,8 +6,6 @@ module timestep
   use forcing
   use tree
   use mirror
-  use mag
-  use sph_interface
   contains
   !*************************************************
   !>implement adams bashforth time-stepping scheme to move particles
@@ -28,9 +26,6 @@ module timestep
     select case(velocity)
       case('Rotate')
         call differential_rotation
-        return !exit the routine once applied
-      case('SPH')
-        call SPH_f_interp  !sph_interface.mod
         return !exit the routine once applied
     end select    
     max_error=0.
@@ -74,8 +69,7 @@ module timestep
   end subroutine
   !*************************************************
   !>get the velocity of each particle subject to the superfluid velocity
-  !>plus any normal fluid/forcing, if a magnetic field tension force is also
-  !>accounted for
+  !>plus any normal fluid/forcing
   subroutine calc_velocity(u,i)
     implicit none
     integer, intent(IN) :: i
@@ -175,14 +169,6 @@ module timestep
     if (mirror_bc) then
       !check the flux through the boundaries is 0
       call mirror_flux_check(i,u) !mirror.mod
-    end if
-    !magnetic field
-    if (magnetic) then
-      if (B_tension>epsilon(0.)) then
-        call mag_tension_mirr(i,u_B) !mag.mod
-        !multiply by tension coefficient from run.in
-        u=u+B_tension*u_B
-      end if
     end if
   end subroutine
   !**************************************************************************

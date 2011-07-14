@@ -12,8 +12,8 @@ module general
     integer, intent(IN) :: i
     f(i)%x=0.
     f(i)%u=0. ; f(i)%u1=0. ; f(i)%u2=0.
-    f(i)%sph=0 ; f(i)%B=0.
     f(i)%ghosti=0. ; f(i)%ghostb=0.
+    f(i)%ghostii=0. ; f(i)%ghostbb=0.
     f(i)%infront=0 ; f(i)%behind=0
     f(i)%closest=0 ; f(i)%closestd=0.
     f(i)%pinnedi=.false. ; f(i)%pinnedb=.false.
@@ -187,14 +187,6 @@ module general
     if (allocated(p)) then
       if (any(isnan(p%x(1))).or.any(isnan(p%x(2))).or.any(isnan(p%x(3)))) then
         call fatal_error('run.x','there is a NAN in the (particle) p%x array')
-      end if
-    end if
-    if (allocated(s)) then
-      if (any(isnan(s%h))) then
-        call fatal_error('run.x','there is a NAN in the (SPH) s%h array')
-      end if
-      if (any(isnan(s%x(1))).or.any(isnan(s%x(2))).or.any(isnan(s%x(3)))) then
-        call fatal_error('run.x','there is a NAN in the (SPH) s%x array')
       end if
     end if
   end subroutine

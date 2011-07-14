@@ -1,6 +1,5 @@
 !>all routines used to smooth the field onto the mesh, using tree methods
 !>if the code is running as a vortex filament this is simply the vorticity
-!>if a flux tube this smooths the magnetic field
 module smoothing
   use cdata 
   use general
@@ -8,7 +7,7 @@ module smoothing
   implicit none
   !> mesh points on the smoothed mesh
   !>@param x the position of the mesh point
-  !>@param w the smoothed field either vorticity or magnetic
+  !>@param w the smoothed field either vorticity 
   type smoothing_grid
      private
      real :: x(3)
@@ -50,7 +49,7 @@ module smoothing
       sm(k,j,i)%x(1)=sm_res*real(2*i-1)/2.-(box_size/2.)
       sm(k,j,i)%x(2)=sm_res*real(2*j-1)/2.-(box_size/2.)
       sm(k,j,i)%x(3)=sm_res*real(2*k-1)/2.-(box_size/2.)
-      sm(k,j,i)%w(:)=0. !0 the vorticity/magnetic field array
+      sm(k,j,i)%w(:)=0. !0 the vorticity array
     end do ; end do ; end do
   end subroutine
   !**********************************************************************
@@ -115,7 +114,7 @@ module smoothing
     real, intent(IN) :: x(3) !the position we want the velocity at
     real, intent(IN) :: shift(3) !shift tree (periodicity)
     type (node), pointer :: vtree !the tree
-    real :: wsmooth(3) !smoothed vorticity/magnetic field at point x
+    real :: wsmooth(3) !smoothed vorticity field at point x
     real :: smoothing_factor
     real :: dist, dist2, theta !helper variables
     if (vtree%pcount==0) return !empty box no use
@@ -128,11 +127,7 @@ module smoothing
     if (vtree%pcount==1.or.theta<tree_theta) then
       !use the contribution of this cell
       smoothing_factor=(1./sqrt(2.*pi*(sm_sigma**2)))*exp(-dist2/(2.*(sm_sigma**2)))
-      if (magnetic) then
-        wsmooth=wsmooth+vtree%B*smoothing_factor
-      else
-        wsmooth=wsmooth+vtree%circ*smoothing_factor
-      end if
+      wsmooth=wsmooth+vtree%circ*smoothing_factor
     else
       !open the box up and use the child cells
       call tree_smooth(x,vtree%fbl,shift,wsmooth) ; call tree_smooth(x,vtree%fbr,shift,wsmooth)

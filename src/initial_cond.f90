@@ -1173,51 +1173,6 @@ module initial_cond
       end if
     end do
   end subroutine
-!*************************************************************************
-  !>set up a single loop in the x-y plane, it's size is dictated by the initial 
-  !>number of particles set and the size of \f$\delta\f$, this matches with the 
-  !>initial SPH condition SPH_loop
-  subroutine setup_SPH_loop
-    implicit none
-    real :: radius
-    integer :: i 
-    !check that the velocity field is SPH
-    select case(velocity)
-      case('SPH')
-        !we are OK
-      case default
-        call fatal_error('init.mod','must have SPH velocity field set for this initial condition')
-    end select
-    !check that the initial SPH condition is a loop
-    select case(SPH_init)
-      case('loop')
-        !we are OK
-      case default
-        call fatal_error('init.mod','must have SPH initial condition set to loop')
-    end select
-    !finally check that the initial number of particles are the same
-    if (pcount/=SPH_count) then
-      call fatal_error('init.mod','must have pcount=SPH_count')
-    end if
-    radius=(0.75*pcount*delta)/(2*pi) !75% of potential size 
-    !loop over particles setting spatial and 'loop' position
-    do i=1, pcount
-      f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
-      f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
-      f(i)%x(3)=0.
-      if (i==1) then
-        f(i)%behind=pcount ; f(i)%infront=i+1
-      else if (i==pcount) then 
-        f(i)%behind=i-1 ; f(i)%infront=1
-      else
-        f(i)%behind=i-1 ; f(i)%infront=i+1
-      end if
-      !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
-      !set the sph particle
-      f(i)%sph=i
-    end do   
-  end subroutine
 end module
 !******************************************************************
 !>\page INIT Initial condition for filament

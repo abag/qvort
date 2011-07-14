@@ -7,7 +7,6 @@ module initial
   use forcing
   use periodic
   use smoothing
-  use sph
   use inject
   contains
   !*************************************************************************
@@ -16,8 +15,6 @@ module initial
   subroutine init_setup()
     use quasip
     use particles
-    use mag !not strictly needed as mag used in timestep.mod used in quasip.mod 
-    use sph
     implicit none
     logical :: restart
     write(*,'(a)') ' ---------------------VORTEX PARAMETERS------------------' 
@@ -75,7 +72,6 @@ module initial
           write(*,'(a,f8.3)') ' running with periodic boundaries in y-z direction, box size:', box_size
           write(*,*) ' boundaries open in the x direction, loops that have left the box will be removed'
         case('mirror')
-          if (magnetic) call fatal_error('init_setup','mirror bcs are not supported with magnetic fields') 
           if (deriv_order=='fourth') then
             call fatal_error('init_setup','mirror bcs are not supported with fourth order derivatives') 
           end if
@@ -156,9 +152,6 @@ module initial
           call setup_tangle !initial_cond.mod
         case('criss-cross')
           call setup_criss_cross !initial_cond.mod
-        !--------all SPH initial conditions below here--------
-        case('SPH_loop')
-          call setup_SPH_loop !initial_cond.mod
         case default
           call fatal_error('cdata.mod:init_setup', &
                          'invalid choice for initf parameter') !cdata.mod
@@ -201,10 +194,7 @@ module initial
       end if
     else
       if (particles_only) then
-        if (SPH_count==0) then 
-          call fatal_error('init.mod','must have part_count>0 &
-                            or SPH_count>0 for particles_only')
-        end if
+        call fatal_error('init.mod','must have part_count for particles_only')
       end if
       write(*,*) 'no particles in the code'
     end if
@@ -238,12 +228,6 @@ module initial
         write(*,*) 'using full Biot-Savart integral - scales like O(N^2)'
       case('Rotate')
         write(*,*) 'by-passing all other velocity fields: prescribing differential rotation'
-      case('SPH')
-         if (SPH_count>0) then
-            write(*,'(a)') ' using SPH particles for velocity field'
-          else
-            call fatal_error('initial.mod',' SPH_count must be >0 to use this condition')            
-          end if
       case('Tree')
         if (tree_theta<epsilon(0.)) then 
           call fatal_error('init.mod:init_setup', & 
@@ -293,24 +277,6 @@ module initial
     end if
     !----------------------gaussian smoothing of field------------------------------
     if (sm_size>0) call setup_smoothing_mesh !smoothing.mod
-    !----------------------------magnetic field-------------------------------------
-    if (restart) then
-      if (magnetic) write(*,*) 'restored magnetic field'
-    else
-      if (magnetic) call setup_mag !mag.mod
-    end if
-    !------------------------------SPH----------------------------------
-    if (SPH_count>0) then
-      call setup_SPH !sph.mod
-    else
-      !must check for printing to screen
-      if (particles_only) then
-        if (part_count==0) then 
-          call fatal_error('init.mod','must have part_count>0 &
-                            or SPH_count>0 for particles_only')
-        end if
-      end if
-    end if
   end subroutine
   !**********************************************************************
   !>restart the code code periodically writes all the main variables to a file
@@ -384,7 +350,7 @@ module initial
     implicit none
     real :: delta_min, dt_max
     select case(velocity)
-      case('Off','Rotate','SPH')
+      case('Off','Rotate')
         write(*,'(a)') ' dt not checked as not solving for a vortex'
         return
     end select

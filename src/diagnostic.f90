@@ -1,5 +1,4 @@
-!> diagnostic routines purely for vortex filament, if acting as a magnetic field diagnostics done within the module
-!> mag, particle diagnostics contained within quasip.mod
+!> diagnostic routines purely for vortex filament, particle diagnostics contained within quasip.mod
 module diagnostic
   use cdata
   use general

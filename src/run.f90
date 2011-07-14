@@ -14,8 +14,6 @@ program run
   use inject
   use mirror
   use smoothing 
-  use mag
-  use sph_interface
   implicit none
   integer :: i
   logical :: can_stop=.false.,can_reload=.false. 
@@ -36,7 +34,6 @@ program run
       call vortex_inject !inject.mod
     end if
     call ghostp !periodic.mod
-    if (magnetic) call set_B_length1 !mag.mod
     !---------------------build tree routines----------------------
     if (tree_theta>0) then
       call construct_tree !tree.mod
@@ -52,18 +49,7 @@ program run
     end if
     if (seg_fault) write(*,*) 'here4'
     !---------------------line operations--------------------------
-    if (magnetic) then
-      !we must redo ghost particles (i think!)
-      call ghostp !periodic.mod
-      !if (itime<2) then
-        call set_B_strength !mag.mod
-      !end if
-    end if 
-    !call pinsert !line.mod
-    if (magnetic) then
-      !magnetic diffusion
-      if (B_nu>epsilon(0.)) call B_diffusion !mag.mod
-    end if
+    call pinsert !line.mod
     if (seg_fault) write(*,*) 'here5'
     if (mod(itime, recon_shots)==0) then
       if (tree_theta>0) then
@@ -73,13 +59,7 @@ program run
         call pclose !line.mod
       end if
       if (switch_off_recon.eqv..false.) call precon !line.mod
-      !call premove !line.mod  \todo switchoff premove in run.in
-      select case(velocity) ; case('SPH')
-          !if we have SPH particles can we latch onto them?
-      !    if (itime<2) then
-            call SPH_f_latch !sph_interface.mod
-      !    end if
-      end select
+      call premove !line.mod  \todo switchoff premove in run.in
     end if
     !---------------------smoothed field----------------------
     if (mod(itime,mesh_shots)==0) then
@@ -118,11 +98,8 @@ program run
       call data_dump !output.mod
       if(particles_only.eqv..false.) call print_info !output.mod
       if (mod(itime, mesh_shots)==0) then
-        if (magnetic.and.full_B_print) call print_full_B(itime/mesh_shots)
-!mag.f90
         !print the mesh to a binary file
         call print_mesh(itime/mesh_shots) !output.mod
-        if (delta_adapt_print) call print_delta_adapt(itime/mesh_shots)!output.mod
         !print the smoothed mesh to binary file
         if (sm_size>0) call print_smooth_mesh(itime/mesh_shots)!smoothing.mod
         !can also print full velocity field for statistics 
@@ -130,13 +107,11 @@ program run
         call one_dim_vel(itime/mesh_shots) !diagnostics.mod
         call two_dim_vel(itime/mesh_shots) !diagnostics.mod
       end if
-      if (magnetic) call B_ts !mag.mod
     end if
     if (seg_fault) write(*,*) 'here8'
     !---do we have particles in the code - if so evolve them
     if (quasi_pcount>0) call quasip_evolution !quasip.mod
     if (part_count>0) call particles_evolution !particles.mod
-    if (SPH_count>0) call SPH_evolution !sph.mod
     if (seg_fault) write(*,*) 'here9'
     !-------------------remove the tree----------------------------
     if (tree_theta>0) then

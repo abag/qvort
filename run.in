@@ -1,19 +1,15 @@
 --------------required parameters------------
-nsteps 600000
+nsteps 10000
 shots 10
-recon_shots 1
-pcount 1000
-dt 2E-3
-delta 0.01
-box_size 0.2
+pcount 200
+dt 2E-5
+delta 0.001
+box_size 0.1
 velocity Tree
-initf random_loops
-line_count 20
+initf criss-cross
+line_count 10
 boundary periodic
 --------------optional parameters------------
----delete all below for a 'standard' run-----
-normal_velocity xflow
-alpha .098 .016
+deriv_order second
 tree_theta 0.4
-norm_vel_xflow .7
-anisotropy_params T
+simple_plots T

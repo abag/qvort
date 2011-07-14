@@ -14,12 +14,7 @@ module cdata
   !!@param infront @param behind flag to make points an orientated filament
   !!@param closest closest particle, used in reconnections
   !!@param closestd separation between closest particle and particle 
-  !!@param sph particle attached to, 0 if not
-  !!@param sph2 neighbouring sph particles for hermite interpolation
-  !!@param B magnetic field strength
   !!@param delta used for adaptive meshing along the filaments, used as a prefactor
-  !!@param l1 l2 line length for magnetic field evolution 
-  !!@param v1 v2 volume element for magnetic field evolution in a compressible field
   type qvort 
     real :: x(3)
     real :: u(3), u1(3), u2(3) 
@@ -29,13 +24,9 @@ module cdata
     integer :: infront, behind 
     integer :: closest
     real :: closestd
-    integer :: sph  
     logical :: pinnedi=.false.
     logical :: pinnedb=.false.
     real :: delta
-    real :: B 
-    real :: l1, l2
-    real :: v1, v2
   end type
   !>main filament vector
   type(qvort), allocatable :: f(:) 
@@ -90,48 +81,6 @@ module cdata
   end type
   !>vector of particles
   type(particella), allocatable :: p(:)  
-  !**********SPH STRUCTURE****************************************************
-  !>SPH particle structure
-  !>@param x the position of the particle
-  !>@param i i=s(i)%i used in tree neighbour list
-  !>@param m the mass of the particle
-  !>@param rho the density at the particle position
-  !>@param drhodh \f$ \partial \rho_i / \partial h_i\f$
-  !>@param P the pressure at i
-  !>@param h the smoothing length associated with the particle
-  !>@param f the correction to the smoothing length
-  !>@param u the velocity of the particle
-  !>@param divu the divergence of the velocity field
-  !>@param a the acceleration of the particle
-  !>@param u1 @param u2 old velocities for Adams-Bashforth timestepping
-  !>@param a1 @param a2 old velocities for Adams-Bashforth timestepping
-  type smooth_particle
-    real :: x(3)
-    integer :: i
-    real :: m
-    real :: rho, drhodh
-    real :: P
-    real :: h
-    real :: f
-    real :: divu
-    real :: u(3), u1(3), u2(3) 
-    real :: a(3), a1(3), a2(3)
-    integer :: ncount !number of neighbours
-  end type
-  !>vector of SPH particles
-  type(smooth_particle), allocatable :: s(:)
-  !>nearest neighbour using a linked list
-  !>linked list type1
-  type neigh_ll
-    integer :: i
-    type( neigh_ll ), pointer :: next
-  end type neigh_ll
-  !>linked list type2, which needs above
-  type use_neigh_ll
-    integer :: ncount
-    type( neigh_ll ), pointer :: list, current, previous
-  end type use_neigh_ll
-  type(use_neigh_ll), allocatable :: s_NN(:)
   !**************TIME PARAMS*******************************************************
   !>time held globally
   real :: t=0. 
@@ -156,9 +105,7 @@ module cdata
   real :: energy 
   !>mean curvature
   real :: kappa_bar 
-  real :: kappa_min, kappa_max !min/max curvature
-  !>rms of magnetic field
-  real :: Brms 
+  real :: kappa_min, kappa_max !min/max curvature 
   !>self reconnection count
   integer :: self_rcount=0 
   !>vortex vortex reconnection count 
@@ -248,15 +195,6 @@ module cdata
   character(len=20), protected :: particle_type='fluid' !fluid/interial/quasi particles
   character(len=20), protected :: initp='random' !initial particle configuration
   logical, protected :: particles_only=.false. !only evolve particles in the code
-  !----------------------------SPH-----------------------------------------------
-  integer :: SPH_count !number of SPH particles in the code, this may reduce due to mergers
-  real,protected :: SPH_mass=0. !initial mass of the particle set to 0 which stops code runnning
-  character(len=20),protected :: SPH_init='random' !initial setup of SPH particles
-  real,protected :: SPH_init_r=0.1 !used for some initial SPH conditions
-  real,protected :: SPH_gamma=5./3. !adiabatic index
-  real,protected :: SPH_G=0. !gravitational constant
-  real,protected :: SPH_theta=0. !opening angle for SPH tree
-  integer, protected :: SPH_mesh_size=0 !mesh size for SPH
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
@@ -272,7 +210,6 @@ module cdata
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
   logical, protected :: vel_print_extra=.false. !prints extra velocity information to file
-  logical, protected :: full_B_print=.false. !prints the full magnetic field to file
   logical, protected :: recon_info=.false. !more in depth reconnection information
   logical, protected :: boxed_vorticity=.false. !smoothed vorticity in a box
   integer, protected :: boxed_vorticity_size=32 !how big is the mesh for boxed vorticity
@@ -283,13 +220,6 @@ module cdata
   real, protected :: smoothing_length=1. !length we smooth over
   integer, protected :: sm_size=0 !size of smoothing mesh - 0 by default which deactivates smoothing
   logical, protected :: smoothing_interspace=.false. !smooth using intervortex spacing?
-  !----------------------------magnetic field-------------------------------------
-  !----------------ENABLE THE FILAMENTS TO ACT AS MAGNETIC FLUX TUBES-------------
-  logical, protected :: magnetic=.false. !no by defult
-  real, protected :: B_init=1. !initial field strength 
-  real, protected :: B_nu=0. !switched off by default
-  real, protected :: B_tension=0. !magnetic tension coeff.
-  logical, protected :: B_3D_nu=.false. !1/3D diffusion 
   !------------------------------filament injection-------------------------------
   integer, protected :: inject_skip=10000000!how often we insert the vortice
   integer, protected :: inject_size=0 !number of points used
@@ -344,9 +274,6 @@ module cdata
           case ('binary_print')
              !print to binary (T) or formatted data (F)
              read(buffer, *, iostat=ios) binary_print !print binary var data
-          case ('dt_adapt')
-             !adpative timestep, primarily for magnetic runs with tension
-             read(buffer, *, iostat=ios) dt_adapt !adpative dt
           case ('delta')
              !resolution, real number
              read(buffer, *, iostat=ios) delta !spatial resolution
@@ -481,34 +408,6 @@ module cdata
              read(buffer, *, iostat=ios) smoothing_interspace !use intervortex spacing as smoothing length?
           case ('sm_size')
              read(buffer, *, iostat=ios) sm_size !size of smoothing mesh
-          case ('magnetic')
-             read(buffer, *, iostat=ios) magnetic !act as a magnetic field
-          case ('B_init')
-             read(buffer, *, iostat=ios) B_init !initial field strength
-          case ('B_nu')
-             read(buffer, *, iostat=ios) B_nu !magnetic diffusivity
-          case ('B_3D_nu')
-             read(buffer, *, iostat=ios) B_3D_nu !is diffusion 3D?
-          case ('B_tension')
-             read(buffer, *, iostat=ios) B_tension !magnetic tension coeff.
-          case ('full_B_print')
-             read(buffer, *, iostat=ios) full_B_print !print full B info
-           case ('SPH_count')
-             read(buffer, *, iostat=ios) SPH_count !how many SPH particles in the code
-          case ('SPH_mass')
-             read(buffer, *, iostat=ios) SPH_mass!initial mass of SPH particles
-          case ('SPH_init')
-             read(buffer, *, iostat=ios) SPH_init!initial SPH setup
-          case ('SPH_gamma')
-             read(buffer, *, iostat=ios) SPH_gamma!adiabatic index in SPH sims.
-          case ('SPH_G')
-             read(buffer, *, iostat=ios) SPH_G !gravitational constant
-          case ('SPH_init_r')
-             read(buffer, *, iostat=ios) SPH_init_r !initial sphere radius
-          case ('SPH_theta')
-             read(buffer, *, iostat=ios) SPH_theta !tree opening angle
-          case ('SPH_mesh_size')
-             read(buffer, *, iostat=ios) SPH_mesh_size !SPH mesh size
           case ('delta_adapt')
              read(buffer, *, iostat=ios) delta_adapt !is the discretisation adaptive
           case ('delta_adapt_print')

@@ -19,8 +19,6 @@ module output
       end if
       write(77,*) part_count
       write(77,*) quasi_pcount
-      write(77,*) SPH_count
-      write(77,*) SPH_mesh_size
       write(77,*) xdim_scaling_factor
     close(77)
   end subroutine
@@ -31,28 +29,15 @@ module output
     call printf(itime/shots) !output.mod
     open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
-      if (magnetic) then
-        write(*,'(a)',advance='yes') '--var--------t-------pcount-------recon----avg_d-----length&
-                  --------maxu---------maxdu-----num eval----curv------removed-------Bmax--------&
-                 -Bmin----------Brms--------B_energy--'
-      else
-        write(*,'(a)',advance='yes') '--var--------t-------pcount-------recon----avg_d-----length&
-                  --------maxu---------maxdu-----num eval----curv------removed'
-      end if
+      write(*,'(a)') '--var--------t-------pcount-------recon----avg_d-----length&
+                --------maxu---------maxdu-----num eval----curv------removed'
       write(78,*) '%--var--------t-------pcount-------recon----avg_d-----length&
                    --------maxu---------maxdu-----num eval----curv------removed'
     end if
-    if (magnetic) then
-      write(*,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2,i13.1)',advance='no') &
-      itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
-      total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
-      remove_count
-    else
-      write(*,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2,i13.1)') &
-      itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
-      total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
-      remove_count
-    end if
+    write(*,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2,i13.1)') &
+    itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
+    total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
+    remove_count
     write(78,'(i6.4,f13.7,i10.1,i13.1,f7.4,f13.6,f13.5,f13.5,f10.2,f10.2,i13.1)') &
 itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
 total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
@@ -94,20 +79,8 @@ remove_count
         write(98) f(:)%x(2)
         write(98) f(:)%x(3)
         write(98) f(:)%infront
-        if (magnetic) then
-          write(98) f(:)%B
-        else 
-          write(98) sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
-        end if
-        select case(velocity)
-          case('SPH')
-            write(98) real(f(:)%sph)
-          case default
-            write(98) sqrt(f(:)%u_sup(1)**2+&
-                           f(:)%u_sup(2)**2+&
-                           f(:)%u_sup(3)**2)
-        end select
-
+        write(98) sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
+        write(98) sqrt(f(:)%u_sup(1)**2+f(:)%u_sup(2)**2+f(:)%u_sup(3)**2)
       close(98)
     else
       write(unit=print_file,fmt="(a,i4.4,a)") "./data/var",filenumber,".log"
@@ -115,12 +88,8 @@ remove_count
         write(98,*) t
         write(98,*) pcount
         do i=1, pcount
-          if (magnetic) then
-            write(98,*) f(i)%x(1:3), f(i)%infront, f(i)%B, f(i)%sph
-          else
-            write(98,*) f(i)%x(1:3), f(i)%infront, sqrt(f(i)%u(1)**2+f(i)%u(2)**2+f(i)%u(3)**2), &
-                        sqrt(dot_product(f(i)%u_sup,f(i)%u_sup))
-          end  if
+          write(98,*) f(i)%x(1:3), f(i)%infront, sqrt(f(i)%u(1)**2+f(i)%u(2)**2+f(i)%u(3)**2), &
+                      sqrt(dot_product(f(i)%u_sup,f(i)%u_sup))
         end do
       close(98)
     end if
@@ -196,34 +165,6 @@ remove_count
     end if
   end subroutine
   !**********************************************************************
-  !>print the s (SPH particles) array as (un)formatted data for use with gnuplot/matlab
-  subroutine print_SPH(filenumber)
-    implicit none
-    integer, intent(IN) :: filenumber
-    character (len=40) :: print_file
-    integer :: i
-    if (binary_print) then
-      write(unit=print_file,fmt="(a,i4.4,a)")"./data/SPH_par",filenumber,".log"
-      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
-        write(98) t
-        write(98) SPH_count
-        write(98) s(:)%x(1)
-        write(98) s(:)%x(2)
-        write(98) s(:)%x(3)
-        write(98) s(:)%rho
-      close(98)
-    else  
-      write(unit=print_file,fmt="(a,i4.4,a)")"./data/SPH_par",filenumber,".log"
-      open(unit=98,file=print_file,status='replace')
-        write(98,*) t
-        write(98,*) SPH_count
-        do i=1, SPH_count
-          write(98,*) s(i)%x(1:3), s(i)%rho
-        end do
-      close(98)
-    end if
-  end subroutine
-  !**********************************************************************
   !>store everything needed to restart the code
   !>\todo does this really work anymore? need to check fully
   subroutine data_dump
@@ -238,8 +179,6 @@ remove_count
       if (quasi_pcount>0) write(53) g
       write(53) part_count
       if (part_count>0) write(53) p
-      write(53) SPH_count
-      if (SPH_count>0) write(53) s
     close(53)
   end subroutine
   !**********************************************************************
@@ -256,8 +195,6 @@ remove_count
       if (quasi_pcount>0) write(53) g
       write(53) part_count
       if (part_count>0) write(53) p
-      write(53) SPH_count
-      if (SPH_count>0) write(53) s
     close(53)
   end subroutine
   !**********************************************************************

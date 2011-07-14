@@ -1,7 +1,7 @@
 !>normal fluid component in the equation of motion, if the filament acts as a vortex
 !>velocity enters as \f$\mathbf{u}=\alpha \mathbf{s}' \times (\mathbf{u}_\mathrm{n}-\mathbf{u}_\mathrm{s})+
 !>\alpha' \mathbf{s}' \times [\mathbf{s}' \times (\mathbf{u}_\mathrm{n}-\mathbf{u}_\mathrm{s})]\f$
-!>if the filament is a magnetic flux tube or a material line then the normaly velocity is used directly.
+!>if the filament is a material line then the normaly velocity is used directly.
 !>for further information on the normal fluid options see \ref NF
 module normal_fluid
   use cdata

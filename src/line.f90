@@ -12,8 +12,6 @@ module line
   !>\f[ \mathbf{s}_{i'}=\frac{1}{2}(\mathbf{s}_i+\mathbf{s}_{i+1})+\left( \sqrt{R^2_{i'}
   !!-\frac{1}{4}\ell_{i+1}^2}-R_{i'} \right)\frac{\mathbf{s}_{i'}''}{|\mathbf{s}_{i'}''|},\f]
   !! where \f$R_{i'}=|\mathbf{s}_{i'}''|^{-1}\f$.
-  !!If the filaments are magnetic flux tubes then the stretching is taken
-  !!into account by doubling the field strength
   subroutine pinsert
     implicit none    
     type(qvort), allocatable, dimension(:) :: tmp
@@ -30,8 +28,6 @@ module line
     end if
     old_pcount=pcount
     total_length=0. !zero this
-    !we probably only need below if mod(itime,shots)==0
-    if (magnetic) Brms=sqrt(sum(f(:)%B**2,mask=f(:)%infront>0)/count(mask=f(:)%infront>0)) !rms of magnetic field
     do i=1, old_pcount
       if (i>size(f)) then
         !bug check
@@ -92,16 +88,8 @@ module line
                                       f(f(i)%infront)%ghostii, f(f(i)%infront)%ghostbb) !periodic.mod         
         f(i)%infront=par_new
         call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb,f(i)%ghostii, f(i)%ghostbb) !periodic.mod         
-        !address the magnetic issue
-        if (magnetic) f(par_new)%B=f(i)%B
         !set local delta factor to be 1 incase we are adapting it
         f(par_new)%delta=1. 
-        !finally account for SPH matching
-        select case(velocity)
-          case('SPH')
-          !0 the associated particle information
-          f(par_new)%sph=0
-        end select
       end if
     end do
     !calculate average separation of particles
@@ -191,7 +179,6 @@ module line
   !>reconnect filaments if they become too close removing the two points
   !>which are reconnected, the two closest points. This is routine
   !>is not used in the code at present but could be useful for flux tube sims.
-  !>\todo Make this the default reconnection routine for magnetic filaments
   subroutine precon_dissapitive
     implicit none
     real :: distr, min_distr !reconnection distances
