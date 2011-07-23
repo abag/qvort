@@ -215,6 +215,7 @@ module cdata
   integer, protected :: boxed_vorticity_size=32 !how big is the mesh for boxed vorticity
   logical, protected :: simple_plots=.false. !call scripts from command line to plot on the fly
   logical, protected :: anisotropy_params=.false. !get anistropy parameters
+  logical, protected :: particle_plane_inf=.false. !2D point infomation in z=0 plane
   !-------------------------------smoothing-------------------------------------------
   !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
@@ -394,6 +395,8 @@ module cdata
              read(buffer, *, iostat=ios) topo_inf !topological information
           case ('energy_inf')
              read(buffer, *, iostat=ios) energy_inf !vortex energy - only open boundaries
+          case ('particle_plane_inf')
+             read(buffer, *, iostat=ios) particle_plane_inf !point vortex in z=0
           case ('switch_off_recon')
              read(buffer, *, iostat=ios) switch_off_recon !for test cases only!
           case ('seg_fault')

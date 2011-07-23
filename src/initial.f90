@@ -250,6 +250,7 @@ module initial
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
     if (topo_inf) write(*,*) 'printing topological information to file'
     if (sep_inf) write(*,*) 'printing point separation info+histogram to file'
+    if (particle_plane_inf) write(*,*) 'printing point particle information at z=0'
     if (anisotropy_params) write(*,*) 'calculating anistropy parameters and printing to file'
     if (energy_inf) then
       write(*,*) 'printing energy information to file'
