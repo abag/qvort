@@ -143,6 +143,8 @@ module cdata
   logical :: periodic_bc=.false.
   logical :: periodic_bc_notx=.false.
   real :: xdim_scaling_factor=1.
+  !>which reconnection algorithm to use
+  character(len=30), protected :: recon_type='original'  
   !>are boundaries solid?
   logical :: mirror_bc=.false.
   !key arguements that must be set
@@ -277,6 +279,8 @@ module cdata
           case ('dt')
              !size of timestep, cheked based on delta
              read(buffer, *, iostat=ios) dt !timestep value
+          case ('recon_type')
+             read(buffer, *, iostat=ios) recon_type !reconnection algorithm used
           case ('binary_print')
              !print to binary (T) or formatted data (F)
              read(buffer, *, iostat=ios) binary_print !print binary var data

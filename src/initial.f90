@@ -53,6 +53,19 @@ module initial
       write(*,'(a)') ' ------------------PHONON EMISSION--------------------' 
       write(*,'(a,f6.2,a,f8.1)') ' simulating phonon emission, cutoff is ', 100*phonon_percent, '% of max:', 2/delta
     end if
+    write(*,'(a)') ' ---------_------RECONNECTION ALGORITHM------------------' 
+    select case(recon_type)
+      case('original')
+        write(*,*) 'using default reconnection routine described in Baggaley & Barenghi 2011'
+      case('dissipative')
+        write(*,*) 'using dissipative reconnection routine described in Baggaley et al. 2009'
+      case('non_dissipative')
+        write(*,*) 'using an experimental reconnection routine which can increase line length'
+      case('kondaurova')
+        write(*,*) 'using reconnection routine described in Kondaurova et al. 2008'
+      case default
+        call fatal_error('init_setup:', 'incorrect reconnection algorithm selected')
+    end select
     !loop injection
     call setup_vortex_injection !inject.mod
     !how is data being outputted (binary or formatted)

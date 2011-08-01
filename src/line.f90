@@ -4,6 +4,7 @@ module line
   use cdata
   use general
   use periodic
+  use reconnection
   contains
   !>insert new points to maintain the resolution of the line,
   !>this will mean the point separation lies between \f$\delta\f$
@@ -176,147 +177,19 @@ module line
     end do
   end subroutine
   !******************************************************************
-  !>reconnect filaments if they become too close removing the two points
-  !>which are reconnected, the two closest points. This is routine
-  !>is not used in the code at present but could be useful for flux tube sims.
-  subroutine precon_dissapitive
-    implicit none
-    real :: distr, min_distr !reconnection distances
-    real :: dot_val, tangent1(3), tangent2(3) !used to determine if filaments parallel
-    integer :: pari, parb, parii, parbb, parji, parjb !particles infront/behind
-    integer :: par_recon !the particle we reconnect with
-    integer :: i, j !we must do a double loop over all particles N^2
-    logical :: same_loop
-    do i=1, pcount
-      if (f(i)%infront==0) cycle !empty particle
-      pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
-      parii=f(pari)%infront ; parbb=f(parb)%behind !find particle twice infront/behind
-      !now we determine if we can reconnect
-      if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
-        j=f(i)%closest
-        !another saftery check
-        if (j==pari) cycle ; if (j==parb) cycle ; if (j==0) cycle
-        !these two could have reconnected earlier in this case j will be empty
-        if (f(j)%infront==0) cycle
-        parji=f(j)%infront ; parjb=f(j)%behind
-        !we can reconnect based on distancerecon
-        !now check whether parallel
-        tangent1=norm_tanf(i) ; tangent2=norm_tanf(j) !general.mod
-        dot_val=dot_product(tangent1,tangent2) !intrinsic function
-        if ((dot_val>0.9)) then
-          !we cannot reconnect as filaments are parallel          
-          !print*, 'cannot reconnect, cos(theta) is:',dot_val
-        else
-          !print*, 'i',i, f(i)%infront, f(i)%behind
-          !print*, 'j',j, f(j)%infront, f(j)%behind
-          !reconnect the filaments
-          recon_count=recon_count+1 !keep track of the total # of recons
-          if (recon_info) then !more reconnection information
-            call same_loop_test(i,j,same_loop) !line.mod
-            if (same_loop) then
-              self_rcount=self_rcount+1 
-            else
-              vv_rcount=vv_rcount+1
-            end if
-          end if
-          !reomove two particles involved in reconnection
-          call clear_particle(i) ; call clear_particle(j)
-          !set correct behind_infront
-          f(parjb)%infront=pari
-          f(pari)%behind=parjb
-          f(parb)%infront=parji
-          f(parji)%behind=parb
-          !check the size of these new loops
-          call loop_killer(pari) ; call loop_killer(parb)
-        end if 
-      end if
-    end do
-  end subroutine
-  !******************************************************************
-  !>reconnect filaments if they become too close
+  !>reconnect filaments if they become too close - this is a dummy routine which
+  !> calls routines in the reconnection modul
   subroutine precon
     implicit none
-    real :: distr, min_distr !reconnection distances
-    real :: dot_val, tangent1(3), tangent2(3) !used to determine if filaments parallel
-    integer :: pari, parb, parii, parbb, parji, parjb !particles infront/behind
-    integer :: par_recon !the particle we reconnect with
-    integer :: i, j !we must do a double loop over all particles N^2
-    logical :: same_loop
-    do i=1, pcount
-      if (f(i)%infront==0) cycle !empty particle
-      pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
-      parii=f(pari)%infront ; parbb=f(parb)%behind !find particle twice infront/behind
-      !now we determine if we can reconnect
-      if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
-        j=f(i)%closest
-        !another saftery check
-        if (j==pari) cycle ; if (j==parb) cycle ; if (j==0) cycle
-        !these two could have reconnected earlier in this case j will be empty
-        if (f(j)%infront==0) cycle
-        parji=f(j)%infront ; parjb=f(j)%behind
-        !we can reconnect based on distance
-        !now check whether parallel
-        tangent1=norm_tanf(i) ; tangent2=norm_tanf(j) !general.mod
-        dot_val=dot_product(tangent1,tangent2) !intrinsic function
-        if ((dot_val>0.9)) then
-          !we cannot reconnect as filaments are parallel          
-          !print*, 'cannot reconnect, cos(theta) is:',dot_val
-        else
-          !print*, 'reconnection'
-          !print*, 'i',i, f(i)%infront, f(i)%behind
-          !print*, 'j',j, f(j)%infront, f(j)%behind
-          !reconnect the filaments
-          recon_count=recon_count+1 !keep track of the total # of recons
-          if (recon_info) then !more reconnection information
-            call same_loop_test(i,j,same_loop) !line.mod
-            if (same_loop) then
-              self_rcount=self_rcount+1 
-            else
-              vv_rcount=vv_rcount+1
-            end if
-          end if
-          !set correct behind_infront
-          f(parjb)%infront=pari
-          f(pari)%behind=parjb
-          f(i)%infront=j
-          f(j)%behind=i
-          !check the size of these new loops
-          call loop_killer(pari) ; call loop_killer(i)
-        end if 
-      end if
-    end do
-  end subroutine
-  !**************************************************
-  !>removes loops with less than 6 particles
-  !>this is needed to ensure derivatives can be calculated correctly
-  subroutine loop_killer(particle)
-    implicit none
-    integer :: particle, next
-    integer :: store_next
-    integer :: i, counter
-    counter=1
-    next=particle
-    do i=1, pcount   
-      next=f(next)%infront
-      if (next==particle) exit  
-      counter=counter+1
-      if (mirror_bc) then
-        !pinned particles will mess this up so exit routine
-        !we have a separate test in mirror.mod
-        if (f(next)%pinnedi.or.f(next)%pinnedb) return
-      end if
-    end do
-    ! If loop is too small destroy
-    if (counter<5) then
-      next=particle 
-      do i=1, pcount
-        store_next=f(next)%infront
-        call clear_particle(next) !general.mod
-        next=store_next
-        if (next==particle) then
-          exit  
-        end if
-      end do
-    end if
+    select case(recon_type)
+      case('original')
+        call precon_original !reconnection.mod
+      case('dissipative')
+        call precon_dissapitive !reconnection.mod
+      case('non_dissipative')
+        call precon_non_dissipative !reconnection.mod
+      case('kondaurova')
+        call precon_kondaurova !reconnection.mod
+    end select
   end subroutine
 end module
