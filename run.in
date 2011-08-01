@@ -3,12 +3,12 @@ nsteps 100000
 shots 10
 mesh_shots 10
 recon_shots 1
-pcount 200
+pcount 100
 dt .25E-4
 delta 0.001
 box_size 0.1
 velocity LIA
-initf linked_filaments
+initf single_loop
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----

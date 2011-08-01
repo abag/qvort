@@ -87,16 +87,19 @@ module timestep
         !use the local induction approximation
         call get_deriv_1(i,f_dot) !general.mod
         call get_deriv_2(i,f_ddot) !general.mod
-        !IF WE WANT BETA TO VARY DO THIS********************
+        !****************do we vary beta?*******************
         !calculate the curvature
-        !curv=sqrt(dot_product(f_ddot,f_ddot))
-        !if (curv<epsilon(0.)) then
-        !  curv=epsilon(0.) !we must check for zero curvature
-        !end if
-        !caluculate beta based on the curvature
-        !beta=(quant_circ/(4.*pi))*log((1./corea)/curv)
+        if (fixed_LIA_beta) then
+          beta=1.3E-3
+        else
+          curv=sqrt(dot_product(f_ddot,f_ddot))
+          if (curv<epsilon(0.)) then
+            curv=epsilon(0.) !we must check for zero curvature
+          end if
+          !caluculate beta based on the curvature
+          beta=(quant_circ/(4.*pi))*log((1./corea)/curv)
+        end if
         !***************************************************
-        beta=1.3E-3
         u=beta*cross_product(f_dot,f_ddot) !general.mod
         f(i)%u_sup=u !store just the superfluid velcotity
       case('BS')

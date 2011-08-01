@@ -151,6 +151,7 @@ module cdata
   character(len=30), protected :: velocity, initf, boundary
   !order of derivatives
   character(len=30), protected :: deriv_order='second'
+  logical ,protected :: fixed_LIA_beta=.false.
   !-----------------arguements used by initial.mod-------------------------
   integer, protected :: line_count=1
   real, protected :: lattice_ratio=1
@@ -306,6 +307,8 @@ module cdata
           case ('velocity')
              !velocity field options are LIA, BS, Tree
              read(buffer, *, iostat=ios) velocity !BS/LIA/Tree
+          case ('fixed_LIA_beta')
+             read(buffer, *, iostat=ios) fixed_LIA_beta !LIA beta is fixed?
           case ('boundary')
              read(buffer, *, iostat=ios) boundary !open/periodic/mirror
           case ('xdim_scaling_factor')

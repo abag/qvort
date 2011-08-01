@@ -241,6 +241,11 @@ module initial
         write(*,*) 'No superfluid velocity: simulation of passive lines'
       case('LIA')
         write(*,*) 'using local induction approximation - scales like O(N)'
+        if (fixed_LIA_beta) then
+          write(*,*) 'using fixed LIA beta'
+        else
+          write(*,*) 'LIA beta calculated using local curvature'
+        end if
       case('BS')
         write(*,*) 'using full Biot-Savart integral - scales like O(N^2)'
       case('Rotate')
