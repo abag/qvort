@@ -115,6 +115,27 @@ module diagnostic
     call get_writhing_number !topology.mod
   end subroutine
   !*************************************************
+  !> Get information on particles in the plane
+  subroutine get_particle_plane_info()
+    implicit none
+    integer :: totalN
+    integer :: i !for looping
+    totalN=0
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !empty particle
+      !particles in the xy plane at z=0
+      if (f(i)%x(3)*f(i)%ghosti(3)<0) totalN=totalN+1
+      !particles in the yz plane at x=0
+      if (f(i)%x(1)*f(i)%ghosti(1)<0) totalN=totalN+1
+      !particles in the xz plane at y=0
+      if (f(i)%x(2)*f(i)%ghosti(2)<0) totalN=totalN+1
+    end do 
+    open(unit=72,file='data/particle_plane.log',position='append')
+      write(72,*) t, totalN
+    close(72)
+  end subroutine
+
+  !*************************************************
   !> get normal/superfluid velocity for a 1D strip
   subroutine one_dim_vel(filenumber)
     use tree
@@ -142,7 +163,6 @@ module diagnostic
               (/peri*box_size,perj*box_size,perk*box_size/)) !timestep.mod
             end do ; end do ;end do
           end if
-        case('Tree')
           u_sup=0. !must be zeroed for all algorithms
           call tree_walk_general(x,vtree,(/0.,0.,0./),u_sup)
           if (periodic_bc) then
