@@ -30,7 +30,7 @@ module forcing
       case('top_boundary')
         !check initial conditions
          select case(initf)
-           case('single_line', 'line_motion')
+           case('single_line', 'line_motion', 'lattice')
              write(*,'(a,f6.3,a,f6.3)') 'forcing top boundary with amplitude', force_amp, &
              'frequency', force_freq
            case default
@@ -63,6 +63,7 @@ module forcing
         u=0.
         u(1)=force_amp
       case('top_boundary')
+        u=0.
         if ((f(i)%x(3)-box_size/2.)>-1.5*delta) then
           !particle is sufficiently close to top boundary to force
           u=0.

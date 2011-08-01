@@ -47,6 +47,8 @@ module cdata
   end type
   !>3D allocatable mesh
   type(grid), allocatable :: mesh(:,:,:)
+  !>1D allocatable mesh
+  type(grid), allocatable :: lat_mesh_1D(:,:)
   !>the mesh resolution box_size/mesh_size^3
   real :: mesh_delta
   !**********QUASI PARTICLE STRUCTURE****************************************************
@@ -205,6 +207,8 @@ module cdata
   logical, protected :: energy_inf=.false. !calculate energy of vortex 
   logical, protected :: sep_inf=.false. !calculate information and histogram of point separation
   integer, protected :: one_dim=0 !size of 1d velocity information printed to file
+  integer, protected :: one_dim_lattice=0 !create a lattice in z direction to calculate vel info on
+  integer, protected :: one_dim_lattice_count=1 !number of 1d spectra to draw - must be a square number
   integer, protected :: two_dim=0 !size of 2d velocity information printed to file
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
@@ -229,6 +233,7 @@ module cdata
   logical, protected :: switch_off_recon=.false.!turns of reconnection algorithm
   logical, protected :: seg_fault=.false.!use print statements to try and isolate segmentation faults
   logical, protected :: NAN_test=.true.!test for NANs in arrays
+  logical, protected :: overide_timestep_check=.false.!do not perform initial dt test
   contains
   !*************************************************************************************************  
   !>read the file run.in obtaining all parameters at runtime, avoiding the need to recompile the code
@@ -384,6 +389,10 @@ module cdata
              read(buffer, *, iostat=ios) KS_modes !the number of KS modes
           case ('one_dim')
              read(buffer, *, iostat=ios) one_dim !size of 1D print
+          case ('one_dim_lattice')
+             read(buffer, *, iostat=ios) one_dim_lattice !size of 1D lattice print
+          case ('one_dim_lattice_count')
+             read(buffer, *, iostat=ios) one_dim_lattice_count !number of lines in lattice       
           case ('two_dim')
              read(buffer, *, iostat=ios) two_dim !size of 2D print
           case ('recon_info')
@@ -402,6 +411,8 @@ module cdata
              read(buffer, *, iostat=ios) simple_plots !perform plots on the fly
           case ('NAN_test')
              read(buffer, *, iostat=ios) NAN_test !test for NANs
+          case ('overide_timestep_check')
+             read(buffer, *, iostat=ios) overide_timestep_check !no timestep check 
           case ('smoothing_length')
              read(buffer, *, iostat=ios) smoothing_length !length we are smoothing over (delta)
           case ('smoothing_interspace')

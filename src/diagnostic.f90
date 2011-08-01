@@ -160,6 +160,51 @@ module diagnostic
     close(32)
   end subroutine
   !*************************************************
+  !> get normal/superfluid velocity one the 1D lattice structure
+  subroutine one_dim_lattice_vel(filenumber)
+    use tree
+    use timestep
+    implicit none
+    integer, intent(IN) :: filenumber
+    integer :: i, j, peri, perj, perk
+    character (len=40) :: print_file
+    if (one_dim_lattice<1) return
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/1D_lattice",filenumber,".dat"
+    open(unit=32,file=print_file,status='replace',form='unformatted',access='stream')
+    do j=1, one_dim_lattice_count
+      do i=1, one_dim_lattice
+        !superfluid velocity
+        select case(velocity)
+          case('BS')
+            lat_mesh_1D(j,i)%u_sup=0.!always 0 before making initial BS call
+            call biot_savart_general(lat_mesh_1D(j,i)%x,lat_mesh_1D(j,i)%u_sup)
+            if (periodic_bc) then
+              !we must shift the mesh in all 3 directions, all 26 permutations needed!
+              do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+                if (peri==0.and.perj==0.and.perk==0) cycle
+                call biot_savart_general_shift(lat_mesh_1D(j,i)%x,lat_mesh_1D(j,i)%u_sup, &
+                (/peri*box_size,perj*box_size,perk*box_size/)) !timestep.mod
+              end do ; end do ;end do
+            end if
+          case('Tree')
+            lat_mesh_1D(j,i)%u_sup=0. !must be zeroed for all algorithms
+            call tree_walk_general(lat_mesh_1D(j,i)%x,vtree,(/0.,0.,0./),lat_mesh_1D(j,i)%u_sup)
+            if (periodic_bc) then
+              !we must shift the mesh in all 3 directions, all 26 permutations needed!
+              do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
+                if (peri==0.and.perj==0.and.perk==0) cycle
+                call tree_walk_general(lat_mesh_1D(j,i)%x,vtree, &
+                     (/peri*box_size,perj*box_size,perk*box_size/),lat_mesh_1D(j,i)%u_sup) !tree.mod
+              end do ; end do ;end do
+            end if
+        end select
+        call get_normal_velocity(lat_mesh_1D(j,i)%x,lat_mesh_1D(j,i)%u_norm)
+        write(32) lat_mesh_1D(j,i)%x,lat_mesh_1D(j,i)%u_sup,lat_mesh_1D(j,i)%u_norm
+      end do
+    end do
+    close(32)
+  end subroutine
+  !*************************************************
   !> get normal/superfluid velocity for a 2D slice
   subroutine two_dim_vel(filenumber)
     use tree

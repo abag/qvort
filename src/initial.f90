@@ -40,8 +40,12 @@ module initial
       case default
         call fatal_error('init.mod','deriv_order set to invalid value')
     end select
-    write(*,'(a)') ' ---------------------TIME-STEP--------------------' 
-    call timestep_check !initial.mod
+    write(*,'(a)') ' ---------------------TIME-STEP--------------------'
+    if (overide_timestep_check) then
+      write(*,'(a,e10.4,a)') ' forcing dt to be: ', dt, ' overiding timestep check'
+    else 
+      call timestep_check !initial.mod
+    end if
     if (dt_adapt) then
       write(*,'(a)') ' using an adpative timestepping routine - in testing!'
     end if
@@ -267,6 +271,11 @@ module initial
     !final boundary conditions sanity check
     if (periodic_bc.and.mirror_bc) call fatal_error('init.mod','both periodic and mirror bcs are set')
     if (one_dim>0) write(*,'(a,i5.3)') ' printing 1D velocity info to file, mesh size: ', one_dim
+    if (one_dim_lattice>0) then
+      write(*,'(a,i5.3)') ' printing 1D velocity info on a lattice to file, mesh size: ', one_dim_lattice
+      write(*,'(a,i5.3,a,f5.2)')' calculation on ',one_dim_lattice_count,' lines from -z to +z with lattice ratio ', lattice_ratio 
+      call setup_one_dim_lattice
+    end if   
     if (two_dim>0) write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
     if (recon_info) write(*,*) 'printing extra reconnection information to file'
     if (switch_off_recon) call warning_message('init.mod','reconnections switched off: I HOPE YOU KNOW WHAT YOUR DOING!')
@@ -362,6 +371,43 @@ module initial
       write(*,'(a,e10.4)') ' warning set dt below ', dt_max
       call fatal_error('initial.mod:timestep_check','dt is too large')
     end if
+  end subroutine
+  !*************************************************************************
+  !>create a lattice of lines in the box to calculate energy spectra on
+  !>one_dim_lattice_count should be a square number
+  subroutine setup_one_dim_lattice
+    implicit none
+    real :: xpos, ypos
+    integer :: line_position
+    integer :: counter=0
+    integer :: i, j, k
+    if (periodic_bc.eqv..false.) then
+      call fatal_error('init.mod:setup_one_dim_lattice', &
+      'periodic boundary conditions required')
+    end if
+    allocate(lat_mesh_1D(one_dim_lattice_count,one_dim_lattice)) ! allocate array
+    do i=1, floor(sqrt(real(one_dim_lattice_count))) 
+      do k=1, floor(sqrt(real(one_dim_lattice_count)))
+        xpos=(-box_size/2.+box_size*((2.*i-1.)/(2*sqrt(real(one_dim_lattice_count)))))*lattice_ratio
+        ypos=(-box_size/2.+box_size*((2.*k-1.)/(2*sqrt(real(one_dim_lattice_count)))))*lattice_ratio
+        line_position=(i-1)*floor(sqrt(real(one_dim_lattice_count)))+k
+        do j=1, one_dim_lattice
+          lat_mesh_1D(line_position,j)%x(1)=xpos
+          lat_mesh_1D(line_position,j)%x(2)=ypos
+          lat_mesh_1D(line_position,j)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*one_dim_lattice)
+        end do
+        counter=counter+1
+      end do
+    end do
+    if (counter/=one_dim_lattice_count) then
+      call fatal_error('init.mod:setup_one_dim_lattice', &
+      'one_dim_lattice_count must be a square number')  
+    end if
+    !finally print details to file
+    open(unit=77,file='./data/one_dim_lattice_dims.log',status='replace')
+      write(77,*) one_dim_lattice_count
+      write(77,*) one_dim_lattice
+    close(77)
   end subroutine
 end module
 !********************************************************************

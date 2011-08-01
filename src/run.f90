@@ -105,6 +105,7 @@ program run
         !can also print full velocity field for statistics 
         if (vel_print) call print_velocity(itime/mesh_shots)!output.mod
         call one_dim_vel(itime/mesh_shots) !diagnostics.mod
+        call one_dim_lattice_vel(itime/mesh_shots) !diagnostics.mod
         call two_dim_vel(itime/mesh_shots) !diagnostics.mod
       end if
     end if

@@ -150,7 +150,7 @@ module particles
     real, intent(OUT) :: u(3)
     real :: u_sup(3), u_norm(3)
     integer :: peri, perj, perk
-    logical :: superfluid_on=.false. !set to false to only use normal fluid
+    logical :: superfluid_on=.true. !set to false to only use normal fluid
     u_sup=0. !must be zeroed for intially
     if (superfluid_on) then
       select case(velocity)
