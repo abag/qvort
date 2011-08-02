@@ -1,0 +1,17 @@
+--------------required parameters------------
+nsteps 10000
+shots 10
+recon_shots 1
+pcount 0
+dt 2E-5
+delta 0.001
+box_size 0.1
+velocity LIA
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+normal_velocity KS
+part_count 1000
+initp pairs
+KS_rey_int 8
+particles_only T
