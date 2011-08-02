@@ -86,7 +86,7 @@ if (0==1)
   axis([0 mesh 0 mesh 0 mesh])
 end
 sum(sum(sum(vorticity_mesh)))
-%pcolor(squeeze(vorticity_mesh(:,mesh/2,:,3)));
+pcolor(squeeze(vorticity_mesh(:,mesh/2,:,3)));
 %modv=sqrt(vorticity_mesh(:,:,:,1).^2+vorticity_mesh(:,:,:,2).^2+vorticity_mesh(:,:,:,3).^2) ;
 %SliceBrowser(modv) ; colormap('jet')
 %slicer(modv)

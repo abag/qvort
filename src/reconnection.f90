@@ -181,6 +181,7 @@ module reconnection
     implicit none
     real :: distr, min_distr !reconnection distances
     real :: dot_val, tangent1(3), tangent2(3) !used to determine if filaments parallel
+    real :: l_before, l_after !to check line length before and after
     real :: kond_a, kond_b, kond_c, kond_d !for simultanious eqn solver
     real :: kond_e, kond_f, kond_g, kond_h !for simultanious eqn solver
     real :: kond_x, kond_y !for simultanious eqn solver
@@ -208,40 +209,47 @@ module reconnection
         if ((dot_val>0.9)) then
           !we cannot reconnect as filaments are parallel          
         else
-          !now we test wether the points will pass through each other
-          kond_a=f(i)%x(1)+dt*f(i)%u(1)
-          kond_b=f(i)%ghosti(1)-f(i)%x(1)
-          kond_c=f(j)%x(1)+dt*f(j)%u(1)
-          kond_d=f(j)%ghosti(1)-f(j)%x(1)
-          kond_e=f(i)%x(2)+dt*f(i)%u(2)
-          kond_f=f(i)%ghosti(2)-f(i)%x(2)
-          kond_g=f(j)%x(2)+dt*f(j)%u(2)
-          kond_h=f(j)%ghosti(2)-f(j)%x(2)
-          !above was setting variables now we solve simultanious eqn
-          kond_y=(kond_e+(kond_f/kond_b)*(kond_c-kond_a)-kond_g)/(kond_h-(kond_f*kond_d/kond_b))
-          kond_x=(kond_c-kond_a+kond_d*kond_y)/kond_b
-          !now we check these in the final equation for z
-          kond_check=f(i)%x(3)+dt*f(i)%u(3)+kond_x*(f(i)%ghosti(3)-f(i)%x(3))-&
-                    (f(j)%x(3)+dt*f(j)%u(3)+kond_y*(f(j)%ghosti(3)-f(j)%x(3)))
-          if (isnan(kond_check)) return !can happen if points lie on a plane
-          if (kond_check<0.001) then !THIS TOLERANCE NEEDS TO BE CHECKED
-            !reconnect the filaments
-            recon_count=recon_count+1 !keep track of the total # of recons
-            if (recon_info) then !more reconnection information
-              call same_loop_test(i,j,same_loop) !line.mod
-              if (same_loop) then
-                self_rcount=self_rcount+1 
-              else
-                vv_rcount=vv_rcount+1
+          !now we must check the line length before and after
+          l_before=dist_gen(f(i)%x,f(i)%ghosti)+dist_gen(f(i)%x,f(i)%ghostb)+&
+                   dist_gen(f(j)%x,f(j)%ghosti)+dist_gen(f(j)%x,f(j)%ghostb)
+          l_after=dist_gen(f(i)%x,f(i)%ghostb)+dist_gen(f(i)%x,f(j)%x)+&
+                   dist_gen(f(j)%x,f(j)%ghosti)+dist_gen(f(pari)%x,f(parjb)%x)
+          if (l_after<=l_before) then
+            !now we test wether the points will pass through each other
+            kond_a=f(i)%x(1)+dt*f(i)%u(1)
+            kond_b=f(i)%ghosti(1)-f(i)%x(1)
+            kond_c=f(j)%x(1)+dt*f(j)%u(1)
+            kond_d=f(j)%ghosti(1)-f(j)%x(1)
+            kond_e=f(i)%x(2)+dt*f(i)%u(2)
+            kond_f=f(i)%ghosti(2)-f(i)%x(2)
+            kond_g=f(j)%x(2)+dt*f(j)%u(2)
+            kond_h=f(j)%ghosti(2)-f(j)%x(2)
+            !above was setting variables now we solve simultanious eqn
+            kond_y=(kond_e+(kond_f/kond_b)*(kond_c-kond_a)-kond_g)/(kond_h-(kond_f*kond_d/kond_b))
+            kond_x=(kond_c-kond_a+kond_d*kond_y)/kond_b
+            !now we check these in the final equation for z
+            kond_check=f(i)%x(3)+dt*f(i)%u(3)+kond_x*(f(i)%ghosti(3)-f(i)%x(3))-&
+                      (f(j)%x(3)+dt*f(j)%u(3)+kond_y*(f(j)%ghosti(3)-f(j)%x(3)))
+            if (isnan(kond_check)) return !can happen if points lie on a plane
+            if (kond_check<1E-4) then !THIS TOLERANCE NEEDS TO BE CHECKED
+              !reconnect the filaments
+              recon_count=recon_count+1 !keep track of the total # of recons
+              if (recon_info) then !more reconnection information
+                call same_loop_test(i,j,same_loop) !line.mod
+                if (same_loop) then
+                  self_rcount=self_rcount+1 
+                else
+                  vv_rcount=vv_rcount+1
+                end if
               end if
+              !set correct behind_infront
+              f(parjb)%infront=pari
+              f(pari)%behind=parjb
+              f(i)%infront=j
+              f(j)%behind=i
+              !check the size of these new loops
+              call loop_killer(pari) ; call loop_killer(i)
             end if
-            !set correct behind_infront
-            f(parjb)%infront=pari
-            f(pari)%behind=parjb
-            f(i)%infront=j
-            f(j)%behind=i
-            !check the size of these new loops
-            call loop_killer(pari) ; call loop_killer(i)
           end if
         end if 
       end if

@@ -200,6 +200,7 @@ module cdata
   character(len=20), protected :: particle_type='fluid' !fluid/interial/quasi particles
   character(len=20), protected :: initp='random' !initial particle configuration
   logical, protected :: particles_only=.false. !only evolve particles in the code
+  logical, protected ::particle_super_velocity=.false. !do particles feel superlfluid vel
   !---------------------tree-code------------------------------------------------
   real, protected :: tree_theta=0.
   logical, protected :: tree_print=.false.
@@ -353,6 +354,8 @@ module cdata
              read(buffer, *, iostat=ios) part_count !number of particles
           case ('particle_type')
              read(buffer, *, iostat=ios) particle_type !particle type (fluid/intertial)
+          case('particle_super_velocity')
+             read(buffer, *, iostat=ios) particle_super_velocity !do particles feel superlfluid vel
           case ('particles_only')
              read(buffer, *, iostat=ios) particles_only !only evolve particles
           case ('part_stokes')

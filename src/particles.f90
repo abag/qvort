@@ -143,16 +143,15 @@ module particles
   !> calculate the velocity at each particle
   !> note we can set this in here to be the velocity induced by
   !> the superfluid vortices but this is unphysical
-  !> really this should be false by default - consider putting in run.in
+  !> really this should be false by default
   subroutine velocity_fluidp(i,u)
     implicit none 
     integer, intent(IN) :: i
     real, intent(OUT) :: u(3)
     real :: u_sup(3), u_norm(3)
     integer :: peri, perj, perk
-    logical :: superfluid_on=.true. !set to false to only use normal fluid
     u_sup=0. !must be zeroed for intially
-    if (superfluid_on) then
+    if (particle_super_velocity) then
       select case(velocity)
         case('LIA','BS')
           call biot_savart_general(p(i)%x,u_sup) !timestep.mod
@@ -189,10 +188,10 @@ module particles
     select case(initp)
       case('pairs')
         part_sep=0.
-        do i=1, quasi_pcount, 2
+        do i=1, part_count, 2
           part_sep=part_sep+sqrt((p(i)%x(1)-p(i+1)%x(1))**2+&
                                  (p(i)%x(2)-p(i+1)%x(2))**2+&
-                                 (p(i)%x(3)-p(1+1)%x(3))**2)
+                                 (p(i)%x(3)-p(i+1)%x(3))**2)
         end do
         part_sep=part_sep/(part_count/2)
     end select

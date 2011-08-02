@@ -3,7 +3,7 @@
 %the routine will also take the follwing options in the form vortex_plot(n,'option1','option2') e.g.
 %options are:
 %            rough: plots particles only advised for a large number of particles
-%            line: looks better than above a nice compromise
+%            smooth: best looking plot but takes time to produce
 %            dark: add a night time theme!
 %            annotate: add information on box size and time to plot
 %	     rainbow: colour code the vortex according to velocity/magnetic field
@@ -30,7 +30,7 @@ filename=sprintf('data/var%04d.log',filenumber);
 %this is overridden if we have periodic B.C.'s
 box_size=.005 ;
 %set options based on varargin
-rough=0 ; linetrue=0 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0  ; magnetic=0; show_points=0 ; sph_associated=0 ; overhead_xz=0;
+rough=0 ; linetrue=1 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0  ; magnetic=0; show_points=0 ; sph_associated=0 ; overhead_xz=0;
 log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ;
 %empty the vmax/min values
 v_max=[] ; v_min=[] ;
@@ -69,10 +69,9 @@ for i=1:optargin
       annotate=1
     case 'dark'
       dark=1;
-    case 'line'
-      linetrue=1;
+    case 'smooth'
+      linetrue=0;
     case 'thin_line'
-      linetrue=1;
       thin_line=1;  
       otherwise
       disp('invalid option in input arguements')

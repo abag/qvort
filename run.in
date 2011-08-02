@@ -1,16 +1,24 @@
 --------------required parameters------------
-nsteps 100000
+nsteps 10000
 shots 10
-mesh_shots 10
 recon_shots 1
 pcount 100
-dt .25E-4
+dt 2E-5
 delta 0.001
 box_size 0.1
-velocity LIA
-initf single_loop
+velocity Tree
+initf tangle
+line_count 10
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
+normal_velocity KS
+alpha 1.21 -0.3883
+mesh_size 32
+mesh_shots 10
 tree_theta 0.4
-recon_type kondaurova
+binary_print T 
+vel_print T
+KS_rey_int 8
+boxed_vorticity T
+boxed_vorticity_size 64
