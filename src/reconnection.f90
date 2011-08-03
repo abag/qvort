@@ -231,7 +231,7 @@ module reconnection
             kond_check=f(i)%x(3)+dt*f(i)%u(3)+kond_x*(f(i)%ghosti(3)-f(i)%x(3))-&
                       (f(j)%x(3)+dt*f(j)%u(3)+kond_y*(f(j)%ghosti(3)-f(j)%x(3)))
             if (isnan(kond_check)) return !can happen if points lie on a plane
-            if (kond_check<1E-4) then !THIS TOLERANCE NEEDS TO BE CHECKED
+            if (abs(kond_check)<kond_tolerance) then !THIS TOLERANCE NEEDS TO BE CHECKED
               !reconnect the filaments
               recon_count=recon_count+1 !keep track of the total # of recons
               if (recon_info) then !more reconnection information
