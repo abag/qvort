@@ -183,6 +183,7 @@ module cdata
   real,protected :: KS_slope=-5./3.
   integer, protected :: KS_modes=50
   logical, protected :: KS_maximise_rey=.false.
+  real, protected :: KS_bubble=0.
   !-----------------forcing------------------------------------------------------
   character(len=20), protected :: force='off'
   real, protected :: force_amp=0.
@@ -392,6 +393,8 @@ module cdata
              read(buffer, *, iostat=ios) vapor_print !print the velocity field for vapor
           case ('KS_slope')
              read(buffer, *, iostat=ios) KS_slope !KS velocity field spectrum
+          case ('KS_bubble')
+             read(buffer, *, iostat=ios) KS_bubble !force wavenumbers apart
           case ('KS_rey_int')
              read(buffer, *, iostat=ios) KS_rey_int !KS Reynolds number proxy
           case ('KS_maximise_rey')

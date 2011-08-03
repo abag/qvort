@@ -115,6 +115,7 @@ module KSmodel
       !also print to screen
       write(*,*) '-------------------KS info------------------'
       write(*,'(a,i5.4)') ' number of fourier modes:', KS_modes
+      write(*,'(a,f6.2)') ' bubble parameter to force wavenumbers apart:', KS_bubble
       write(*,'(a,f6.2)') ' slope of spectrum:', KS_slope
       write(*,'(a,f6.2)') ' Reynolds number:', (kk(KS_modes)/kk(1))**(4./3.)
       write(*,'(a,f6.2,f6.2)') ' Large/small eddie turnover times:', turn1,turnN
@@ -160,7 +161,7 @@ module KSmodel
       
         !find the length of the current k_option vector
         mkunit(i)=sqrt((k_option(1,i)**2)+(k_option(2,i)**2)+(k_option(3,i)**2))
-        if(i==1.and.mkunit(i).gt.0.0)then
+        if(i==1.and.mkunit(i).gt.0.)then
           k(:,num)=k_option(:,i)
           klengths(num)=mkunit(i)
         end if
@@ -168,7 +169,7 @@ module KSmodel
         !now we check that the current length is unique (hasn't come before)
         if(i.gt.1.and.num.lt.KS_modes)then
           do j=i-1,1,-1
-            if((mkunit(i)>0.).and.((mkunit(i)<mkunit(j)-0.001).or.(mkunit(i)>mkunit(j)+0.001)))then
+            if((mkunit(i)>0.).and.((mkunit(i)<mkunit(j)-KS_bubble).or.(mkunit(i)>mkunit(j)+KS_bubble)))then
                 ne=.true.
             else
               ne=.false.
