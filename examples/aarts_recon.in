@@ -1,5 +1,5 @@
 --------------required parameters------------
-nsteps 7000
+nsteps 100000
 shots 10
 pcount 200
 dt 2E-4

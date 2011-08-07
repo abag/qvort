@@ -141,6 +141,8 @@ module initial
           call setup_random_loops !initial_cond.mod
         case('crow')
           call setup_crow !initial_cond.mod
+        case('crow_loop')
+          call setup_crow_loop !initial_cond.mod
         case('smooth_test')
           call setup_smooth_test !initial_cond.mod 
         case('smooth_test_wave')
@@ -274,6 +276,8 @@ module initial
     if (sep_inf) write(*,*) 'printing point separation info+histogram to file'
     if (particle_plane_inf) write(*,*) 'printing point particle information at z=0'
     if (anisotropy_params) write(*,*) 'calculating anistropy parameters and printing to file'
+    if (closest_distance) write(*,*) 'calculating minimum separation between vortices'
+    if (full_loop_counter) write(*,*) 'calculating number of separate loops and their sizes'
     if (energy_inf) then
       write(*,*) 'printing energy information to file'
       if (periodic_bc) call warning_message('init.mod','energy output is meaningless with periodic boundaries')

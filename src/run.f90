@@ -80,18 +80,7 @@ program run
     !---------------once all algorithms have been run--------------
     t=t+dt  !increment the time
     !---------------------diagnostic info--------------------------
-    if (mod(itime, shots)==0) then
-      call velocity_info !diagnostics.mod
-      call curv_info !diagnostics.mod
-      if (energy_inf) call energy_info !diagnostics.mod
-      if (topo_inf) call get_topo_info !diagnostics.mod
-      if (particle_plane_inf) call get_particle_plane_info !diagnostics.mod
-      if (anisotropy_params) call get_anisotropy_info !diagnostics.mod  
-      if (mod(itime, mesh_shots)==0) then
-        if (boxed_vorticity) call get_boxed_vorticity !diganostics.mod
-        if (sep_inf) call get_sep_inf !diganostics.mod
-      end if 
-    end if
+    call calculate_diagnostics !diagnostics.mod
     if (seg_fault) write(*,*) 'here7'
     !--------------now do all data output--------------------------
     if (mod(itime, shots)==0) then

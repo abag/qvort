@@ -225,6 +225,8 @@ module cdata
   logical, protected :: simple_plots=.false. !call scripts from command line to plot on the fly
   logical, protected :: anisotropy_params=.false. !get anistropy parameters
   logical, protected :: particle_plane_inf=.false. !2D point infomation in z=0 plane
+  logical, protected :: closest_distance=.false. !what is the minimum separation between points?
+  logical, protected :: full_loop_counter=.false. !check loop count and size
   !-------------------------------smoothing-------------------------------------------
   !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
@@ -341,6 +343,8 @@ module cdata
              read(buffer, *, iostat=ios) force !force the vortices
           case ('force_amp')
              read(buffer, *, iostat=ios) force_amp !forcing amplitude
+          case ('closest_distance')
+             read(buffer, *, iostat=ios) closest_distance !track minimum separation between points?
           case ('force_freq')
              read(buffer, *, iostat=ios) force_freq !forcing frequency
           case ('phonon_emission')
@@ -447,6 +451,8 @@ module cdata
              read(buffer, *, iostat=ios) inject_type !how we inject new vortices
           case ('inject_stop')
              read(buffer, *, iostat=ios) inject_stop !when (if ever) we stop injecting 
+          case ('full_loop_counter')
+             read(buffer, *, iostat=ios) full_loop_counter !check loop count and size
           case default
              !print *, 'Skipping invalid label at line', line
           end select
