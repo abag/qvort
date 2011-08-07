@@ -40,17 +40,21 @@ module diagnostic
   !> at each call also do we need the full x/y/z coordinates?
   subroutine get_full_loop_count()
     implicit none
-    real, dimension(500,pcount,4) :: line
+    real,allocatable :: line(:,:,:)
     integer :: line_count
     integer ::  next, next_old
-    integer :: counter(500)
+    integer,allocatable :: counter(:)
     integer :: i, j, l, m
     logical :: unique
-    character (len=20) :: line_file
+    character (len=30) :: line_file
+    allocate(counter(ceiling(pcount/5.)))
+    allocate(line(ceiling(pcount/5.),pcount,4))
     counter=0 ; line_count=0
     !create file to print to 
-    write(unit=line_file,fmt="(a,i3.3,a)")"loop_size",itime/shots,".log"
-    open(unit=97,file=line_file,action="write",position="append")
+    if (mod(itime,mesh_shots)==0) then
+      write(unit=line_file,fmt="(a,i3.3,a)")'./data/loop_size',itime/mesh_shots,".log"
+      open(unit=97,file=line_file,action="write",position="append")
+    end if
     do i=1, pcount !determine starting position
       if (f(i)%infront/=0) then
         next=i
@@ -72,10 +76,12 @@ module diagnostic
       end do
       ! make line a loop
       line_count=line_count+1
-      write(97,*) line_count, counter(l)
-      ! check size of line
+      if (mod(itime,mesh_shots)==0) then
+        write(97,*) line_count, counter(l)
+      end if
+      !check size of line
       if (sum(counter)<count(mask=f(:)%infront>0)) then
-      ! need new staring point
+        !need new staring point
         do i=1, pcount
           unique=.true.
           do m=1, l
@@ -92,10 +98,16 @@ module diagnostic
           end if
         end do
       else
-        !exit
+        exit
       end if 
     end do
-    close(97)
+    if (mod(itime,mesh_shots)==0) then
+      close(97)
+    end if
+    open(unit=72,file='data/loop_counter.log',position='append')
+      write(72,*) t, line_count
+    close(72)
+    deallocate(counter,line)
   end subroutine
   !*************************************************
   !>get the maximum velocity and change of velocity
