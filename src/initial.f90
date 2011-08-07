@@ -63,9 +63,12 @@ module initial
         write(*,*) 'using an experimental reconnection routine which can increase line length'
       case('kondaurova')
         write(*,*) 'using reconnection routine described in Kondaurova et al. 2008'
+        write(*,'(a,f10.5)') 'tolerance setting for method is: ', kond_tolerance
       case default
         call fatal_error('init_setup:', 'incorrect reconnection algorithm selected')
     end select
+    if (recon_info) write(*,*) 'printing extra reconnection information to file'
+    if (switch_off_recon) call warning_message('init.mod','reconnections switched off: I HOPE YOU KNOW WHAT YOUR DOING!')
     !loop injection
     call setup_vortex_injection !inject.mod
     !how is data being outputted (binary or formatted)
@@ -300,8 +303,6 @@ module initial
       call setup_one_dim_lattice
     end if   
     if (two_dim>0) write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
-    if (recon_info) write(*,*) 'printing extra reconnection information to file'
-    if (switch_off_recon) call warning_message('init.mod','reconnections switched off: I HOPE YOU KNOW WHAT YOUR DOING!')
     if (boxed_vorticity) then
       write(*,'(a,i5.3,a)') 'calculating boxed vorticity every ',mesh_shots, ' timesteps'
       write(*,'(a,i5.3)') 'size of mesh: ',boxed_vorticity_size

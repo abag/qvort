@@ -145,6 +145,7 @@ module cdata
   real :: xdim_scaling_factor=1.
   !>which reconnection algorithm to use
   character(len=30), protected :: recon_type='original'  
+  real, protected :: kond_tolerance=1E-4 !tolerance of kondaurova method  
   !>are boundaries solid?
   logical :: mirror_bc=.false.
   !key arguements that must be set
@@ -286,6 +287,8 @@ module cdata
              read(buffer, *, iostat=ios) dt !timestep value
           case ('recon_type')
              read(buffer, *, iostat=ios) recon_type !reconnection algorithm used
+          case ('kond_tolerance')
+             read(buffer, *, iostat=ios) kond_tolerance !tolerance of kondaurova reconnections
           case ('binary_print')
              !print to binary (T) or formatted data (F)
              read(buffer, *, iostat=ios) binary_print !print binary var data
