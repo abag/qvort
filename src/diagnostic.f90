@@ -4,6 +4,111 @@ module diagnostic
   use general
   use topology
   contains
+  !>dummy routine to call all diagnostic routines
+  subroutine calculate_diagnostics()
+    implicit none
+    if (mod(itime, 1)==0) then
+      if (closest_distance) call get_min_distance !diagnostics.mod    
+    end if
+    if (mod(itime, shots)==0) then
+      call velocity_info !diagnostics.mod
+      call curv_info !diagnostics.mod
+      if (energy_inf) call energy_info !diagnostics.mod
+      if (topo_inf) call get_topo_info !diagnostics.mod
+      if (particle_plane_inf) call get_particle_plane_info !diagnostics.mod
+      if (anisotropy_params) call get_anisotropy_info !diagnostics.mod
+      if (full_loop_counter) call get_full_loop_count!diagnostics.mod
+      if (mod(itime, mesh_shots)==0) then
+        if (boxed_vorticity) call get_boxed_vorticity !diganostics.mod
+        if (sep_inf) call get_sep_inf !diganostics.mod
+      end if 
+    end if
+  end subroutine
+  !*************************************************
+  !> Get the minimum spearation between vortices
+  subroutine get_min_distance()
+    implicit none
+    open(unit=72,file='data/min_dist.log',position='append')
+      write(72,*) t, minval(f(:)%closestd,mask=f(:)%infront>0),&
+      -maxval(f(:)%x(3), mask=((f(:)%x(3)<0).and.(f(:)%x(1)>0.).and.(f(:)%x(1)<0.1).and.f(:)%infront>0))& 
+      +minval(f(:)%x(3), mask=((f(:)%x(3)>0).and.(f(:)%x(1)>0.).and.(f(:)%x(1)<0.1).and.f(:)%infront>0))
+    close(72)
+  end subroutine
+  !*************************************************
+  !> The routine to calculate number of loops with their sizes
+  !>\todo needs to be written so that line counter is allocated
+  !> at each call also do we need the full x/y/z coordinates?
+  subroutine get_full_loop_count()
+    implicit none
+    real,allocatable :: line(:,:,:)
+    integer :: line_count
+    integer ::  next, next_old
+    integer,allocatable :: counter(:)
+    integer :: i, j, l, m
+    logical :: unique
+    character (len=30) :: line_file
+    allocate(counter(ceiling(pcount/5.)))
+    allocate(line(ceiling(pcount/5.),pcount,4))
+    counter=0 ; line_count=0
+    !create file to print to 
+    if (mod(itime,mesh_shots)==0) then
+      write(unit=line_file,fmt="(a,i3.3,a)")'./data/loop_size',itime/mesh_shots,".log"
+      open(unit=97,file=line_file,action="write",position="append")
+    end if
+    do i=1, pcount !determine starting position
+      if (f(i)%infront/=0) then
+        next=i
+        exit
+      end if
+    end do
+    next_old=next
+    do l=1, 500
+      do i=1, pcount
+        line(l,i,1)=f(next)%x(1)
+        line(l,i,2)=f(next)%x(2)
+        line(l,i,3)=f(next)%x(3)
+        line(l,i,4)=next
+
+        next=f(next)%infront
+        counter(l)=counter(l)+1
+        if (next==next_old) exit
+        if (next==0) exit
+      end do
+      ! make line a loop
+      line_count=line_count+1
+      if (mod(itime,mesh_shots)==0) then
+        write(97,*) line_count, counter(l)
+      end if
+      !check size of line
+      if (sum(counter)<count(mask=f(:)%infront>0)) then
+        !need new staring point
+        do i=1, pcount
+          unique=.true.
+          do m=1, l
+          do j=1, counter(m)
+            if (i==int(line(m,j,4)).or.f(i)%infront==0) then
+              unique=.false.
+            end if
+          end do
+          end do
+          if (unique) then
+            next=i
+            next_old=next
+            exit
+          end if
+        end do
+      else
+        exit
+      end if 
+    end do
+    if (mod(itime,mesh_shots)==0) then
+      close(97)
+    end if
+    open(unit=72,file='data/loop_counter.log',position='append')
+      write(72,*) t, line_count
+    close(72)
+    deallocate(counter,line)
+  end subroutine
   !*************************************************
   !>get the maximum velocity and change of velocity
   !>on the filament
@@ -133,7 +238,6 @@ module diagnostic
       write(72,*) t, totalN
     close(72)
   end subroutine
-
   !*************************************************
   !> get normal/superfluid velocity for a 1D strip
   subroutine one_dim_vel(filenumber)

@@ -144,9 +144,13 @@ module normal_fluid
           u(3)=abc_A*cos(norm_k*x(1))+abc_B*sin(norm_k*x(2))
         case('taylor-green')
           !The Taylor-Green Vortex
-          u(1)=sin(norm_k*x(1))*cos(norm_k*x(2))*cos(norm_k*x(3))
-          u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
-          u(3)=0.
+          !u(1)=sin(norm_k*x(1))*cos(norm_k*x(2))*cos(norm_k*x(3))
+          !u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
+          !u(3)=0.
+          !TG vorticity field - commented out but useful!
+          u(1)=cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
+          u(2)=sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
+          u(3)=2.*sin(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
         case('shear')
           u=0.
           u(1)=exp(-(6*x(3)/box_size)**2)

@@ -12,5 +12,9 @@ initf single_loop
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
+normal_velocity xflow
+alpha .21 .009
+norm_vel_xflow .286
+anisotropy_params T
 tree_theta 0.4
 recon_type kondaurova

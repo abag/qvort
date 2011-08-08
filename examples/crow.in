@@ -1,12 +1,13 @@
 --------------required parameters------------
-nsteps 7000
+nsteps 10000
 shots 10
-pcount 200
-dt 2E-4
-delta 0.004
-box_size 0.4
+pcount 1000
+dt 8E-5
+delta 0.002
+box_size 0.2
 velocity Tree
-initf crow_loop
+initf crow
+line_count 50
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----

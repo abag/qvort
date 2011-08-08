@@ -216,8 +216,8 @@ module initial_cond
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount/2
       f(i)%x(1)=0.
-      f(i)%x(2)=delta
       f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(pcount)
+      f(i)%x(2)=delta-(delta/16.)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
       if (i==1) then
         f(i)%behind=pcount/2 ; f(i)%infront=i+1
       else if (i==pcount/2) then 
@@ -231,8 +231,8 @@ module initial_cond
     !second line
     do i=pcount/2+1, pcount
       f(i)%x(1)=0.
-      f(i)%x(2)=-delta
-      f(i)%x(3)=-box_size/2.+box_size*real(2*(i-pcount/2)-1)/(pcount)
+      f(i)%x(3)=box_size/2.-box_size*real(2*(i-pcount/2)-1)/(pcount)
+      f(i)%x(2)=-delta+(delta/16.)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
       if (i==(pcount/2+1)) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -259,7 +259,7 @@ module initial_cond
       print*, 'pcount is now', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
-      call fatal_error('init.mod:setup_crow', &
+      call fatal_error('init.mod:setup_smooth_test', &
       'periodic boundary conditions required')
     end if
     write(*,*) 'initf: smooth_test, separation of lines is:', 2.*delta 
@@ -468,7 +468,52 @@ module initial_cond
     end do
     !second loop
     do i=pcount/2+1, pcount
-      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius/0.51
+      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius/0.55
+      f(i)%x(2)=0.
+      f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
+
+      if (i==(pcount/2+1)) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1+pcount/2
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do    
+  end subroutine
+  !*************************************************************************
+  !>two unlinked loops which drive a reconnection via crow instability
+  subroutine setup_crow_loop
+    !two linked loops 
+    implicit none
+    real :: radius
+    integer :: i 
+    if (mod(pcount,2)/=0) then
+      call fatal_error('init.mod:setup_crow_loop', &
+      'pcount is not a multiple of 2-aborting')
+    end if
+    radius=(0.75*pcount*delta)/(4*pi) !75% of potential size
+    write(*,'(a,f9.6)') ' initf: linked filaments, radius of loops:', radius 
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount/2
+      f(i)%x(1)=radius*sin(pi*real(2*i-1)/(pcount/2))
+      f(i)%x(2)=0.
+      f(i)%x(3)=radius*cos(pi*real(2*i-1)/(pcount/2))
+      if (i==1) then
+        f(i)%behind=pcount/2 ; f(i)%infront=i+1
+      else if (i==pcount/2) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
+    !second loop
+    do i=pcount/2+1, pcount
+      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+2.1*radius
       f(i)%x(2)=0.
       f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
 

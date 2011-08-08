@@ -145,6 +145,7 @@ module cdata
   real :: xdim_scaling_factor=1.
   !>which reconnection algorithm to use
   character(len=30), protected :: recon_type='original'  
+  real, protected :: kond_tolerance=1E-4 !tolerance of kondaurova method  
   !>are boundaries solid?
   logical :: mirror_bc=.false.
   !key arguements that must be set
@@ -225,6 +226,8 @@ module cdata
   logical, protected :: simple_plots=.false. !call scripts from command line to plot on the fly
   logical, protected :: anisotropy_params=.false. !get anistropy parameters
   logical, protected :: particle_plane_inf=.false. !2D point infomation in z=0 plane
+  logical, protected :: closest_distance=.false. !what is the minimum separation between points?
+  logical, protected :: full_loop_counter=.false. !check loop count and size
   !-------------------------------smoothing-------------------------------------------
   !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
@@ -284,6 +287,8 @@ module cdata
              read(buffer, *, iostat=ios) dt !timestep value
           case ('recon_type')
              read(buffer, *, iostat=ios) recon_type !reconnection algorithm used
+          case ('kond_tolerance')
+             read(buffer, *, iostat=ios) kond_tolerance !tolerance of kondaurova reconnections
           case ('binary_print')
              !print to binary (T) or formatted data (F)
              read(buffer, *, iostat=ios) binary_print !print binary var data
@@ -341,6 +346,8 @@ module cdata
              read(buffer, *, iostat=ios) force !force the vortices
           case ('force_amp')
              read(buffer, *, iostat=ios) force_amp !forcing amplitude
+          case ('closest_distance')
+             read(buffer, *, iostat=ios) closest_distance !track minimum separation between points?
           case ('force_freq')
              read(buffer, *, iostat=ios) force_freq !forcing frequency
           case ('phonon_emission')
@@ -447,6 +454,8 @@ module cdata
              read(buffer, *, iostat=ios) inject_type !how we inject new vortices
           case ('inject_stop')
              read(buffer, *, iostat=ios) inject_stop !when (if ever) we stop injecting 
+          case ('full_loop_counter')
+             read(buffer, *, iostat=ios) full_loop_counter !check loop count and size
           case default
              !print *, 'Skipping invalid label at line', line
           end select
