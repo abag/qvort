@@ -59,6 +59,7 @@ program run
         call pclose !line.mod
       end if
       if (switch_off_recon.eqv..false.) call precon !line.mod
+      if (seg_fault) write(*,*) 'here5a'
       call premove !line.mod  \todo switchoff premove in run.in
     end if
     !---------------------smoothed field----------------------

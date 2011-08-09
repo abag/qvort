@@ -184,6 +184,8 @@ module line
     select case(recon_type)
       case('original')
         call precon_original !reconnection.mod
+      case('schwarz')
+        call precon_schwarz !reconnection.mod
       case('dissipative')
         call precon_dissapitive !reconnection.mod
       case('non_dissipative')

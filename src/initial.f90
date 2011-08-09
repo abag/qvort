@@ -61,6 +61,8 @@ module initial
         write(*,*) 'using dissipative reconnection routine described in Baggaley et al. 2009'
       case('non_dissipative')
         write(*,*) 'using an experimental reconnection routine which can increase line length'
+      case('schwarz')
+        write(*,*) "using Schwarz's original algorithm outlined in Schwarz 1985"
       case('kondaurova')
         write(*,*) 'using reconnection routine described in Kondaurova et al. 2008'
         write(*,'(a,f10.5)') 'tolerance setting for method is: ', kond_tolerance
