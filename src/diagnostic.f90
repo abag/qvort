@@ -252,7 +252,14 @@ module diagnostic
     write(unit=print_file,fmt="(a,i4.4,a)")"./data/vel_slice_1D",filenumber,".log"
     open(unit=32,file=print_file)
     do i=1, one_dim
-      x(1)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
+      select case (one_dim_direction)
+        case('x')
+          x(1)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
+        case('y')
+          x(2)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
+        case('z')
+          x(3)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
+      end select
       !superfluid velocity
       select case(velocity)
         case('BS')

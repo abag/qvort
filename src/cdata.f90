@@ -213,6 +213,7 @@ module cdata
   logical, protected :: energy_inf=.false. !calculate energy of vortex 
   logical, protected :: sep_inf=.false. !calculate information and histogram of point separation
   integer, protected :: one_dim=0 !size of 1d velocity information printed to file
+  character(len=1), protected :: one_dim_direction='x' !component we calculate 1D spectra in
   integer, protected :: one_dim_lattice=0 !create a lattice in z direction to calculate vel info on
   integer, protected :: one_dim_lattice_count=1 !number of 1d spectra to draw - must be a square number
   integer, protected :: two_dim=0 !size of 2d velocity information printed to file
@@ -410,6 +411,8 @@ module cdata
              read(buffer, *, iostat=ios) KS_modes !the number of KS modes
           case ('one_dim')
              read(buffer, *, iostat=ios) one_dim !size of 1D print
+          case ('one_dim_direction')
+             read(buffer, *, iostat=ios) one_dim !which axis we perform 1D print    
           case ('one_dim_lattice')
              read(buffer, *, iostat=ios) one_dim_lattice !size of 1D lattice print
           case ('one_dim_lattice_count')
