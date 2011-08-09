@@ -247,8 +247,8 @@ module cdata
   !------------------------------batch mode---------------------------------------
   !this adds the ability to email a user to say when a code has finished or if there is a fatal error
   logical, protected :: batch_mode=.false. !set to true to enable messaging
-  character(len=20),protected :: batch_name='qvort run' !what is the name of the run
-  character(len=20),protected :: batch_email='a.w.baggaley@gmail.com' !who you gonna call?
+  character(len=80),protected :: batch_name='qvort run' !what is the name of the run
+  character(len=60),protected :: batch_email='a.w.baggaley@gmail.com' !who you gonna call?
   contains
   !*************************************************************************************************  
   !>read the file run.in obtaining all parameters at runtime, avoiding the need to recompile the code
@@ -614,8 +614,20 @@ module cdata
     write (*,*) "FYI: t= ", t, "iteration number= ", itime 
     write (*,*) '-------------------------------------------------------------'
     if (batch_mode) then
-      write(unit=message_file,fmt="(a,a,a,a,a,a)")'echo -e "','error message from ',trim(batch_name),&
-      ': \n' ,trim(message), '" | mail -s qvort_error a.w.baggaley@gmail.com'
+      write(unit=message_file,fmt="(a,a,a,a,a,a,a)")'echo "','error message from ',trim(batch_name),&
+      ': \n' ,trim(message), '" | mail -s qvort_error ',trim(batch_email)
+      call system(message_file)
+    end if
+    stop
+  end subroutine
+  !*************************************************************************************************  
+  !>if in batch mode send an email to say code has finished
+  subroutine completion_message
+    implicit none      
+    character(len=300) :: message_file
+    if (batch_mode) then
+      write(unit=message_file,fmt="(a,a,a,a,a)")'echo "','completion notification from ',&
+      trim(batch_name), '" | mail -s qvort_finished ',trim(batch_email)
       call system(message_file)
     end if
     stop

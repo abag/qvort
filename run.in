@@ -1,7 +1,7 @@
 --------------required parameters------------
 nsteps 100000
 shots 100
-mesh_shots 10
+mesh_shots 1000
 recon_shots 1
 pcount 2000
 dt 1E-5
@@ -9,7 +9,7 @@ delta 0.0016
 box_size 0.1
 velocity LIA
 initf random_loops
-line_count 200
+line_count 100
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----

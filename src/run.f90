@@ -144,6 +144,7 @@ program run
     !--------------------final sanity checks----------------------
     if (NAN_test) call NAN_finder !general.mod
   end do
+  call completion_message
   !deallocate(f,mesh) !tidy up
 end program
 !------------MAIN PAGE FOR DOXYGEN IS HERE----------------
