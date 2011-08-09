@@ -7,6 +7,8 @@ for i=1:nruns
     filename2=sprintf('./run%d/data/dims.log',i);
     A=load(filename);
     B=load(filename2);
+    meaner(i)=mean(A(floor(0.2*length(A)):length(A),6)/B(2)^3);
+    stder(i)=std(A(floor(0.2*length(A)):length(A),6)/B(2)^3);  
     if (i==1)
         plot(A(:,2),A(:,6)/B(2)^3,'k-o')
     elseif(i==2)
@@ -24,6 +26,9 @@ for i=1:nruns
     end
     hold on
 end
+%meaner'
+%stder'
+%return
 hold off
 xlabel('t','FontSize',16)
 ylabel('L','FontSize',16)
