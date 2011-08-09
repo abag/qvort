@@ -244,6 +244,11 @@ module cdata
   logical, protected :: seg_fault=.false.!use print statements to try and isolate segmentation faults
   logical, protected :: NAN_test=.true.!test for NANs in arrays
   logical, protected :: overide_timestep_check=.false.!do not perform initial dt test
+  !------------------------------batch mode---------------------------------------
+  !this adds the ability to email a user to say when a code has finished or if there is a fatal error
+  logical, protected :: batch_mode=.false. !set to true to enable messaging
+  character(len=20),protected :: batch_name='qvort run' !what is the name of the run
+  character(len=20),protected :: batch_email='a.w.baggaley@gmail.com' !who you gonna call?
   contains
   !*************************************************************************************************  
   !>read the file run.in obtaining all parameters at runtime, avoiding the need to recompile the code
@@ -459,6 +464,12 @@ module cdata
              read(buffer, *, iostat=ios) inject_stop !when (if ever) we stop injecting 
           case ('full_loop_counter')
              read(buffer, *, iostat=ios) full_loop_counter !check loop count and size
+          case ('batch_mode')
+             read(buffer, *, iostat=ios) batch_mode !do we message user if there are messages?        
+          case ('batch_name')
+             read(buffer, *, iostat=ios) batch_name !what is the name of the run
+          case ('batch_email')
+             read(buffer, *, iostat=ios) batch_email !where do we message?
           case default
              !print *, 'Skipping invalid label at line', line
           end select
@@ -597,10 +608,16 @@ module cdata
     implicit none      
     character(len=*) :: location
     character(len=*) :: message
+    character(len=300) :: message_file
     write (*,*) '-------------------------FATAL ERROR-------------------------'
     write (*,*) trim(location) , ": " , trim(message)
     write (*,*) "FYI: t= ", t, "iteration number= ", itime 
     write (*,*) '-------------------------------------------------------------'
+    if (batch_mode) then
+      write(unit=message_file,fmt="(a,a,a,a,a,a)")'echo -e "','error message from ',trim(batch_name),&
+      ': \n' ,trim(message), '" | mail -s qvort_error a.w.baggaley@gmail.com'
+      call system(message_file)
+    end if
     stop
   end subroutine
   !*************************************************************************************************  

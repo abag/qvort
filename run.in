@@ -7,7 +7,7 @@ pcount 1000
 dt .34E-6
 delta 0.0001
 box_size 0.1
-velocity Tree
+velocity Tree1
 initf single_line
 boundary periodic
 --------------optional parameters------------
@@ -20,3 +20,4 @@ force top_boundary
 force_amp 5.
 force_freq 5000.
 phonon_emission T
+batch_mode T
