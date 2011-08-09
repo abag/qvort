@@ -296,9 +296,11 @@ module initial
     end if
     !final boundary conditions sanity check
     if (periodic_bc.and.mirror_bc) call fatal_error('init.mod','both periodic and mirror bcs are set')
-    if (one_dim>0) write(*,'(a,i5.3)') ' printing 1D velocity info to file, mesh size: ', one_dim
+    if (one_dim>0) write(*,'(a,i5.3,a,a,a)') ' printing 1D velocity info to file, mesh size: ', one_dim,&
+                                             ' in ',one_dim_direction,' plane'
     if (one_dim_lattice>0) then
-      write(*,'(a,i5.3)') ' printing 1D velocity info on a lattice to file, mesh size: ', one_dim_lattice
+      write(*,'(a,i5.3,a,a,a)') ' printing 1D velocity info on a lattice to file, mesh size: ', one_dim_lattice,&
+                                ' in ',one_dim_direction,' plane'
       write(*,'(a,i5.3,a,f5.2)')' calculation on ',one_dim_lattice_count,' lines from -z to +z with lattice ratio ', lattice_ratio 
       call setup_one_dim_lattice
     end if   
@@ -419,6 +421,20 @@ module initial
           lat_mesh_1D(line_position,j)%x(1)=xpos
           lat_mesh_1D(line_position,j)%x(2)=ypos
           lat_mesh_1D(line_position,j)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*one_dim_lattice)
+          select case (one_dim_direction)
+            case('x')
+              lat_mesh_1D(line_position,j)%x(1)=-box_size/2.+box_size*real(2*j-1)/(2.*one_dim_lattice)
+              lat_mesh_1D(line_position,j)%x(2)=xpos
+              lat_mesh_1D(line_position,j)%x(3)=ypos
+            case('y')
+              lat_mesh_1D(line_position,j)%x(1)=xpos
+              lat_mesh_1D(line_position,j)%x(2)=-box_size/2.+box_size*real(2*j-1)/(2.*one_dim_lattice)
+              lat_mesh_1D(line_position,j)%x(3)=ypos
+            case('z')
+              lat_mesh_1D(line_position,j)%x(1)=xpos
+              lat_mesh_1D(line_position,j)%x(2)=ypos
+              lat_mesh_1D(line_position,j)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*one_dim_lattice)
+          end select
         end do
         counter=counter+1
       end do

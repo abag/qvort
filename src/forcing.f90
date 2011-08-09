@@ -68,7 +68,7 @@ module forcing
           !particle is sufficiently close to top boundary to force
           u=0.
           !sinusoidal forcing in the x direction
-          u(1)=delta*force_amp*sin(force_freq*t/(2*pi))
+          u(1)=force_amp*sin(force_freq*t/(2*pi))
         end if
       case('box_shake')
         if (i==1) then
