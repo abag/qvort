@@ -154,9 +154,8 @@ module diagnostic
         end if
       end do 
     end do ; end do ; end do
-    !WE MAY WANT TO PRINT TO FILE HERE!!!!!
-    !now sum the vorticity mesh
-    organised_length=sum(vort_mesh)
+    !now sum the vorticity mesh - must be square
+    organised_length=sum(sqrt(vort_mesh(:,:,:,1)**2+vort_mesh(:,:,:,3)**2+vort_mesh(:,:,:,3)**2))
     !print this length to file
     open(unit=72,file='data/organised_line_length.log',position='append')
       write(72,*) t, organised_length
