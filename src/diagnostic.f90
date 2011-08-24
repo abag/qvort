@@ -15,6 +15,7 @@ module diagnostic
       call curv_info !diagnostics.mod
       if (energy_inf) call energy_info !diagnostics.mod
       if (topo_inf) call get_topo_info !diagnostics.mod
+      if (torsion_hist) call get_torsion_hist !diagnostics.mod      
       if (particle_plane_inf) call get_particle_plane_info !diagnostics.mod
       if (anisotropy_params) call get_anisotropy_info !diagnostics.mod
       if (full_loop_counter) call get_full_loop_count!diagnostics.mod
@@ -425,6 +426,63 @@ module diagnostic
       close(79)
     end if
     deallocate(curvi) !deallocate helper array
+  end subroutine
+  !*************************************************
+  !>caculate the mean, min, max torsion of the filament
+  !>and will also bin the torsions to plot a histogram
+  subroutine get_torsion_hist()
+    use kernel_density
+    implicit none
+    real, allocatable :: torsioni(:)
+    integer :: i, j
+    real :: tors_min, tors_max, tors_bar
+    real :: ddot_i(3), ddot_infront(3), ddot_behind(3)
+    real :: sdot(3), sddot(3), sdddot(3)
+    real :: disti, distb
+    !------------histogram parameters below---------------------
+    !warning - at present the matlab routine to plot the histogram 
+    !is not adpative therefore if the number of bins is changed 
+    !the script must also be changed - warning
+    integer, parameter :: bin_num=10 !number of bins used in KDE
+    real :: kdensity(bin_num), kdmesh(bin_num), bwidth !all for KDE
+    allocate(torsioni(pcount)) !allocate this array pcount size
+    do i=1, pcount
+      if (f(i)%infront==0) then
+        torsioni(i)=0. !check for 'empty' particles
+      else
+        call get_deriv_1(i,sdot) !derivatives.mod
+        call get_deriv_2(i,ddot_i) ; sddot=ddot_i
+        call get_deriv_2(f(i)%infront,ddot_infront) !derivatives.mod
+        call get_deriv_2(f(i)%behind,ddot_behind) !derivatives.mod
+        disti=dist_gen(f(i)%x,f(i)%ghosti) ; distb=dist_gen(f(i)%x,f(i)%ghostb)
+        sdddot=2.*(ddot_infront/(disti*(disti+distb))- &
+                   ddot_i/(disti*distb)+ &
+                   ddot_behind/(distb*(disti+distb)))
+        torsioni(i)=dot_product(cross_product(sdot,sddot),sdddot)
+        torsioni(i)=torsioni(i)/dot_product(cross_product(sdot,sddot),&
+                                           cross_product(sdot,sddot))
+      end if
+    end do
+    !compute the average/min/max of this array
+    tors_bar=sum(torsioni)/count(mask=f(:)%infront>0)
+    tors_max=maxval(torsioni)
+    tors_min=minval(torsioni,mask=torsioni>0)
+    open(unit=76,file='data/torsion.log',position='append')
+      write(79,*) t, tors_min, tors_max, tors_bar
+    close(76)
+    !set the mesh over which we calculate densities
+    do j=1, bin_num
+      kdmesh(j)=tors_min+(j-1)*(tors_max-tors_min)/(bin_num-1)
+    end do
+    call qsort(torsioni) !sort the data in ascending order
+    call get_kernel_density(torsioni,pcount,kdmesh,bin_num,kdensity,bwidth)
+    open(unit=79,file='data/torsion_pdf.log',position='append')
+    write(79,*) '%----------------t=',t,'---------------'
+    do j=1, bin_num
+      write(79,*) kdmesh(j), kdensity(j)
+    end do 
+    close(79)
+    deallocate(torsioni) !deallocate helper array
   end subroutine
   !*************************************************
   !>caculate the mean, min, max of separation of the vortex points

@@ -102,7 +102,7 @@ module normal_fluid
           end if
       end select
       write(*,'(a,f6.4,a,f6.4)') ' mutual friction coefficients alpha=',alpha(1),' alpha`=',alpha(2) 
-      if (normal_fluid_cutoff<100.) then
+      if (normal_fluid_cutoff<1000.) then
         write(*,'(a,f6.3)') ' normal fluid is turned off when t=',normal_fluid_cutoff 
       end if
       write(*,'(a,f8.4)') ' normal fluid rms velocity is: ', urms_norm

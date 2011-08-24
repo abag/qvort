@@ -97,6 +97,41 @@ module initial_cond
       f(i)%u1=0. ; f(i)%u2=0.
     end do
   end subroutine
+  !****************************************************************************
+  !>set up a helix from -z to z, number of particles is automatically adjusted
+  !>to box size and \f$\delta\f$ 
+  subroutine setup_helix
+    implicit none
+    integer :: pcount_required
+    integer :: i
+    if (periodic_bc) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=nint(box_size/(0.35*delta)) !35%
+      write(*,*) 'drawing a helix from -z to z'
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_single_line', &
+      'periodic boundary conditions required')
+    end if
+    do i=1, pcount
+      f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
+      f(i)%x(1)=5*delta*cos(10*pi*f(i)%x(3)/box_size)
+      f(i)%x(2)=5*delta*sin(10*pi*f(i)%x(3)/box_size)
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
+  end subroutine
+  !*************************************************************************
   !*************************************************************************
   !>draw cardoid (http://en.wikipedia.org/wiki/Cardioid) in the x-y plane
   subroutine setup_cardoid
@@ -991,30 +1026,39 @@ module initial_cond
     real :: anglex,angley,anglez
     real,dimension(3)::translate
     real,dimension(3)::dummy_xp_1, dummy_xp_2, dummy_xp_3, dummy_xp_4
-    integer :: loop_size
+    integer :: mean_loop_size, loop_size
     integer:: loop_position
+    integer :: used_pcount, total_loop_count=0
     integer :: i,j
     !test run.in parameters, if wrong program will exit
     if (line_count==0) then
       call fatal_error('init.mod:setup_random_loops', &
       'you have not set a value for line_count in run.in')
     end if
+    !!\todo may be able to remove this constraint
     if (mod(pcount,line_count)/=0) then
       call fatal_error('init.mod:setup_random_loops', &
       'pcount/line_count is not an integer')
     end if
-    loop_size=int(pcount/line_count)
-    loop_radius=loop_size*(0.75*delta)/(2*pi) !75% of potential size
-    write(*,'(a,i5.1,a)') ' drawing ', line_count, ' random loops in the box'
-    write(*,'(a,i5.1,a)') ' each loop contains ', loop_size, ' particles'
-    write(*,'(a,f7.4)') ' radius of each loop: ', loop_radius
+    mean_loop_size=int(pcount/line_count)
+    loop_radius=mean_loop_size*(0.75*delta)/(2*pi) !75% of potential size
+    if (line_sigma>0.) then
+      write(*,'(a)') ' loop sizes follow a normal distribution'
+      write(*,'(a,i5.1,a)') ' mean particle count per loop ', loop_size, ' particles'
+      write(*,'(a,f8.4)') ' standard deviation of loop sizes: ', line_sigma
+    else
+      write(*,'(a,i5.1,a)') ' each loop contains ', loop_size, ' particles'
+      write(*,'(a,f7.4)') ' radius of each loop: ', loop_radius
+    end if
     if (rotation_factor<1.) then
       write(*,'(a,f7.4,a)') ' rotation applied to loops: ', rotation_factor, '*2\pi'
     end if
     if (lattice_ratio<1.) then
       write(*,'(a,f7.4,a)') ' loops occupy ', 100*lattice_ratio, '% of box volume'
     end if
-    do i=1, line_count
+    used_pcount=0 !zero this before we start do loop
+    open(unit=79,file='data/random_loop_sizes.log',status='replace')
+    do while (used_pcount<pcount)
       call random_number(anglex)
       call random_number(angley)
       call random_number(anglez)
@@ -1023,10 +1067,16 @@ module initial_cond
       angley=angley*2*pi*rotation_factor
       anglez=anglez*2*pi*rotation_factor
       translate=lattice_ratio*((box_size*translate-box_size/2.)-loop_radius)
-        
+      !set the loop size using normal distribution
+      loop_size=nint(rnorm(real(mean_loop_size),line_sigma**2))  
+      if (used_pcount+loop_size>pcount) then 
+        loop_size=pcount-used_pcount
+      end if
+      loop_radius=loop_size*(0.75*delta)/(2*pi) !75% of potential size
+      write(79,*) loop_size,loop_radius
       do j=1, loop_size
 
-        loop_position=j+(i-1)*loop_size
+        loop_position=j+used_pcount
 
         dummy_xp_1(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)
         dummy_xp_1(2)=loop_radius*cos(pi*real(2*j-1)/loop_size)
@@ -1049,18 +1099,26 @@ module initial_cond
         f(loop_position)%x(3)=dummy_xp_4(3)+translate(3)
 
         if(j==1) then
-          f(loop_position)%behind=i*loop_size
+          f(loop_position)%behind=used_pcount+loop_size	
           f(loop_position)%infront=loop_position+1
         else if (j==loop_size) then
           f(loop_position)%behind=loop_position-1
-          f(loop_position)%infront=(i-1)*loop_size+1
+          f(loop_position)%infront=used_pcount+1
         else
           f(loop_position)%behind=loop_position-1
           f(loop_position)%infront=loop_position+1
         end if
         f(loop_position)%u1=0. ; f(loop_position)%u2=0.
+        !test the loop size if its too small then we simply kill the loop here
+        if (loop_size<5) then
+          call clear_particle(loop_position)
+        end if
       end do
+      used_pcount=used_pcount+loop_size
+      total_loop_count=total_loop_count+1
     end do
+    close(79)
+    write(*,'(i5.1,a)') total_loop_count, ' random loops have been created'
   end subroutine
 !*************************************************************************
   subroutine setup_tangle

@@ -167,8 +167,10 @@ module timestep
         end if
     end select
     !forcing?
-    call get_forcing(i,u_force)
-    u=u+u_force
+    if (t<force_cutoff) then
+      call get_forcing(i,u_force)
+      u=u+u_force
+    end if
     if (mirror_bc) then
       !check the flux through the boundaries is 0
       call mirror_flux_check(i,u) !mirror.mod
