@@ -417,7 +417,7 @@ module cdata
           case ('one_dim')
              read(buffer, *, iostat=ios) one_dim !size of 1D print
           case ('one_dim_direction')
-             read(buffer, *, iostat=ios) one_dim !which axis we perform 1D print    
+             read(buffer, *, iostat=ios) one_dim_direction !which axis we perform 1D print    
           case ('one_dim_lattice')
              read(buffer, *, iostat=ios) one_dim_lattice !size of 1D lattice print
           case ('one_dim_lattice_count')

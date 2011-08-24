@@ -1,22 +1,23 @@
 --------------required parameters------------
-nsteps 100000
-shots 100
-mesh_shots 1000
+nsteps 10000
+shots 10
+mesh_shots 10
 recon_shots 1
-pcount 2000
-dt 1E-5
-delta 0.0016
+pcount 100
+dt 2E-5
+delta 0.001
 box_size 0.1
-velocity LIA
-initf random_loops
-line_count 100
+velocity BS
+initf wave_line
+line_count 1
 boundary periodic
+!wave spectrum parameters
+wave_count 10
+wave_slope -2
+wave_amp 10
+wave_type helical
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-normal_velocity xflow
-alpha .21 .009
-norm_vel_xflow .55
-anisotropy_params T
-tree_theta 0.4
-recon_type schwarz
-overide_timestep_check F
+tree_theta 0.
+binary_print T 
+mesh_size 256
