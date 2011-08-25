@@ -8,6 +8,7 @@ delta 0.005
 box_size 0.1
 velocity BS
 initf random_loops
+initial_distribution gamma
 line_count 10
 line_sigma 3.
 boundary periodic

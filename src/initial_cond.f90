@@ -1043,8 +1043,8 @@ module initial_cond
     mean_loop_size=int(pcount/line_count)
     loop_radius=mean_loop_size*(0.75*delta)/(2*pi) !75% of potential size
     if (line_sigma>0.) then
-      write(*,'(a)') ' loop sizes follow a normal distribution'
-      write(*,'(a,i5.1,a)') ' mean particle count per loop ', loop_size, ' particles'
+      write(*,'(a,a,a)') ' loop sizes follow a ', trim(initial_distribution), ' distribution'
+      write(*,'(a,i5.1,a)') ' mean particle count per loop ', mean_loop_size, ' particles'
       write(*,'(a,f8.4)') ' standard deviation of loop sizes: ', line_sigma
     else
       write(*,'(a,i5.1,a)') ' each loop contains ', loop_size, ' particles'
@@ -1067,8 +1067,20 @@ module initial_cond
       angley=angley*2*pi*rotation_factor
       anglez=anglez*2*pi*rotation_factor
       translate=lattice_ratio*((box_size*translate-box_size/2.)-loop_radius)
-      !set the loop size using normal distribution
-      loop_size=nint(rnorm(real(mean_loop_size),line_sigma**2))  
+      !set the loop size using specified probability distribution
+      select case(initial_distribution)
+        case('uniform')
+          loop_size=nint(runif(real(mean_loop_size)-sqrt(3.)*line_sigma,real(mean_loop_size)+sqrt(3.)*line_sigma))
+        case('gaussian')
+          loop_size=nint(rnorm(real(mean_loop_size),line_sigma**2))
+        case('laplace')  
+          loop_size=nint(rlaplace(real(mean_loop_size),line_sigma))
+        case('gamma')  
+          print*, rgamma(real(mean_loop_size)/line_sigma,1./(line_sigma**2/real(mean_loop_size)))
+          loop_size=1!nint(rgamma((line_sigma**2)/real(mean_loop_size),1/(line_sigma/real(mean_loop_size))))
+        case default
+          call fatal_error('init_cond.mod','initial_distribution set to incorrect argument')  
+      end select
       if (used_pcount+loop_size>pcount) then 
         loop_size=pcount-used_pcount
       end if

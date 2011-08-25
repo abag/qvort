@@ -157,6 +157,7 @@ module cdata
   integer, protected :: line_count=1
   real, protected :: line_sigma=0.
   real, protected :: lattice_ratio=1
+  character(len=20), protected :: initial_distribution='uniform'
   real, protected :: rotation_factor=1 !also used in injection routines
   integer, protected :: wave_count=1
   real, protected :: wave_slope=-1.5
@@ -349,6 +350,8 @@ module cdata
              read(buffer, *, iostat=ios) initp !initial setup of particles
           case ('line_count')
              read(buffer, *, iostat=ios) line_count !used in certain intial conditions
+          case ('initial_distribution')
+             read(buffer, *, iostat=ios) initial_distribution !used in certain intial conditions             
           case ('line_sigma')
              read(buffer, *, iostat=ios) line_sigma !used in certain intial conditions
           case ('lattice_ratio')
