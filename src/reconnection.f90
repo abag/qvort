@@ -256,7 +256,7 @@ module reconnection
       pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
       parii=f(pari)%infront ; parbb=f(parb)%behind !find particle twice infront/behind
       !now we determine if we can reconnect
-      if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
+      if ((f(i)%closestd<1.5*delta).and.(f(i)%closestd>epsilon(1.))) then
         j=f(i)%closest
         !another saftery check
         if (j==pari) cycle ; if (j==parb) cycle ; if (j==0) cycle
