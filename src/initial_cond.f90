@@ -1047,7 +1047,7 @@ module initial_cond
       write(*,'(a,i5.1,a)') ' mean particle count per loop ', mean_loop_size, ' particles'
       write(*,'(a,f8.4)') ' standard deviation of loop sizes: ', line_sigma
     else
-      write(*,'(a,i5.1,a)') ' each loop contains ', loop_size, ' particles'
+      write(*,'(a,i5.1,a)') ' each loop contains ', mean_loop_size, ' particles'
       write(*,'(a,f7.4)') ' radius of each loop: ', loop_radius
     end if
     if (rotation_factor<1.) then
