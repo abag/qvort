@@ -93,6 +93,8 @@ if (magnetic==1)
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%create fuigure to plot into
+figure('Name','Filament Plot')
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
 if dims(4)==1

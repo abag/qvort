@@ -2,17 +2,21 @@
 nsteps 10000
 shots 10
 recon_shots 1
-pcount 1000
+deriv_order second
+pcount 10000
 dt 2E-5
-delta 0.005
+delta 0.001
 box_size 0.1
-velocity Tree
+velocity Off
 initf random_loops
-initial_distribution exp
-line_count 10
-line_sigma 20.
+line_count 1000
+initial_distribution gamma
+rotation_factor 0.
+line_sigma 3.
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
 tree_theta 0.4
 binary_print T 
+curv_hist T
+torsion_hist T

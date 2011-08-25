@@ -107,7 +107,7 @@ module initial_cond
     if (periodic_bc) then
       !work out the number of particles required for single line
       !given the box size specified in run.i
-      pcount_required=nint(box_size/(0.35*delta)) !35%
+      pcount_required=nint(box_size/(0.65*delta)) !35%
       write(*,*) 'drawing a helix from -z to z'
       write(*,*) 'changing size of pcount to fit with box_length and delta'
       write(*,*) 'pcount is now', pcount_required
@@ -118,8 +118,8 @@ module initial_cond
     end if
     do i=1, pcount
       f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
-      f(i)%x(1)=5*delta*cos(10*pi*f(i)%x(3)/box_size)
-      f(i)%x(2)=5*delta*sin(10*pi*f(i)%x(3)/box_size)
+      f(i)%x(1)=5*delta*cos(2*pi*f(i)%x(3)/box_size)
+      f(i)%x(2)=5*delta*sin(2*pi*f(i)%x(3)/box_size)
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -1082,6 +1082,7 @@ module initial_cond
         case default
           call fatal_error('init_cond.mod','initial_distribution set to incorrect argument')  
       end select
+      if (loop_size<0) loop_size=0 !avoid negative loop sizes
       if (used_pcount+loop_size>pcount) then 
         loop_size=pcount-used_pcount
       end if

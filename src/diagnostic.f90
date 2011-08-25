@@ -455,9 +455,10 @@ module diagnostic
         call get_deriv_2(f(i)%infront,ddot_infront) !derivatives.mod
         call get_deriv_2(f(i)%behind,ddot_behind) !derivatives.mod
         disti=dist_gen(f(i)%x,f(i)%ghosti) ; distb=dist_gen(f(i)%x,f(i)%ghostb)
-        sdddot=2.*(ddot_infront/(disti*(disti+distb))- &
-                   ddot_i/(disti*distb)+ &
-                   ddot_behind/(distb*(disti+distb)))
+        sdddot=distb*ddot_infront+ &
+              (disti-distb)*ddot_i- &
+               disti*ddot_behind
+        sdddot=sdddot/(2.*distb*disti)
         torsioni(i)=dot_product(cross_product(sdot,sddot),sdddot)
         torsioni(i)=torsioni(i)/dot_product(cross_product(sdot,sddot),&
                                            cross_product(sdot,sddot))
@@ -468,7 +469,7 @@ module diagnostic
     tors_max=maxval(torsioni)
     tors_min=minval(torsioni,mask=torsioni>0)
     open(unit=76,file='data/torsion.log',position='append')
-      write(79,*) t, tors_min, tors_max, tors_bar
+      write(76,*) tors_bar, tors_min, tors_max
     close(76)
     !set the mesh over which we calculate densities
     do j=1, bin_num
