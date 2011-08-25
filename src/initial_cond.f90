@@ -1076,8 +1076,9 @@ module initial_cond
         case('laplace')  
           loop_size=nint(rlaplace(real(mean_loop_size),line_sigma))
         case('gamma')  
-          print*, rgamma(real(mean_loop_size)/line_sigma,1./(line_sigma**2/real(mean_loop_size)))
-          loop_size=1!nint(rgamma((line_sigma**2)/real(mean_loop_size),1/(line_sigma/real(mean_loop_size))))
+           loop_size=nint(rgamma((real(mean_loop_size)/line_sigma)**2,(line_sigma**2)/real(mean_loop_size)))
+        case('exp')  
+          loop_size=nint(rexp(1./real(mean_loop_size)))
         case default
           call fatal_error('init_cond.mod','initial_distribution set to incorrect argument')  
       end select

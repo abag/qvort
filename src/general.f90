@@ -3,6 +3,7 @@
 module general
   use cdata
   use derivatives
+  use statistics
   contains
   !*********************************************************************
   !>empty all a points information - used if a point is removed
@@ -203,69 +204,5 @@ module general
     write(*,*) 'zero count= ', zcount
     write(*,*) 'ending run...' ; stop 
   end subroutine
-  !*********************************************************************
-  !>used to draw random variables from a \fN(0,1)\f$ distribution, 
-  !>uses box-muller algorithm
-  real function rnorm(mu,sigma2)
-    implicit none
-    real, intent(IN) :: mu, sigma2
-    real :: u1, u2
-    call random_number(u1) ;  call random_number(u2)
-    rnorm=mu+sqrt(sigma2)*sqrt(-2.*log(u1))*cos(2.*pi*u2)   
-  end function
-  !*********************************************************************
-  !>used to draw random variables from 
-  real function rlaplace(mu,b) !NOT TESTED
-    !generate random variables from laplace distribution
-    !http://en.wikipedia.org/wiki/Laplace_distribution
-    implicit none
-    real, intent(IN) :: mu, b
-    real :: u
-    call random_number(u)
-    u=u-0.5
-    rlaplace=mu-b*sign(1.,u)*log(1.-2.*abs(u))
-  end function
-    !************************************************************************************************
-  real function runif(alpha,beta)
-    !uniform[alpha,beta]
-    implicit none
-    real, intent(IN) :: alpha, beta
-    real :: u
-    call random_number(u)
-    runif=alpha+u*(beta-alpha)
-  end function
-  !*************************************************************************************************  
-  real function rgamma(a,b)
-    implicit none
-    real, intent(IN) :: a, b
-    real :: uvect(floor(a))
-    real :: delta, nu
-    real :: eta, xi
-    real :: u1, u2
-    real :: var
-    !set up parameters
-    delta=a-floor(a)
-    nu=exp(1.)/(exp(1.)+delta)
-    rgamma=0.
-    if (delta>0.) then
-      !now need a loop
-      do 
-        call random_number(u1) ; call random_number(u2)
-        if (u1<=nu) then
-          xi=(u1/nu)**(1./delta)
-          eta=u2*(xi**(delta-1.))
-        else
-         xi=1.-log((u1-nu)/(1.-nu))
-         eta=u2*exp(-xi)
-        end if
-        if (eta<(xi**(delta-1.))*exp(-xi)) then
-          rgamma=xi
-          exit
-        end if
-      end do
-    end if
-    call random_number(uvect) 
-    rgamma=b*(rgamma-sum(log(uvect)))
-  end function
 end module
 
