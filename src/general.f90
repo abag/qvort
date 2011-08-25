@@ -3,6 +3,7 @@
 module general
   use cdata
   use derivatives
+  use statistics
   contains
   !*********************************************************************
   !>empty all a points information - used if a point is removed
@@ -203,15 +204,5 @@ module general
     write(*,*) 'zero count= ', zcount
     write(*,*) 'ending run...' ; stop 
   end subroutine
-  !*********************************************************************
-  !>used to draw random variables from a \fN(0,1)\f$ distribution, 
-  !>uses box-muller algorithm
-  real function rnorm(mu,sigma2)
-    implicit none
-    real, intent(IN) :: mu, sigma2
-    real :: u1, u2
-    call random_number(u1) ;  call random_number(u2)
-    rnorm=mu+sqrt(sigma2)*sqrt(-2.*log(u1))*cos(2.*pi*u2)   
-  end function
 end module
 

@@ -155,7 +155,9 @@ module cdata
   logical ,protected :: fixed_LIA_beta=.false.
   !-----------------arguements used by initial.mod-------------------------
   integer, protected :: line_count=1
+  real, protected :: line_sigma=0.
   real, protected :: lattice_ratio=1
+  character(len=20), protected :: initial_distribution='uniform'
   real, protected :: rotation_factor=1 !also used in injection routines
   integer, protected :: wave_count=1
   real, protected :: wave_slope=-1.5
@@ -188,7 +190,8 @@ module cdata
   !-----------------forcing------------------------------------------------------
   character(len=20), protected :: force='off'
   real, protected :: force_amp=0.
-  real, protected :: force_freq=0.  
+  real, protected :: force_freq=0.
+  real, protected :: force_cutoff=1E8 !impossibly high time  
   !-----------------special data dumps-------------------------------------------
   !do we want to dump 'f' at a specific timeu1, i.e. before a reconnection etc.
   real, protected :: special_dump=0. !special dump time
@@ -209,6 +212,7 @@ module cdata
   logical, protected :: tree_extra_correction=.true.
   !--------------------additional diagnostics------------------------------------
   logical, protected :: curv_hist=.false. !dumps binned curvature information
+  logical, protected :: torsion_hist=.false. !dumps binned torsion information
   logical, protected :: topo_inf=.false. !calculate topological information
   logical, protected :: energy_inf=.false. !calculate energy of vortex 
   logical, protected :: sep_inf=.false. !calculate information and histogram of point separation
@@ -330,6 +334,8 @@ module cdata
              read(buffer, *, iostat=ios) normal_velocity !zero/xflow/ABC/KS
           case ('normal_fluid_cutoff')
              read(buffer, *, iostat=ios) normal_fluid_cutoff !turn off nf
+          case ('force_cutoff')
+             read(buffer, *, iostat=ios) force_cutoff !turn off forcing             
           case ('normal_fluid_freq')
              read(buffer, *, iostat=ios) normal_fluid_freq !frequency we "drive" nf
           case ('norm_vel_xflow')
@@ -344,6 +350,10 @@ module cdata
              read(buffer, *, iostat=ios) initp !initial setup of particles
           case ('line_count')
              read(buffer, *, iostat=ios) line_count !used in certain intial conditions
+          case ('initial_distribution')
+             read(buffer, *, iostat=ios) initial_distribution !used in certain intial conditions             
+          case ('line_sigma')
+             read(buffer, *, iostat=ios) line_sigma !used in certain intial conditions
           case ('lattice_ratio')
              read(buffer, *, iostat=ios) lattice_ratio !used in lattice initial conditions
           case ('rotation_factor')
@@ -392,6 +402,8 @@ module cdata
              read(buffer, *, iostat=ios) wave_type !for wave_spec initial conditions
           case ('curv_hist')
              read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
+          case ('torsion_hist')
+             read(buffer, *, iostat=ios) torsion_hist !do we want binned torsion info?
           case ('boxed_vorticity')
              read(buffer, *, iostat=ios) boxed_vorticity !do we want vorticity on a mesh?
           case ('boxed_vorticity_size')
@@ -417,7 +429,7 @@ module cdata
           case ('one_dim')
              read(buffer, *, iostat=ios) one_dim !size of 1D print
           case ('one_dim_direction')
-             read(buffer, *, iostat=ios) one_dim !which axis we perform 1D print    
+             read(buffer, *, iostat=ios) one_dim_direction !which axis we perform 1D print    
           case ('one_dim_lattice')
              read(buffer, *, iostat=ios) one_dim_lattice !size of 1D lattice print
           case ('one_dim_lattice_count')
@@ -491,7 +503,7 @@ module cdata
     integer :: reload_nsteps
     integer :: reload_shots,reload_recon_shots, reload_mesh_shots
     real ::  reload_normal_fluid_cutoff, reload_inject_stop
-    logical :: reload_curv_hist, reload_vel_print, reload_vapor_print
+    logical :: reload_curv_hist,reload_torsion_hist, reload_vel_print, reload_vapor_print
     logical :: reload_topo_inf,reload_energy_inf,reload_recon_info,reload_sep_inf
     integer :: reload_one_dim, reload_two_dim
     open(fh, file='run.in')
@@ -540,7 +552,13 @@ module cdata
              if (reload_curv_hist.neqv.curv_hist) then
                curv_hist=reload_curv_hist
                write(*,*) 'RELOAD: changed curv_hist to ', curv_hist
-             end if 
+             end if
+          case ('torsion_hist')
+             read(buffer, *, iostat=ios) reload_torsion_hist 
+             if (reload_torsion_hist.neqv.torsion_hist) then
+               torsion_hist=reload_torsion_hist
+               write(*,*) 'RELOAD: changed torsion_hist to ', torsion_hist
+             end if  
           case ('vel_print')
              read(buffer, *, iostat=ios) reload_vel_print 
              if (reload_vel_print.neqv.vel_print) then

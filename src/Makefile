@@ -24,8 +24,8 @@ default: run.x
 #
 # Targets
 #
-run.x: run.f90 cdata.o derivatives.o forcing.o reconnection.o initial_cond.o initial.o output.o periodic.o general.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o Makefile 
-	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o derivatives.o forcing.o normal_fluid.o reconnection.o initial.o initial_cond.o output.o periodic.o general.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o
+run.x: run.f90 cdata.o derivatives.o forcing.o reconnection.o initial_cond.o initial.o output.o periodic.o general.o statistics.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o Makefile 
+	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o derivatives.o forcing.o normal_fluid.o reconnection.o initial.o initial_cond.o output.o periodic.o general.o statistics.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o
 #
 #
 clean: 
@@ -44,7 +44,9 @@ output.o: output.f90 cdata.o tree.o
 #
 periodic.o: periodic.f90 cdata.o
 #
-general.o: general.f90 derivatives.o cdata.o
+statistics.o: statistics.f90 cdata.o
+#
+general.o: general.f90 derivatives.o statistics.o cdata.o
 #
 derivatives.o: derivatives.f90 cdata.o
 #

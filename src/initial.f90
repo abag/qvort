@@ -146,6 +146,8 @@ module initial
           call setup_random_loops !initial_cond.mod
         case('crow')
           call setup_crow !initial_cond.mod
+        case('helix')
+          call setup_helix !initial_helix.mod          
         case('crow_loop')
           call setup_crow_loop !initial_cond.mod
         case('smooth_test')
@@ -277,6 +279,7 @@ module initial
     if (simple_plots) write(*,*) 'producing simple plots on the fly'
     if (vapor_print) write(*,*) 'if we have mesh(s) then we will also print to file for vapor'
     if (curv_hist) write(*,*) 'printing histograms of curvature to file'
+    if (torsion_hist) write(*,*) 'printing histograms of torsion to file'    
     if (topo_inf) write(*,*) 'printing topological information to file'
     if (sep_inf) write(*,*) 'printing point separation info+histogram to file'
     if (particle_plane_inf) write(*,*) 'printing point particle information at z=0'

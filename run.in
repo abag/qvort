@@ -1,22 +1,22 @@
 --------------required parameters------------
-nsteps 100000
-shots 100
-mesh_shots 1000
+nsteps 10000
+shots 10
 recon_shots 1
-pcount 2000
-dt 1E-5
-delta 0.0016
+deriv_order second
+pcount 10000
+dt 2E-5
+delta 0.001
 box_size 0.1
-velocity LIA
+velocity Off
 initf random_loops
-line_count 100
+line_count 1000
+initial_distribution gamma
+rotation_factor 0.
+line_sigma 3.
 boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-normal_velocity xflow
-alpha .21 .009
-norm_vel_xflow .55
-anisotropy_params T
 tree_theta 0.4
-recon_type schwarz
-overide_timestep_check F
+binary_print T 
+curv_hist T
+torsion_hist T

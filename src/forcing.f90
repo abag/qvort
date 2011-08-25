@@ -48,6 +48,9 @@ module forcing
         call fatal_error('forcing.mod:setup_forcing', &
         'incorrect forcing parameter set in run.in') !cdata.mod
       end select
+      if (force_cutoff<1000.) then
+        write(*,'(a,f6.3)') ' forcing is turned off when t=',force_cutoff 
+      end if
   end subroutine
   !***********************************************
   !>force the particles - an additional velocity at position
