@@ -502,7 +502,7 @@ module cdata
     !*******RELOAD DUMMY VARIABLES***********
     integer :: reload_nsteps
     integer :: reload_shots,reload_recon_shots, reload_mesh_shots
-    real ::  reload_normal_fluid_cutoff, reload_inject_stop
+    real ::  reload_normal_fluid_cutoff,reload_force_cutoff, reload_inject_stop
     logical :: reload_curv_hist,reload_torsion_hist, reload_vel_print, reload_vapor_print
     logical :: reload_topo_inf,reload_energy_inf,reload_recon_info,reload_sep_inf
     integer :: reload_one_dim, reload_two_dim
@@ -546,6 +546,13 @@ module cdata
                 (reload_normal_fluid_cutoff<normal_fluid_cutoff)) then
                normal_fluid_cutoff=reload_normal_fluid_cutoff
                write(*,'(a,f10.4)') 'RELOAD: changed normal_fluid_cutoff to ', normal_fluid_cutoff
+             end if 
+          case ('force_cutoff')
+             read(buffer, *, iostat=ios) reload_force_cutoff 
+             if ((reload_force_cutoff>force_cutoff).or. & 
+                (reload_force_cutoff<force_cutoff)) then
+               force_cutoff=reload_force_cutoff
+               write(*,'(a,f10.4)') 'RELOAD: changed force_cutoff to ', force_cutoff
              end if 
           case ('curv_hist')
              read(buffer, *, iostat=ios) reload_curv_hist 

@@ -1,7 +1,7 @@
 --------------required parameters------------
 nsteps 10000000
 shots 100
-mesh_shots 1000
+mesh_shots 5000
 recon_shots 1
 pcount 1000
 dt .34E-5
@@ -15,7 +15,10 @@ boundary periodic
 tree_theta 0.2
 force top_boundary
 mesh_size 256
-force_amp 2000.
+force_amp 1.
 force_freq 5000.
+force_cutoff 0.25
 phonon_emission T
 full_loop_counter T
+curv_hist T
+torsion_hist T
