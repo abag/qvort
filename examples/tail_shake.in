@@ -1,0 +1,21 @@
+--------------required parameters------------
+nsteps 10000000
+shots 100
+mesh_shots 1000
+recon_shots 1
+pcount 1000
+dt .34E-5
+delta 0.0005
+box_size 0.1
+velocity Tree
+initf single_line
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+tree_theta 0.2
+force top_boundary
+mesh_size 256
+force_amp 2000.
+force_freq 5000.
+phonon_emission T
+full_loop_counter T
