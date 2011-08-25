@@ -2,33 +2,35 @@ function multiple_line_length(nruns)
 if nargin<1
  nruns=1
 end
+thin=4;
 for i=1:nruns
     filename=sprintf('./run%d/data/ts.log',i);
     filename2=sprintf('./run%d/data/dims.log',i);
     A=load(filename);
     B=load(filename2);
-    meaner(i)=mean(A(floor(0.2*length(A)):length(A),6)/B(2)^3);
-    stder(i)=std(A(floor(0.2*length(A)):length(A),6)/B(2)^3);  
+    meaner(i)=mean(sqrt(A(floor(0.2*length(A)):length(A),6)/B(2)^3));
+    stder(i)=std(sqrt(A(floor(0.2*length(A)):length(A),6)/B(2)^3));  
+    C=A(1:thin:length(A),:);
     if (i==1)
-        plot(A(:,2),A(:,6)/B(2)^3,'k-o')
+        plot(A(:,2),A(:,6)/B(2)^3,'k-',C(:,2),C(:,6)/B(2)^3,'ko')
     elseif(i==2)
-        plot(A(:,2),A(:,6)/B(2)^3,'b-s')
+        plot(A(:,2),A(:,6)/B(2)^3,'b-',C(:,2),C(:,6)/B(2)^3,'bs')
     elseif(i==3)
-        plot(A(:,2),A(:,6)/B(2)^3,'r-+')
+        plot(A(:,2),A(:,6)/B(2)^3,'r-',C(:,2),C(:,6)/B(2)^3,'r+')
     elseif(i==4)
-        plot(A(:,2),A(:,6)/B(2)^3,'g-*')
+        plot(A(:,2),A(:,6)/B(2)^3,'g-',C(:,2),C(:,6)/B(2)^3,'g*')
     elseif(i==5)
-        plot(A(:,2),A(:,6)/B(2)^3,'y-^')
+        plot(A(:,2),A(:,6)/B(2)^3,'y-',C(:,2),C(:,6)/B(2)^3,'y^')
     elseif(i==6)
-        plot(A(:,2),A(:,6)/B(2)^3,'m-d')
+        plot(A(:,2),A(:,6)/B(2)^3,'m-',C(:,2),C(:,6)/B(2)^3,'md')
     elseif(i==7)
-        plot(A(:,2),A(:,6)/B(2)^3,'c-p')
+        plot(A(:,2),A(:,6)/B(2)^3,'c-',C(:,2),C(:,6)/B(2)^3,'cp')
     end
     hold on
 end
-%meaner'
-%stder'
-%return
+meaner'
+stder'
+return
 hold off
 xlabel('t','FontSize',16)
 ylabel('L','FontSize',16)
@@ -37,30 +39,35 @@ figure
 for i=1:nruns
     filename=sprintf('./run%d/data/ts.log',i);
     A=load(filename);
+    C=A(1:thin:length(A),:);
     for j=1:length(A)-1
         rrate(j)=(A(j+1,4)-A(j,4))/((A(j+1,2)-A(j,2))*A(j+1,6));
     end
+    for j=1:length(C)-1
+        rrate2(j)=(C(j+1,4)-C(j,4))/((C(j+1,2)-C(j,2))*C(j+1,6));
+    end
     if (i==1)
-        semilogy(A(1:length(A)-1,2),rrate,'k-o')
+        semilogy(C(1:length(C)-1,2),rrate2,'k-o')
     elseif(i==2)
-        semilogy(A(1:length(A)-1,2),rrate,'b-s')
+        semilogy(C(1:length(C)-1,2),rrate2,'b-s')
     elseif(i==3)
-        semilogy(A(1:length(A)-1,2),rrate,'r-+')
+        semilogy(C(1:length(C)-1,2),rrate2,'r-+')
     elseif(i==4)
-        semilogy(A(1:length(A)-1,2),rrate,'g-*')
+        semilogy(C(1:length(C)-1,2),rrate2,'g-*')
     elseif(i==5)
-        semilogy(A(1:length(A)-1,2),rrate,'y-^')
+        semilogy(C(1:length(C)-1,2),rrate2,'y-^')
     elseif(i==6)
-        semilogy(A(1:length(A)-1,2),rrate,'m-d')
+        semilogy(C(1:length(C)-1,2),rrate2,'m-d')
     elseif(i==7)
-        semilogy(A(1:length(A)-1,2),rrate,'c-p')
+        semilogy(C(1:length(C)-1,2),rrate2,'c-p')
     end
     hold on
-    clear A rrate
+    clear A C rrate2 rrate
 end
 xlabel('t','FontSize',16)
 ylabel('R','FontSize',16)
 set(gca,'FontSize',16)
+return
 figure
 for i=1:nruns
     filename=sprintf('./run%d/data/anisotropy.log',i);
