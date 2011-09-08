@@ -1,5 +1,7 @@
 !>all routines which alter the geometry of the vortex filament/flux tube should
-!>be contained in this module
+!>be contained in this module.
+!>The main routines here insert and remove particles to maintain a roughly
+!>constant resolution along the filaments.
 module line
   use cdata
   use general
@@ -147,7 +149,7 @@ module line
   !******************************************************************
   !>find the closest particle to i using N^2 operation this is
   !>done by looping over all particles and caling distf from general.mod
-  !>\todo we need to do particles on the boundary as well (periodic)
+  !\todo we need to do particles on the boundary as well (periodic)
   subroutine pclose
     implicit none
     integer :: i, j

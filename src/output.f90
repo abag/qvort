@@ -1,5 +1,5 @@
-!>The main output routines from the code/specifc modules may contain there own
-!>output, however main routines for printing structures should be in here
+!>The main output routines from the code, whilst specifc modules may contain there own
+!>output, the main routines for printing structures should be in here.
 module output
   use cdata
   use tree
@@ -166,7 +166,7 @@ remove_count
   end subroutine
   !**********************************************************************
   !>store everything needed to restart the code
-  !>\todo does this really work anymore? need to check fully
+  !>\todo a few diagnostics are not dumped and resume from 0 please fix
   subroutine data_dump
     implicit none
     open(unit=53,file="./data/var.dat",FORM='unformatted',status='replace')

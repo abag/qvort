@@ -1,5 +1,7 @@
-!>all routines used to smooth the field onto the mesh, using tree methods
-!>if the code is running as a vortex filament this is simply the vorticity
+!>All routines used to smooth the field onto the mesh, using tree methods.
+!>At present smoothing the filaments onto a mesh can only be done with a
+!>gaussian kernal:-
+!>\f[ \hat{G}(\mathbf{x}) = \int (2\pi \sigma^2)^{-3/2} e^{-\frac{|\mathbf{x}-\mathbf{x}'|}{2\sigma^2}} G(\mathbf{x}') d\mathbf{x}'\f]
 module smoothing
   use cdata 
   use general

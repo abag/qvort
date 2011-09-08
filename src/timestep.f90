@@ -302,8 +302,9 @@ module timestep
   !>more general biot savart integral
   !>\f[\frac{\Gamma}{4 \pi} \oint_{\cal L} \frac{(\mathbf{s}_i-\mathbf{r}) }
   !>{\vert \mathbf{s}_i - \mathbf{r} + \epsilon \vert^3}
-  !>\times {\bf d}\mathbf{r}
+  !>\times {\bf d}\mathbf{r}.
   !>\f]
+  !>This is only used to calculate the velocity at points on a cartesian mesh.
   subroutine biot_savart_general(x,u)
     implicit none
     real, intent(IN) :: x(3)

@@ -149,8 +149,20 @@ program run
 end program
 !------------MAIN PAGE FOR DOXYGEN IS HERE----------------
 !>\mainpage Qvort Main Page
-!>\author Andrew Baggaley
+!>\author Andrew Baggaley - a.w.baggaley@ncl.ac.uk
 !>\date 2010-2011
+!>\details This is the frontpage for the Qvort code manual.
+!>Qvort is a vortex filament code for quantised vortices in superfluid Helium.
+!>The code is written in well commented FORTRAN and is supported by a wealth of
+!!MATLAB scripts for post-processing.
+!>A Barnes and Hut style tree approximation is used to improve the efficiency
+!!of the numerics.
+!!Also a number of features from the 2003 FORTRAN standard are used to help
+!!with the legibility of the code.
+!>This manual contains details of the modules and subroutines which make up the
+!!code.
+!>If you are interested in using the code for your own research please contact
+!!me for more details.
 !>\section intro_sec Running the code
 !>to compile the code type (note > denotes terminal input)
 !>
@@ -233,20 +245,21 @@ end program
 !>
 !>>vortex_plot(1) \n
 !>
-!>the routine will also take the follwing options in the form vortex_plot(n,'option1','option2') e.g.\n
+!>the routine will also take the follwing options in the form vortex_plot(n,'option1','option2') e.g. The default option is to plot a thick black line representing the filaments.\n
 !>
 !>options are:\n
 !>
 !>   - rough: plots particles only advised for a large number of particles \n
-!>   - line: looks better than above a nice compromise\n
+!>   - smooth: plot thin cylinders and add lighting, looks nice but takes a
+!> while...\n
 !>   - dark: add a night time theme!\n
 !>   - rainbow: colour code the vortex according to velocity\n
-!>   - magnetic: colour code a magnetic flux tube according to log2(B) -this automatically switches on rainbow\n
 !>   - overhead: angle the plot overhead\n
 !>   - show_points: will only work if line is set, shows points as well as lines, ignored if rainbow set\n
 !>   - print: print to file rather than screen\n
 !>   - eps: if print is set and eps is set then output eps files\n
-!>   - movie: make a movie by outputting lots of pngs - for batch mode use vortex_anim.m\n
+!>
+!>vortex_anim.m - create a series of snapshots to animate by repeatedly calling vortex_plot. Needs the arguments vortex_anim(start,final,skip,'option') where any of the options for vortex_plot can be used.\n
 !>
 !>ts.m - read in the time series file (data/ts.log) and plot various dignostic information 
 !>if given the option print will print to .eps file rather than screen, at present the following information

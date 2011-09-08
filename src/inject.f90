@@ -1,5 +1,7 @@
 !>the routines contained within this module will inject loops into the code every nth timestep
-!>(n is selected in run.in via inject_skip), the size of the loop is set using inject_size and the 
+!>(n is selected in run.in via inject_skip). This is useful to model specific
+!>experiments.
+!>The size of the loop is set using inject_size and the 
 !>topology of the injected loop is set via loop_type, again in run.in.
 module inject
   use cdata

@@ -36,9 +36,8 @@ module diagnostic
     close(72)
   end subroutine
   !*************************************************
-  !> The routine to calculate number of loops with their sizes
-  !>\todo needs to be written so that line counter is allocated
-  !> at each call also do we need the full x/y/z coordinates?
+  !> The routine to calculate number of loops with their sizes and dumps them 
+  !!to file to plot histograms.
   subroutine get_full_loop_count()
     implicit none
     real,allocatable :: line(:,:,:)

@@ -182,7 +182,8 @@ module topology
       end if         
     end subroutine
     !*************************************************************************
-    !take 4 points (in 3D space) and apply a slight rotation
+    !>take 4 points (in 3D space) - in pairs and apply a slight rotation
+    !> then take xy projection
     subroutine xy_projection(v1,v2,u1,u2,i,j)
       implicit none
       real, dimension(3) :: v1, v2, u1, u2
@@ -205,7 +206,7 @@ module topology
       u2(3)=f(infrontj)%x(2)*(-sin(rot_angle))+f(infrontj)%x(3)*cos(rot_angle)
     end subroutine
     !*************************************************************************
-    !take 4 points (in 3D space) and project onto zx plane
+    !>take 4 points (in 3D space) and project onto zx plane
     subroutine zx_projection(v1,v2,u1,u2,i,j)
       implicit none
       real, dimension(3) :: v1, v2, u1, u2
@@ -226,7 +227,7 @@ module topology
       u2(2)=f(infrontj)%x(3)
     end subroutine
     !*************************************************************************
-    !take 4 points (in 3D space) and project onto yz plane
+    !>take 4 points (in 3D space) and project onto yz plane
     subroutine yz_projection(v1,v2,u1,u2,i,j)
       implicit none
       real, dimension(3) :: v1, v2, u1, u2

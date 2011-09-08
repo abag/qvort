@@ -4,8 +4,6 @@
 !>added to vortex velocity i.e.
 !>\f$\mathbf{u}=\mathbf{u}_\textrm{vortex}+\mathbf{u}_\mathrm{force}\f$.
 !>See \ref FORCE for more details.
-!>\todo forcing shutoff after certain time
-!>\todo forcing frequency in LS_force
 module forcing
   use cdata
   use general

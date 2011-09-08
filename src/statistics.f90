@@ -72,7 +72,7 @@ module statistics
   end function
   !*********************************************************************
   !>used to draw random variables from \f$\exp(\lambda)\f$ distribution
-  real function rexp(lambda) !NOT TESTED
+  real function rexp(lambda)
     implicit none
     real, intent(IN) :: lambda
     real :: u
@@ -108,8 +108,9 @@ module statistics
     dcauchy=(1./pi)*(gamm/((x-x0)**2+gamm**2))
   end function
   !**********************************************************************
+  !>PDF for exponential distribution -
+  !!\f[ f(x;\lambda) = \lambda e^{-\lambda x}, \; x > 0 \f]
   real function dexp(x,lambda) 
-    !PDF for exponential distribution 
     implicit none
     real, intent(IN) :: x,lambda
     if (x<0) then
@@ -119,8 +120,8 @@ module statistics
     end if
   end function
   !**********************************************************************
+  !> PDF for \f$ \chi^2 \f$ distribution
   real function dchi(x,k) 
-    !chi squared pdf
     implicit none
     real, intent(IN) :: x, k
     real :: u
@@ -131,8 +132,8 @@ module statistics
     end if
   end function
   !**********************************************************************
+  !>PDF for Laplace distribution
   real function dlaplace(x,mu,b) 
-    !pdf of laplace distribution
     implicit none
     real, intent(IN) :: x, mu, b
     dlaplace=(1./(2*b))*exp(-abs(x-mu)/b)
