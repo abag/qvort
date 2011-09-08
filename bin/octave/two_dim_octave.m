@@ -6,7 +6,7 @@ else
   do_fit=1;
 end
 %%%%%%%%%%LOAD IN DATA%%%%%%%%%
-filename=sprintf('data/vel_slice_2D%04d.dat',filenumber);
+filename=sprintf('./data/vel_slice_2D%04d.dat',filenumber);
 fid=fopen(filename);
 if fid<0
   disp('2D slice file does not exist, exiting script')
