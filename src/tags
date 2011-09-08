@@ -5,16 +5,10 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 A	ksmodel.f90	/^    real,private,dimension(:,:),allocatable :: unit_k,k,A,/;"	v	module:KSmodel
-B	cdata.f90	/^    real :: B /;"	k	type:qvort
 B	ksmodel.f90	/^    real,private,dimension(:,:),allocatable :: unit_k,k,A,B$/;"	v	module:KSmodel
-B	tree.f90	/^      real :: B(/;"	k	type:node
 BDF	stiff_solver.f90	/^  subroutine BDF(/;"	s	module:stiff_solver
 BDF_coeff	stiff_solver.f90	/^  real, dimension(6,7), private :: BDF_coeff /;"	v	module:stiff_solver
 BDF_dt_adjust	stiff_solver.f90	/^  subroutine BDF_dt_adjust$/;"	s	module:stiff_solver
-B_E	mag.f90	/^  real, private :: B_E=/;"	v	module:mag
-B_diffusion	mag.f90	/^  subroutine B_diffusion(/;"	s	module:mag
-B_ts	mag.f90	/^  subroutine B_ts$/;"	s	module:mag
-Brms	cdata.f90	/^  real :: Brms /;"	v	module:cdata
 KS_energy	ksmodel.f90	/^    real,private,dimension(:),allocatable  ::  klengths,kk,delk,KS_energy /;"	v	module:KSmodel
 KSmodel	ksmodel.f90	/^module KSmodel$/;"	m
 LS_A	forcing.f90	/^  real, private :: LS_k(3), LS_A(/;"	v	module:forcing
@@ -22,36 +16,13 @@ LS_B	forcing.f90	/^  real, private :: LS_k(3), LS_A(3), LS_B(/;"	v	module:forcin
 LS_k	forcing.f90	/^  real, private :: LS_k(/;"	v	module:forcing
 LS_k2	forcing.f90	/^  real :: LS_k2$/;"	v	module:forcing
 NAN_finder	general.f90	/^  subroutine NAN_finder$/;"	s	module:general
-P	cdata.f90	/^    real :: P$/;"	k	type:smooth_particle
-SPH_build_tree	sph_tree.f90	/^  recursive subroutine SPH_build_tree(/;"	s	module:sph_tree
-SPH_count	cdata.f90	/^  integer :: SPH_count /;"	v	module:cdata
-SPH_dead_tree	sph_tree.f90	/^  subroutine SPH_dead_tree(/;"	s	module:sph_tree
-SPH_empty_tree	sph_tree.f90	/^  recursive subroutine SPH_empty_tree(/;"	s	module:sph_tree
-SPH_evolution	sph.f90	/^  subroutine SPH_evolution$/;"	s	module:sph
-SPH_f_GP	sph_interface.f90	/^  subroutine SPH_f_GP(/;"	s	module:sph_interface
-SPH_f_divu	sph_interface.f90	/^  subroutine SPH_f_divu(/;"	s	module:sph_interface
-SPH_f_interp	sph_interface.f90	/^  subroutine SPH_f_interp(/;"	s	module:sph_interface
-SPH_f_latch	sph_interface.f90	/^  subroutine SPH_f_latch(/;"	s	module:sph_interface
-SPH_gravity_tree_walk	sph_tree.f90	/^   recursive subroutine SPH_gravity_tree_walk(/;"	s	module:sph_tree
-SPH_grid	sph.f90	/^  type SPH_grid$/;"	t	module:sph
-SPH_mesh	sph.f90	/^  type(SPH_grid), allocatable :: SPH_mesh(/;"	v	module:sph
-SPH_neighbour_list	sph_tree.f90	/^  subroutine SPH_neighbour_list$/;"	s	module:sph_tree
-SPH_neighbour_list_notree	sph.f90	/^  subroutine SPH_neighbour_list_notree$/;"	s	module:sph
-SPH_new_tree	sph_tree.f90	/^  subroutine SPH_new_tree(/;"	s	module:sph_tree
-SPH_node	sph_tree.f90	/^   type SPH_node$/;"	t	module:sph_tree
-SPH_tree_neighbour	sph_tree.f90	/^  recursive subroutine SPH_tree_neighbour(/;"	s	module:sph_tree
-a	cdata.f90	/^    real/;"	k	type:smooth_particle
-a1	cdata.f90	/^    real :: a(3), a1(/;"	k	type:smooth_particle
-a2	cdata.f90	/^    real :: a(3), a1(3), a2(/;"	k	type:smooth_particle
 abc_A	normal_fluid.f90	/^    real, parameter, private :: abc_A=/;"	v	module:normal_fluid
 abc_B	normal_fluid.f90	/^    real, parameter, private :: abc_A=1., abc_B=/;"	v	module:normal_fluid
 abc_C	normal_fluid.f90	/^    real, parameter, private :: abc_A=1., abc_B=1., abc_C=/;"	v	module:normal_fluid
 addition	ksmodel.f90	/^    real,private,dimension(:,:),allocatable:: addition /;"	v	module:KSmodel
 avg_sep	cdata.f90	/^  real :: avg_sep$/;"	v	module:cdata
 banner_print	output.f90	/^  subroutine banner_print(/;"	s	module:output
-bbl	sph_tree.f90	/^      type (SPH_node), pointer :: bbl,/;"	k	type:SPH_node
 bbl	tree.f90	/^      type (node), pointer :: bbl,/;"	k	type:node
-bbr	sph_tree.f90	/^      type (SPH_node), pointer :: bbl, bbr /;"	k	type:SPH_node
 bbr	tree.f90	/^      type (node), pointer :: bbl, bbr /;"	k	type:node
 behind	cdata.f90	/^    integer :: infront, behind /;"	k	type:qvort
 binormalf	general.f90	/^  function binormalf(/;"	f	module:general
@@ -61,56 +32,53 @@ biot_savart_general_shift	timestep.f90	/^  subroutine biot_savart_general_shift(
 biot_savart_mirror	mirror.f90	/^  subroutine biot_savart_mirror(/;"	s	module:mirror
 biot_savart_shift	timestep.f90	/^  subroutine biot_savart_shift(/;"	s	module:timestep
 boundary_loop_remove	periodic.f90	/^  subroutine boundary_loop_remove(/;"	s	module:periodic
-btl	sph_tree.f90	/^      type (SPH_node), pointer :: btl,/;"	k	type:SPH_node
 btl	tree.f90	/^      type (node), pointer :: btl,/;"	k	type:node
-btr	sph_tree.f90	/^      type (SPH_node), pointer :: btl, btr /;"	k	type:SPH_node
 btr	tree.f90	/^      type (node), pointer :: btl, btr /;"	k	type:node
 build_tree	tree.f90	/^  recursive subroutine build_tree(/;"	s	module:tree
 calc_KS_amplitudes	ksmodel.f90	/^    subroutine calc_KS_amplitudes$/;"	s	module:KSmodel
 calc_velocity	timestep.f90	/^  subroutine calc_velocity(/;"	s	module:timestep
+calculate_diagnostics	diagnostic.f90	/^  subroutine calculate_diagnostics(/;"	s	module:diagnostic
 can_reload	run.f90	/^  logical :: can_stop=.false.,can_reload=/;"	v	program:run
 can_stop	run.f90	/^  logical :: can_stop=/;"	v	program:run
 cdata	cdata.f90	/^module cdata$/;"	m
-centx	sph_tree.f90	/^      real :: centx,/;"	k	type:SPH_node
 centx	tree.f90	/^      real :: centx,/;"	k	type:node
-centy	sph_tree.f90	/^      real :: centx, centy,/;"	k	type:SPH_node
 centy	tree.f90	/^      real :: centx, centy,/;"	k	type:node
-centz	sph_tree.f90	/^      real :: centx, centy, centz /;"	k	type:SPH_node
 centz	tree.f90	/^      real :: centx, centy, centz /;"	k	type:node
 circ	tree.f90	/^      real :: circ(/;"	k	type:node
 clear_particle	general.f90	/^  subroutine clear_particle(/;"	s	module:general
 closest	cdata.f90	/^    integer :: closest$/;"	k	type:qvort
 closest_tree	tree.f90	/^  recursive subroutine closest_tree(/;"	s	module:tree
 closestd	cdata.f90	/^    real :: closestd$/;"	k	type:qvort
+completion_message	cdata.f90	/^  subroutine completion_message$/;"	s	module:cdata
 construct_tree	tree.f90	/^  subroutine construct_tree(/;"	s	module:tree
-covariance	sph_interface.f90	/^  real function covariance(/;"	f	module:sph_interface
-create_SPH_tree	sph_tree.f90	/^  subroutine create_SPH_tree(/;"	s	module:sph_tree
 cross1	ksmodel.f90	/^    real,private,dimension(:,:),allocatable :: cross1,/;"	v	module:KSmodel
 cross2	ksmodel.f90	/^    real,private,dimension(:,:),allocatable :: cross1,cross2$/;"	v	module:KSmodel
 cross_product	general.f90	/^  function cross_product(/;"	f	module:general
 crossing_routine	topology.f90	/^    subroutine crossing_routine(/;"	s	module:topology
-current	cdata.f90	/^    type( neigh_ll ), pointer :: list, current,/;"	k	type:use_neigh_ll
 curv_info	diagnostic.f90	/^  subroutine curv_info(/;"	s	module:diagnostic
 curvature	general.f90	/^  real function curvature(/;"	f	module:general
 data_dump	output.f90	/^  subroutine data_dump$/;"	s	module:output
 data_restore	initial.f90	/^  subroutine data_restore$/;"	s	module:initial
+dcauchy	statistics.f90	/^  real function dcauchy(/;"	f	module:statistics
+dchi	statistics.f90	/^  real function dchi(/;"	f	module:statistics
 dead_tree	tree.f90	/^  subroutine dead_tree(/;"	s	module:tree
 delk	ksmodel.f90	/^    real,private,dimension(:),allocatable  ::  klengths,kk,delk,/;"	v	module:KSmodel
 delta	cdata.f90	/^    real :: delta$/;"	k	type:qvort
 delta_gap	hamiltonian.f90	/^  real, private, parameter :: delta_gap=/;"	v	module:hamiltonian
+derivatives	derivatives.f90	/^module derivatives$/;"	m
+dexp	statistics.f90	/^  real function dexp(/;"	f	module:statistics
+dgamma	statistics.f90	/^  real function dgamma(/;"	f	module:statistics
 diagnostic	diagnostic.f90	/^module diagnostic$/;"	m
-diagnostics_SPH	sph.f90	/^  subroutine diagnostics_SPH$/;"	s	module:sph
 diagnostics_particles	particles.f90	/^  subroutine diagnostics_particles$/;"	s	module:particles
 diagnostics_quasip	quasip.f90	/^  subroutine diagnostics_quasip$/;"	s	module:quasip
 differential_rotation	timestep.f90	/^  subroutine differential_rotation(/;"	s	module:timestep
-diffusion_on	mag.f90	/^  logical, private :: diffusion_on=/;"	v	module:mag
-dist_gen	general.f90	/^  real function dist_gen(/;"	f	module:general
+dist_gen	derivatives.f90	/^  real function dist_gen(/;"	f	module:derivatives
 dist_gen_sq	general.f90	/^  real function dist_gen_sq(/;"	f	module:general
 distf	general.f90	/^  real function distf(/;"	f	module:general
 distfsq	general.f90	/^  real function distfsq(/;"	f	module:general
 div	normal_fluid.f90	/^      real :: div /;"	k	type:norm_fluid_grid
-divu	cdata.f90	/^    real :: divu$/;"	k	type:smooth_particle
-drhodh	cdata.f90	/^    real :: rho, drhodh$/;"	k	type:smooth_particle
+dlaplace	statistics.f90	/^  real function dlaplace(/;"	f	module:statistics
+dnorm	statistics.f90	/^  real function dnorm(/;"	f	module:statistics
 dt	cdata.f90	/^  real :: dt$/;"	v	module:cdata
 dt_int	stiff_solver.f90	/^  real, private :: t_int, dt_int /;"	v	module:stiff_solver
 efermi	hamiltonian.f90	/^  real, private, parameter :: efermi=/;"	v	module:hamiltonian
@@ -122,21 +90,16 @@ enforce_open_removal	periodic.f90	/^  subroutine enforce_open_removal(/;"	s	modu
 enforce_periodic	periodic.f90	/^  subroutine enforce_periodic(/;"	s	module:periodic
 enforce_periodic_yz	periodic.f90	/^  subroutine enforce_periodic_yz(/;"	s	module:periodic
 eta	stiff_solver.f90	/^  real, allocatable, private :: eta(/;"	v	module:stiff_solver
-f	cdata.f90	/^    real :: f$/;"	k	type:smooth_particle
 f	cdata.f90	/^  type(qvort), allocatable :: f(/;"	v	module:cdata
 fatal_error	cdata.f90	/^  subroutine fatal_error(/;"	s	module:cdata
-fbl	sph_tree.f90	/^      type (SPH_node), pointer :: fbl,/;"	k	type:SPH_node
 fbl	tree.f90	/^      type (node), pointer :: fbl,/;"	k	type:node
-fbr	sph_tree.f90	/^      type (SPH_node), pointer :: fbl, fbr /;"	k	type:SPH_node
 fbr	tree.f90	/^      type (node), pointer :: fbl, fbr /;"	k	type:node
 findinv	matrix.f90	/^  subroutine findinv(/;"	s	module:matrix
 five_twelths	cdata.f90	/^  real, parameter :: five_twelths=/;"	v	module:cdata
 force_direction	forcing.f90	/^  real, private :: force_direction(/;"	v	module:forcing
 forcing	forcing.f90	/^module forcing$/;"	m
 four_thirds	cdata.f90	/^  real, parameter :: four_thirds=/;"	v	module:cdata
-ftl	sph_tree.f90	/^      type (SPH_node), pointer :: ftl,/;"	k	type:SPH_node
 ftl	tree.f90	/^      type (node), pointer :: ftl,/;"	k	type:node
-ftr	sph_tree.f90	/^      type (SPH_node), pointer :: ftl, ftr /;"	k	type:SPH_node
 ftr	tree.f90	/^      type (node), pointer :: ftl, ftr /;"	k	type:node
 g	cdata.f90	/^  type(quasi), allocatable :: g(/;"	v	module:cdata
 general	general.f90	/^module general$/;"	m
@@ -144,31 +107,31 @@ get_KS_flow	ksmodel.f90	/^    subroutine get_KS_flow(/;"	s	module:KSmodel
 get_LS_kAB	forcing.f90	/^  subroutine get_LS_kAB$/;"	s	module:forcing
 get_anisotropy_info	diagnostic.f90	/^  subroutine get_anisotropy_info(/;"	s	module:diagnostic
 get_boxed_vorticity	diagnostic.f90	/^  subroutine get_boxed_vorticity(/;"	s	module:diagnostic
-get_deriv_1	general.f90	/^  subroutine get_deriv_1(/;"	s	module:general
-get_deriv_2	general.f90	/^  subroutine get_deriv_2(/;"	s	module:general
+get_deriv_1	derivatives.f90	/^  subroutine get_deriv_1(/;"	s	module:derivatives
+get_deriv_2	derivatives.f90	/^  subroutine get_deriv_2(/;"	s	module:derivatives
 get_forcing	forcing.f90	/^  subroutine get_forcing(/;"	s	module:forcing
 get_forcing_gen	forcing.f90	/^  subroutine get_forcing_gen(/;"	s	module:forcing
+get_full_loop_count	diagnostic.f90	/^  subroutine get_full_loop_count(/;"	s	module:diagnostic
 get_ghost_p	periodic.f90	/^  subroutine get_ghost_p(/;"	s	module:periodic
 get_kernel_density	kernel_density.f90	/^  subroutine get_kernel_density(/;"	s	module:kernel_density
 get_linking_number	topology.f90	/^    subroutine get_linking_number$/;"	s	module:topology
+get_min_distance	diagnostic.f90	/^  subroutine get_min_distance(/;"	s	module:diagnostic
 get_normal_divu	normal_fluid.f90	/^    subroutine get_normal_divu(/;"	s	module:normal_fluid
 get_normal_velocity	normal_fluid.f90	/^    subroutine get_normal_velocity(/;"	s	module:normal_fluid
+get_particle_plane_info	diagnostic.f90	/^  subroutine get_particle_plane_info(/;"	s	module:diagnostic
 get_sep_inf	diagnostic.f90	/^  subroutine get_sep_inf(/;"	s	module:diagnostic
 get_smoothed_field	smoothing.f90	/^  subroutine get_smoothed_field$/;"	s	module:smoothing
 get_topo_info	diagnostic.f90	/^  subroutine get_topo_info(/;"	s	module:diagnostic
+get_torsion_hist	diagnostic.f90	/^  subroutine get_torsion_hist(/;"	s	module:diagnostic
 get_writhing_number	topology.f90	/^    subroutine get_writhing_number$/;"	s	module:topology
 ghostb	cdata.f90	/^    real :: ghosti(3), ghostb(/;"	k	type:qvort
+ghostbb	cdata.f90	/^    real :: ghostii(3), ghostbb(/;"	k	type:qvort
 ghosti	cdata.f90	/^    real :: ghosti(/;"	k	type:qvort
+ghostii	cdata.f90	/^    real :: ghostii(/;"	k	type:qvort
 ghostp	periodic.f90	/^  subroutine ghostp$/;"	s	module:periodic
 grid	cdata.f90	/^  type grid$/;"	t	module:cdata
-h	cdata.f90	/^    real :: h$/;"	k	type:smooth_particle
-h	sph_tree.f90	/^      real :: h$/;"	k	type:SPH_node
-h_eta	sph.f90	/^  real,parameter :: h_eta=/;"	v	module:sph
 hamiltonian	hamiltonian.f90	/^module hamiltonian$/;"	m
-i	cdata.f90	/^    in/;"	k	type:neigh_ll
-i	cdata.f90	/^    in/;"	k	type:smooth_particle
 i	run.f90	/^  in/;"	v	program:run
-i	sph_tree.f90	/^      in/;"	k	type:SPH_node
 infront	cdata.f90	/^    integer :: infront,/;"	k	type:qvort
 init_random_seed	cdata.f90	/^  subroutine init_random_seed(/;"	s	module:cdata
 init_setup	initial.f90	/^  subroutine init_setup(/;"	s	module:initial
@@ -184,25 +147,17 @@ kappa_min	cdata.f90	/^  real :: kappa_min,/;"	v	module:cdata
 kernel_density	kernel_density.f90	/^module kernel_density$/;"	m
 kk	ksmodel.f90	/^    real,private,dimension(:),allocatable  ::  klengths,kk,/;"	v	module:KSmodel
 klengths	ksmodel.f90	/^    real,private,dimension(:),allocatable  ::  klengths,/;"	v	module:KSmodel
-l1	cdata.f90	/^    real :: l1,/;"	k	type:qvort
-l2	cdata.f90	/^    real :: l1, l2$/;"	k	type:qvort
+lat_mesh_1D	cdata.f90	/^  type(grid), allocatable :: lat_mesh_1D(/;"	v	module:cdata
 line	line.f90	/^module line$/;"	m
 linking_number	cdata.f90	/^  real :: linking_number$/;"	v	module:cdata
-list	cdata.f90	/^    type( neigh_ll ), pointer :: list,/;"	k	type:use_neigh_ll
-loop_killer	line.f90	/^  subroutine loop_killer(/;"	s	module:line
-m	cdata.f90	/^    real :: m$/;"	k	type:smooth_particle
+loop_killer	reconnection.f90	/^  subroutine loop_killer(/;"	s	module:reconnection
 m	mirror.f90	/^  type(qvort), allocatable, private :: m(/;"	v	module:mirror
-mag	mag.f90	/^module mag$/;"	m
-mag_tension	mag.f90	/^  subroutine mag_tension(/;"	s	module:mag
-mag_tension_mirr	mag.f90	/^  subroutine mag_tension_mirr(/;"	s	module:mag
-mass	sph_tree.f90	/^      real :: mass /;"	k	type:SPH_node
 matrix	matrix.f90	/^module matrix$/;"	m
 maxdu	cdata.f90	/^  real :: maxdu$/;"	v	module:cdata
 maxu	cdata.f90	/^  real :: maxu$/;"	v	module:cdata
 mbare	hamiltonian.f90	/^  real, private, parameter :: mbare=/;"	v	module:hamiltonian
 mesh	cdata.f90	/^  type(grid), allocatable :: mesh(/;"	v	module:cdata
 mesh_delta	cdata.f90	/^  real :: mesh_delta$/;"	v	module:cdata
-mesh_print_SPH	sph.f90	/^  subroutine mesh_print_SPH(/;"	s	module:sph
 mesh_velocity	timestep.f90	/^  subroutine mesh_velocity$/;"	s	module:timestep
 mfermi	hamiltonian.f90	/^  real, private, parameter :: mfermi=/;"	v	module:hamiltonian
 mirror	mirror.f90	/^module mirror$/;"	m
@@ -211,13 +166,7 @@ mirror_close	mirror.f90	/^  subroutine mirror_close$/;"	s	module:mirror
 mirror_flux_check	mirror.f90	/^  subroutine mirror_flux_check(/;"	s	module:mirror
 mirror_init	mirror.f90	/^  subroutine mirror_init$/;"	s	module:mirror
 mirror_pinning	mirror.f90	/^  subroutine mirror_pinning$/;"	s	module:mirror
-ncount	cdata.f90	/^    integer :: ncount /;"	k	type:smooth_particle
-ncount	cdata.f90	/^    integer :: ncount$/;"	k	type:use_neigh_ll
-ncounter	sph_tree.f90	/^   integer, private :: ncounter$/;"	v	module:sph_tree
-neigh_ll	cdata.f90	/^  type neigh_ll$/;"	t	module:cdata
-neighnumb	sph.f90	/^  integer,parameter,private :: neighnumb=/;"	v	module:sph
 new_tree	tree.f90	/^  subroutine new_tree(/;"	s	module:tree
-next	cdata.f90	/^    type( neigh_ll ), pointer :: next$/;"	k	type:neigh_ll
 nf_compressible	cdata.f90	/^  logical :: nf_compressible=/;"	v	module:cdata
 nfm	normal_fluid.f90	/^    type(norm_fluid_grid), allocatable, private :: nfm(/;"	v	module:normal_fluid
 nfm_compressibility	normal_fluid.f90	/^    subroutine nfm_compressibility(/;"	s	module:normal_fluid
@@ -234,6 +183,7 @@ normal_fluid	normal_fluid.f90	/^module normal_fluid$/;"	m
 normalf	general.f90	/^  function normalf(/;"	f	module:general
 nstart	cdata.f90	/^  integer :: nstart=/;"	v	module:cdata
 omega	ksmodel.f90	/^    real,private,dimension(:),allocatable :: omega /;"	v	module:KSmodel
+one_dim_lattice_vel	diagnostic.f90	/^  subroutine one_dim_lattice_vel(/;"	s	module:diagnostic
 one_dim_vel	diagnostic.f90	/^  subroutine one_dim_vel(/;"	s	module:diagnostic
 one_half	cdata.f90	/^  real, parameter :: one_half /;"	v	module:cdata
 order	ksmodel.f90	/^    subroutine order(/;"	s	module:KSmodel
@@ -241,7 +191,6 @@ orderK	ksmodel.f90	/^    real,private,dimension(:,:),allocatable :: orderK$/;"	v
 output	output.f90	/^module output$/;"	m
 p	cdata.f90	/^    real :: p(/;"	k	type:quasi
 p	cdata.f90	/^  type/;"	v	module:cdata
-parray	sph_tree.f90	/^      type (smooth_particle), allocatable :: parray(/;"	k	type:SPH_node
 parray	tree.f90	/^      type (qvort), allocatable :: parray(/;"	k	type:node
 part_count	cdata.f90	/^  integer :: part_count /;"	v	module:cdata
 part_maxdu	particles.f90	/^  real :: part_maxu=0., part_maxdu=/;"	v	module:particles
@@ -256,7 +205,6 @@ partition	kernel_density.f90	/^  subroutine partition(/;"	s	module:kernel_densit
 pclose	line.f90	/^  subroutine pclose$/;"	s	module:line
 pclose_tree	tree.f90	/^  subroutine pclose_tree$/;"	s	module:tree
 pcount	cdata.f90	/^  integer :: pcount /;"	v	module:cdata
-pcount	sph_tree.f90	/^      integer :: pcount /;"	k	type:SPH_node
 pcount	tree.f90	/^      integer :: pcount /;"	k	type:node
 pdot	cdata.f90	/^    real :: pdot(/;"	k	type:quasi
 periodic	periodic.f90	/^module periodic$/;"	m
@@ -270,21 +218,19 @@ pinnedi	cdata.f90	/^    logical :: pinnedi=/;"	k	type:qvort
 pinsert	line.f90	/^  subroutine pinsert$/;"	s	module:line
 pmotion	timestep.f90	/^  subroutine pmotion(/;"	s	module:timestep
 pold	cdata.f90	/^    real :: pold(/;"	k	type:quasi
-posx	sph_tree.f90	/^      real :: posx,/;"	k	type:SPH_node
 posx	tree.f90	/^      real :: posx,/;"	k	type:node
-posy	sph_tree.f90	/^      real :: posx,posy,/;"	k	type:SPH_node
 posy	tree.f90	/^      real :: posx,posy,/;"	k	type:node
-posz	sph_tree.f90	/^      real :: posx,posy,posz /;"	k	type:SPH_node
 posz	tree.f90	/^      real :: posx,posy,posz /;"	k	type:node
 precon	line.f90	/^  subroutine precon$/;"	s	module:line
-precon_dissapitive	line.f90	/^  subroutine precon_dissapitive$/;"	s	module:line
+precon_dissapitive	reconnection.f90	/^  subroutine precon_dissapitive$/;"	s	module:reconnection
+precon_kondaurova	reconnection.f90	/^  subroutine precon_kondaurova$/;"	s	module:reconnection
+precon_non_dissipative	reconnection.f90	/^  subroutine precon_non_dissipative$/;"	s	module:reconnection
+precon_original	reconnection.f90	/^  subroutine precon_original$/;"	s	module:reconnection
+precon_schwarz	reconnection.f90	/^  subroutine precon_schwarz$/;"	s	module:reconnection
 premove	line.f90	/^  subroutine premove$/;"	s	module:line
-previous	cdata.f90	/^    type( neigh_ll ), pointer :: list, current, previous$/;"	k	type:use_neigh_ll
 print_KS_Mesh	normal_fluid.f90	/^    subroutine print_KS_Mesh$/;"	s	module:normal_fluid
-print_SPH	output.f90	/^  subroutine print_SPH(/;"	s	module:output
 print_delta_adapt	output.f90	/^  subroutine print_delta_adapt(/;"	s	module:output
 print_dims	output.f90	/^  subroutine print_dims(/;"	s	module:output
-print_full_B	mag.f90	/^  subroutine print_full_B(/;"	s	module:mag
 print_info	output.f90	/^  subroutine print_info(/;"	s	module:output
 print_mesh	output.f90	/^  subroutine print_mesh(/;"	s	module:output
 print_smooth_mesh	smoothing.f90	/^  subroutine print_smooth_mesh(/;"	s	module:smoothing
@@ -304,42 +250,40 @@ qvort	cdata.f90	/^  type qvort /;"	t	module:cdata
 rdot	cdata.f90	/^    real :: rdot(/;"	k	type:quasi
 read_run_file	cdata.f90	/^  subroutine read_run_file(/;"	s	module:cdata
 recon_count	cdata.f90	/^  integer :: recon_count=/;"	v	module:cdata
+reconnection	reconnection.f90	/^module reconnection$/;"	m
 reload_run_file	cdata.f90	/^  subroutine reload_run_file(/;"	s	module:cdata
 remove_count	cdata.f90	/^  integer :: remove_count=/;"	v	module:cdata
-rho	cdata.f90	/^    real :: rho,/;"	k	type:smooth_particle
-rho	sph.f90	/^    real :: rho /;"	k	type:SPH_grid
-rnorm	general.f90	/^  real function rnorm(/;"	f	module:general
+rexp	statistics.f90	/^  real function rexp(/;"	f	module:statistics
+rgamma	statistics.f90	/^  real function rgamma(/;"	f	module:statistics
+rlaplace	statistics.f90	/^  real function rlaplace(/;"	f	module:statistics
+rnorm	statistics.f90	/^  real function rnorm(/;"	f	module:statistics
 rootpi	cdata.f90	/^  real, parameter :: rootpi=/;"	v	module:cdata
 run	run.f90	/^program run$/;"	p
-s	cdata.f90	/^  type(sm/;"	v	module:cdata
-s_NN	cdata.f90	/^  type(use_neigh_ll), allocatable :: s_NN(/;"	v	module:cdata
+runif	statistics.f90	/^  real function runif(/;"	f	module:statistics
 same_loop_test	general.f90	/^  subroutine same_loop_test(/;"	s	module:general
 sdata_dump	output.f90	/^  subroutine sdata_dump /;"	s	module:output
 self_rcount	cdata.f90	/^  integer :: self_rcount=/;"	v	module:cdata
 set_BDF_coeff	stiff_solver.f90	/^  subroutine set_BDF_coeff(/;"	s	module:stiff_solver
-set_B_length1	mag.f90	/^  subroutine set_B_length1$/;"	s	module:mag
-set_B_strength	mag.f90	/^  subroutine set_B_strength$/;"	s	module:mag
 setup_KS	ksmodel.f90	/^    subroutine setup_KS$/;"	s	module:KSmodel
-setup_SPH	sph.f90	/^  subroutine setup_SPH$/;"	s	module:sph
-setup_SPH_loop	initial_cond.f90	/^  subroutine setup_SPH_loop$/;"	s	module:initial_cond
-setup_SPH_mesh	sph.f90	/^  subroutine setup_SPH_mesh$/;"	s	module:sph
 setup_cardoid	initial_cond.f90	/^  subroutine setup_cardoid$/;"	s	module:initial_cond
 setup_colliding_loops	initial_cond.f90	/^  subroutine setup_colliding_loops$/;"	s	module:initial_cond
 setup_compressible	normal_fluid.f90	/^    subroutine setup_compressible$/;"	s	module:normal_fluid
 setup_criss_cross	initial_cond.f90	/^  subroutine setup_criss_cross$/;"	s	module:initial_cond
 setup_crow	initial_cond.f90	/^  subroutine setup_crow$/;"	s	module:initial_cond
+setup_crow_loop	initial_cond.f90	/^  subroutine setup_crow_loop$/;"	s	module:initial_cond
 setup_ellipse	initial_cond.f90	/^  subroutine setup_ellipse$/;"	s	module:initial_cond
 setup_forcing	forcing.f90	/^  subroutine setup_forcing(/;"	s	module:forcing
 setup_gen_normalf	normal_fluid.f90	/^    subroutine setup_gen_normalf$/;"	s	module:normal_fluid
+setup_helix	initial_cond.f90	/^  subroutine setup_helix$/;"	s	module:initial_cond
 setup_hypotrochoid	initial_cond.f90	/^  subroutine setup_hypotrochoid$/;"	s	module:initial_cond
 setup_kivotedes	initial_cond.f90	/^  subroutine setup_kivotedes$/;"	s	module:initial_cond
 setup_lattice	initial_cond.f90	/^  subroutine setup_lattice$/;"	s	module:initial_cond
 setup_leap_frog	initial_cond.f90	/^  subroutine setup_leap_frog$/;"	s	module:initial_cond
 setup_linked_filaments	initial_cond.f90	/^  subroutine setup_linked_filaments$/;"	s	module:initial_cond
 setup_linked_wave_loop	initial_cond.f90	/^  subroutine setup_linked_wave_loop$/;"	s	module:initial_cond
-setup_mag	mag.f90	/^  subroutine setup_mag(/;"	s	module:mag
 setup_mesh	initial.f90	/^  subroutine setup_mesh$/;"	s	module:initial
 setup_normal_fluid	normal_fluid.f90	/^    subroutine setup_normal_fluid$/;"	s	module:normal_fluid
+setup_one_dim_lattice	initial.f90	/^  subroutine setup_one_dim_lattice$/;"	s	module:initial
 setup_particles	particles.f90	/^  subroutine setup_particles$/;"	s	module:particles
 setup_quasip	quasip.f90	/^  subroutine setup_quasip$/;"	s	module:quasip
 setup_random_loops	initial_cond.f90	/^  subroutine setup_random_loops$/;"	s	module:initial_cond
@@ -355,29 +299,16 @@ setup_wave_loop	initial_cond.f90	/^  subroutine setup_wave_loop$/;"	s	module:ini
 sm	smoothing.f90	/^  type(smo/;"	v	module:smoothing
 sm_res	smoothing.f90	/^  real, private :: sm_res /;"	v	module:smoothing
 sm_sigma	smoothing.f90	/^  real, private :: sm_sigma /;"	v	module:smoothing
-smooth_particle	cdata.f90	/^  type smooth_particle$/;"	t	module:cdata
 smoothing	smoothing.f90	/^module smoothing$/;"	m
 smoothing_grid	smoothing.f90	/^  type smoothing_grid$/;"	t	module:smoothing
-sph	cdata.f90	/^    integer :: sph /;"	k	type:qvort
-sph	sph.f90	/^module sph$/;"	m
-sph_W	sph_kernel.f90	/^  real function sph_W(/;"	f	module:sph_kernel
-sph_dWdh	sph_kernel.f90	/^  real function sph_dWdh(/;"	f	module:sph_kernel
-sph_get_non_loc	sph.f90	/^  subroutine sph_get_non_loc$/;"	s	module:sph
-sph_grad_W	sph_kernel.f90	/^  function sph_grad_W(/;"	f	module:sph_kernel
-sph_interface	sph_interface.f90	/^module sph_interface$/;"	m
-sph_kernel	sph_kernel.f90	/^module sph_kernel$/;"	m
-sph_neighbour_loop	sph.f90	/^  subroutine sph_neighbour_loop$/;"	s	module:sph
-sph_phi	sph_kernel.f90	/^  function sph_phi(/;"	f	module:sph_kernel
-sph_tree	sph_tree.f90	/^module sph_tree$/;"	m
+statistics	statistics.f90	/^module statistics$/;"	m
 stiff_solver	stiff_solver.f90	/^module stiff_solver$/;"	m
-stree	sph_tree.f90	/^   type (SPH_node), pointer :: stree$/;"	v	module:sph_tree
 structure_function	diagnostic.f90	/^  subroutine structure_function(/;"	s	module:diagnostic
 t	cdata.f90	/^  real :: t=/;"	v	module:cdata
 t_change	normal_fluid.f90	/^    real, private :: t_change=/;"	v	module:normal_fluid
 t_int	stiff_solver.f90	/^  real, private :: t_int,/;"	v	module:stiff_solver
 tangentf	general.f90	/^  function tangentf(/;"	f	module:general
 three_twos	cdata.f90	/^  real, parameter :: three_twos=/;"	v	module:cdata
-time_check_SPH	sph.f90	/^  subroutine time_check_SPH$/;"	s	module:sph
 timestep	timestep.f90	/^module timestep$/;"	m
 timestep_check	initial.f90	/^  subroutine timestep_check$/;"	s	module:initial
 timestep_particles	particles.f90	/^  subroutine timestep_particles$/;"	s	module:particles
@@ -392,14 +323,11 @@ twenty_three_twelve	cdata.f90	/^  real, parameter :: twenty_three_twelve=/;"	v	m
 two_dim_vel	diagnostic.f90	/^  subroutine two_dim_vel(/;"	s	module:diagnostic
 u	cdata.f90	/^    real :: u(/;"	k	type:particella
 u	cdata.f90	/^    real :: u(/;"	k	type:qvort
-u	cdata.f90	/^    real :: u(/;"	k	type:smooth_particle
 u	normal_fluid.f90	/^      real :: u(/;"	k	type:norm_fluid_grid
 u1	cdata.f90	/^    real :: u(3), u1(/;"	k	type:particella
 u1	cdata.f90	/^    real :: u(3), u1(/;"	k	type:qvort
-u1	cdata.f90	/^    real :: u(3), u1(/;"	k	type:smooth_particle
 u2	cdata.f90	/^    real :: u(3), u1(3), u2(/;"	k	type:particella
 u2	cdata.f90	/^    real :: u(3), u1(3), u2(/;"	k	type:qvort
-u2	cdata.f90	/^    real :: u(3), u1(3), u2(/;"	k	type:smooth_particle
 u_mf	cdata.f90	/^    real :: u_sup(3), u_mf(/;"	k	type:qvort
 u_norm	cdata.f90	/^    real :: u_norm(/;"	k	type:grid
 u_sup	cdata.f90	/^    real :: u_sup(/;"	k	type:grid
@@ -407,10 +335,7 @@ u_sup	cdata.f90	/^    real :: u_sup(/;"	k	type:qvort
 unit_k	ksmodel.f90	/^    real,private,dimension(:,:),allocatable :: unit_k,/;"	v	module:KSmodel
 unitdt	hamiltonian.f90	/^  real, private, parameter :: unitdt=/;"	v	module:hamiltonian
 urms_norm	normal_fluid.f90	/^    real, private :: urms_norm$/;"	v	module:normal_fluid
-use_neigh_ll	cdata.f90	/^  type use_neigh_ll$/;"	t	module:cdata
 v	normal_fluid.f90	/^      real :: v$/;"	k	type:norm_fluid_grid
-v1	cdata.f90	/^    real :: v1,/;"	k	type:qvort
-v2	cdata.f90	/^    real :: v1, v2$/;"	k	type:qvort
 vector_angle	general.f90	/^  real function vector_angle(/;"	f	module:general
 velocity_fluidp	particles.f90	/^  subroutine velocity_fluidp(/;"	s	module:particles
 velocity_info	diagnostic.f90	/^  subroutine velocity_info(/;"	s	module:diagnostic
@@ -424,17 +349,14 @@ vv_rcount	cdata.f90	/^  integer :: vv_rcount=/;"	v	module:cdata
 w	smoothing.f90	/^     real :: w(/;"	k	type:smoothing_grid
 warning_message	cdata.f90	/^  subroutine warning_message(/;"	s	module:cdata
 wavenumbers	ksmodel.f90	/^    subroutine wavenumbers$/;"	s	module:KSmodel
-width	sph_tree.f90	/^      real :: width /;"	k	type:SPH_node
 width	tree.f90	/^      real :: width /;"	k	type:node
 writhing_number	cdata.f90	/^  real :: writhing_number$/;"	v	module:cdata
 x	cdata.f90	/^    real :: x(/;"	k	type:grid
 x	cdata.f90	/^    real :: x(/;"	k	type:particella
 x	cdata.f90	/^    real :: x(/;"	k	type:quasi
 x	cdata.f90	/^    real :: x(/;"	k	type:qvort
-x	cdata.f90	/^    real :: x(/;"	k	type:smooth_particle
 x	normal_fluid.f90	/^      real :: x(/;"	k	type:norm_fluid_grid
 x	smoothing.f90	/^     real :: x(/;"	k	type:smoothing_grid
-x	sph.f90	/^    real :: x(/;"	k	type:SPH_grid
 xdim_scaling_factor	cdata.f90	/^  real :: xdim_scaling_factor=/;"	v	module:cdata
 xold	cdata.f90	/^    real :: xold(/;"	k	type:quasi
 xy_projection	topology.f90	/^    subroutine xy_projection(/;"	s	module:topology
