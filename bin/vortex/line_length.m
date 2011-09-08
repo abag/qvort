@@ -5,7 +5,7 @@ function line_length(sections)
 if nargin<1
   sections=1;
 end
-A=load('data/ts.log');
+A=load('./data/ts.log');
 t=A(:,2) ; l=A(:,6) ; 
 scrsz = get(0,'ScreenSize');
 figure('Position',[1 scrsz(4) scrsz(3)/1.2 scrsz(4)/2],'PaperPosition',[0.25 2.5 28.0 12.0],'color','w','visible','on','Name', 'line_length')

@@ -4,7 +4,7 @@ function line_length(fit)
 if nargin<1
   fit=-5/3
 end
-A=load('data/ts.log');
+A=load('./data/ts.log');
 t=A(:,2) ; l=A(:,6) ; 
 fitted_line=t.^(fit) ;
 %get the fitted line to lie over the data

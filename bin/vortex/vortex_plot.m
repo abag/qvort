@@ -12,6 +12,7 @@
 %            vmax= value:maximum field strength
 %            vmin= value:maximum field strength
 %            overhead: angle the plot overhead
+%            thin_line: if the tangle is very dense use this
 %            overhead_xz: angle the plot overhead xz plane
 %            show_points: will only work if line is set, shows points as well as lines, ignored if rainbow set
 %            print: print to file rather than screen
@@ -93,8 +94,6 @@ if (magnetic==1)
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%create fuigure to plot into
-figure('Name','Filament Plot')
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
 if dims(4)==1

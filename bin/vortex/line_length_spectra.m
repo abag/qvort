@@ -1,7 +1,7 @@
 %calculates the power density spectra of line length time series
 %removes first an final 5% of time series to avoid transient growth
 function line_length_spectrum
-A=load('data/ts.log');
+A=load('./data/ts.log');
 n=length(A) ;
 t=A(floor(0.05*n):floor(0.95*n),2) ; l=A(floor(0.05*n):floor(0.95*n),6) ;
 N=length(l) ;

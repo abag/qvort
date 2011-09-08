@@ -45,12 +45,14 @@ module diagnostic
     integer :: line_count
     integer ::  next, next_old
     integer,allocatable :: counter(:)
+    real,allocatable :: counter_rad(:)
     integer :: i, j, l, m
     logical :: unique
     character (len=30) :: line_file
     allocate(counter(ceiling(pcount/5.)))
+    allocate(counter_rad(ceiling(pcount/5.)))
     allocate(line(ceiling(pcount/5.),pcount,4))
-    counter=0 ; line_count=0
+    counter=0 ; counter_rad=0. ; line_count=0
     !create file to print to 
     if (mod(itime,mesh_shots)==0) then
       write(unit=line_file,fmt="(a,i3.3,a)")'./data/loop_size',itime/mesh_shots,".log"
@@ -63,13 +65,13 @@ module diagnostic
       end if
     end do
     next_old=next
-    do l=1, 500
+    do l=1, 1000 !limited to 500 loops at present - should be do while
       do i=1, pcount
         line(l,i,1)=f(next)%x(1)
         line(l,i,2)=f(next)%x(2)
         line(l,i,3)=f(next)%x(3)
         line(l,i,4)=next
-
+        counter_rad(l)=counter_rad(l)+dist_gen(f(next)%x,f(f(next)%infront)%x)
         next=f(next)%infront
         counter(l)=counter(l)+1
         if (next==next_old) exit
@@ -78,7 +80,7 @@ module diagnostic
       ! make line a loop
       line_count=line_count+1
       if (mod(itime,mesh_shots)==0) then
-        write(97,*) line_count, counter(l)
+        write(97,*) line_count, counter(l), counter_rad(l)
       end if
       !check size of line
       if (sum(counter)<count(mask=f(:)%infront>0)) then
@@ -108,7 +110,7 @@ module diagnostic
     open(unit=72,file='data/loop_counter.log',position='append')
       write(72,*) t, line_count
     close(72)
-    deallocate(counter,line)
+    deallocate(counter,counter_rad,line)
   end subroutine
   !*************************************************
   !>get the maximum velocity and change of velocity
