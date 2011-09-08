@@ -13,8 +13,8 @@ case 'empty'
     help torsion
     return
 end
-A=load('data/torsion.log');
-B=load('data/ts.log') ; 
+A=load('./data/torsion.log');
+B=load('./data/ts.log') ; 
 t=B(:,2) ; tbar=A(:,1) ; tmin=A(:,2) ; tmax=A(:,3) ;
 switch option
   case 'print'

@@ -13,7 +13,7 @@ case 'empty'
   help ts
   return
 end
-A=load('data/ts.log');
+A=load('./data/ts.log');
 dims=load('./data/dims.log');
 t=A(:,2) ; pcount=A(:,3) ; rcount=A(:,4) ; sep=A(:,5) ; l=A(:,6) ; 
 maxu=A(:,7) ; maxdu=A(:,8) ; eval=A(:,9) ; curv=A(:,10) ;

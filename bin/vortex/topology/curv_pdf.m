@@ -1,7 +1,9 @@
 %a script to plot histograms of curvature
 %note I assume that the number of bins is 10
 %run the script with the command 'print' to print to file
-function curv_hist(option)
+%run the script with the command 'loglog' for double log scale
+%run the script with the command 'log' for semi-log (y axis)
+function curv_pdf(option)
 if nargin==0     
   option='empty';
 end

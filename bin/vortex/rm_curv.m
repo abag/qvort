@@ -2,7 +2,7 @@
 %the filament, useful if you have set phone_emission T in run.in
 function rm_curv
 A=load('./data/removed_curv.log');
-B=load('data/curvature.log');
+B=load('./data/curvature.log');
 cmax=B(:,3) ; cmax_bar=mean(cmax) ; cmax_latest=cmax(length(cmax)) ;
 dims=load('./data/dims.log');
 delta=dims(1);
