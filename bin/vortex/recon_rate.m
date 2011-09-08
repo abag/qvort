@@ -1,7 +1,7 @@
 %read in the ts file and plot reconnection information
 %you must have set recon_info T in run.in
 %if given the option print will print to .eps file rather than screen
-function ts(option)
+function recon_rate(option)
 if nargin==0     
   option='empty';
 end
@@ -14,7 +14,7 @@ case 'empty'
   help ts
   return
 end
-A=load('data/ts.log');
+A=load('./data/ts.log');
 t=A(:,2) ; rcount=A(:,4) ; rmcount=A(:,11) ;
 for i=1:length(t)-1
   recon_rate(i)=rcount(i+1)-rcount(i);

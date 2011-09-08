@@ -13,8 +13,8 @@ case 'empty'
     help vortex_energy
     return
 end
-A=load('data/energy.log');
-B=load('data/ts.log') ; 
+A=load('./data/energy.log');
+B=load('./data/ts.log') ; 
 t=B(:,2) ; energy=A(:,1) ; 
 switch option
   case 'print'
