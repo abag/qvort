@@ -156,6 +156,10 @@ module initial
           call setup_smooth_test_wave !initial_cond.mod  
         case('leap-frog')
           call setup_leap_frog !initial_cond.mod
+        case('loop_train')
+          call setup_loop_train !initial_cond.mod
+        case('loop_stream')
+          call setup_loop_stream !initial_cond.mod       
         case('linked_filaments')
           call setup_linked_filaments !initial_cond.mod
         case('colliding_loops')

@@ -672,7 +672,7 @@ module cdata
   !>generate a new random seed, or read one in from ./data if restating code
   subroutine init_random_seed()
      !CREATE A NEW RANDOM SEED, UNLESS RESTARTING CODE
-     integer :: i, n=8, clock
+     integer :: i, n=16, clock
      integer, allocatable :: seed(:)
      logical :: seed_exists=.false.
      allocate(seed(n))

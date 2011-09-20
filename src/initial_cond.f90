@@ -1196,7 +1196,7 @@ module initial_cond
       end do
     end do
   end subroutine
-!*************************************************************************
+  !*************************************************************************
   subroutine setup_criss_cross
     implicit none
     real :: rand1, rand2, rand3, rand4
@@ -1288,6 +1288,106 @@ module initial_cond
           f(line_position)%u1=0. ; f(line_position)%u2=0.
         end do
       end if
+    end do
+  end subroutine
+  !*************************************************************************
+  subroutine setup_loop_train
+    implicit none
+    integer :: pcount_required
+    integer :: loop_size, loop_position
+    real :: loop_radius, z_pos
+    integer :: i,j
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_loop_train', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if (periodic_bc) then
+      !work out the number of particles required for our lines
+      !given the box size specified in run.in
+      loop_radius=0.45*box_size
+      loop_size=nint(loop_radius*2*pi/(0.75*delta)) !75%
+      pcount_required=line_count*loop_size
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_loop_train',&
+                       'periodic boundary conditions required for this initial condition') !cdata.mod
+    end if
+    do i=1, line_count
+      z_pos=(2*i-1)/(2.*line_count)*box_size-box_size/2.
+      do j=1, loop_size
+        loop_position=j+(i-1)*loop_size
+        if (mod(i,2)==0) then
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)
+          f(loop_position)%x(2)=loop_radius*cos(pi*real(2*j-1)/loop_size)+box_size/2.
+        else
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)+box_size/2.
+          f(loop_position)%x(2)=loop_radius*cos(pi*real(2*j-1)/loop_size)
+        end if
+        f(loop_position)%x(3)=z_pos
+        if(j==1) then
+          f(loop_position)%behind=i*loop_size
+          f(loop_position)%infront=loop_position+1
+        else if (j==loop_size) then
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=(i-1)*loop_size+1
+        else
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=loop_position+1
+        end if
+      end do
+    end do
+  end subroutine
+  !*************************************************************************
+  subroutine setup_loop_stream
+    implicit none
+    integer :: pcount_required
+    integer :: loop_size, loop_position
+    real :: loop_radius, z_pos
+    integer :: i,j
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_loop_train', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if (periodic_bc) then
+      !work out the number of particles required for our lines
+      !given the box size specified in run.in
+      loop_radius=0.245*box_size
+      loop_size=nint(loop_radius*2*pi/(0.75*delta)) !75%
+      pcount_required=line_count*loop_size
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_loop_train',&
+                       'periodic boundary conditions required for this initial condition') !cdata.mod
+    end if
+    do i=1, line_count
+      z_pos=(2*i-1)/(2.*line_count)*box_size-box_size/2.
+      do j=1, loop_size
+        loop_position=j+(i-1)*loop_size
+        if (mod(i,2)==0) then
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)+box_size/5
+          f(loop_position)%x(2)=loop_radius*cos(pi*real(2*j-1)/loop_size)+box_size/5.
+        else
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)-box_size/5.
+          f(loop_position)%x(2)=-loop_radius*cos(pi*real(2*j-1)/loop_size)-box_size/5.
+        end if
+        f(loop_position)%x(3)=z_pos
+        if(j==1) then
+          f(loop_position)%behind=i*loop_size
+          f(loop_position)%infront=loop_position+1
+        else if (j==loop_size) then
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=(i-1)*loop_size+1
+        else
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=loop_position+1
+        end if
+      end do
     end do
   end subroutine
 end module
