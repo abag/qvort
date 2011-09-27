@@ -71,12 +71,18 @@ module line
         !get second derivative at i
         call get_deriv_2(i,f_ddot) !general.mod
         curv=sqrt(dot_product(f_ddot,f_ddot)) !get the curvature
-        curv=curv**(-1) !actually we want the inverse
-        if (curv**2-0.25*disti**2>0.) then
+        if (curv<epsilon(0.)) then !curvature could be 0
+          curv=curv**(-1) !actually we want the inverse
+          if (curv**2-0.25*disti**2>0.) then
           !could be negative, avoid this
           f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)+&
                        (sqrt(curv**2-0.25*disti**2)-curv)*curv*f_ddot
+          else
+            !linear interpolation
+            f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)
+          end if
         else
+          !linear interpolation
           f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)
         end if
         !average the current velocity
