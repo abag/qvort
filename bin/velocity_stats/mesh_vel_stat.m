@@ -9,7 +9,7 @@ else
     display=1;
     disp('producing iso surfaces before and after + paraview output')
 end
-load data/dims.log;
+load ./data/dims.log;
 msize=dims(3);
 if (msize==0) 
   disp('mesh size is zero exiting script')
