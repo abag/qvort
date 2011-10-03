@@ -22,6 +22,8 @@ module timestep
     real :: dummy_max_error, max_error !maximum error between 2nd and 3rd order method
     real :: rot_r, rot_theta !for differential rotation
     integer :: i
+    !intialise forcing every timestep incase there is a random element
+    call randomise_forcing
     !begin by testing if we have special velocity field Rotate
     select case(velocity)
       case('Rotate')
