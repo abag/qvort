@@ -146,6 +146,8 @@ module initial
           call setup_random_loops !initial_cond.mod
         case('crow')
           call setup_crow !initial_cond.mod
+        case('big_bundles')
+          call setup_big_bundles !initial_cond.mod
         case('helix')
           call setup_helix !initial_helix.mod          
         case('crow_loop')
