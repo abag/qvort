@@ -46,6 +46,7 @@ module forcing
         write(*,'(a,f5.3)') 'large scale forcing (similar to KS) with amplitude ', force_amp
       case('wave_force')
         write(*,'(a,f5.3)') 'force wavemodes  9,10,11 with amplitude ', force_amp
+        write(*,'(a,i6.2,a)') 'phase changed every, ', ceiling(force_freq), ',timesteps'
       case default
         call fatal_error('forcing.mod:setup_forcing', &
         'incorrect forcing parameter set in run.in') !cdata.mod
@@ -93,7 +94,6 @@ module forcing
       case('wave_force')
         u=0. !initialise to 0
         !now sum over three wavenumbers
-        print*, i, f(i)%x(3)/box_size
         do j=9,11
           u=u+force_amp*cos(2*pi*j*f(i)%x(3)/box_size+force_phase(j))
         end do
@@ -114,19 +114,22 @@ module forcing
         end if
       case('LS_force')
         !this has it's own subroutine to reinitialise
-        call get_LS_kAB!forcing.mod
-        if (mod(itime,shots)==0) then
-          !print to file
-          open(unit=47,file='./data/LS_forcing.log',position='append')
-            write(47,*) LS_k, LS_A, LS_B
-          close(47)
+        if (mod(itime,ceiling(force_freq))==0) then
+          call get_LS_kAB!forcing.mod
+          if (mod(itime,shots)==0) then
+            !print to file
+            open(unit=47,file='./data/LS_forcing.log',position='append')
+              write(47,*) LS_k, LS_A, LS_B
+            close(47)
+          end if 
         end if 
       case('wave_force')
         !uniform distributed random phase from 0->2\pi
-        do j=1, 3
-          force_phase(j)=runif(0.,2.*pi)
-        end do 
-        print*, force_phase
+        if (mod(itime,ceiling(force_freq))==0) then
+          do j=1, 3
+            force_phase(j)=runif(0.,2.*pi)
+          end do 
+        end if
     end select
   end subroutine
   !***********************************************
@@ -202,4 +205,9 @@ end module
 !!\p top_boundary - sinusoidal forcing in the x direction at the top of the box
 !!with a frequency and amplitude set in run.in (force_freq, force_amp)\n
 !!\p LS_force - please document me\n
+!!\p wave_force - forces at three specified wavenumbers
+!!\f[ 
+!!\mathbf{u}_{\rm force}(\mathbf{s})=\sum_{k=9}^{11} \Re [ A \exp{i(kz+\phi)} ] =\sum_{k=9}^{11} A\cos(kz+\phi),
+!!\f] 
+!!where \f$ \phi\f$ is a randomly chosen phase, reset every force_freq timesteps.
 
