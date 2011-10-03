@@ -56,4 +56,23 @@ for i=filenumbers
   uz(counter*msize^3+1:(counter+1)*msize^3)=dummy_uz;
   counter=counter+1;
 end
+vcoff=7. ;
+index = find(ux > vcoff);
+ux(index) = [];
+clear index;
+index = find(uy > vcoff);
+uy(index) = [];
+clear index;
+index = find(uz > vcoff);
+uz(index) = [];
+clear index ;
+index = find(ux < -vcoff);
+ux(index) = [];
+clear index;
+index = find(uy < -vcoff);
+uy(index) = [];
+clear index;
+index = find(uz < -vcoff);
+uz(index) = [];
+clear index ;
 save velocity.mat ux uy uz
