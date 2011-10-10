@@ -248,10 +248,6 @@ module initial_cond
       'periodic boundary conditions required')
     end if
     write(*,*) 'initf: crow, separation of lines is:', 2.*delta 
-    if (wave_count>0) then
-      write(*,'(i4.1,a,a,a,f9.5)') wave_count, ' ',trim(wave_type),&
-              ' wave pertubations, with spectral slope:', wave_slope
-    end if
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount/2
       f(i)%x(1)=0.
