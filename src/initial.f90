@@ -148,6 +148,8 @@ module initial
           call setup_crow !initial_cond.mod
         case('big_bundles')
           call setup_big_bundles !initial_cond.mod
+        case('central_bundle')
+          call setup_central_bundle !initial_cond.mod
         case('helix')
           call setup_helix !initial_helix.mod          
         case('crow_loop')

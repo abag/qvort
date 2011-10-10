@@ -163,6 +163,7 @@ module cdata
   real, protected :: wave_slope=-1.5
   real, protected :: wave_amp=10.
   character(len=30), protected :: wave_type='planar' 
+  character(len=30), protected :: bundle_type='polarised' 
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
   logical, protected :: binary_print=.true.
@@ -356,8 +357,10 @@ module cdata
              read(buffer, *, iostat=ios) line_sigma !used in certain intial conditions
           case ('lattice_ratio')
              read(buffer, *, iostat=ios) lattice_ratio !used in lattice initial conditions
+          case ('bundle_type')
+             read(buffer, *, iostat=ios) bundle_type !used in central_bundle initial conditions
           case ('rotation_factor')
-             read(buffer, *, iostat=ios) rotation_factor !used in random loops initial cond.
+             read(buffer, *, iostat=ios) rotation_factor !how much we rotate loops by
           case ('force')
              read(buffer, *, iostat=ios) force !force the vortices
           case ('force_amp')

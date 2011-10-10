@@ -248,6 +248,10 @@ module initial_cond
       'periodic boundary conditions required')
     end if
     write(*,*) 'initf: crow, separation of lines is:', 2.*delta 
+    if (wave_count>0) then
+      write(*,'(i4.1,a,a,a,f9.5)') wave_count, ' ',trim(wave_type),&
+              ' wave pertubations, with spectral slope:', wave_slope
+    end if
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount/2
       f(i)%x(1)=0.
@@ -326,6 +330,68 @@ module initial_cond
           f(line_position)%x(2)=box_size/4.+(box_size/10.)*rand2
           f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
         end if
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0.
+      end do
+    end do
+  end subroutine
+  !*************************************************************************
+  !> single bundle of lines in centre of box can be polarised or random
+  !> depending on bundle_type parameter in run.in
+  subroutine setup_central_bundle
+    implicit none
+    integer :: pcount_required
+    integer :: line_size, line_position
+    integer :: i, j
+    real :: rand1, rand2, rand3
+    if (periodic_bc) then 
+      !make sure line_count is a multiple of 4
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length/delta and line_count'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_central_bundle', &
+      'periodic boundary conditions required')
+    end if
+    write(*,*) 'initf: central bundle, bundle type: ', trim(bundle_type) 
+    write(*,'(a,f8.4,a)') 'bundle will occupy ', lattice_ratio, ' of box' 
+    line_size=int(pcount/line_count)
+    do i=1, line_count
+      rand1=runif(-1.,1.) ; rand2=runif(-1.,1.)
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        select case(bundle_type)
+          case('polarised')
+            f(line_position)%x(1)=(box_size*lattice_ratio)*rand1
+            f(line_position)%x(2)=(box_size*lattice_ratio)*rand2
+            f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+          case('random')
+            rand3=runif(0.,1.)
+            if (rand3>0.5) then
+              f(line_position)%x(1)=(box_size*lattice_ratio)*rand1
+              f(line_position)%x(2)=(box_size*lattice_ratio)*rand2
+              f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size) 
+            else
+              f(line_position)%x(1)=(box_size*lattice_ratio)*rand1
+              f(line_position)%x(2)=-box_size/4.+(box_size*lattice_ratio)*rand2
+              f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+            end if
+           case default
+             call fatal_error('init.mod:setup_central_bundle', &
+                  'bundle_type set to incorrect parameter')
+        end select     
         if(j==1) then
           f(line_position)%behind=i*line_size
           f(line_position)%infront=line_position+1
