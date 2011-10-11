@@ -160,12 +160,14 @@ module timestep
         call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
         u=u_norm
       case default
-        if ((abs(alpha(1)*alpha(2))>epsilon(0.)).and.(t<normal_fluid_cutoff)) then
-          call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
-          ! \todo this could be improved calculating same thing twice 
-          f(i)%u_mf=alpha(1)*cross_product(f_dot,(u_norm-u))- &
-                    alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
-          u=u+f(i)%u_mf !this way we store the mutual friction velocity
+        if ((abs(alpha(1))>epsilon(0.)).or.(abs(alpha(2))>epsilon(0.))) then
+          if (t<normal_fluid_cutoff) then
+            call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
+            ! \todo this could be improved calculating same thing twice 
+            f(i)%u_mf=alpha(1)*cross_product(f_dot,(u_norm-u))- &
+                      alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
+            u=u+f(i)%u_mf !this way we store the mutual friction velocity
+          end if
         end if
     end select
     !forcing?
