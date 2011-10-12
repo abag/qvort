@@ -160,8 +160,9 @@ module timestep
         call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
         u=u_norm
       case default
+        !check that either of the mutual friction coefficients are >0
         if ((abs(alpha(1))>epsilon(0.)).or.(abs(alpha(2))>epsilon(0.))) then
-          if (t<normal_fluid_cutoff) then
+          if (t<normal_fluid_cutoff) then !cutoff time set in run.in
             call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
             ! \todo this could be improved calculating same thing twice 
             f(i)%u_mf=alpha(1)*cross_product(f_dot,(u_norm-u))- &

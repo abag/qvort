@@ -14,6 +14,7 @@ module cdata
   !!@param infront @param behind flag to make points an orientated filament
   !!@param closest closest particle, used in reconnections
   !!@param closestd separation between closest particle and particle 
+  !!@param closestd_loop as above but not on same loop 
   !!@param delta used for adaptive meshing along the filaments, used as a prefactor
   type qvort 
     real :: x(3)
@@ -24,6 +25,7 @@ module cdata
     integer :: infront, behind 
     integer :: closest
     real :: closestd
+    real :: closestd_loop
     logical :: pinnedi=.false.
     logical :: pinnedb=.false.
     real :: delta
@@ -137,8 +139,8 @@ module cdata
   !>timestep
   real :: dt
   real, protected :: box_size=0.
-  real, protected :: quant_circ=9.97E-4
-  real , protected :: corea=8.244023E-9
+  real, protected :: quant_circ=9.97E-4 !He-4 by default
+  real , protected :: corea=8.244023E-9 !He-4 by default
   !>are boundaries periodic?  
   logical :: periodic_bc=.false.
   logical :: periodic_bc_notx=.false.
@@ -217,6 +219,7 @@ module cdata
   logical, protected :: topo_inf=.false. !calculate topological information
   logical, protected :: energy_inf=.false. !calculate energy of vortex 
   logical, protected :: sep_inf=.false. !calculate information and histogram of point separation
+  logical, protected :: line_sep_inf=.false. !calculate information and histogram of closest line separation
   integer, protected :: one_dim=0 !size of 1d velocity information printed to file
   character(len=1), protected :: one_dim_direction='x' !component we calculate 1D spectra in
   integer, protected :: one_dim_lattice=0 !create a lattice in z direction to calculate vel info on
@@ -249,6 +252,9 @@ module cdata
   logical, protected :: seg_fault=.false.!use print statements to try and isolate segmentation faults
   logical, protected :: NAN_test=.true.!test for NANs in arrays
   logical, protected :: overide_timestep_check=.false.!do not perform initial dt test
+  !----------------------------warnings---------------------------------------
+  integer, private :: max_warn_count=5 !maximum warning count code can survive
+  integer, private :: warn_count=0 !number of warnings
   !------------------------------batch mode---------------------------------------
   !this adds the ability to email a user to say when a code has finished or if there is a fatal error
   logical, protected :: batch_mode=.false. !set to true to enable messaging
@@ -443,6 +449,8 @@ module cdata
              read(buffer, *, iostat=ios) recon_info !extra reconnection information
           case ('sep_inf')
              read(buffer, *, iostat=ios) sep_inf !point separation
+          case ('line_sep_inf')
+             read(buffer, *, iostat=ios) line_sep_inf !line separation
           case ('topo_inf')
              read(buffer, *, iostat=ios) topo_inf !topological information
           case ('energy_inf')
@@ -457,6 +465,8 @@ module cdata
              read(buffer, *, iostat=ios) simple_plots !perform plots on the fly
           case ('NAN_test')
              read(buffer, *, iostat=ios) NAN_test !test for NANs
+          case ('max_warn_count')
+             read(buffer, *, iostat=ios) max_warn_count !maximum number of warning counts we survive
           case ('overide_timestep_check')
              read(buffer, *, iostat=ios) overide_timestep_check !no timestep check 
           case ('smoothing_length')
@@ -670,6 +680,11 @@ module cdata
     write (*,*) '-------------------------WARNING----------------------------'
     write (*,*) trim(location) , ": " , trim(message)
     write (*,*) '------------------------------------------------------------'
+    !increment warning count
+    warn_count=warn_count+1
+    if (warn_count>max_warn_count) then
+      call fatal_error('warning count','maximum number of warning counts exceeded')
+    end if
   end subroutine
   !*************************************************************************************************  
   !>generate a new random seed, or read one in from ./data if restating code

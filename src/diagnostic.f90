@@ -22,6 +22,7 @@ module diagnostic
       if (mod(itime, mesh_shots)==0) then
         if (boxed_vorticity) call get_boxed_vorticity !diganostics.mod
         if (sep_inf) call get_sep_inf !diganostics.mod
+        if (line_sep_inf) call get_line_sep_inf !diganostics.mod
       end if 
     end if
   end subroutine
@@ -36,7 +37,7 @@ module diagnostic
     close(72)
   end subroutine
   !*************************************************
-  !> The routine to calculate number of loops with their sizes and dumps them 
+  !> The routine to calculate numberof loops with their sizes and dumps them 
   !!to file to plot histograms.
   subroutine get_full_loop_count()
     implicit none
@@ -544,6 +545,59 @@ module diagnostic
     close(79)
 
     deallocate(sep_array) !deallocate helper array
+  end subroutine
+  !*************************************************
+  !>caculate the mean, min, max of minimum separation of the vortex filaments
+  !>will also bin the separations to plot a histogram
+  subroutine get_line_sep_inf()
+    use tree !needs tree module
+    implicit none
+    real :: line_sep_min, line_sep_max, line_sep_bar
+    integer :: i, j
+    !------------histogram parameters below---------------------
+    !warning - at present the matlab routine to plot the histogram 
+    !is not adpative therefore if the number of bins is changed 
+    !the script must also be changed - warning
+    integer, parameter :: bin_num=10 !number of bins
+    real :: bin_size, bins(bin_num) !the bins of the histograms
+    real :: probability(bin_num) !the probability of that bin
+    !find the nearest point on another loop
+    call pclose_tree_loop !tree.mod
+    if (maxval(f(:)%closestd_loop,mask=(f(:)%infront>0))>2*box_size) then
+      call warning_message('get_line_sep_info','loops are too diffuse to make this routine feasible')
+    end if
+    !compute the average/min/max of this array
+    line_sep_min=minval(f(:)%closestd_loop,mask=f(:)%infront>0)
+    line_sep_max=maxval(f(:)%closestd_loop,mask=((f(:)%infront>0).and.(f(:)%closestd_loop<2.*box_size)))
+    line_sep_bar=sum(f(:)%closestd_loop,mask=((f(:)%infront>0).and.(f(:)%closestd_loop<2.*box_size)))&
+                 /count(mask=(f(:)%infront>0).and.(f(:)%closestd_loop<2.*box_size))
+    !output this to file
+    open(unit=72,file='data/line_sep_info.log',position='append')
+      write(72,*) t, line_sep_bar,line_sep_max,line_sep_min
+    close(72)
+    !now create of a histogram
+
+    !first we set the bins
+    bin_size=(line_sep_max-line_sep_min)/bin_num
+    bins=0.
+    !now loop over sep_array and bins and create the histogram
+    do i=1, pcount
+      do j=1, bin_num
+        if (f(i)%closestd_loop>line_sep_min+(j-1)*bin_size) then
+          if (f(i)%closestd_loop<line_sep_min+j*bin_size) then
+            bins(j)=bins(j)+1
+          end if
+        end if
+      end do
+    end do
+    !normalise the histogram
+    bins=bins/(count(mask=(f(:)%infront>0).and.(f(:)%closestd_loop<2.*box_size))*bin_size)
+    open(unit=79,file='data/line_sep_pdf.log',position='append')
+    write(79,*) '%----------------t=',t,'---------------'
+    do j=1, bin_num
+      write(79,*) line_sep_min+(j-1)*bin_size, bins(j) 
+    end do 
+    close(79)
   end subroutine
   !*************************************************
   !>get the structure functions of the mesh velocities

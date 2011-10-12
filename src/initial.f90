@@ -290,6 +290,13 @@ module initial
     if (torsion_hist) write(*,*) 'printing histograms of torsion to file'    
     if (topo_inf) write(*,*) 'printing topological information to file'
     if (sep_inf) write(*,*) 'printing point separation info+histogram to file'
+    if (line_sep_inf) then
+      if (tree_theta>0.) then
+        write(*,*) 'printing separation of nearest filaments+histogram to file'
+      else
+        call fatal_error('init.mod','line_sep_info needs tree mesh')
+      end if
+    end if
     if (particle_plane_inf) write(*,*) 'printing point particle information at z=0'
     if (anisotropy_params) write(*,*) 'calculating anistropy parameters and printing to file'
     if (closest_distance) write(*,*) 'calculating minimum separation between vortices'
