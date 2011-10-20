@@ -180,6 +180,13 @@ module timestep
       !check the flux through the boundaries is 0
       call mirror_flux_check(i,u) !mirror.mod
     end if
+    if (sticky_z_boundary) then
+      !particles at top/bottom of box are fixed
+      if ((abs(f(i)%x(3))-box_size/2.)>-1.5*delta) then
+        !particle is sufficiently close to top boundary stick
+        u=0.
+      end if
+    end if
   end subroutine
   !**************************************************************************
   !>if the mesh size is set to be larger than 0 in run.in then we calculate both

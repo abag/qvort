@@ -95,7 +95,7 @@ module forcing
         u=0. !initialise to 0
         !now sum over three wavenumbers
         do j=9,11
-          u=u+force_amp*cos(2*pi*j*f(i)%x(3)/box_size+force_phase(j))
+          u=u+force_amp*cos(2*pi*j*f(i)%x(3)/box_size+force_phase(j-8))
         end do
     end select
   end subroutine
@@ -207,7 +207,7 @@ end module
 !!\p LS_force - please document me\n
 !!\p wave_force - forces at three specified wavenumbers
 !!\f[ 
-!!\mathbf{u}_{\rm force}(\mathbf{s})=\sum_{k=9}^{11} \Re [ A \exp{i(kz+\phi)} ] =\sum_{k=9}^{11} A\cos(kz+\phi),
+!!\mathbf{u}_{\rm force}(\mathbf{s})=\sum_{k=9}^{11} \Re [ A \exp{i(kz+\phi_i)} ] =\sum_{k=9}^{11} A\cos(kz+\phi_i),
 !!\f] 
 !!where \f$ \phi\f$ is a randomly chosen phase, reset every force_freq timesteps.
 

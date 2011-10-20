@@ -119,6 +119,13 @@ module initial
         case default
           xdim_scaling_factor=1. !overwrite what is in run.in file - maybe print to say so?
       end select
+      if (sticky_z_boundary) then
+        if (periodic_bc) then
+          write(*,*) 'z boundaries are sticky - i.e. points are fixed there'
+        else
+          call fatal_error('init','sticky_z_boundary needs periodic bc.')
+        end if
+      end if
     else
       call fatal_error('init_setup:', 'box size is less than zero')
     end if
