@@ -193,6 +193,7 @@ remove_count
     write(*,*) 'dumping to special data file, current time is=', t
     open(unit=53,file="./data/special.dat",FORM='unformatted',status='replace')
       write(53) pcount
+      write(53) recon_count
       write(53) itime
       write(53) t
       write(53) f
