@@ -1,5 +1,6 @@
-function KWC_amp(filenumber)
-printit=1;
+function [k P]=KWC_amp(filenumber)
+global X Z
+printit=0 ; plotit=0 ; 
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
 filename=sprintf('data/var%04d.log',filenumber);
@@ -54,6 +55,14 @@ for j=1:number_of_particles
     counter=counter+1;
   end
 end
+amp2=sortrows(amp,1);
+X=(-dims(2)/2:dims(1)/2:dims(2)/2.);
+Yx=interp1(amp2(:,1),amp2(:,2),X);
+Yy=interp1(amp2(:,1),amp2(:,3),X);
+Z=Yx+i.*Yy;
+X2=X(3:length(X)-3);
+Z2=Z(3:length(Z)-3);
+if plotit==1
 %%%%%%%%%%%%ORIGINAL DATA%%%%%%%%%%
 subplot(5,1,1);
 plot(amp(:,1),sqrt(amp(:,2).^2+amp(:,3).^2),'o');
@@ -63,17 +72,12 @@ ylabel('a','Fontsize',14)
 set(gca,'Fontsize',14)
 %%%%%%%%%%%%%SORT DATA%%%%%%%%%%%%%
 subplot(5,1,2);
-amp2=sortrows(amp,1);
 plot(amp2(:,1),sqrt(amp2(:,2).^2+amp2(:,3).^2),'-','LineWidth',2);
 title('ordered points')
 xlabel('z','Fontsize',14)
 ylabel('a','Fontsize',14)
 set(gca,'Fontsize',14)
 %%%%%%%%%%%%%INTERPOLATE DATA%%%%%%%
-X=(-dims(2)/2:dims(1)/2:dims(2)/2.);
-Yx=interp1(amp2(:,1),amp2(:,2),X);
-Yy=interp1(amp2(:,1),amp2(:,3),X);
-Z=Yx+i.*Yy;
 subplot(5,1,3);
 plot(X,abs(Z),'-','LineWidth',2);
 title('interpolated to uniform mesh')
@@ -99,8 +103,6 @@ if printit==1
 end
 %%%%%%%%%%%%%%%%%%REMOVE END POINTS%%%%%%%%%%%%%%%%%%
 figure
-X2=X(3:length(X)-3);
-Z2=Z(3:length(Z)-3);
 plot(X2,abs(Z2),'-','LineWidth',2);
 xlabel('z','Fontsize',14)
 ylabel('a','Fontsize',14)
@@ -108,14 +110,16 @@ set(gca,'Fontsize',14)
 if printit==1
     print -depsc amp_info2.eps
 end
+end
 %%%%%%%%%%%%%%SPECTRA%%%%%%%%%%%%%
 N=length(X2);
 P = abs(fft(Z2))/(N/2);
 P = P(1:N/2).^2;
 k=linspace(dims(1),4*pi/dims(2),N/2);
+if plotit==1
+%------------compare with pwelch---------
 figure
 loglog(k,P)
-%------------compare with pwelch---------
 figure
 Pw=pwelch(Z2);
 Pw=Pw(1:length(Pw)/2);
@@ -146,4 +150,4 @@ plot(log(kw(20:length(kw))),log(Pw(20:length(kw))),'LineWidth',2)
 xlabel('log k','Fontsize',14)
 ylabel('log A','Fontsize',14)
 set(gca,'Fontsize',14)
-
+end
