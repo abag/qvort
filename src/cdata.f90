@@ -97,6 +97,8 @@ module cdata
   integer :: recon_count=0 
   !>total number of particle removals due to contraction of filament
   integer :: remove_count=0 
+  !>total number of removals due to phonon emission
+  integer :: phonon_count=0
   !>total length of filaments
   real :: total_length
   !>average separation of the vortex points 

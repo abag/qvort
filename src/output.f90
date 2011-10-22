@@ -43,6 +43,11 @@ itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
 total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
 remove_count
     close(78)
+    if (phonon_emission) then
+      open(unit=78,file='data/phonon_count.log',position='append')
+        write(78,*) phonon_count
+      close(78)
+   end if
     if (energy_inf) then
       open(unit=78,file='data/energy.log',position='append')
         write(78,*) energy
