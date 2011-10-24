@@ -42,6 +42,14 @@ module particles
           end if
           p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
         end do
+      case('ring')
+        !particles in random positions
+        do i=1, part_count
+          p(i)%x(1)=0.75*box_size/2.*cos(2*pi*(2.*i-1.)/(2.*part_count))
+          p(i)%x(2)=0.75*box_size/2.*sin(2*pi*(2.*i-1.)/(2.*part_count))
+          p(i)%x(3)=-box_size/2.
+          p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
+        end do
       case('pairs')
         !particles in pairs in a random position
         !check that the number of particles is a multiple of 2
