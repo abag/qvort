@@ -252,7 +252,57 @@ module tree
        call closest_tree(i,vtree%btl) ; call closest_tree(i,vtree%btr)
      end if
    end subroutine
-!************************************************************************
+  !********************************************************************************
+  !>find the closest particle using the tree structure
+  !>this particle cannot be on the same loop, theoretically should be NlogN
+  !>repeatedly calls closest_tree, used by line_sep diagnostic routine
+  subroutine pclose_tree_loop
+    !loop over all the particles and find the closest one to i using the tree mesh
+    implicit none
+    integer :: i
+    do i=1, pcount
+      f(i)%closestd_loop=100. !arbitrarily high
+      if (f(i)%infront==0) cycle !empty particle
+      call closest_tree_loop(i,vtree)
+    end do
+  end subroutine
+  !********************************************************************************
+  !>recurisve routine used by pclose_tree_loop to find the closest particle to i
+  recursive subroutine closest_tree_loop(i,vtree)
+    !find the nearest particle to i who is not on the same loop
+    implicit none
+    integer, intent(IN) :: i
+    type (node), pointer :: vtree
+    real :: theta, dist !tree distance
+    integer :: j
+    logical :: same_loop
+     if (f(i)%infront==0) return !zero particle exit
+     if (vtree%pcount==0) return !empty box no use
+     !work out distances opening angles etc. here
+     dist=sqrt((f(i)%x(1)-vtree%centx)**2+(f(i)%x(2)-vtree%centy)**2+(f(i)%x(3)-vtree%centz)**2)
+     theta=vtree%width/dist
+     if (vtree%pcount==1.or.theta<.1) then !fairly tight critical opening angle
+       !see if the distance if less than the minimum distance
+       if (dist<f(i)%closestd_loop) then
+         j=f(vtree%parray(1)%infront)%behind
+         if ((vtree%pcount==1).and.(i/=j).and.(f(i)%infront/=j).and.(f(i)%behind/=j)) then
+           !the above line ignores contribution from neighbouring particles
+           !ensuring there is only one particle in the box
+           call same_loop_test(i,j,same_loop)
+           if (same_loop.eqv..false.) then
+             f(i)%closestd_loop=dist
+           end if
+         end if
+       end if
+     else
+       !open the box up and use the child cells ; make sure its the right routine!
+       call closest_tree_loop(i,vtree%fbl) ; call closest_tree_loop(i,vtree%fbr)
+       call closest_tree_loop(i,vtree%ftl) ; call closest_tree_loop(i,vtree%ftr)
+       call closest_tree_loop(i,vtree%bbl) ; call closest_tree_loop(i,vtree%bbr)
+       call closest_tree_loop(i,vtree%btl) ; call closest_tree_loop(i,vtree%btr)
+     end if
+   end subroutine
+   !************************************************************************
    !>get the tree code approximation to the biot savart integral, giving
    !>the induced velocity at particle i due to all other vortices, accepts 
    !>an arguement shift, which allows you to shift the position of the

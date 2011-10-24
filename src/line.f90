@@ -71,12 +71,18 @@ module line
         !get second derivative at i
         call get_deriv_2(i,f_ddot) !general.mod
         curv=sqrt(dot_product(f_ddot,f_ddot)) !get the curvature
-        curv=curv**(-1) !actually we want the inverse
-        if (curv**2-0.25*disti**2>0.) then
+        if (curv>1E-5) then !if curvature very small linear interpolation OK
+          curv=curv**(-1) !actually we want the inverse
+          if (curv**2-0.25*disti**2>0.) then
           !could be negative, avoid this
           f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)+&
                        (sqrt(curv**2-0.25*disti**2)-curv)*curv*f_ddot
+          else
+            !linear interpolation
+            f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)
+          end if
         else
+          !linear interpolation
           f(par_new)%x=0.5*(f(i)%x+f(i)%ghosti)
         end if
         !average the current velocity
@@ -120,13 +126,9 @@ module line
       do_remove=.false.
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)
-      !check curvature if required
+      !if we are simulating phonon emission then call here
       if (phonon_emission) then
-        if (curvature(f(i)%infront)>phonon_percent*(2./delta)) then
-          if (distii<2.*delta) then!we don't remove if separation is too large
-            do_remove=.true.
-          end if
-        end if
+        call enforce_phonon_emission(i)
       end if  
       if (distii<.499*delta*(f(i)%delta+f(f(i)%infront)%delta))then
         do_remove=.true.
@@ -145,6 +147,35 @@ module line
         remove_count=remove_count+1
       end if
     end do
+  end subroutine
+  !******************************************************************
+  !>routine to model phonon emission if the curvature of the segment is
+  !>too large then smooth
+  subroutine enforce_phonon_emission(i)
+    implicit none
+    integer, intent(IN) :: i
+    real :: f_ddot(3), curv, disti
+    if (curvature(i)>phonon_percent*(2./delta)) then
+      !curvature is too large so smooth
+      call get_deriv_2(f(i)%behind,f_ddot) !general.mod
+      curv=sqrt(dot_product(f_ddot,f_ddot)) !get the curvature
+      disti=dist_gen(f(i)%ghostb,f(i)%ghosti) !general.f90
+      if (curv>1E-5) then !if curvature very small linear interpolation OK
+        curv=curv**(-1) !actually we want the inverse
+        if (curv**2-0.25*disti**2>0.) then
+        !could be negative, avoid this
+        f(i)%x=0.5*(f(i)%ghostb+f(i)%ghosti)+&
+                     (sqrt(curv**2-0.25*disti**2)-curv)*curv*f_ddot
+        else
+          !linear interpolation           
+          f(i)%x=0.5*(f(i)%ghostb+f(i)%ghosti)
+        end if
+      else
+        !linear interpolation
+        f(i)%x=0.5*(f(i)%ghostb+f(i)%ghosti)
+      end if
+      phonon_count=phonon_count+1 !increment the counter
+    end if
   end subroutine
   !******************************************************************
   !>find the closest particle to i using N^2 operation this is

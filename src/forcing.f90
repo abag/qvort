@@ -9,6 +9,8 @@ module forcing
   use general
   !> @param force_direction a helper vector to force a particle in 3 spatial dimensions
   real, private :: force_direction(3)=0. 
+  !> @param force_phase a vector to force Kelvin wave cascade
+  real, private :: force_phase(3)=0. 
   !> @param LS_k Large scale forcing wavenumber
   !> @param LS_A Large scale forcing - vector perp to k
   !> @param LS_B Large scale forcing - vector perp to k
@@ -42,6 +44,9 @@ module forcing
         write(*,'(a,f5.3)') 'delta correlated (time/space) forcing with amplitude ', force_amp
       case('LS_force')
         write(*,'(a,f5.3)') 'large scale forcing (similar to KS) with amplitude ', force_amp
+      case('wave_force')
+        write(*,'(a,f5.3)') 'force wavemodes  9,10,11 with amplitude ', force_amp
+        write(*,'(a,i6.2,a)') 'phase changed every, ', ceiling(force_freq), ',timesteps'
       case default
         call fatal_error('forcing.mod:setup_forcing', &
         'incorrect forcing parameter set in run.in') !cdata.mod
@@ -57,6 +62,7 @@ module forcing
     implicit none
     integer, intent(IN) :: i
     real, intent(OUT) :: u(3)
+    integer :: j !for looping
     select case(force)
       case('off')
         u=0.
@@ -72,15 +78,6 @@ module forcing
           u(1)=force_amp*sin(force_freq*t/(2*pi))
         end if
       case('box_shake')
-        if (i==1) then
-          !do we need to generate a new forcing direction?
-          if (mod(itime,ceiling(force_freq))==0) then
-            call random_number(force_direction)
-            force_direction=force_direction*2.-1.
-            !normalise
-            force_direction=force_direction/sqrt(dot_product(force_direction,force_direction))
-          end if
-        end if
         u=force_direction*force_amp
       case('delta_corr')
         !at each time and position generate a new random vector
@@ -91,9 +88,33 @@ module forcing
         !use this as the forcing
         u=force_direction*force_amp
       case('LS_force')
-        !this has it's own subroutine
-        if (i==1) then
-          !only do this once per time-step
+        u=cross_product(LS_A,LS_k)*sin(dot_product(LS_k,f(i)%x))/LS_k2+cross_product(LS_B,LS_k)*cos(dot_product(LS_k,f(i)%x))/LS_k2
+        !use this as the forcing-multiply by amplitude
+        u=u*force_amp
+      case('wave_force')
+        u=0. !initialise to 0
+        !now sum over three wavenumbers
+        do j=9,11
+          u=u+force_amp*cos(2*pi*j*f(i)%x(3)/box_size+force_phase(j-8))
+        end do
+    end select
+  end subroutine
+  !***********************************************
+  !>routine to randomise certain forcing routines every timestep
+  subroutine randomise_forcing
+    implicit none
+    integer :: j
+    select case(force)
+      case('box_shake')
+        if (mod(itime,ceiling(force_freq))==0) then
+          call random_number(force_direction)
+          force_direction=force_direction*2.-1.
+          !normalise
+          force_direction=force_direction/sqrt(dot_product(force_direction,force_direction))
+        end if
+      case('LS_force')
+        !this has it's own subroutine to reinitialise
+        if (mod(itime,ceiling(force_freq))==0) then
           call get_LS_kAB!forcing.mod
           if (mod(itime,shots)==0) then
             !print to file
@@ -101,10 +122,14 @@ module forcing
               write(47,*) LS_k, LS_A, LS_B
             close(47)
           end if 
+        end if 
+      case('wave_force')
+        !uniform distributed random phase from 0->2\pi
+        if (mod(itime,ceiling(force_freq))==0) then
+          do j=1, 3
+            force_phase(j)=runif(0.,2.*pi)
+          end do 
         end if
-        u=cross_product(LS_A,LS_k)*sin(dot_product(LS_k,f(i)%x))/LS_k2+cross_product(LS_B,LS_k)*cos(dot_product(LS_k,f(i)%x))/LS_k2
-        !use this as the forcing-multiply by amplitude
-        u=u*force_amp
     end select
   end subroutine
   !***********************************************
@@ -180,4 +205,9 @@ end module
 !!\p top_boundary - sinusoidal forcing in the x direction at the top of the box
 !!with a frequency and amplitude set in run.in (force_freq, force_amp)\n
 !!\p LS_force - please document me\n
+!!\p wave_force - forces at three specified wavenumbers
+!!\f[ 
+!!\mathbf{u}_{\rm force}(\mathbf{s})=\sum_{k=9}^{11} \Re [ A \exp{i(kz+\phi_i)} ] =\sum_{k=9}^{11} A\cos(kz+\phi_i),
+!!\f] 
+!!where \f$ \phi\f$ is a randomly chosen phase, reset every force_freq timesteps.
 

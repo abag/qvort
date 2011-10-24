@@ -119,6 +119,13 @@ module initial
         case default
           xdim_scaling_factor=1. !overwrite what is in run.in file - maybe print to say so?
       end select
+      if (sticky_z_boundary) then
+        if (periodic_bc) then
+          write(*,*) 'z boundaries are sticky - i.e. points are fixed there'
+        else
+          call fatal_error('init','sticky_z_boundary needs periodic bc.')
+        end if
+      end if
     else
       call fatal_error('init_setup:', 'box size is less than zero')
     end if
@@ -146,6 +153,10 @@ module initial
           call setup_random_loops !initial_cond.mod
         case('crow')
           call setup_crow !initial_cond.mod
+        case('big_bundles')
+          call setup_big_bundles !initial_cond.mod
+        case('central_bundle')
+          call setup_central_bundle !initial_cond.mod
         case('helix')
           call setup_helix !initial_helix.mod          
         case('crow_loop')
@@ -156,6 +167,10 @@ module initial
           call setup_smooth_test_wave !initial_cond.mod  
         case('leap-frog')
           call setup_leap_frog !initial_cond.mod
+        case('loop_train')
+          call setup_loop_train !initial_cond.mod
+        case('loop_stream')
+          call setup_loop_stream !initial_cond.mod       
         case('linked_filaments')
           call setup_linked_filaments !initial_cond.mod
         case('colliding_loops')
@@ -282,6 +297,13 @@ module initial
     if (torsion_hist) write(*,*) 'printing histograms of torsion to file'    
     if (topo_inf) write(*,*) 'printing topological information to file'
     if (sep_inf) write(*,*) 'printing point separation info+histogram to file'
+    if (line_sep_inf) then
+      if (tree_theta>0.) then
+        write(*,*) 'printing separation of nearest filaments+histogram to file'
+      else
+        call fatal_error('init.mod','line_sep_info needs tree mesh')
+      end if
+    end if
     if (particle_plane_inf) write(*,*) 'printing point particle information at z=0'
     if (anisotropy_params) write(*,*) 'calculating anistropy parameters and printing to file'
     if (closest_distance) write(*,*) 'calculating minimum separation between vortices'

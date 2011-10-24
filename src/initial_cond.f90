@@ -280,6 +280,129 @@ module initial_cond
     end do    
   end subroutine
   !*************************************************************************
+  !> 4 bundles of lines in corners of the box
+  subroutine setup_big_bundles
+    implicit none
+    integer :: pcount_required
+    integer :: line_size, line_position
+    integer :: i, j
+    real :: rand1, rand2
+    if (periodic_bc) then 
+      !make sure line_count is a multiple of 4
+      if (mod(line_count,4)/=0) then
+        call fatal_error('init.mod:setup_big_bundles', &
+        'line_count needs to be a multiple of 4')
+       end if
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length/delta and line_count'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_big_bundles', &
+      'periodic boundary conditions required')
+    end if
+    write(*,*) 'initf: big bundles' 
+    line_size=int(pcount/line_count)
+    do i=1, line_count
+      rand1=runif(-1.,1.) ; rand2=runif(-1.,1.)
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        if (real(i)/line_count<=0.25) then
+          f(line_position)%x(1)=-box_size/4.+(box_size/10.)*rand1
+          f(line_position)%x(2)=-box_size/4.+(box_size/10.)*rand2
+          f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        else if (real(i)/line_count<=0.5) then
+          f(line_position)%x(1)=-box_size/4.+(box_size/10.)*rand1
+          f(line_position)%x(2)=box_size/4.+(box_size/10.)*rand2
+          f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+        else if (real(i)/line_count<=0.75) then
+          f(line_position)%x(1)=box_size/4.+(box_size/10.)*rand1
+          f(line_position)%x(2)=-box_size/4.+(box_size/10.)*rand2
+          f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        else 
+          f(line_position)%x(1)=box_size/4.+(box_size/10.)*rand1
+          f(line_position)%x(2)=box_size/4.+(box_size/10.)*rand2
+          f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+        end if
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0.
+      end do
+    end do
+  end subroutine
+  !*************************************************************************
+  !> single bundle of lines in centre of box can be polarised or random
+  !> depending on bundle_type parameter in run.in
+  subroutine setup_central_bundle
+    implicit none
+    integer :: pcount_required
+    integer :: line_size, line_position
+    integer :: i, j
+    real :: rand1, rand2, rand3
+    if (periodic_bc) then 
+      !make sure line_count is a multiple of 4
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length/delta and line_count'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_central_bundle', &
+      'periodic boundary conditions required')
+    end if
+    write(*,*) 'initf: central bundle, bundle type: ', trim(bundle_type) 
+    write(*,'(a,f8.4,a)') 'bundle will occupy ', lattice_ratio, ' of box' 
+    line_size=int(pcount/line_count)
+    do i=1, line_count
+      rand1=runif(-1.,1.) ; rand2=runif(-1.,1.)
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        select case(bundle_type)
+          case('polarised')
+            f(line_position)%x(1)=(box_size*lattice_ratio)*rand1
+            f(line_position)%x(2)=(box_size*lattice_ratio)*rand2
+            f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+          case('random')
+            rand3=runif(0.,1.)
+            if (rand3>0.5) then
+              f(line_position)%x(1)=(box_size*lattice_ratio)*rand1
+              f(line_position)%x(2)=(box_size*lattice_ratio)*rand2
+              f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size) 
+            else
+              f(line_position)%x(1)=(box_size*lattice_ratio)*rand1
+              f(line_position)%x(2)=-box_size/4.+(box_size*lattice_ratio)*rand2
+              f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+            end if
+           case default
+             call fatal_error('init.mod:setup_central_bundle', &
+                  'bundle_type set to incorrect parameter')
+        end select     
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0.
+      end do
+    end do
+  end subroutine
+  !*************************************************************************
   !>anti parallel lines from -z to z at -x, parallel lines from -z to z at x
   !>tests the smoothing routine, particle count automatically adjusted
   subroutine setup_smooth_test
@@ -1196,7 +1319,7 @@ module initial_cond
       end do
     end do
   end subroutine
-!*************************************************************************
+  !*************************************************************************
   subroutine setup_criss_cross
     implicit none
     real :: rand1, rand2, rand3, rand4
@@ -1288,6 +1411,106 @@ module initial_cond
           f(line_position)%u1=0. ; f(line_position)%u2=0.
         end do
       end if
+    end do
+  end subroutine
+  !*************************************************************************
+  subroutine setup_loop_train
+    implicit none
+    integer :: pcount_required
+    integer :: loop_size, loop_position
+    real :: loop_radius, z_pos
+    integer :: i,j
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_loop_train', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if (periodic_bc) then
+      !work out the number of particles required for our lines
+      !given the box size specified in run.in
+      loop_radius=0.45*box_size
+      loop_size=nint(loop_radius*2*pi/(0.75*delta)) !75%
+      pcount_required=line_count*loop_size
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_loop_train',&
+                       'periodic boundary conditions required for this initial condition') !cdata.mod
+    end if
+    do i=1, line_count
+      z_pos=(2*i-1)/(2.*line_count)*box_size-box_size/2.
+      do j=1, loop_size
+        loop_position=j+(i-1)*loop_size
+        if (mod(i,2)==0) then
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)
+          f(loop_position)%x(2)=loop_radius*cos(pi*real(2*j-1)/loop_size)+box_size/2.
+        else
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)+box_size/2.
+          f(loop_position)%x(2)=loop_radius*cos(pi*real(2*j-1)/loop_size)
+        end if
+        f(loop_position)%x(3)=z_pos
+        if(j==1) then
+          f(loop_position)%behind=i*loop_size
+          f(loop_position)%infront=loop_position+1
+        else if (j==loop_size) then
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=(i-1)*loop_size+1
+        else
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=loop_position+1
+        end if
+      end do
+    end do
+  end subroutine
+  !*************************************************************************
+  subroutine setup_loop_stream
+    implicit none
+    integer :: pcount_required
+    integer :: loop_size, loop_position
+    real :: loop_radius, z_pos
+    integer :: i,j
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_loop_train', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if (periodic_bc) then
+      !work out the number of particles required for our lines
+      !given the box size specified in run.in
+      loop_radius=0.245*box_size
+      loop_size=nint(loop_radius*2*pi/(0.75*delta)) !75%
+      pcount_required=line_count*loop_size
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_loop_train',&
+                       'periodic boundary conditions required for this initial condition') !cdata.mod
+    end if
+    do i=1, line_count
+      z_pos=(2*i-1)/(2.*line_count)*box_size-box_size/2.
+      do j=1, loop_size
+        loop_position=j+(i-1)*loop_size
+        if (mod(i,2)==0) then
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)+box_size/5
+          f(loop_position)%x(2)=loop_radius*cos(pi*real(2*j-1)/loop_size)+box_size/5.
+        else
+          f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)-box_size/5.
+          f(loop_position)%x(2)=-loop_radius*cos(pi*real(2*j-1)/loop_size)-box_size/5.
+        end if
+        f(loop_position)%x(3)=z_pos
+        if(j==1) then
+          f(loop_position)%behind=i*loop_size
+          f(loop_position)%infront=loop_position+1
+        else if (j==loop_size) then
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=(i-1)*loop_size+1
+        else
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=loop_position+1
+        end if
+      end do
     end do
   end subroutine
 end module

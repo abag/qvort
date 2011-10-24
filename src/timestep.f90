@@ -22,6 +22,8 @@ module timestep
     real :: dummy_max_error, max_error !maximum error between 2nd and 3rd order method
     real :: rot_r, rot_theta !for differential rotation
     integer :: i
+    !intialise forcing every timestep incase there is a random element
+    call randomise_forcing
     !begin by testing if we have special velocity field Rotate
     select case(velocity)
       case('Rotate')
@@ -158,12 +160,15 @@ module timestep
         call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
         u=u_norm
       case default
-        if ((abs(alpha(1)*alpha(2))>epsilon(0.)).and.(t<normal_fluid_cutoff)) then
-          call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
-          ! \todo this could be improved calculating same thing twice 
-          f(i)%u_mf=alpha(1)*cross_product(f_dot,(u_norm-u))- &
-                    alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
-          u=u+f(i)%u_mf !this way we store the mutual friction velocity
+        !check that either of the mutual friction coefficients are >0
+        if ((abs(alpha(1))>epsilon(0.)).or.(abs(alpha(2))>epsilon(0.))) then
+          if (t<normal_fluid_cutoff) then !cutoff time set in run.in
+            call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
+            ! \todo this could be improved calculating same thing twice 
+            f(i)%u_mf=alpha(1)*cross_product(f_dot,(u_norm-u))- &
+                      alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
+            u=u+f(i)%u_mf !this way we store the mutual friction velocity
+          end if
         end if
     end select
     !forcing?
@@ -174,6 +179,13 @@ module timestep
     if (mirror_bc) then
       !check the flux through the boundaries is 0
       call mirror_flux_check(i,u) !mirror.mod
+    end if
+    if (sticky_z_boundary) then
+      !particles at top/bottom of box are fixed
+      if ((abs(f(i)%x(3))-box_size/2.)>-1.5*delta) then
+        !particle is sufficiently close to top boundary stick
+        u=0.
+      end if
     end if
   end subroutine
   !**************************************************************************

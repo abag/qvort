@@ -175,7 +175,13 @@ module general
     if (allocated(f)) then
       if (any(isnan(f%x(1))).or.any(isnan(f%x(2))).or.any(isnan(f%x(3)))) then
         do i=1, pcount
-          print*, f(i)%x
+          if ((isnan(f(i)%x(1))).or. &
+              (isnan(f(i)%x(2))).or. &
+              (isnan(f(i)%x(3)))) then
+            write(*,*) 'I have found a NAN in the f%x array'
+            write(*,*) 'location, i=',i
+            write(*,*) 'f(i)%x=',f(i)%x
+          end if
         end do
         call fatal_error('run.x','there is a NAN in the (filament) f%x array')
       end if

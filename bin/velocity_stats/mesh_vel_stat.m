@@ -9,7 +9,7 @@ else
     display=1;
     disp('producing iso surfaces before and after + paraview output')
 end
-load data/dims.log;
+load ./data/dims.log;
 msize=dims(3);
 if (msize==0) 
   disp('mesh size is zero exiting script')
@@ -56,4 +56,23 @@ for i=filenumbers
   uz(counter*msize^3+1:(counter+1)*msize^3)=dummy_uz;
   counter=counter+1;
 end
+vcoff=7. ;
+index = find(ux > vcoff);
+ux(index) = [];
+clear index;
+index = find(uy > vcoff);
+uy(index) = [];
+clear index;
+index = find(uz > vcoff);
+uz(index) = [];
+clear index ;
+index = find(ux < -vcoff);
+ux(index) = [];
+clear index;
+index = find(uy < -vcoff);
+uy(index) = [];
+clear index;
+index = find(uz < -vcoff);
+uz(index) = [];
+clear index ;
 save velocity.mat ux uy uz
