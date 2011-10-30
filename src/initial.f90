@@ -372,7 +372,11 @@ module initial
         write(*,'(a,i4.1,a)') ' restored ', part_count,' particles'
       end if
     close(63)
-    nstart=dummy_itime+1
+    if (restart_rewind) then
+      nstart=1
+    else
+      nstart=dummy_itime+1
+    end if
     write(*,*) 'data read in from dump file at t=', t
     if (quasi_pcount>0) then
       write(*,*)'note that the quasi particles will not be restored'

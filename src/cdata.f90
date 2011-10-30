@@ -92,6 +92,7 @@ module cdata
   integer :: itime 
   !>integer loop starts from (altered by reading in stored data - i.e. restarting)
   integer :: nstart=1 
+  logical, protected :: restart_rewind=.false.
   !***********DIAGNOSTIC INFO******************************************************
   !>total number of reconnections
   integer :: recon_count=0 
@@ -358,6 +359,8 @@ module cdata
              read(buffer, *, iostat=ios) initg !initial setup of quasi particles
           case ('initp')
              read(buffer, *, iostat=ios) initp !initial setup of particles
+          case ('restart_rewind')
+             read(buffer, *, iostat=ios) restart_rewind !restart with ntime=1
           case ('line_count')
              read(buffer, *, iostat=ios) line_count !used in certain intial conditions
           case ('initial_distribution')
