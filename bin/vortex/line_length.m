@@ -34,3 +34,9 @@ figure('Name', 'line length only')
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
     ylabel('l','FontSize',14)
+dims=load('./data/dims.log');
+figure('Name', 'line density')
+    plot(t,1./sqrt(l/(dims(2)^3)),'-k','LineWidth',2);
+    set(gca,'FontSize',14)
+    xlabel('t','FontSize',14)
+    ylabel('L','FontSize',14)

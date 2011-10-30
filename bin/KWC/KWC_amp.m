@@ -1,6 +1,5 @@
-function [k P]=KWC_amp(filenumber)
-global X Z
-printit=0 ; plotit=0 ; 
+function [k P kw Pw]=KWC_amp(filenumber,plotit);
+printit=0 ; 
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
 filename=sprintf('data/var%04d.log',filenumber);
@@ -18,6 +17,7 @@ if dims(4)==1
   f=fread(fid,number_of_particles,'int');
   u=fread(fid,number_of_particles,'float64');
   u2=fread(fid,number_of_particles,'float64');
+  fclose(fid);
 else 
   fid=fopen(filename);
   if fid<0
@@ -45,6 +45,7 @@ else
     u2(j)=dummy_vect(6);
   end
   f=uint16(f);
+  fclose(fid);
 end
 counter=1;
 for j=1:number_of_particles
@@ -57,47 +58,53 @@ for j=1:number_of_particles
 end
 amp2=sortrows(amp,1);
 X=(-dims(2)/2:dims(1)/2:dims(2)/2.);
-Yx=interp1(amp2(:,1),amp2(:,2),X);
-Yy=interp1(amp2(:,1),amp2(:,3),X);
+Yx=interp1(amp2(:,1),amp2(:,2),X,'cubic');
+Yy=interp1(amp2(:,1),amp2(:,3),X,'cubic');
 Z=Yx+i.*Yy;
-X2=X(3:length(X)-3);
-Z2=Z(3:length(Z)-3);
+X2=X(5:length(X)-3);
+Z2=Z(5:length(Z)-3);
 if plotit==1
+figure
+plot(amp(:,1),sqrt(amp(:,2).^2+amp(:,3).^2),'o');
+hold on
+plot(X,abs(Z),'-','LineWidth',2);
+figure
 %%%%%%%%%%%%ORIGINAL DATA%%%%%%%%%%
+fonts=10
 subplot(5,1,1);
 plot(amp(:,1),sqrt(amp(:,2).^2+amp(:,3).^2),'o');
 title('original points')
-xlabel('z','Fontsize',14)
-ylabel('a','Fontsize',14)
-set(gca,'Fontsize',14)
+xlabel('z','Fontsize',fonts)
+ylabel('a','Fontsize',fonts)
+set(gca,'Fontsize',fonts)
 %%%%%%%%%%%%%SORT DATA%%%%%%%%%%%%%
 subplot(5,1,2);
 plot(amp2(:,1),sqrt(amp2(:,2).^2+amp2(:,3).^2),'-','LineWidth',2);
 title('ordered points')
-xlabel('z','Fontsize',14)
-ylabel('a','Fontsize',14)
-set(gca,'Fontsize',14)
+xlabel('z','Fontsize',fonts)
+ylabel('a','Fontsize',fonts)
+set(gca,'Fontsize',fonts)
 %%%%%%%%%%%%%INTERPOLATE DATA%%%%%%%
 subplot(5,1,3);
 plot(X,abs(Z),'-','LineWidth',2);
 title('interpolated to uniform mesh')
-xlabel('z','Fontsize',14)
-ylabel('a','Fontsize',14)
-set(gca,'Fontsize',14)
+xlabel('z','Fontsize',fonts)
+ylabel('a','Fontsize',fonts)
+set(gca,'Fontsize',fonts)
 %%%%%%%%%%%%%%%%PLOT PHASE%%%%%%%%%%%%%
 subplot(5,1,4);
 plot(X,angle(Z),'-','LineWidth',2);
 title('phase')
-xlabel('z','Fontsize',14)
-ylabel('\theta','Fontsize',14)
-set(gca,'Fontsize',14)
+xlabel('z','Fontsize',fonts)
+ylabel('\theta','Fontsize',fonts)
+set(gca,'Fontsize',fonts)
 %%%%%%%%%%%%GRADIENT%%%%%%%%%%%%%
 subplot(5,1,5);
-plot(X,gradient(abs(Z),dims(2)/2),'-','LineWidth',2);
+plot(X,gradient(abs(Z),dims(1)/2),'-','LineWidth',2);
 title('derivative')
-xlabel('z','Fontsize',14)
-ylabel('a dash','Fontsize',14)
-set(gca,'Fontsize',14)
+xlabel('z','Fontsize',fonts)
+ylabel('a dash','Fontsize',fonts)
+set(gca,'Fontsize',fonts)
 if printit==1
     print -depsc amp_info1.eps
 end
@@ -115,15 +122,16 @@ end
 N=length(X2);
 P = abs(fft(Z2))/(N/2);
 P = P(1:N/2).^2;
-k=linspace(dims(1),4*pi/dims(2),N/2);
+%k=linspace(dims(1),4*pi/dims(2),N/2);
+k=linspace(1,N/2,N/2);
+Pw=pwelch(Z2);
+Pw=Pw(1:length(Pw)/2);
+kw=linspace(dims(1),4*pi/dims(2),length(Pw));
 if plotit==1
 %------------compare with pwelch---------
 figure
 loglog(k,P)
 figure
-Pw=pwelch(Z2);
-Pw=Pw(1:length(Pw)/2);
-kw=linspace(dims(1),4*pi/dims(2),length(Pw));
 loglog(Pw,'b')
 hold on
 loglog(P,'g')
