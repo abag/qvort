@@ -167,6 +167,7 @@ module cdata
   real, protected :: rotation_factor=1 !also used in injection routines
   integer, protected :: wave_count=1
   real, protected :: wave_slope=-1.5
+  integer, protected :: wave_start=1
   real, protected :: wave_amp=10.
   character(len=30), protected :: wave_type='planar' 
   character(len=30), protected :: bundle_type='polarised' 
@@ -413,6 +414,8 @@ module cdata
              read(buffer, *, iostat=ios) wave_count !for wave_spec initial conditions
           case ('wave_slope')
              read(buffer, *, iostat=ios) wave_slope !for wave_spec initial conditions
+          case ('wave_start')
+             read(buffer, *, iostat=ios) wave_start !for wave_spec initial conditions
           case ('wave_amp')
              read(buffer, *, iostat=ios) wave_amp !for wave_spec initial conditions
           case ('wave_type')

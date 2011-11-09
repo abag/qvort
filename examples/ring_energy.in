@@ -1,0 +1,21 @@
+--------------required parameters------------
+nsteps 1
+shots 1
+recon_shots 1
+pcount 1000
+dt 1E-7
+delta 0.0004
+box_size 0.1
+velocity BS
+initf wave_loop
+boundary open
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+binary_print T 
+deriv_order fourth
+wave_count 1
+wave_start 2
+wave_amp 10
+lattice_ratio 0.
+energy_inf T
+wave_type planar

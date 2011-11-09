@@ -197,12 +197,13 @@ module diagnostic
   !>calculate the energy of the vortex filament using
   !>the trapezium rule, not valid with periodic b.c.'s
   !>\f[ E=\frac{1}{2} \int_V \mathbf{u}^2 dV=
-  !>=\Gamma \oint_{\cal L} \mathbf{u} \cdot \mathbf{s} \times \mathbf{s}' d\xi \f]
+  !>=\frac{\Gamma}{2} \oint_{\cal L} \mathbf{u} \cdot \mathbf{s} \times \mathbf{s}' d\xi \f]
   subroutine energy_info()
     implicit none
     real :: sdot(3), sdoti(3)
     integer :: infront
     integer :: i
+    !compute the integral
     energy=0.
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
@@ -213,6 +214,8 @@ module diagnostic
       (dot_product(f(i)%u,cross_product(f(i)%x,sdot))+&
        dot_product(f(infront)%u,cross_product(f(infront)%x,sdoti)))
     end do
+    !multiply by terms outside the integral
+    energy=energy*(quant_circ/2.)
   end subroutine
   !*************************************************
   !> Call all topological routines from topology module

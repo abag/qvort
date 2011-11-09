@@ -10,13 +10,15 @@ module initial_cond
   !>number of particles set and the size of \f$\delta\f$
   subroutine setup_single_loop
     implicit none
-    real :: velocity
+    real :: velocity, ring_energy
     real :: radius
     integer :: i 
     radius=(0.75*pcount*delta)/(2*pi) !75% of potential size 
-    velocity=(quant_circ/(4*pi*radius))*log(8E8*radius)
+    velocity=(quant_circ/(4*pi*radius))*(log(8*radius/corea)-.5)
+    ring_energy=0.5*(quant_circ**2)*radius*(log(8*radius/corea)-2.)
     write(*,*) 'initf: single loop, radius of loop:', radius
     write(*,*) 'velocity should be:', velocity
+    write(*,*) 'energy should be:', ring_energy
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
@@ -829,13 +831,16 @@ module initial_cond
       'pcount/line_count is not an integer')
     end if
     write(*,'(a,i3.1,a)') ' drawing', line_count, ' loops in the x-y plane'
+    write(*,'(a,f9.5,a)') ' loops scattered by ', lattice_ratio, ' in z direction'
+    write(*,'(a,i3.1)') ' starting wavenumber ', wave_start
     write(*,'(i4.1,a,a,a,f9.5)') wave_count, ' ',trim(wave_type),' wave pertubations, with spectral slope:', wave_slope
     loop_size=int(pcount/line_count)
     loop_radius=loop_size*(0.75*delta)/(2*pi) !75% of potential size
+    write(*,'(a,f9.3)') ' loop radius: ', loop_radius
     !START THE LOOP
     do i=1, line_count
       call random_number(zpos)
-      zpos=(zpos-.5)*box_size*0.1 !1/10th of the box
+      zpos=(zpos-.5)*box_size*lattice_ratio !lattice ratio sets scattering
       do j=1, loop_size
         loop_position=j+(i-1)*loop_size
         f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)
@@ -854,7 +859,7 @@ module initial_cond
         f(loop_position)%u1=0. ; f(loop_position)%u2=0.
       end do
       !we have now drawn the basic loop, now we add the wave pertubations
-      prefactor=wave_amp/(2.**wave_slope) !our starting wavenumber is 2
+      prefactor=wave_amp/(wave_start**wave_slope) !our starting wavenumber is wave_start
       if (i==1) then !only write this once
         write(*,*)'wave information recorded in ./data/wave_info.log'
         open(unit=34,file='./data/wave_info.log')
@@ -864,7 +869,7 @@ module initial_cond
         call ghostp !we must call this routine at the start of adding every wave 
                     !the routines normalf, binormalf rely on correct ghostpoints
         !on a loop so wavenumbers must be an integer
-        wave_number=2+k !starting wavenumber is 2
+        wave_number=(wave_start-1)+k !starting wavenumber is 2
         amp=prefactor*(wave_number**wave_slope)
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
