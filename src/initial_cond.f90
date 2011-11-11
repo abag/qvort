@@ -833,6 +833,7 @@ module initial_cond
     write(*,'(a,i3.1,a)') ' drawing', line_count, ' loops in the x-y plane'
     write(*,'(a,f9.5,a)') ' loops scattered by ', lattice_ratio, ' in z direction'
     write(*,'(a,i3.1)') ' starting wavenumber ', wave_start
+    write(*,'(a,i3.1)') ' wavenumber separation', wave_skip
     write(*,'(i4.1,a,a,a,f9.5)') wave_count, ' ',trim(wave_type),' wave pertubations, with spectral slope:', wave_slope
     loop_size=int(pcount/line_count)
     loop_radius=loop_size*(0.75*delta)/(2*pi) !75% of potential size
@@ -869,10 +870,11 @@ module initial_cond
         call ghostp !we must call this routine at the start of adding every wave 
                     !the routines normalf, binormalf rely on correct ghostpoints
         !on a loop so wavenumbers must be an integer
-        wave_number=(wave_start-1)+k !starting wavenumber is 2
+        wave_number=wave_start+(k-1)*wave_skip
         amp=prefactor*(wave_number**wave_slope)
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
+        !random_shift=0.
         if (k==1) then
           write(34,'(a,i3.1)') '%loop number ', i
         end if
