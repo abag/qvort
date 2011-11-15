@@ -1,4 +1,5 @@
 function mesh_spectrum(ux,uy,uz,n,fluid,fit)
+dims=load('./data/dims.log');
 fux=fftn(ux)/(n^3);
 fuy=fftn(uy)/(n^3);
 fuz=fftn(uz)/(n^3);
@@ -15,13 +16,13 @@ for i=1:n
             if ii>midpt ; ii=n-ii+1; ; end ;
             if jj>midpt ; jj=n-jj+1; ; end ; 
             if kk>midpt ; kk=n-kk+1; ; end ;
-            r=int16(sqrt(ii^2+jj^2+kk^2));
+            r=round(sqrt(ii^2+jj^2+kk^2));
             spect(r)=spect(r)+energyr(i,j,k)+energyi(i,j,k);
         end
     end
 end
 figure('Name',strcat('Energy Spectrum, fluid:',fluid)) 
-k=1:midpt;
+k=(1:midpt)*(2*pi/dims(2));
 loglog(k,spect(1:midpt),'LineWidth',2)
 if fit==1
   dummy_spect=k.^(-5/3);
@@ -33,3 +34,4 @@ end
 xlabel('log k','FontSize',14) ; ylabel('log E(k)','FontSize',14)
 axis tight
 set(gca,'FontSize',14)
+%save spect.mat k spect dummy_spect

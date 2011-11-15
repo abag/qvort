@@ -26,6 +26,8 @@ for i=start:skip:finish
   end
   counter=counter+1;
 end
+disp('saving to u2.mat file')
+save u2.mat u22
 switch option
   case '3d'
     figure('Name','urms calculated from 3d mesh')
@@ -37,5 +39,3 @@ end
 set(gca,'FontSize',14)
 xlabel('t','FontSize',14)
 ylabel('E','FontSize',14)
-disp('saving to u2.mat file')
-save u2.mat u2

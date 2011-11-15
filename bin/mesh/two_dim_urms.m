@@ -1,5 +1,5 @@
 function [urms nurms]=two_dim_urms(filenumber)
-filename=sprintf('./data/vel_slice_2D%03d.dat',filenumber);
+filename=sprintf('./data/vel_slice_2D%04d.dat',filenumber);
 fid=fopen(filename);
 if fid<0
   disp('2D slice file does not exist, exiting script')
@@ -18,5 +18,7 @@ usupz=squeeze(B(5,:,:));
 unormx=squeeze(B(6,:,:));
 unormy=squeeze(B(6,:,:));
 unormz=squeeze(B(6,:,:));
+%line below gives energy if this is needed rather than rms
+%urms=mean(mean(usupx(:,:,:).^2+usupy(:,:,:).^2+usupz(:,:,:).^2))/2;
 urms=sqrt(mean(mean(usupx(:,:,:).^2+usupy(:,:,:).^2+usupz(:,:,:).^2)));
 nurms=sqrt(mean(mean(unormx(:,:,:).^2+unormy(:,:,:).^2+unormz(:,:,:).^2)));
