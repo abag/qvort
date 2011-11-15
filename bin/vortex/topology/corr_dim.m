@@ -22,6 +22,7 @@ if dims(4)==1
   z=fread(fid,number_of_particles,'float64');
   f=fread(fid,number_of_particles,'int');
   u=fread(fid,number_of_particles,'float64');
+  fclose(fid)
 else 
   fid=fopen(filename);
   if fid<0
@@ -48,6 +49,7 @@ else
     u(j)=dummy_vect(5);
   end
   f=uint16(f);
+  fclose(fid)
 end
 %now we need to loop over particles and calculate correlation dimension
 dist(1:number_of_particles,1:number_of_particles)=100.;
