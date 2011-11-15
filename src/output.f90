@@ -9,17 +9,17 @@ module output
   subroutine print_dims()
     implicit none
     open(unit=77,file='./data/dims.log',status='replace')
-      write(77,*) delta
-      write(77,*) box_size
-      write(77,*) mesh_size
+      write(77,*) delta, '%resolution - \delta' 
+      write(77,*) box_size, '%box size'
+      write(77,*) mesh_size, '%mesh size'
       if (binary_print) then
-        write(77,*) 1
+        write(77,*) 1, '%binary printing'
       else
-        write(77,*) 0
+        write(77,*) 0, '%formatted printing'
       end if
-      write(77,*) part_count
-      write(77,*) quasi_pcount
-      write(77,*) xdim_scaling_factor
+      write(77,*) part_count, '%number of particles'
+      write(77,*) quasi_pcount, '%number of quasi-particles'
+      write(77,*) xdim_scaling_factor, '%length of x direction'
     close(77)
   end subroutine
   !**********************************************************************
