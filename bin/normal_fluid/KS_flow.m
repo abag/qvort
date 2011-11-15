@@ -23,6 +23,20 @@ uz=reshape(uz,msize,msize,msize);
 unorm=max(sqrt(ux.^2+uy.^2+uz.^2));
 %plot slices of field+isosurface
 mesh_slices(x,ux,uy,uz,msize,'forcing: vel field')
+%---------------------vorticity---------------------
+figure('Name','vorticity')
+[wx wy wz]=curl(ux,uy,uz);
+w2=(wx.^2+wy.^2+wz.^2);
+w2=sqrt(w2);
+interpc=2;
+wzslice(1:msize,1:msize)=w2(msize/2,:,:);
+imagesc(interp(x,interpc),interp(x,interpc),interp2(wzslice,interpc))
+hold on
+quiver(x,x,squeeze(ux(msize/2,:,:)),squeeze(uy(msize/2,:,:)),'k')
+xlabel('x','FontSize',14) ; ylabel('y','FontSize',14)
+colorbar
+set(gca,'Fontsize',14)
+%--------------------------------------------------
 A=load('data/KSwavenumbers.log');
 figure('Name','KS k unit vectors')
   plot3(A(:,2),A(:,3),A(:,4),'o','MarkerFaceColor','k','MarkerEdgeColor','k')
