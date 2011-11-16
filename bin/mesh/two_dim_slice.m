@@ -2,6 +2,7 @@ function two_dim_slice(filenumber,fit,fitnorm,fitextra,firecolor)
 close all
 if nargin<2
   do_fit=0;
+  firecolor=0;
 else
   do_fit=1;
 end
@@ -9,9 +10,11 @@ if nargin<3
   if do_fit==1
     fitnorm=fit;
   end
+  firecolor=0;
 end
 if nargin<4
   fitextra=[];
+  firecolor=0;
 end
 if nargin<5
   firecolor=0;
@@ -21,6 +24,9 @@ fid=fopen(filename);
 if fid<0
   disp('2D slice file does not exist, exiting script')
   return
+end
+if firecolor==1
+  disp('using fireprint colour scheme')
 end
 A=fread(fid,'float64');
 s=length(A); s=s/8; s=sqrt(s);
@@ -59,7 +65,7 @@ imagesc(xx,yy,log(sqrt(usupx.^2+usupy.^2+usupz.^2))) ; shading interp
 axis square
 set(gca,'FontSize',14)
 xlabel('log|u|','FontSize',14)
-if fireprint==1
+if firecolor==1
   colormap(fireprint)
 end
 colorbar
@@ -73,7 +79,7 @@ clear index
 imagesc(xx,yy,uu) ; shading interp
 set(gca,'FontSize',14)
 xlabel('|u|','FontSize',14)
-if fireprint==1
+if firecolor==1
   colormap(fireprint)
 end
 colorbar
@@ -103,7 +109,7 @@ if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
   axis square
   set(gca,'FontSize',14)
   xlabel('|u|','FontSize',14)
-  if fireprint==1
+  if firecolor==1
     colormap(fireprint)
   end
   colorbar
@@ -113,7 +119,8 @@ if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
   set(gca,'FontSize',14)
   xlabel('x','FontSize',14)
   ylabel('y','FontSize',14)
-  if fireprint==1
+
+  if firecolor==1
     colormap(fireprint)
   end
   colorbar
