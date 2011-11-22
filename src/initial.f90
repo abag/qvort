@@ -158,7 +158,7 @@ module initial
         case('central_bundle')
           call setup_central_bundle !initial_cond.mod
         case('helix')
-          call setup_helix !initial_helix.mod          
+          call setup_helix !initial_cond.mod          
         case('crow_loop')
           call setup_crow_loop !initial_cond.mod
         case('smooth_test')
@@ -181,6 +181,8 @@ module initial
           call setup_cardoid !initial_cond.mod
         case('hypotrochoid')
           call setup_hypotrochoid !initial_cond.mod
+        case('torus_knot')
+          call setup_torus_knot !initial_cond.mod
         case('wave_loop')
           call setup_wave_loop !initial_cond.mod
         case('linked_wave_loop')

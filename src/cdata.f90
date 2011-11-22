@@ -159,7 +159,7 @@ module cdata
   !order of derivatives
   character(len=30), protected :: deriv_order='second'
   logical ,protected :: fixed_LIA_beta=.false.
-  !-----------------arguements used by initial.mod-------------------------
+  !-----------arguements used by initial.mod/initial_cond.mod-------------------
   integer, protected :: line_count=1
   real, protected :: line_sigma=0.
   real, protected :: lattice_ratio=1
@@ -172,6 +172,8 @@ module cdata
   real, protected :: wave_amp=10.
   character(len=30), protected :: wave_type='planar' 
   character(len=30), protected :: bundle_type='polarised' 
+  integer, protected :: torus_p=1, torus_q=1 !for torus_knot initf
+  real, protected :: torus_epsilon=1.
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
   logical, protected :: binary_print=.true.
@@ -411,6 +413,12 @@ module cdata
              read(buffer, *, iostat=ios) tree_extra_correction
           case ('anisotropy_params')
              read(buffer, *, iostat=ios) anisotropy_params
+          case ('torus_q')
+             read(buffer, *, iostat=ios) torus_q !q integer for torus knot initial condition
+          case ('torus_p')
+             read(buffer, *, iostat=ios) torus_p !p integer for torus knot initial condition
+          case ('torus_epsilon')
+             read(buffer, *, iostat=ios) torus_epsilon !epsilon real for torus knot initial condition
           case ('wave_count')
              read(buffer, *, iostat=ios) wave_count !for wave_spec initial conditions
           case ('wave_slope')

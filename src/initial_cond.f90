@@ -160,6 +160,32 @@ module initial_cond
     end do   
   end subroutine
   !*************************************************************************
+  !>draw torus knot (http://en.wikipedia.org/wiki/Torus_knot) in the x-y plane
+  subroutine setup_torus_knot
+    implicit none
+    integer :: i 
+    real :: phi
+    write(*,*) 'initf: torus knot p= ', torus_p, ' q= ', torus_q
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount
+      phi=torus_p*2.*pi*(2.*i-1.)/(2.*pcount)
+      f(i)%x(1)=(box_size/(2*pi))*(2.+cos(torus_q*phi/torus_p))*cos(phi)
+      f(i)%x(2)=(box_size/(2*pi))*(2.+cos(torus_q*phi/torus_p))*sin(phi)
+      f(i)%x(3)=torus_epsilon*(box_size/(2.*pi))*sin(torus_q*phi/torus_p)
+      !print*, f(i)%x(1:3)
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do   
+    !stop
+  end subroutine
+  !*************************************************************************
   !>draw hypotrochoid (http://en.wikipedia.org/wiki/Hypotrochoid) in the x-y plane
   !> with sinusoidal variation in z
   subroutine setup_hypotrochoid
