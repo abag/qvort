@@ -164,15 +164,19 @@ module initial_cond
   subroutine setup_torus_knot
     implicit none
     integer :: i 
-    real :: phi
-    write(*,*) 'initf: torus knot p= ', torus_p, ' q= ', torus_q
-    !loop over particles setting spatial and 'loop' position
+    real :: phi, w, radius
+    real :: rho, theta !cylindrical co-ordinates
+    radius=(0.75*pcount*delta)/(6*pi) !75% of potential size 
+    write(*,'(a,i4.2,a,i4.2)') 'initf: torus knot p= ', torus_p, ' q= ', torus_q
+    w=real(torus_q)/real(torus_p)
+    write(*,'(a,f4.3,a,f6.4)') 'winding number ', w, ' loop radius ', radius 
     do i=1, pcount
-      phi=torus_p*2.*pi*(2.*i-1.)/(2.*pcount)
-      f(i)%x(1)=(box_size/(2*pi))*(2.+cos(torus_q*phi/torus_p))*cos(phi)
-      f(i)%x(2)=(box_size/(2*pi))*(2.+cos(torus_q*phi/torus_p))*sin(phi)
-      f(i)%x(3)=torus_epsilon*(box_size/(2.*pi))*sin(torus_q*phi/torus_p)
-      !print*, f(i)%x(1:3)
+      phi=torus_p*2.*pi*(2.*i-1.)/(2.*pcount) !phase \in [0,2*pi]
+      rho=radius+torus_epsilon*sin(w*phi) !radius
+      theta=phi+(torus_epsilon/(w*radius))*cos(w*phi)
+      f(i)%x(1)=rho*cos(theta)
+      f(i)%x(2)=rho*sin(theta)
+      f(i)%x(3)=torus_epsilon*((1+1./w)**(0.5))*cos(w*phi)
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -183,7 +187,6 @@ module initial_cond
       !zero the stored velocities
       f(i)%u1=0. ; f(i)%u2=0.
     end do   
-    !stop
   end subroutine
   !*************************************************************************
   !>draw hypotrochoid (http://en.wikipedia.org/wiki/Hypotrochoid) in the x-y plane

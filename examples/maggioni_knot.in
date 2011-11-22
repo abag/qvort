@@ -1,0 +1,18 @@
+--------------required parameters------------
+nsteps 100
+shots 1
+mesh_shots 10
+recon_shots 1
+pcount 400
+dt 1E-6
+delta 0.06283
+box_size 4.
+velocity LIA
+initf torus_knot
+boundary open
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+binary_print T
+torus_q 1
+torus_p 10
+torus_epsilon .1
