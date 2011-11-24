@@ -163,6 +163,7 @@ module cdata
   integer, protected :: line_count=1
   real, protected :: line_sigma=0.
   real, protected :: lattice_ratio=1
+  real, protected :: loop_translate(3)=1.
   character(len=20), protected :: initial_distribution='uniform'
   real, protected :: rotation_factor=1 !also used in injection routines
   integer, protected :: wave_count=1
@@ -373,6 +374,8 @@ module cdata
              read(buffer, *, iostat=ios) line_sigma !used in certain intial conditions
           case ('lattice_ratio')
              read(buffer, *, iostat=ios) lattice_ratio !used in lattice initial conditions
+          case ('loop_translate')
+             read(buffer, *, iostat=ios) loop_translate !used in random_loops conditions
           case ('bundle_type')
              read(buffer, *, iostat=ios) bundle_type !used in central_bundle initial conditions
           case ('rotation_factor')

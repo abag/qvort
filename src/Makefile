@@ -24,8 +24,8 @@ default: run.x
 #
 # Targets
 #
-run.x: run.f90 cdata.o derivatives.o forcing.o reconnection.o initial_cond.o initial.o output.o periodic.o general.o statistics.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o Makefile 
-	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o derivatives.o forcing.o normal_fluid.o reconnection.o initial.o initial_cond.o output.o periodic.o general.o statistics.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o
+run.x: run.f90 cdata.o derivatives.o forcing.o reconnection.o initial_line.o initial_loop.o initial.o output.o periodic.o general.o statistics.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o Makefile 
+	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o derivatives.o forcing.o normal_fluid.o reconnection.o initial.o initial_loop.o initial_line.o output.o periodic.o general.o statistics.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o
 #
 #
 clean: 
@@ -54,9 +54,11 @@ normal_fluid.o: normal_fluid.f90 general.o cdata.o ksmodel.o
 #
 forcing.o: forcing.f90 general.o cdata.o
 #
-initial.o: initial.f90 initial_cond.o stiff_solver.o normal_fluid.o forcing.o cdata.o quasip.o periodic.o particles.o smoothing.o inject.o
+initial.o: initial.f90 initial_line.o initial_loop.o stiff_solver.o normal_fluid.o forcing.o cdata.o quasip.o periodic.o particles.o smoothing.o inject.o
 #
-initial_cond.o: initial_cond.f90 cdata.o general.o periodic.o
+initial_loop.o: initial_loop.f90 cdata.o general.o periodic.o
+#
+initial_line.o: initial_line.f90 cdata.o general.o periodic.o
 #
 timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o tree.o mirror.o matrix.o 
 #
