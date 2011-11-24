@@ -3,7 +3,8 @@
 module initial
   use cdata
   use normal_fluid
-  use initial_cond
+  use initial_line
+  use initial_loop
   use forcing
   use periodic
   use smoothing
@@ -144,57 +145,57 @@ module initial
       !choose the correct setup routine based on the value of initf in run.in
       select case(initf)
         case('single_loop')
-          call setup_single_loop !initial_cond.mod
+          call setup_single_loop !initial_loop.mod
         case('single_line')
-          call setup_single_line !initial_cond.mod
+          call setup_single_line !initial_line.mod
         case('ellipse')
-          call setup_ellipse !initial_cond.mod
+          call setup_ellipse !initial_loop.mod
         case('random_loops')
-          call setup_random_loops !initial_cond.mod
+          call setup_random_loops !initial_loop.mod
         case('crow')
-          call setup_crow !initial_cond.mod
+          call setup_crow !initial_line.mod
         case('big_bundles')
-          call setup_big_bundles !initial_cond.mod
+          call setup_big_bundles !initial_line.mod
         case('central_bundle')
-          call setup_central_bundle !initial_cond.mod
+          call setup_central_bundle !initial_line.mod
         case('helix')
-          call setup_helix !initial_cond.mod          
+          call setup_helix !initial_line.mod          
         case('crow_loop')
-          call setup_crow_loop !initial_cond.mod
+          call setup_crow_loop !initial_loop.mod
         case('smooth_test')
-          call setup_smooth_test !initial_cond.mod 
+          call setup_smooth_test !initial_line.mod 
         case('smooth_test_wave')
-          call setup_smooth_test_wave !initial_cond.mod  
+          call setup_smooth_test_wave !initial_line.mod  
         case('leap-frog')
-          call setup_leap_frog !initial_cond.mod
+          call setup_leap_frog !initial_loop.mod
         case('loop_train')
-          call setup_loop_train !initial_cond.mod
+          call setup_loop_train !initial_loop.mod
         case('loop_stream')
-          call setup_loop_stream !initial_cond.mod       
+          call setup_loop_stream !initial_loop.mod       
         case('linked_filaments')
-          call setup_linked_filaments !initial_cond.mod
+          call setup_linked_filaments !initial_loop.mod
         case('colliding_loops')
-          call setup_colliding_loops !initial_cond.mod
+          call setup_colliding_loops !initial_loop.mod
         case('kivotedes')
-          call setup_kivotedes !initial_cond.mod
+          call setup_kivotedes !initial_loop.mod
         case('cardoid')
-          call setup_cardoid !initial_cond.mod
+          call setup_cardoid !initial_loop.mod
         case('hypotrochoid')
-          call setup_hypotrochoid !initial_cond.mod
+          call setup_hypotrochoid !initial_loop.mod
         case('torus_knot')
-          call setup_torus_knot !initial_cond.mod
+          call setup_torus_knot !initial_loop.mod
         case('wave_loop')
-          call setup_wave_loop !initial_cond.mod
+          call setup_wave_loop !initial_loop.mod
         case('linked_wave_loop')
-          call setup_linked_wave_loop !initial_cond.mod
+          call setup_linked_wave_loop !initial_loop.mod
         case('wave_line')
-          call setup_wave_line !initial_cond.mod
+          call setup_wave_line !initial_line.mod
         case('lattice')
-          call setup_lattice !initial_cond.mod
+          call setup_lattice !initial_line.mod
         case('tangle')
-          call setup_tangle !initial_cond.mod
+          call setup_tangle !initial_line.mod
         case('criss-cross')
-          call setup_criss_cross !initial_cond.mod
+          call setup_criss_cross !initial_line.mod
         case default
           call fatal_error('cdata.mod:init_setup', &
                          'invalid choice for initf parameter') !cdata.mod
