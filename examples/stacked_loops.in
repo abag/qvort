@@ -1,0 +1,19 @@
+--------------required parameters------------
+nsteps 20000
+shots 50
+mesh_shots 10
+recon_shots 1
+pcount 2000
+dt 5E-2
+delta 0.06283
+box_size 4.
+velocity Tree
+initf random_loops
+line_count 20
+loop_translate 0. 0. .1
+rotation_factor 0.
+boundary open
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+tree_theta 0.4
+binary_print T

@@ -163,7 +163,8 @@ module cdata
   integer, protected :: line_count=1
   real, protected :: line_sigma=0.
   real, protected :: lattice_ratio=1
-  real, protected :: loop_translate(3)=1.
+  !how much we translate random_loops initial condition by 
+  real, protected :: loop_translate(3)=1.!for separate xyz components
   character(len=20), protected :: initial_distribution='uniform'
   real, protected :: rotation_factor=1 !also used in injection routines
   integer, protected :: wave_count=1
