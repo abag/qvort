@@ -178,6 +178,8 @@ module initial
           call setup_colliding_loops !initial_loop.mod
         case('kivotedes')
           call setup_kivotedes !initial_loop.mod
+        case('macro_ring')
+          call setup_macro_ring !initial_loop.mod
         case('cardoid')
           call setup_cardoid !initial_loop.mod
         case('hypotrochoid')

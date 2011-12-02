@@ -159,7 +159,7 @@ module cdata
   !order of derivatives
   character(len=30), protected :: deriv_order='second'
   logical ,protected :: fixed_LIA_beta=.false.
-  !-----------arguements used by initial.mod/initial_cond.mod-------------------
+  !-----------arguements used by initial.mod/initial_cond.mod-------------
   integer, protected :: line_count=1
   real, protected :: line_sigma=0.
   real, protected :: lattice_ratio=1
@@ -167,13 +167,19 @@ module cdata
   real, protected :: loop_translate(3)=1.!for separate xyz components
   character(len=20), protected :: initial_distribution='uniform'
   real, protected :: rotation_factor=1 !also used in injection routines
-  integer, protected :: wave_count=1
-  real, protected :: wave_slope=-1.5
-  integer, protected :: wave_start=1
-  integer, protected :: wave_skip=1
-  real, protected :: wave_amp=10.
-  character(len=30), protected :: wave_type='planar' 
-  character(len=30), protected :: bundle_type='polarised' 
+  !--------for wave_loop/wave_line initf--------------
+  integer, protected :: wave_count=1 !number of waves
+  real, protected :: wave_slope=-1.5 !spectral slope
+  integer, protected :: wave_start=1 !starting wavenumber
+  integer, protected :: wave_skip=1 !the skip used
+  real, protected :: wave_amp=10. !amplitude of 1st wave
+  character(len=30), protected :: wave_type='planar' !planar or helical
+  !--------for macro_ring initf--------------
+  real, protected :: macro_ring_R=0. !major radius
+  real, protected :: macro_ring_a=0. !minor radius
+  !---------for central_bundle------------------------
+  character(len=30), protected :: bundle_type='polarised' !polarised or random
+  !---------for torus_knot initf---------------------- 
   integer, protected :: torus_p=1, torus_q=1 !for torus_knot initf
   real, protected :: torus_epsilon=1.
   !--------the following parameters add special features-------------------------
@@ -435,6 +441,10 @@ module cdata
              read(buffer, *, iostat=ios) wave_amp !for wave_spec initial conditions
           case ('wave_type')
              read(buffer, *, iostat=ios) wave_type !for wave_spec initial conditions
+          case ('macro_ring_R')
+             read(buffer, *, iostat=ios) macro_ring_R !for macro_ring initial conditions
+          case ('macro_ring_a')
+             read(buffer, *, iostat=ios) macro_ring_a !for macro_ring initial conditions
           case ('curv_hist')
              read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
           case ('torsion_hist')

@@ -496,6 +496,85 @@ module initial_loop
     close(34)
   end subroutine
   !*************************************************************************
+  !>a macroscopic ring created by many quantised loops with a hexagonal pattern
+  subroutine setup_macro_ring
+    implicit none
+    real :: zpos
+    real, allocatable :: rad_shift(:), x_shift(:)
+    real, allocatable :: rad_shift_r(:), rad_shift_theta(:)
+    real :: average_loop_sep
+    integer :: shift_help, shift_counter
+    integer :: actual_line_count, pcount_required
+    integer :: loop_size, loop_position
+    integer :: i, j
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_macro_ring', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if ((macro_ring_R<epsilon(0.)).or.(macro_ring_a<epsilon(0.))) then
+      call fatal_error('init.mod:setup_macro_ring', &
+      'you have not set a value for either macro_ring_a or R in run.in')
+    end if
+    if (macro_ring_a>macro_ring_R) then
+      call warning_message('init.mod','major axis of torus is less than minor axis?')
+    end if
+    !find the hexagonal number
+    actual_line_count=3*line_count*(line_count-1)+1
+    write(*,'(a,i3.1,a)') ' creating a macro ring with ', line_count, ' layer(s)'
+    write(*,'(a,f6.3,a,f6.3)') ' major radius ', macro_ring_R, ' minor radius ', macro_ring_a
+    write(*,'(a,i3.1,a)') ' drawing', actual_line_count, ' loops in the z-y plane'
+    !how big does a loop need to be?
+    loop_size=nint(2*pi*macro_ring_R/(0.75*delta))
+    pcount_required=loop_size*actual_line_count !# particles needed
+    print*, 'changing size of pcount to fit with major_R, delta and line_count'
+    print*, 'pcount is now', pcount_required
+    average_loop_sep=sqrt(pi)*macro_ring_a/sqrt(real(actual_line_count))
+    if  (average_loop_sep< delta/2.) then
+      call fatal_error('init.mod','separation of loops is less than resolution')
+    end if
+    deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    !now we need to find shift values to create the torus
+    allocate(rad_shift(actual_line_count),x_shift(actual_line_count))
+    allocate(rad_shift_r(actual_line_count),rad_shift_theta(actual_line_count))
+    rad_shift_r(1)=0. ; rad_shift_theta(1)=0.
+    shift_counter=1
+    if (line_count>1) then !we may not need this if statement
+      do i=2,line_count
+        do j=1,((i-1)*6)
+          shift_counter=shift_counter+1
+          rad_shift_r(shift_counter)=macro_ring_a*(real(i-1)/line_count)
+          rad_shift_theta(shift_counter)=pi*(2.*j-1.)/((line_count-1)*6)
+        end do
+      end do
+    end if
+    do i=1, actual_line_count
+      rad_shift(i)=rad_shift_r(i)*cos(rad_shift_theta(i))
+      x_shift(i)=rad_shift_r(i)*sin(rad_shift_theta(i))
+    end do
+    !START THE LOOP
+    do i=1, actual_line_count
+      do j=1, loop_size
+        loop_position=j+(i-1)*loop_size
+        f(loop_position)%x(1)=-box_size/2.+1.5*macro_ring_a+x_shift(i)
+        f(loop_position)%x(2)=(macro_ring_R+rad_shift(i))*cos(pi*real(2*j-1)/loop_size)
+        f(loop_position)%x(3)=(macro_ring_R+rad_shift(i))*sin(pi*real(2*j-1)/loop_size)
+        if(j==1) then
+          f(loop_position)%behind=i*loop_size
+          f(loop_position)%infront=loop_position+1
+        else if (j==loop_size) then
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=(i-1)*loop_size+1
+        else
+          f(loop_position)%behind=loop_position-1
+          f(loop_position)%infront=loop_position+1
+        end if
+        f(loop_position)%u1=0. ; f(loop_position)%u2=0.
+      end do
+    end do 
+    deallocate(rad_shift,x_shift,rad_shift_r,rad_shift_theta)
+  end subroutine
+  !*************************************************************************
   !>linked loops, helical/planar waves added with specific spectrum all set in run.in
   subroutine setup_linked_wave_loop
     implicit none
