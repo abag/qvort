@@ -104,6 +104,18 @@ remove_count
     end if
   end subroutine
   !**********************************************************************
+  !>print the initial f (filament) array as formatted data for use with gnuplot/matlab
+  subroutine initial_printf
+    implicit none
+    integer :: i !for looping
+    open(unit=98,file='./data/var_initial.log',status='replace')
+      write(98,*) pcount
+      do i=1, pcount
+        write(98,*) f(i)%x(1:3), f(i)%infront
+      end do
+    close(98)
+  end subroutine
+  !**********************************************************************
   subroutine print_delta_adapt(filenumber)
     implicit none
     integer, intent(IN) :: filenumber

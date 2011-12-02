@@ -9,6 +9,7 @@ module initial
   use periodic
   use smoothing
   use inject
+  use output
   contains
   !*************************************************************************
   !>Prints and sets up intial conditions - will give warnings/errors if there
@@ -146,6 +147,8 @@ module initial
       select case(initf)
         case('single_loop')
           call setup_single_loop !initial_loop.mod
+        case('single_loop_zy')
+          call setup_single_loop_zy !initial_loop.mod
         case('single_line')
           call setup_single_line !initial_line.mod
         case('ellipse')
@@ -207,6 +210,8 @@ module initial
       allocate(f(0))
       write(*,*) 'filament has not been set, running in particle only mode'
     end if
+    !print initial filament to file
+    call initial_printf !output.mod
     !test if we have a non-zero mesh size
     write(*,'(a)') ' ------------------------MESH-----------------------' 
     if (mesh_size>0) then

@@ -332,6 +332,36 @@ module initial_loop
     end do    
   end subroutine
   !*************************************************************************
+  !>set up a single loop in the y-z plane, it's size is dictated by the initial 
+  !>number of particles set and the size of \f$\delta\f$
+  subroutine setup_single_loop_zy
+    implicit none
+    real :: velocity, ring_energy
+    real :: radius
+    integer :: i
+    radius=(0.75*pcount*delta)/(2*pi) !75% of potential size 
+    velocity=(quant_circ/(4*pi*radius))*(log(8*radius/corea)-.5)
+    ring_energy=0.5*(quant_circ**2)*radius*(log(8*radius/corea)-2.)
+    write(*,*) 'initf: single loop zy, radius of loop:', radius
+    write(*,*) 'velocity should be:', velocity
+    write(*,*) 'energy should be:', ring_energy
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount
+      f(i)%x(1)=0.
+      f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
+      f(i)%x(3)=radius*sin(pi*real(2*i-1)/pcount)
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.
+    end do
+  end subroutine
+  !*************************************************************************
   !>four unlinked loops as in Kivotedes 2001, PRL
   subroutine setup_kivotedes
     implicit none
@@ -544,14 +574,17 @@ module initial_loop
         do j=1,((i-1)*6)
           shift_counter=shift_counter+1
           rad_shift_r(shift_counter)=macro_ring_a*(real(i-1)/line_count)
-          rad_shift_theta(shift_counter)=pi*(2.*j-1.)/((line_count-1)*6)
+          rad_shift_theta(shift_counter)=pi*(2.*j-1.)/((i-1)*6)
         end do
       end do
     end if
+    open(unit=37,file='./data/macro_loop_profile.log')
     do i=1, actual_line_count
       rad_shift(i)=rad_shift_r(i)*cos(rad_shift_theta(i))
       x_shift(i)=rad_shift_r(i)*sin(rad_shift_theta(i))
+      write(37,*) i, rad_shift(i), x_shift(i)
     end do
+   close(37)
     !START THE LOOP
     do i=1, actual_line_count
       do j=1, loop_size
