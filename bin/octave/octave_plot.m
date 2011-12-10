@@ -65,6 +65,6 @@ daspect([1 dims(7) dims(7)])
 set(gca,'xtick',[]) 
 set(gca,'ytick',[]) 
 set(gca,'ztick',[]) 
-hold off
 grid on
 box on
+hold off

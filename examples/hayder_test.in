@@ -1,0 +1,20 @@
+--------------required parameters------------
+nsteps 160000
+shots 10
+pcount 100
+dt 1E-2
+delta 1.
+box_size 128
+velocity LIA
+initf wave_line
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+binary_print F
+tree_theta 0.4
+quant_circ 6.28318531
+wave_start 10
+wave_amp 10.
+wave_count 1
+wave_type helical
+overide_timestep_check T
