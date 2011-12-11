@@ -95,6 +95,10 @@ module initial
           periodic_bc_notx=.true.
           write(*,'(a,f8.3)') ' running with periodic boundaries in y-z direction, box size:', box_size
           write(*,*) ' boundaries open in the x direction, loops that have left the box will be removed'
+        case('openxy')
+          periodic_bc_notxy=.true.
+          write(*,'(a,f8.3)') ' running with periodic boundaries in z direction, box size:', box_size
+          write(*,*) ' boundaries open in x/y direction, loops that have left the box will be removed'
         case('mirror')
           if (deriv_order=='fourth') then
             call fatal_error('init_setup','mirror bcs are not supported with fourth order derivatives') 

@@ -147,6 +147,7 @@ module cdata
   !>are boundaries periodic?  
   logical :: periodic_bc=.false.
   logical :: periodic_bc_notx=.false.
+  logical :: periodic_bc_notxy=.false.
   real :: xdim_scaling_factor=1.
   logical :: sticky_z_boundary=.false.
   !>which reconnection algorithm to use

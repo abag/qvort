@@ -137,6 +137,29 @@ module periodic
       elseif ((f(i)%x(3)-gbbehind(3))<(-box_size/2.)) then
         gbbehind(3)=gbbehind(3)-box_size
       end if
+    else if (periodic_bc_notxy) then
+      !again could be neater!!!
+      !---------------------z------------------------------
+      if ((f(i)%x(3)-ginfront(3))>(box_size/2.)) then
+        ginfront(3)=ginfront(3)+box_size
+      elseif ((f(i)%x(3)-ginfront(3))<(-box_size/2.)) then
+        ginfront(3)=ginfront(3)-box_size
+      end if
+      if ((f(i)%x(3)-gbehind(3))>(box_size/2.)) then
+        gbehind(3)=gbehind(3)+box_size
+      elseif ((f(i)%x(3)-gbehind(3))<(-box_size/2.)) then
+        gbehind(3)=gbehind(3)-box_size
+      end if
+      if ((f(i)%x(3)-giinfront(3))>(box_size/2.)) then
+        giinfront(3)=giinfront(3)+box_size
+      elseif ((f(i)%x(3)-giinfront(3))<(-box_size/2.)) then
+        giinfront(3)=giinfront(3)-box_size
+      end if
+      if ((f(i)%x(3)-gbbehind(3))>(box_size/2.)) then
+        gbbehind(3)=gbbehind(3)+box_size
+      elseif ((f(i)%x(3)-gbbehind(3))<(-box_size/2.)) then
+        gbbehind(3)=gbbehind(3)-box_size
+      end if
     end if
     if (mirror_bc) then
       if (f(i)%pinnedi) then
@@ -215,6 +238,35 @@ module periodic
     end do
   end subroutine
   !******************************************************************
+  !>if a point/particle leaves one side of the box, 
+  !>reinsert it on the opposite side - do not do the x/y direction
+  !> in the x/y direction we simple remove the full loop
+  subroutine enforce_periodic_z()
+    implicit none
+    integer :: i
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !empty particle
+      !-------------x------------------     
+      if (f(i)%x(1)>(box_size/2.)) then
+        call boundary_loop_remove(i)
+      else if (f(i)%x(1)<(-box_size/2.)) then
+        call boundary_loop_remove(i)
+      end if
+      !-------------y------------------
+      if (f(i)%x(2)>(box_size/2.)) then
+        call boundary_loop_remove(i)
+      else if (f(i)%x(2)<(-box_size/2.)) then
+        call boundary_loop_remove(i)
+      end if
+      !-------------z------------------
+      if (f(i)%x(3)>(box_size/2.)) then
+        f(i)%x(3)=f(i)%x(3)-box_size
+      else if (f(i)%x(3)<(-box_size/2.)) then
+        f(i)%x(3)=f(i)%x(3)+box_size
+      end if
+    end do
+  end subroutine
+  !******************************************************************
   !> remove loops which hit the boundaries
   subroutine enforce_open_removal()
     implicit none
@@ -242,7 +294,7 @@ module periodic
     end do
   end subroutine
   !**************************************************
-  !>remove loops that have left the box in \pm x directions
+  !>remove loops that have left the box in \pm x/y directions
   !>this is very similar to loop_killer in line.f90
   !!a better way would be have a separate loop count
   !!and loop removal routine in general.mod

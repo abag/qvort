@@ -12,7 +12,7 @@ module initial_line
     implicit none
     integer :: pcount_required
     integer :: i
-    if (periodic_bc) then
+    if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
       !work out the number of particles required for single line
       !given the box size specified in run.i
       pcount_required=nint(box_size/(0.75*delta)) !75%
@@ -45,7 +45,7 @@ module initial_line
     implicit none
     integer :: pcount_required
     integer :: i
-    if (periodic_bc) then
+    if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
       !work out the number of particles required for single line
       !given the box size specified in run.i
       pcount_required=nint(box_size/(0.65*delta)) !35%
@@ -455,7 +455,7 @@ module initial_line
       call fatal_error('init.mod:setup_wave_line', &
       'you have not set a value for line_count in run.in')
     end if
-    if (periodic_bc) then
+    if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
       !work out the number of particles required for single line
       !given the box size specified in run.i
       pcount_required=line_count*nint(box_size/delta) !100% as waves are added

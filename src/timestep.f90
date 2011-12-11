@@ -124,6 +124,22 @@ module timestep
             call biot_savart_shift(i,u_bs,(/peri*box_size,perj*box_size,perk*box_size/))
           end do ; end do ;end do
           u=u+u_bs
+        else if (periodic_bc_notx) then
+          !we must shift the mesh in 2 directions (yz)
+          u_bs=0. !zero u_bs
+          do perj=-1,1 ; do perk=-1,1
+            if (perj==0.and.perk==0) cycle
+            call biot_savart_shift(i,u_bs,(/0.,perj*box_size,perk*box_size/))
+          end do ;end do
+          u=u+u_bs
+        else if (periodic_bc_notxy) then
+          !we must shift the mesh in z direction
+          u_bs=0. !zero u_bs
+          do perk=-1,1
+            if (perk==0) cycle
+            call biot_savart_shift(i,u_bs,(/0.,0.,perk*box_size/))
+          end do
+          u=u+u_bs
         end if
         if (mirror_bc) then
           !get the contribution of the image vortices
@@ -150,6 +166,22 @@ module timestep
             if (peri==0.and.perj==0.and.perk==0) cycle
             call tree_walk(i,vtree,(/peri*box_size,perj*box_size,perk*box_size/),u_bs) !tree.mod
           end do ; end do ;end do
+          u=u+u_bs
+        else if (periodic_bc_notx) then
+          !we must shift the mesh in 2 directions, 9 permutations needed!
+          u_bs=0. !zero u_bs
+          do perj=-1,1 ; do perk=-1,1
+            if (perj==0.and.perk==0) cycle
+            call tree_walk(i,vtree,(/0.,perj*box_size,perk*box_size/),u_bs) !tree.mod
+          end do ;end do
+          u=u+u_bs
+        else if (periodic_bc_notxy) then
+          !we must shift the mesh in z direction, 3 permutations needed, not so bad
+          u_bs=0. !zero u_bs
+          do perk=-1,1
+            if (perk==0) cycle
+            call tree_walk(i,vtree,(/0.,0.,perk*box_size/),u_bs) !tree.mod
+          end do
           u=u+u_bs
         end if
         f(i)%u_sup=u !store just the superfluid velcotity
@@ -218,15 +250,21 @@ module timestep
                   if (peri==0.and.perj==0.and.perk==0) cycle
                   call biot_savart_general_shift(mesh(k,j,i)%x,mesh(k,j,i)%u_sup, &
                   (/peri*box_size,perj*box_size,perk*box_size/)) !timestep.mod
-                end do ; end do ; end do
-              end if
-              if (periodic_bc_notx) then
+                end do ; end do ; end do 
+              else if (periodic_bc_notx) then
                 !as above but we do not need the x permutations
                 do perj=-1,1 ; do perk=-1,1
                   if (perj==0.and.perk==0) cycle
                   call biot_savart_general_shift(mesh(k,j,i)%x,mesh(k,j,i)%u_sup, &
                   (/0.,perj*box_size,perk*box_size/)) !timestep.mod
                 end do ; end do 
+              else if (periodic_bc_notxy) then
+                !as above but we do not need the x permutations
+                do perk=-1,1
+                  if (perk==0) cycle
+                  call biot_savart_general_shift(mesh(k,j,i)%x,mesh(k,j,i)%u_sup, &
+                  (/0.,0.,perk*box_size/)) !timestep.mod
+                end do 
               end if
             case('Tree')
               mesh(k,j,i)%u_sup=0. !must be zeroed for all algorithms
@@ -238,14 +276,20 @@ module timestep
                   call tree_walk_general(mesh(k,j,i)%x,vtree, &
                        (/peri*box_size,perj*box_size,perk*box_size/),mesh(k,j,i)%u_sup) !tree.mod
                 end do ; end do ; end do
-              end if
-              if (periodic_bc_notx) then
+              else if (periodic_bc_notx) then
                 !as above but we do not need the x permutations
                 do perj=-1,1 ; do perk=-1,1
                   if (perj==0.and.perk==0) cycle
                   call tree_walk_general(mesh(k,j,i)%x,vtree, &
                        (/0.,perj*box_size,perk*box_size/),mesh(k,j,i)%u_sup) !tree.mod
                 end do ; end do
+              else if (periodic_bc_notxy) then
+                !as above but we do not need the x/y permutations
+                do perk=-1,1
+                  if (perk==0) cycle
+                  call tree_walk_general(mesh(k,j,i)%x,vtree, &
+                       (/0.,0.,perk*box_size/),mesh(k,j,i)%u_sup) !tree.mod
+                end do
               end if
           end select
           !normal fluid

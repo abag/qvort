@@ -73,6 +73,8 @@ program run
         call enforce_periodic !periodic.mod
       case('openx')
         call enforce_periodic_yz !periodic.mod
+      case('openxy')
+        call enforce_periodic_z !periodic.mod
       case('open-remove')
         call enforce_open_removal !periodic.mod
       case ('mirror')
