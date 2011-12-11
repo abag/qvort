@@ -468,6 +468,9 @@ module initial_line
     end if
     write(*,'(a,i3.1,a)') ' drawing', line_count, ' lines from -z to +z'
     write(*,'(i4.1,a,a,a,f9.5)') wave_count, ' ',trim(wave_type),' wave pertubations, with spectral slope:', wave_slope
+    write(*,'(a,i3.1)') ' starting wavenumber ', wave_start
+    write(*,'(a,f9.5)') ' starting amplitude', wave_amp
+    write(*,'(a,i3.1)') ' wavenumber separation', wave_skip 
     line_size=int(pcount/line_count)
     !START THE LOOP
     do i=1, line_count
@@ -492,18 +495,19 @@ module initial_line
         f(line_position)%u1=0. ; f(line_position)%u2=0.
       end do
       !we have now drawn the basic line, now we add the wave pertubations
-      prefactor=wave_amp/(2.**wave_slope) !our starting wavenumber is 2
+      prefactor=wave_amp/(wave_start**wave_slope) !our starting wavenumber is wave_start
       if (i==1) then !only write this once
         write(*,*)'wave information recorded in ./data/wave_info.log'
         open(unit=34,file='./data/wave_info.log')
         write(34,*) '%------------------WAVE INFORMATION-------------------'
       end if
       do k=1, wave_count !wave_count set in run.in
-        !wave_number=2+.1*k !starting wavenumber is 2, step in .1
-        wave_number=2+2*k !starting wavenumber is 2, step in .1
+        wave_number=wave_start+(k-1)*wave_skip
         amp=prefactor*(wave_number**wave_slope)
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
+        if (wave_count==1) random_shift=0. !0 this for a single wave
+        amp=prefactor*(wave_number**wave_slope)
         if (i==1) then
           write(34,'(f9.5,f9.5,f9.5)') wave_number, amp, random_shift
         end if
