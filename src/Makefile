@@ -64,7 +64,7 @@ timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o tree.o mirro
 #
 line.o: line.f90 reconnection.o periodic.o general.o cdata.o matrix.o
 #
-reconnection.o: reconnection.f90 general.o cdata.o
+reconnection.o: reconnection.f90 general.o cdata.o matrix.o
 #
 inject.o: inject.f90 general.o cdata.o
 #
