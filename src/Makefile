@@ -62,7 +62,7 @@ initial_line.o: initial_line.f90 cdata.o general.o periodic.o
 #
 timestep.o: timestep.f90 normal_fluid.o forcing.o general.o cdata.o tree.o mirror.o matrix.o 
 #
-line.o: line.f90 reconnection.o periodic.o general.o cdata.o
+line.o: line.f90 reconnection.o periodic.o general.o cdata.o matrix.o
 #
 reconnection.o: reconnection.f90 general.o cdata.o
 #

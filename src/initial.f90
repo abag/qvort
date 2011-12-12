@@ -58,16 +58,15 @@ module initial
     write(*,'(a)') ' ---------_------RECONNECTION ALGORITHM------------------' 
     select case(recon_type)
       case('original')
-        write(*,*) 'using default reconnection routine described in Baggaley & Barenghi 2011'
+        write(*,*) 'using default reconnection routine described in Baggaley & Barenghi 2011,PRB'
       case('dissipative')
-        write(*,*) 'using dissipative reconnection routine described in Baggaley et al. 2009'
+        write(*,*) 'using dissipative reconnection routine described in Baggaley et al. 2009,PRE'
       case('non_dissipative')
         write(*,*) 'using an experimental reconnection routine which can increase line length'
       case('schwarz')
-        write(*,*) "using Schwarz's original algorithm outlined in Schwarz 1985"
+        write(*,*) "using Schwarz's original algorithm outlined in Schwarz 1985,PRB"
       case('kondaurova')
-        write(*,*) 'using reconnection routine described in Kondaurova et al. 2008'
-        write(*,'(a,f10.5)') 'tolerance setting for method is: ', kond_tolerance
+        write(*,*) 'using reconnection routine described in Kondaurova et al. 2005,JLTP'
       case default
         call fatal_error('init_setup:', 'incorrect reconnection algorithm selected')
     end select
