@@ -124,6 +124,9 @@ module diagnostic
                     (f(:)%u1(2)-f(:)%u2(2))**2+&
                     (f(:)%u1(3)-f(:)%u2(3))**2)
     maxu=maxval(uinfo(:,1)) ; maxdu=maxval(uinfo(:,2))
+    open(unit=34,file='./data/basic_velocity_info.log',position='append')
+      write(34,*) t, maxval(uinfo(:,1)), sum(uinfo(:,1))/pcount, minval(uinfo(:,1),mask=uinfo(:,1)>0)
+    close(34)
     deallocate(uinfo)
   end subroutine
   !*************************************************
