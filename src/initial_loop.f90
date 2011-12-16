@@ -32,7 +32,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do   
   end subroutine
     !*************************************************************************
@@ -63,7 +63,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do   
   end subroutine
   !*************************************************************************
@@ -88,7 +88,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do   
   end subroutine
   !*************************************************************************
@@ -121,7 +121,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do   
   end subroutine
   !*************************************************************************
@@ -150,7 +150,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do   
   end subroutine
   !*************************************************************************
@@ -178,7 +178,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
     !second loop
     do i=pcount/2+1, pcount
@@ -193,7 +193,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do    
   end subroutine
   !*************************************************************************
@@ -222,7 +222,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
     !second loop
     do i=pcount/2+1, pcount
@@ -238,7 +238,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do    
   end subroutine
   !*************************************************************************
@@ -267,7 +267,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
     !second loop
     do i=pcount/2+1, pcount
@@ -283,7 +283,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do    
   end subroutine
   !*************************************************************************
@@ -312,7 +312,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
     !second loop
     do i=pcount/2+1, pcount
@@ -328,7 +328,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do    
   end subroutine
   !*************************************************************************
@@ -358,7 +358,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
   end subroutine
   !*************************************************************************
@@ -386,7 +386,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
     !second loop
     do i=pcount/4+1, 2*pcount/4
@@ -402,7 +402,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do    
     !third loop
     do i=2*pcount/4+1, 3*pcount/4
@@ -418,7 +418,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
     !final loop
     do i=3*pcount/4+1, pcount
@@ -434,7 +434,7 @@ module initial_loop
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
   end subroutine
   !*************************************************************************
@@ -485,7 +485,7 @@ module initial_loop
           f(loop_position)%behind=loop_position-1
           f(loop_position)%infront=loop_position+1
         end if
-        f(loop_position)%u1=0. ; f(loop_position)%u2=0.
+        f(loop_position)%u1=0. ; f(loop_position)%u2=0. ; f(loop_position)%u3=0.
       end do
       !we have now drawn the basic loop, now we add the wave pertubations
       prefactor=wave_amp/(wave_start**wave_slope) !our starting wavenumber is wave_start
@@ -602,7 +602,7 @@ module initial_loop
           f(loop_position)%behind=loop_position-1
           f(loop_position)%infront=loop_position+1
         end if
-        f(loop_position)%u1=0. ; f(loop_position)%u2=0.
+        f(loop_position)%u1=0. ; f(loop_position)%u2=0. ; f(loop_position)%u3=0.
       end do
     end do 
     deallocate(rad_shift,x_shift,rad_shift_r,rad_shift_theta)
@@ -644,7 +644,7 @@ module initial_loop
             f(loop_position)%behind=loop_position-1
             f(loop_position)%infront=loop_position+1
           end if
-          f(loop_position)%u1=0. ; f(loop_position)%u2=0.
+          f(loop_position)%u1=0. ; f(loop_position)%u2=0. ; f(loop_position)%u3=0.
         else
           loop_position=j+(i-1)*loop_size
           f(loop_position)%x(1)=loop_radius*sin(pi*real(2*j-1)/loop_size)+loop_radius/0.5
@@ -660,7 +660,7 @@ module initial_loop
             f(loop_position)%behind=loop_position-1
             f(loop_position)%infront=loop_position+1
           end if
-          f(loop_position)%u1=0. ; f(loop_position)%u2=0.
+          f(loop_position)%u1=0. ; f(loop_position)%u2=0. ; f(loop_position)%u3=0.
         end if
       end do
       !we have now drawn the basic loop, now we add the wave pertubations
@@ -806,7 +806,7 @@ module initial_loop
           f(loop_position)%behind=loop_position-1
           f(loop_position)%infront=loop_position+1
         end if
-        f(loop_position)%u1=0. ; f(loop_position)%u2=0.
+        f(loop_position)%u1=0. ; f(loop_position)%u2=0. ; f(loop_position)%u3=0.
         !test the loop size if its too small then we simply kill the loop here
         if (loop_size<5) then
           call clear_particle(loop_position)
@@ -865,6 +865,7 @@ module initial_loop
           f(loop_position)%behind=loop_position-1
           f(loop_position)%infront=loop_position+1
         end if
+        f(loop_position)%u1=0. ; f(loop_position)%u2=0. ; f(loop_position)%u3=0.
       end do
     end do
   end subroutine
@@ -915,6 +916,7 @@ module initial_loop
           f(loop_position)%behind=loop_position-1
           f(loop_position)%infront=loop_position+1
         end if
+        f(loop_position)%u1=0. ; f(loop_position)%u2=0. ; f(loop_position)%u3=0.
       end do
     end do
   end subroutine

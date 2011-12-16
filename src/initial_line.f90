@@ -35,7 +35,7 @@ module initial_line
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
   end subroutine
   !****************************************************************************
@@ -69,7 +69,7 @@ module initial_line
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
   end subroutine
   !*************************************************************************
@@ -104,7 +104,7 @@ module initial_line
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0.; f(i)%u3=0.
     end do
     !second line
     do i=pcount/2+1, pcount
@@ -119,7 +119,7 @@ module initial_line
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do    
   end subroutine
   !*************************************************************************
@@ -179,7 +179,7 @@ module initial_line
           f(line_position)%behind=line_position-1
           f(line_position)%infront=line_position+1
         end if
-        f(line_position)%u1=0. ; f(line_position)%u2=0.
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
       end do
     end do
   end subroutine
@@ -241,7 +241,7 @@ module initial_line
           f(line_position)%behind=line_position-1
           f(line_position)%infront=line_position+1
         end if
-        f(line_position)%u1=0. ; f(line_position)%u2=0.
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
       end do
     end do
   end subroutine
@@ -277,7 +277,7 @@ module initial_line
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
     !second line
     do i=pcount/4+1, 2*pcount/4
@@ -293,7 +293,7 @@ module initial_line
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; ; f(i)%u3=0.
     end do    
     !third line
     do i=2*pcount/4+1, 3*pcount/4
@@ -308,7 +308,7 @@ module initial_line
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
     !final line
     do i=3*pcount/4+1, pcount
@@ -323,7 +323,7 @@ module initial_line
         f(i)%behind=i-1 ; f(i)%infront=i+1
       end if
       !zero the stored velocities
-      f(i)%u1=0. ; f(i)%u2=0.
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do 
   end subroutine
   !*************************************************************************
@@ -387,7 +387,7 @@ module initial_line
           f(line_position)%behind=line_position-1
           f(line_position)%infront=line_position+1
         end if
-        f(line_position)%u1=0. ; f(line_position)%u2=0.
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
       end do
       !we have now drawn the basic line, now we add the wave pertubations
       prefactor=wave_amp/(2.**wave_slope) !our starting wavenumber is 2
@@ -492,8 +492,7 @@ module initial_line
           f(line_position)%behind=line_position-1
           f(line_position)%infront=line_position+1
         end if
-        f(line_position)%u1=0. ; f(line_position)%u2=0.
-        f(line_position)%u3=0. ; 
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.  
       end do
       !we have now drawn the basic line, now we add the wave pertubations
       prefactor=wave_amp/(wave_start**wave_slope) !our starting wavenumber is wave_start
@@ -594,7 +593,7 @@ module initial_line
           f(line_position)%behind=line_position-1
           f(line_position)%infront=line_position+1
         end if
-        f(line_position)%u1=0. ; f(line_position)%u2=0.
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
       end do
       counter=counter+1
     end do ; end do
@@ -661,7 +660,7 @@ module initial_line
           f(line_position)%behind=line_position-1
           f(line_position)%infront=line_position+1
         end if
-        f(line_position)%u1=0. ; f(line_position)%u2=0.
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
       end do
     end do
   end subroutine
@@ -718,7 +717,7 @@ module initial_line
             f(line_position)%behind=line_position-1
             f(line_position)%infront=line_position+1
           end if
-          f(line_position)%u1=0. ; f(line_position)%u2=0.
+          f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
         end do
       else if (rand3<0.6666666) then
         do j=1, line_size
@@ -736,7 +735,7 @@ module initial_line
             f(line_position)%behind=line_position-1
             f(line_position)%infront=line_position+1
           end if
-          f(line_position)%u1=0. ; f(line_position)%u2=0.
+          f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
         end do
       else
         do j=1, line_size
@@ -754,7 +753,7 @@ module initial_line
             f(line_position)%behind=line_position-1
             f(line_position)%infront=line_position+1
           end if
-          f(line_position)%u1=0. ; f(line_position)%u2=0.
+          f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
         end do
       end if
     end do
