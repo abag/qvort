@@ -1,0 +1,17 @@
+--------------required parameters------------
+nsteps 20000
+shots 100
+pcount 2000
+dt 1E-4
+delta 0.004
+box_size 0.2
+velocity Tree
+initf macro_ring
+macro_ring_R 0.05
+macro_ring_a 0.02
+boundary open
+line_count 3
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+tree_theta 0.3
+binary_print T
