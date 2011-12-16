@@ -43,7 +43,7 @@ module timestep
       else if (maxval(abs(f(i)%u2))==0) then
         !first order adams-bashforth
         f(i)%x(:)=f(i)%x(:)+three_twos*dt*f(i)%u(:)-one_half*dt*f(i)%u1(:)
-      else
+      else if (maxval(abs(f(i)%u3))==0) then
         !second order adams-bashforth
         f(i)%x(:)=f(i)%x(:)+twenty_three_twelve*dt*f(i)%u(:)-four_thirds*dt*f(i)%u1(:)+five_twelths*dt*f(i)%u2(:)
         if (dt_adapt) then !adaptive timestep (read in from cdata)
@@ -51,8 +51,12 @@ module timestep
           dummy_max_error=dist_gen(f(i)%x,adap_x)
           if (dummy_max_error>max_error) max_error=dummy_max_error
         end if
+       else
+        !3rd order adams-bashforth
+        f(i)%x(:)=f(i)%x(:)+dt*(55.*f(i)%u(:)-59.*f(i)%u1(:)+37.*f(i)%u2(:)-9.*f(i)%u3(:))/24.
       end if
-      f(i)%u2(:)=f(i)%u1(:) !store our old velocities 
+      f(i)%u3(:)=f(i)%u2(:) !store our old velocities 
+      f(i)%u2(:)=f(i)%u1(:)  
       f(i)%u1(:)=f(i)%u(:)
     end do
     !adjust timestep
@@ -97,9 +101,12 @@ module timestep
           curv=sqrt(dot_product(f_ddot,f_ddot))
           if (curv<epsilon(0.)) then
             curv=epsilon(0.) !we must check for zero curvature
+          else
+            curv=1./curv
           end if
           !caluculate beta based on the curvature
-          beta=(quant_circ/(4.*pi))*log((1./corea)/curv)
+          !beta=(quant_circ/(4.*pi))*log(0.7788*(curv/corea))
+          beta=(quant_circ/(4.*pi))*log(2.*curv/corea)
         end if
         !***************************************************
         u=beta*cross_product(f_dot,f_ddot) !general.mod
@@ -109,7 +116,7 @@ module timestep
         !first get the local part (similar to LIA)
         call get_deriv_1(i,f_dot) !general.mod
         call get_deriv_2(i,f_ddot) !general.mod
-        beta=(quant_circ/(4.*pi))*log((1./corea)*sqrt(distf(i,f(i)%infront)*distf(i,f(i)%behind)))
+        beta=(quant_circ/(4.*pi))*log(0.7788*(1./corea)*sqrt(distf(i,f(i)%infront)*distf(i,f(i)%behind)))
         u=beta*cross_product(f_dot,f_ddot) !general.mod
         !now we do the non-local part
         u_bs=0. !always 0 before calling the routine
@@ -177,8 +184,9 @@ module timestep
           u=u+u_bs
         else if (periodic_bc_notxy) then
           !we must shift the mesh in z direction, 3 permutations needed, not so bad
+          !double wrap
           u_bs=0. !zero u_bs
-          do perk=-1,1
+          do perk=-3,3
             if (perk==0) cycle
             call tree_walk(i,vtree,(/0.,0.,perk*box_size/),u_bs) !tree.mod
           end do

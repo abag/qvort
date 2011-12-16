@@ -458,7 +458,7 @@ module initial_line
     if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
       !work out the number of particles required for single line
       !given the box size specified in run.i
-      pcount_required=line_count*nint(box_size/delta) !100% as waves are added
+      pcount_required=line_count*nint(box_size/(0.25*delta)) !100% as waves are added
       write(*,*) 'changing size of pcount to fit with box_length and delta'
       write(*,'(a,i7.1)') ' pcount is now:', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
@@ -469,7 +469,7 @@ module initial_line
     write(*,'(a,i3.1,a)') ' drawing', line_count, ' lines from -z to +z'
     write(*,'(i4.1,a,a,a,f9.5)') wave_count, ' ',trim(wave_type),' wave pertubations, with spectral slope:', wave_slope
     write(*,'(a,i3.1)') ' starting wavenumber ', wave_start
-    write(*,'(a,f9.5)') ' starting amplitude', wave_amp
+    write(*,'(a,f9.5)') ' starting amplitude', wave_amp*delta
     write(*,'(a,i3.1)') ' wavenumber separation', wave_skip 
     line_size=int(pcount/line_count)
     !START THE LOOP
@@ -493,6 +493,7 @@ module initial_line
           f(line_position)%infront=line_position+1
         end if
         f(line_position)%u1=0. ; f(line_position)%u2=0.
+        f(line_position)%u3=0. ; 
       end do
       !we have now drawn the basic line, now we add the wave pertubations
       prefactor=wave_amp/(wave_start**wave_slope) !our starting wavenumber is wave_start

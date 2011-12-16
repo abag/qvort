@@ -31,8 +31,10 @@ module forcing
         !check initial conditions
          select case(initf)
            case('single_line', 'line_motion', 'lattice')
-             write(*,'(a,f6.3,a,f6.3)') 'forcing top boundary with amplitude', force_amp, &
-             'frequency', force_freq
+             write(*,'(a,f10.5,a,f10.5)') 'forcing top boundary with amplitude ', force_amp, &
+             ' angular frequency ', force_freq
+             write(*,'(a,f13.7)') 'to force at k=10 set frequency to ', &
+             (quant_circ*((10.*2.*pi/box_size)**2)/(4*pi))*log((2./(((10.*2.*pi/box_size)**2)*corea))-0.57721)
            case default
              call fatal_error('forcing.mod:setup_forcing', &
              'incorrect initf for forcing to be applied') !cdata.mod
@@ -75,7 +77,8 @@ module forcing
           !particle is sufficiently close to top boundary to force
           u=0.
           !sinusoidal forcing in the x direction
-          u(1)=force_amp*sin(force_freq*t/(2*pi))
+          !in run.in we are setting angular frequency
+          u(1)=force_amp*sin(force_freq*t)
         end if
       case('box_shake')
         u=force_direction*force_amp
