@@ -105,7 +105,7 @@ module timestep
             curv=1./curv
           end if
           !caluculate beta based on the curvature
-          beta=(quant_circ/(4.*pi))*log(4*curv/corea)
+          beta=(quant_circ/(4.*pi))*log(4.6*curv/corea)
         end if
         !***************************************************
         u=beta*cross_product(f_dot,f_ddot) !general.mod

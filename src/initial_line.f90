@@ -474,9 +474,13 @@ module initial_line
     line_size=int(pcount/line_count)
     !START THE LOOP
     do i=1, line_count
-      call random_number(xpos) ; call random_number(ypos)
-      xpos=(xpos-.5)*box_size*0.1 !1/10th of the box
-      ypos=(ypos-.5)*box_size*0.1 
+      if (line_count==1) then
+        xpos=0. ; ypos=0.
+      else
+        call random_number(xpos) ; call random_number(ypos)
+        xpos=(xpos-.5)*box_size*0.1 !1/10th of the box
+        ypos=(ypos-.5)*box_size*0.1
+      end if 
       do j=1, line_size
         line_position=j+(i-1)*line_size
         f(line_position)%x(1)=xpos

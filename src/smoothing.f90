@@ -90,7 +90,7 @@ module smoothing
     real :: w(3)
     !define smoothing length 
     if (smoothing_interspace) then
-      sm_sigma=sqrt((box_size**3)/total_length)
+      sm_sigma=sqrt((box_size**3)/total_length)/2.
       !smoothing lenght can be checked against ts.m
       open(unit=78,file='data/smoothing_length.log',position='append')
         write(78,*) t, sm_sigma

@@ -101,6 +101,8 @@ set(gca,'Fontsize',fonts)
 %%%%%%%%%%%%GRADIENT%%%%%%%%%%%%%
 subplot(5,1,5);
 plot(X,gradient(abs(Z),dims(1)/2),'-','LineWidth',2);
+disp('gradient mean')
+mean(abs(gradient(abs(Z),dims(1)/2)))
 title('derivative')
 xlabel('z','Fontsize',fonts)
 ylabel('a dash','Fontsize',fonts)
