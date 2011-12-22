@@ -29,6 +29,7 @@ module cdata
     logical :: pinnedi=.false.
     logical :: pinnedb=.false.
     real :: delta
+    real :: t_recon(2)
   end type
   !>main filament vector
   type(qvort), allocatable :: f(:) 
@@ -253,6 +254,7 @@ module cdata
   logical, protected :: particle_plane_inf=.false. !2D point infomation in z=0 plane
   logical, protected :: closest_distance=.false. !what is the minimum separation between points?
   logical, protected :: full_loop_counter=.false. !check loop count and size
+  logical, protected :: recon_time_info=.false. !print time difference between recon 
   !-------------------------------smoothing-------------------------------------------
   !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
@@ -469,6 +471,8 @@ module cdata
              read(buffer, *, iostat=ios) KS_maximise_rey !Force 1st wavenumber to be as small as possible
           case ('KS_modes')
              read(buffer, *, iostat=ios) KS_modes !the number of KS modes
+          case ('recon_time_info')
+             read(buffer, *, iostat=ios) recon_time_info !time diffn between recon
           case ('one_dim')
              read(buffer, *, iostat=ios) one_dim !size of 1D print
           case ('one_dim_direction')

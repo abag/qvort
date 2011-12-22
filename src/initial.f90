@@ -208,6 +208,7 @@ module initial
           call fatal_error('cdata.mod:init_setup', &
                          'invalid choice for initf parameter') !cdata.mod
       end select
+      f(:)%t_recon(1)=0. ; f(:)%t_recon(2)=0. !0 the stored reconnection time
     else
       !a dummy allocation of the main vector, probably not best practice!
       allocate(f(0))
@@ -310,6 +311,7 @@ module initial
     if (torsion_hist) write(*,*) 'printing histograms of torsion to file'    
     if (topo_inf) write(*,*) 'printing topological information to file'
     if (sep_inf) write(*,*) 'printing point separation info+histogram to file'
+    if (recon_time_info) write(*,*) 'printing time difference between reconnections at points (mesh_shots used)'
     if (line_sep_inf) then
       if (tree_theta>0.) then
         write(*,*) 'printing separation of nearest filaments+histogram to file'

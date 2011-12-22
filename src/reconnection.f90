@@ -54,6 +54,15 @@ module reconnection
           f(pari)%behind=parjb
           f(parb)%infront=parji
           f(parji)%behind=parb
+          !set reconnection times
+          f(parjb)%t_recon(2)=f(parjb)%t_recon(1) !move last recon to slot 2
+          f(parjb)%t_recon(1)=t !set current time
+          f(pari)%t_recon(2)=f(pari)%t_recon(1) 
+          f(pari)%t_recon(1)=t 
+          f(parb)%t_recon(2)=f(parb)%t_recon(1) 
+          f(parb)%t_recon(1)=t 
+          f(parji)%t_recon(2)=f(parji)%t_recon(1) 
+          f(parji)%t_recon(1)=t 
           !check the size of these new loops
           call loop_killer(pari) ; call loop_killer(parb)
         end if 
@@ -115,6 +124,15 @@ module reconnection
           f(pari)%behind=parjb
           f(parb)%infront=parji
           f(parji)%behind=parb
+          !set reconnection times
+          f(parjb)%t_recon(2)=f(parjb)%t_recon(1) !move last recon to slot 2
+          f(parjb)%t_recon(1)=t !set current time
+          f(pari)%t_recon(2)=f(pari)%t_recon(1) 
+          f(pari)%t_recon(1)=t 
+          f(parb)%t_recon(2)=f(parb)%t_recon(1) 
+          f(parb)%t_recon(1)=t 
+          f(parji)%t_recon(2)=f(parji)%t_recon(1) 
+          f(parji)%t_recon(1)=t 
           !check the size of these new loops
           call loop_killer(pari) ; call loop_killer(parb)
         end if 
@@ -172,6 +190,15 @@ module reconnection
             f(pari)%behind=parjb
             f(i)%infront=j
             f(j)%behind=i
+            !set reconnection times
+            f(parjb)%t_recon(2)=f(parjb)%t_recon(1) !move last recon to slot 2
+            f(parjb)%t_recon(1)=t !set current time
+            f(pari)%t_recon(2)=f(pari)%t_recon(1) 
+            f(pari)%t_recon(1)=t 
+            f(i)%t_recon(2)=f(i)%t_recon(1) 
+            f(i)%t_recon(1)=t 
+            f(j)%t_recon(2)=f(j)%t_recon(1) 
+            f(j)%t_recon(1)=t 
             !check the size of these new loops
             call loop_killer(pari) ; call loop_killer(i)
           end if
@@ -228,6 +255,15 @@ module reconnection
           f(pari)%behind=parjb
           f(i)%infront=j
           f(j)%behind=i
+          !set reconnection times
+          f(parjb)%t_recon(2)=f(parjb)%t_recon(1) !move last recon to slot 2
+          f(parjb)%t_recon(1)=t !set current time
+          f(pari)%t_recon(2)=f(pari)%t_recon(1) 
+          f(pari)%t_recon(1)=t 
+          f(i)%t_recon(2)=f(i)%t_recon(1) 
+          f(i)%t_recon(1)=t 
+          f(j)%t_recon(2)=f(j)%t_recon(1) 
+          f(j)%t_recon(1)=t 
           !check the size of these new loops
           call loop_killer(pari) ; call loop_killer(i)
         end if 
@@ -316,6 +352,15 @@ module reconnection
               f(pari)%behind=parjb
               f(i)%infront=j
               f(j)%behind=i
+              !set reconnection times
+              f(parjb)%t_recon(2)=f(parjb)%t_recon(1) !move last recon to slot 2
+              f(parjb)%t_recon(1)=t !set current time
+              f(pari)%t_recon(2)=f(pari)%t_recon(1) 
+              f(pari)%t_recon(1)=t 
+              f(i)%t_recon(2)=f(i)%t_recon(1) 
+              f(i)%t_recon(1)=t 
+              f(j)%t_recon(2)=f(j)%t_recon(1) 
+              f(j)%t_recon(1)=t 
               !check the size of these new loops
               call loop_killer(pari) ; call loop_killer(i)
             end if

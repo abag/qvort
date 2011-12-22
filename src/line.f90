@@ -87,6 +87,8 @@ module line
         end if
         !average the current velocity
         f(par_new)%u=0.5*(f(i)%u+f(f(i)%infront)%u) 
+        !set the particles reconnection times
+        f(par_new)%t_recon(:)=0.
         !zero the older velocities
         f(par_new)%u1=0. ; f(par_new)%u2=0.
         !set correct infront and behinds & ghostzones

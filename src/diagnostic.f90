@@ -23,6 +23,7 @@ module diagnostic
         if (boxed_vorticity) call get_boxed_vorticity !diganostics.mod
         if (sep_inf) call get_sep_inf !diganostics.mod
         if (line_sep_inf) call get_line_sep_inf !diganostics.mod
+        if (recon_time_info) call print_recon_time_info!diagnostics.mod
       end if 
     end if
   end subroutine
@@ -219,6 +220,23 @@ module diagnostic
     end do
     !multiply by terms outside the integral
     energy=energy*(quant_circ/2.)
+  end subroutine
+  !*************************************************
+  !>print to file difference in time between reconnections
+  !>that specific points have been involved in
+  subroutine print_recon_time_info()
+    implicit none
+    integer :: i
+    open(unit=49,file='./data/recon_times.log',position='append')
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !check for 'empty' particles
+      if ((f(i)%t_recon(1)>epsilon(0.)).and.&
+          (f(i)%t_recon(2)>epsilon(0.)).and.&
+          (f(i)%t_recon(1)-f(i)%t_recon(2)>epsilon(0.))) then
+        write(49,*) f(i)%t_recon(1)-f(i)%t_recon(2)
+      end if
+    end do
+    close(49)
   end subroutine
   !*************************************************
   !> Call all topological routines from topology module
