@@ -13,6 +13,7 @@
 %            vmin= value:maximum field strength
 %            overhead: angle the plot overhead
 %            thin_line: if the tangle is very dense use this
+%            medium_line: if the tangle is mediumly(!) dense use this
 %            overhead_xz: angle the plot overhead xz plane
 %            show_points: will only work if line is set, shows points as well as lines, ignored if rainbow set
 %            print: print to file rather than screen
@@ -31,8 +32,8 @@ filename=sprintf('data/var%04d.log',filenumber);
 %this is overridden if we have periodic B.C.'s
 box_size=.005 ;
 %set options based on varargin
-rough=0 ; linetrue=1 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0  ; magnetic=0; show_points=0 ; sph_associated=0 ; overhead_xz=0;
-log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ;
+rough=0 ; linetrue=1 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0  ; magnetic=0; show_points=0 ; medium_line=0 ; overhead_xz=0;
+log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ; medium_line ; 
 %empty the vmax/min values
 v_max=[] ; v_min=[] ;
 for i=1:optargin
@@ -61,8 +62,6 @@ for i=1:optargin
        v_max=str2num(value);
      case 'vmin='
        v_min=str2num(value);
-    case 'sph_associated'
-      sph_associated=1;
     case 'magnetic'
       rainbow=0; %switchoff-rainbow
       magnetic=1;
@@ -73,6 +72,8 @@ for i=1:optargin
     case 'smooth'
       linetrue=0;
     case 'thin_line'
+      thin_line=1; 
+    case 'medium_line'
       thin_line=1;  
       otherwise
       disp('invalid option in input arguements')
@@ -209,7 +210,9 @@ for j=1:number_of_particles
               u(j)=1;
             end
             if (thin_line==1)
-              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.5)
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.1)
+            elseif (medium_line==1)
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',1.)
             else
               plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
             end
@@ -218,20 +221,26 @@ for j=1:number_of_particles
               u(j)=1;
             end
             if (thin_line==1)
-              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.5)
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.1)
+            elseif (medium_line==1)
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.1)
             else
               plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)
             end
           else
             if show_points==1
               if (thin_line==1)
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',.5,'MarkerFaceColor','m')
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',.1,'MarkerFaceColor','m')
+              elseif (medium_line==1)
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',1.,'MarkerFaceColor','m')
               else
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',2.0)
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-om','LineWidth',2.0,'MarkerFaceColor','m')
               end
             else
               if (thin_line==1)
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',.5)
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',.1)
+              elseif (medium_line==1)
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',1.)
               else
                 plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2.0)
               end
@@ -243,7 +252,9 @@ for j=1:number_of_particles
               u(j)=1;
             end
             if (thin_line==1)  
-              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.5)
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',.1)
+            elseif (medium_line==1)  
+              plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',1.)
             else
               plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',rainbowcmap(max(1,ceil(u(j))),:),'LineWidth',2.0)   
             end
@@ -259,23 +270,19 @@ for j=1:number_of_particles
           else
             if show_points==1
               if thin_line==1
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',.5,'MarkerFaceColor','k')
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',.1,'MarkerFaceColor','k')
+              elseif medium_line==1
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',1.,'MarkerFaceColor','k')
               else
                 plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-ok','LineWidth',2)   
               end
             else
-              if sph_associated==1
-                if u2(j)<1
-                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)
-                else
-                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-m','LineWidth',2)  
-                end
+              if thin_line==1
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',.1)
+              elseif medium_line==1
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',1.)  
               else
-                if thin_line==1
-                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',.1)  
-                else
-                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)  
-                end
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)  
               end
             end 
           end
@@ -321,28 +328,18 @@ for j=1:number_of_particles
     end
   end
 end
-if (dims(2)>0.)
-  if overhead==1
-    axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(7)) dims(2)/(2*dims(7))]);
-  elseif overhead_xz==1
-    axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(7)) dims(2)/(2*dims(7)) -dims(2)/(2*dims(7)) dims(2)/(2*dims(7))]);
-    view(0,0)
-  else
-    axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(7)) dims(2)/(2*dims(7)) -dims(2)/(2*dims(7)) dims(2)/(2*dims(7))]);
-    daspect([1 dims(7) dims(7)])
-    box on
-  end
-else
-  if overhead==1
-    axis([-box_size box_size -box_size box_size]);
-  elseif overhead_xz==1
-    axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(7)) dims(2)/(2*dims(7)) -dims(2)/(2*dims(7)) dims(2)/(2*dims(7))]);
-    view(0,0)
-  else
-    axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(7)) dims(2)/(2*dims(7)) -dims(2)/(2*dims(7)) dims(2)/(2*dims(7))]);
-    daspect([1 dims(7) dims(7)])
-    box on
-  end
+%set axis
+axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(7)) dims(2)/(2*dims(7)) -dims(2)/(2*dims(7)) dims(2)/(2*dims(7))]);
+%aspect ratio - needs fixing
+daspect([1 dims(7) dims(7)])
+%show the box
+box on
+if overhead==1
+  view(0,90)
+ camproj('perspective')
+elseif overhead_xz==1
+  view(0,0)
+  camproj('perspective')
 end
 if dark==1
   whitebg('k')
