@@ -31,7 +31,7 @@ module smoothing
     write(*,'(a)') ' -------------------------SMOOTHING----------------------------' 
     sm_sigma=smoothing_length*delta
     if (tree_theta>0) then
-      write(*,'(a,i4.2,a)') ' creating a ', sm_size,' ^3 mesh to smooth \omega/B field onto'
+      write(*,'(a,i4.2,a)') ' creating a ', sm_size,' ^3 mesh to smooth \omega onto'
       if (smoothing_interspace) then
         write(*,'(a)') ' using adaptive smoothing length based on inter-vortex spacing'
       else
@@ -91,7 +91,7 @@ module smoothing
     !define smoothing length 
     if (smoothing_interspace) then
       sm_sigma=sqrt((box_size**3)/total_length)/2.
-      !smoothing lenght can be checked against ts.m
+      !smoothing length can be checked against ts.m
       open(unit=78,file='data/smoothing_length.log',position='append')
         write(78,*) t, sm_sigma
       close(78)

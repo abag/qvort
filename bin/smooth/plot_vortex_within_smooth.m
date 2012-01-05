@@ -95,15 +95,19 @@ for j=1:number_of_particles
     if can_plot==1
     dist=sqrt((dummy_x(1,1)-dummy_x(2,1))^2+(dummy_x(1,2)-dummy_x(2,2))^2+      (dummy_x(1,3)-dummy_x(2,3))^2);
     if (dist<4*dims(1))
-      plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-r','LineWidth',.1)
+      plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',1)
     end
     else
     dist=sqrt((dummy_x(1,1)-dummy_x(2,1))^2+(dummy_x(1,2)-dummy_x(2,2))^2+      (dummy_x(1,3)-dummy_x(2,3))^2);
     if (dist<4*dims(1))
-      plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',0.1)
+      plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','LineWidth',0.001,'Color',[0.8 0.8 0.8])
     end
     end
-    hold on
   end
+hold on
 end
-
+box on
+axis tight
+axis square
+set(gca,'FontSize',16)
+hold off
