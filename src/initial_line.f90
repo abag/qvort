@@ -39,6 +39,43 @@ module initial_line
     end do
   end subroutine
   !****************************************************************************
+  !>set up a single line from -x to x, number of particles is automatically
+  !adjusted
+  !>to box size and \f$\delta\f$, small noise added to  y, z positions
+  subroutine setup_xline_noise
+    implicit none
+    integer :: pcount_required
+    integer :: i
+    if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=nint(box_size/(0.75*delta)) !75%
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_single_line', &
+      'periodic boundary conditions required')
+    end if
+    do i=1, pcount
+      f(i)%x(1)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
+      f(i)%x(2)=0. 
+      f(i)%x(3)=0. 
+      !add a little noise
+      call random_number(f(i)%x(2:3))
+      f(i)%x(2:3)=f(i)%x(2:3)*delta*0.1
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do
+  end subroutine
+  !****************************************************************************
   !>set up a helix from -z to z, number of particles is automatically adjusted
   !>to box size and \f$\delta\f$ 
   subroutine setup_helix

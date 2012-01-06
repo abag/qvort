@@ -154,6 +154,8 @@ module initial
           call setup_single_loop_zy !initial_loop.mod
         case('single_line')
           call setup_single_line !initial_line.mod
+        case('xline_noise')
+          call setup_xline_noise !initial_line.mod
         case('ellipse')
           call setup_ellipse !initial_loop.mod
         case('random_loops')

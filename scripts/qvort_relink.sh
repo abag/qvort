@@ -51,7 +51,7 @@ if [ ! -f "$PRJ_HOME/run.sh" ] ; then
   echo "the directory you have set as qvort's home exists but is incorrect..."
   exit 1
 fi
-if [ ! -f "$PRJ_HOME/README" ] ; then
+if [ ! -f "$PRJ_HOME/README.sh" ] ; then
   echo "the directory you have set as qvort's home exists but is incorrect..."
   exit 1
 fi
