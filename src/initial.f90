@@ -3,6 +3,7 @@
 module initial
   use cdata
   use normal_fluid
+  use hyperviscous
   use initial_line
   use initial_loop
   use forcing
@@ -138,6 +139,10 @@ module initial
     call setup_normal_fluid !normal_fluid.mod
     !sort out if there is a special dump time
     int_special_dump=int(special_dump/dt) !convert to integer
+    if (hyperviscosity) then
+      write(*,'(a)') ' --------------------HYPERVISCOSITY--------------------' 
+      call setup_hyperviscosity !hyperviscous.mod
+    end if
     write(*,'(a)') ' --------------------INITIAL CONDITIONS--------------------' 
     !check if we can restart the code
     inquire(file="./data/var.dat", exist=restart)

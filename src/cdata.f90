@@ -192,6 +192,9 @@ module cdata
   !--------------------simulate phonon emission at high k------------------------
   logical, protected :: phonon_emission=.false. !do we want it one?
   real, protected :: phonon_percent=0.95 !what percentage of 2/delta?
+  logical, protected :: hyperviscosity=.false. !instead of smoothing use hyperviscosity
+  integer, protected :: hyp_power=4
+  real, protected :: hyp_curv=0.4
   !----------------------mesh information----------------------------------------
   integer, protected :: mesh_size=0
   integer, protected :: mesh_shots=100
@@ -401,7 +404,13 @@ module cdata
              read(buffer, *, iostat=ios) phonon_emission !phonon emission on or off
           case ('phonon_percent')
              read(buffer, *, iostat=ios) phonon_percent !percentage of max curv we cutoff at
-          case ('special_dump')
+          case ('hyperviscosity')
+             read(buffer, *, iostat=ios) hyperviscosity !use hyperviscosity to dissipate KWC
+          case ('hyp_power')
+             read(buffer, *, iostat=ios) hyp_power !use hyperviscosity to dissipate KWC
+          case ('hyp_curv')
+             read(buffer, *, iostat=ios) hyp_curv !use hyperviscosity to dissipate KWC
+           case ('special_dump')
              read(buffer, *, iostat=ios) special_dump !special dump
           case ('quasi_pcount')
              read(buffer, *, iostat=ios) quasi_pcount !number of quasi particles

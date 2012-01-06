@@ -3,6 +3,7 @@ module timestep
   use cdata
   use general
   use normal_fluid
+  use hyperviscous
   use forcing
   use tree
   use mirror
@@ -79,8 +80,9 @@ module timestep
   subroutine calc_velocity(u,i)
     implicit none
     integer, intent(IN) :: i
-    real :: u(3), u_norm(3), u_force(3), u_bs(3), u_mir(3), u_B(3) !velocities
-    real :: curv, beta !LUA
+    real :: u(3), u_norm(3), u_force(3), u_bs(3), u_mir(3), u_B(3)!velocities
+    real :: curv, beta !LIA
+    real :: hyperviscous_alpha !for hyperviscosity
     real :: f_dot(3), f_ddot(3) !first and second derivs
     integer :: peri, perj, perk !used to loop in periodic cases
    ! integer :: miri, mirj, mirk !used to loop in mirror cases
@@ -193,6 +195,13 @@ module timestep
         end if
         f(i)%u_sup=u !store just the superfluid velcotity
     end select
+    !hyperviscosity
+    if (hyperviscosity) then
+      call get_hyp_alpha(sqrt(dot_product(f_ddot,f_ddot)),hyperviscous_alpha) !hyperviscous.mod
+      if (hyperviscous_alpha>epsilon(0.)) then
+        u=u+hyperviscous_alpha*cross_product(f_dot,(-u))
+      end if
+    end if
     !now account for mutual friction - test if alpha's are 0
     select case(velocity)
       case('Off')
