@@ -336,11 +336,10 @@ daspect([1 dims(7) dims(7)])
 box on
 if overhead==1
   view(0,90)
- camproj('perspective')
 elseif overhead_xz==1
   view(0,0)
-  camproj('perspective')
 end
+camproj('perspective')
 if dark==1
   whitebg('k')
   set(gcf,'InvertHardcopy','off');
