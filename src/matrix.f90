@@ -92,10 +92,10 @@ module matrix
 	end do
 	errorflag = 0
   end subroutine findinv
-!subroutine to solve a set of simultaneous linear equations in 'n' variables
-!using gaussian elimination method
-!description:
-!this subroutine finds the unknowns in a set of linear equations
+!>subroutine to solve a set of simultaneous linear equations in 'n' variables
+!>using gaussian elimination method
+!>description:
+!>this subroutine finds the unknowns in a set of linear equations
 !an example of using gaussian elimination is as follows:
 !consider the equations:
 !	      8x2 + 2x3 = -7
@@ -113,7 +113,7 @@ module matrix
 ! finally use back-substitution to solve the equation. for example, in case of x3 you get:
 !                                                          -3x3 = -3/2
 !                                                     =>     x3 = 1/2
-!for a detailed explanation on the algorithm check out http://en.wikipedia.org/wiki gaussian_elimination                                                    
+!>for a detailed explanation on the algorithm check out http://en.wikipedia.org/wiki gaussian_elimination                                                    
 subroutine solve_linear_eqn(a, x, n, errflag)
 !declarations
 	implicit none
