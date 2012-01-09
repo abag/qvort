@@ -291,6 +291,13 @@ remove_count
   !**************************************************
   subroutine banner_print()
     implicit none
+    integer :: today(3), now(3)
+    character(len=30) :: user_name, host_name
+    call getenv('USER', user_name)
+    call hostnm(host_name)
+    call idate(today) ! today(1)=day, (2)=month, (3)=year
+    call itime(now)   ! now(1)=hour, (2)=minute, (3)=second
+    write(*,*) "                                     " 
     write(*,*) "                                 _   " 
     write(*,*) "            __ ___   _____  _ __| |_ "
     write(*,*) "           / _` \ \ / / _ \| '__| __|"
@@ -298,5 +305,10 @@ remove_count
     write(*,*) "           \__, | \_/ \___/|_|   \__|"
     write(*,*) "              |_|                    "
     write(*,*) "                                     " 
+    write(*,*) 'user info: ', trim(user_name), '@', trim(host_name)
+    write ( *, 10 )  today(1), today(2), today(3), now
+    10    format ( ' date ', i2.2, '/', i2.2, '/', i4.4, '; time ', &
+                  i2.2, ':', i2.2, ':', i2.2 )
+    write(*,*) "-------------------------------------" 
   end subroutine
 end module
