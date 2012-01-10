@@ -34,6 +34,7 @@ box_size=.005 ;
 %set options based on varargin
 rough=0 ; linetrue=1 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0  ; magnetic=0; show_points=0 ; medium_line=0 ; overhead_xz=0;
 log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ; medium_line ; 
+zoomin=0;
 %empty the vmax/min values
 v_max=[] ; v_min=[] ;
 for i=1:optargin
@@ -66,7 +67,9 @@ for i=1:optargin
       rainbow=0; %switchoff-rainbow
       magnetic=1;
     case 'annotate'
-      annotate=1
+      annotate=1;
+    case 'zoom'
+      zoomin=1;
     case 'dark'
       dark=1;
     case 'smooth'
@@ -333,7 +336,12 @@ axis([-dims(2)/2 dims(2)/2 -dims(2)/(2*dims(7)) dims(2)/(2*dims(7)) -dims(2)/(2*
 %aspect ratio - needs fixing
 daspect([1 dims(7) dims(7)])
 %show the box
-box on
+if zoomin==0
+  box on
+else
+  axis([-dims(2)/20 dims(2)/20 -dims(2)/(20*dims(7)) dims(2)/(20*dims(7)) -dims(2)/(20*dims(7)) dims(2)/(20*dims(7))]);
+  axis off
+end
 if overhead==1
   view(0,90)
 elseif overhead_xz==1
