@@ -1,14 +1,16 @@
-!>Routines to add hyperviscosity - complete me!
+!>Routines to add hyperviscosity - enters as and additional velocity 
+!>\f$\mathbf{u}_{\rm hyp}=\alpha_{hyp} \mathbf{s}' \times -\mathbf{u}_\mathrm{s}\f$.
+!>Here \f$  \alpha_{hyp}\f$ is dependent on curvature i.e. \f$ \alpha_{hyp} \propto \kappa^n \f$
 module hyperviscous
   use cdata
   use general 
     !count number of times we apply hyperviscosity
-    integer, private :: hyperviscous_count=0
     real, private :: hyp_const
     real,private  :: max_curv
     contains 
     !************************************************************
     !>setup everything needed to use hyperviscosity
+    !> construct form of \f$ \alpha_{hyp} \f$
     subroutine setup_hyperviscosity
       !in here we print to file the hyperviscous profile
       implicit none
@@ -32,7 +34,8 @@ module hyperviscous
       close(37)
     end subroutine
     !************************************************************
-    !>
+    !> Find \f$ \alpha_{hyp} \f$ to return to timestep to implement
+    !>hyperviscosity.
     subroutine get_hyp_alpha(curv,hyp_alpha)
       implicit none
       real, intent(IN) :: curv !curvature
