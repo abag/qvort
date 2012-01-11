@@ -12,9 +12,22 @@ function velocity_snapshot(filenumber)
   uy=fread(fid,number_of_particles,'float64');
   uz=fread(fid,number_of_particles,'float64');
   subplot(1,3,1)
-    ksdensity(ux)
+    [f,xi]=ksdensity(ux);
+    plot(xi,f,'r-','LineWidth',2)
+    xlabel('u_x','FontSize',14)
+    ylabel('PDF','FontSize',14)
+    set(gca,'FontSize',14)
+    title(strcat('mean= ',num2str(mean(ux))),'FontSize',14)
   subplot(1,3,2)
-    ksdensity(uy) 
+    [f,xi]=ksdensity(uy);
+    plot(xi,f,'g-','LineWidth',2)
+    xlabel('u_y','FontSize',14)
+    ylabel('PDF','FontSize',14)
+    title(strcat('mean= ',num2str(mean(uy))),'FontSize',14)
   subplot(1,3,3)
-    ksdensity(uz)
+    [f,xi]=ksdensity(uz);
+    plot(xi,f,'b-','LineWidth',2)
+    xlabel('u_z','FontSize',14)
+    ylabel('PDF','FontSize',14)
+    title(strcat('mean= ',num2str(mean(uz))),'FontSize',14)
 end
