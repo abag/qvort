@@ -3,7 +3,7 @@ close all
 optargin = size(varargin,2);
 %set options based on varargin
 slice=0 ; iso=0 ; spect=0 ; struct=0 ; print=0 ; para=0 ; 
-vort_slice=0 ; vort_iso=0 ;
+vort_slice=0 ; vort_iso=0 ; smoothme=0 ; 
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'slice'
@@ -20,6 +20,8 @@ for i=1:optargin
       para=1;
     case 'struct'
       struct=1;
+    case 'smooth'
+      smoothme=1;
     case 'print'
       print=1;
       disp('printing to file')
@@ -54,6 +56,11 @@ unormz=reshape(unormz,msize,msize,msize);
 ux=reshape(ux,msize,msize,msize);
 uy=reshape(uy,msize,msize,msize);
 uz=reshape(uz,msize,msize,msize);
+if smoothme==1
+  ux=smooth3(ux,'box',3);
+  uy=smooth3(uy,'box',3);
+  uz=smooth3(uz,'box',3);
+end
 %plot slices of field
 if slice==1
   if u_mrms>0.
@@ -110,7 +117,7 @@ if u_mrms>0.
     mesh_spectrum(ux,uy,uz,msize,'super',0)
   end
   if struct==1
-    %mesh_structure_func(x,ux,uy,uz,msize,'super')
+    mesh_structure_func(x,ux,uy,uz,msize,'super')
   end
 end
 if unorm_mrms>0.
@@ -118,7 +125,7 @@ if unorm_mrms>0.
     mesh_spectrum(unormx,unormy,unormz,msize,'normal',0)
   end
   if struct==1
-    mesh_structure_func(x,unormx,unormy,unormz,msize,'normal')
+    %mesh_structure_func(x,unormx,unormy,unormz,msize,'normal')
   end
 end
   

@@ -1,4 +1,4 @@
-function plot_vortex_within_smooth(filenumber,filenumber2)
+function [t ld_inside]=plot_vortex_within_smooth(filenumber,filenumber2)
 filename=sprintf('data/smoothed_field%03d.dat',filenumber);
 load ./data/sm_dims.log;
 msize=sm_dims(1);
@@ -81,7 +81,13 @@ for j=1:number_of_particles
       if sw1(i)==msize || sw2(i)==msize || sw3(i)==msize
         continue
       end
-      if dummy_x(1,1)>xmesh(sw1(i)) && dummy_x(1,1)<xmesh(sw1(i)+1) && dummy_x(1,2)>xmesh(sw2(i)) && dummy_x(1,2)<xmesh(sw2(i)) && dummy_x(1,3)>xmesh(sw3(i)) && dummy_x(1,3)<xmesh(sw3(i)+1)
+      if sw1(i)==msize-1 || sw2(i)==msize-1 || sw3(i)==msize-1
+        continue
+      end
+      if sw1(i)==1 || sw2(i)==1 || sw3(i)==1
+        continue
+      end
+      if dummy_x(1,1)>xmesh(sw1(i)-1) && dummy_x(1,1)<xmesh(sw1(i)+2) &&        dummy_x(1,2)>xmesh(sw2(i)-1) && dummy_x(1,2)<xmesh(sw2(i)+2) && dummy_x(1,      3)>xmesh(sw3(i)-1) && dummy_x(1,3)<xmesh(sw3(i)+2)
         can_plot=1;
         break
       end
@@ -92,5 +98,4 @@ for j=1:number_of_particles
     end 
   end
 end
-disp('line density inside structures')
-total_length/total_volume
+ld_inside=total_length/total_volume;

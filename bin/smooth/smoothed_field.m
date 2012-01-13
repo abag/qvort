@@ -50,6 +50,7 @@ end
 if iso==1
   mesh_iso(x,wx,wy,wz,msize,'smoothed')
 end
+text(0.06,0.08,0.1,num2str(t),'FontSize',16)
 if render==1
   VolumeRender(sqrt(wx.^2+wy.^2+wz.^2)); 
 end
