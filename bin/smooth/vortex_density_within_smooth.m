@@ -94,7 +94,9 @@ for j=1:number_of_particles
     end
     if can_plot==1
       dist=sqrt((dummy_x(1,1)-dummy_x(2,1))^2+(dummy_x(1,2)-dummy_x(2,2))^2+(dummy_x(1,3)-dummy_x(2,3))^2);
-      total_length=total_length+dist;
+      if dist<dims(2)/4
+        total_length=total_length+dist;
+      end
     end 
   end
 end
