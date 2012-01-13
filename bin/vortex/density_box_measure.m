@@ -1,29 +1,20 @@
-function plot_vortex_within_smooth(filenumber,filenumber2)
-filename=sprintf('data/smoothed_field%03d.dat',filenumber);
-load ./data/sm_dims.log;
-msize=sm_dims(1);
-fid=fopen(filename);
-if fid<0
-  disp('file does not exist, exiting script')
-  return
-end
-t=fread(fid,1,'float64');
-xmesh=fread(fid,msize,'float64');
-wx=fread(fid,msize^3,'float64');
-wy=fread(fid,msize^3,'float64');
-wz=fread(fid,msize^3,'float64');
-rms_w=sqrt(mean(wx.^2+wy.^2+wz.^2))
-wx=reshape(wx,msize,msize,msize);
-wy=reshape(wy,msize,msize,msize);
-wz=reshape(wz,msize,msize,msize);
-mod_w=sqrt(wx.^2+wy.^2+wz.^2);
-%mod_w=permute(mod_w,[2 1 3]);
-fclose(fid);
-%now load in vortex points
-filename=sprintf('data/var%04d.log',filenumber2);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function density_box_measure(total_volume)
+%load in time series data to get number of files
+A=load('./data/ts.log');
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
+if total_volume>dims(2)^3
+  disp('control volume is too large - exiting script')
+  return
+else
+  disp(sprintf('control volume:%f, box volume:%f',total_volume,dims(2)^3))
+end
+disp('bounds of control volume:')
+min_bounds=-nthroot(total_volume,3)/2.
+max_bounds=nthroot(total_volume,3)/2.
+%now load in vortex points
+for i=1:size(A,1)
+filename=sprintf('data/var%04d.log',i);
 if dims(4)==1
   fid=fopen(filename);
   if fid<0
@@ -64,9 +55,7 @@ else
   end
   f=uint16(f);
 end
-[sw3,sw2,sw1]=ind2sub(size(mod_w),find(mod_w>2.2*rms_w));
-total_volume=length(sw1)*((dims(2)/msize)^3)
-total_length=0. ;
+total_length(i)=0. ;
 for j=1:number_of_particles
   if round(f(j))==0
   else
@@ -77,22 +66,13 @@ for j=1:number_of_particles
     dummy_x(1,3)=z(j);
     dummy_x(2,3)=z(round(f(j)));
     can_plot=0;
-    for i=1:length(sw1)
-      if sw1(i)==msize || sw2(i)==msize || sw3(i)==msize
-        continue
-      end
-      if dummy_x(1,1)>xmesh(sw1(i)) && dummy_x(1,1)<xmesh(sw1(i)+1) && dummy_x(1,2)>xmesh(sw2(i)) && dummy_x(1,2)<xmesh(sw2(i)) && dummy_x(1,3)>xmesh(sw3(i)) && dummy_x(1,3)<xmesh(sw3(i)+1)
-        can_plot=1;
-        break
-      end
-    end
-    if can_plot==1
+    if dummy_x(1,1)>min_bounds && dummy_x(1,1)<max_bounds && dummy_x(1,2)>min_bounds && dummy_x(1,2)<max_bounds && dummy_x(1,3)>min_bounds && dummy_x(1,3)<max_bounds
       dist=sqrt((dummy_x(1,1)-dummy_x(2,1))^2+(dummy_x(1,2)-dummy_x(2,2))^2+(dummy_x(1,3)-dummy_x(2,3))^2);
-      if dist<dims(2)/4
-        total_length=total_length+dist;
+      if (dist<dims(2)/4.)
+        total_length(i)=total_length(i)+dist;
       end
     end 
   end
 end
-disp('line density inside structures')
-total_length/total_volume
+end
+plot(A(:,2),total_length(:)./total_volume)
