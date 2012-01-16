@@ -126,7 +126,7 @@ module initial
           xdim_scaling_factor=1. !overwrite what is in run.in file - maybe print to say so?
       end select
       if (sticky_z_boundary) then
-        if (periodic_bc) then
+        if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
           write(*,*) 'z boundaries are sticky - i.e. points are fixed there'
         else
           call fatal_error('init','sticky_z_boundary needs periodic bc.')

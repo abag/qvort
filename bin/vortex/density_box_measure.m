@@ -28,6 +28,7 @@ if dims(4)==1
   z=fread(fid,number_of_particles,'float64');
   f=fread(fid,number_of_particles,'int');
   u=fread(fid,number_of_particles,'float64');
+  fclose(fid);
 else
   fid=fopen(filename);
   if fid<0
@@ -54,6 +55,7 @@ else
     u(j)=dummy_vect(5);
   end
   f=uint16(f);
+  fclose(fid);
 end
 total_length(i)=0. ;
 for j=1:number_of_particles
@@ -75,4 +77,6 @@ for j=1:number_of_particles
   end
 end
 end
-plot(A(:,2),total_length(:)./total_volume)
+plot(A(:,2),total_length(:)./total_volume,A(:,2),A(:,6)/dims(2)^3,'r')
+figure
+ksdensity(total_length(300:800)/total_volume-(A(300:800,6)/dims(2)^3)')

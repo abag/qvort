@@ -70,42 +70,35 @@ hold on
 plot(X,abs(Z),'-','LineWidth',2);
 figure
 %%%%%%%%%%%%ORIGINAL DATA%%%%%%%%%%
-fonts=10
-subplot(5,1,1);
+fonts=14
+subplot(4,1,1);
 plot(amp(:,1),sqrt(amp(:,2).^2+amp(:,3).^2),'o');
 title('original points')
 xlabel('z','Fontsize',fonts)
 ylabel('a','Fontsize',fonts)
 set(gca,'Fontsize',fonts)
-%%%%%%%%%%%%%SORT DATA%%%%%%%%%%%%%
-subplot(5,1,2);
-plot(amp2(:,1),sqrt(amp2(:,2).^2+amp2(:,3).^2),'-','LineWidth',2);
-title('ordered points')
-xlabel('z','Fontsize',fonts)
-ylabel('a','Fontsize',fonts)
-set(gca,'Fontsize',fonts)
 %%%%%%%%%%%%%INTERPOLATE DATA%%%%%%%
-subplot(5,1,3);
+subplot(4,1,2);
 plot(X,abs(Z),'-','LineWidth',2);
 title('interpolated to uniform mesh')
 xlabel('z','Fontsize',fonts)
 ylabel('a','Fontsize',fonts)
 set(gca,'Fontsize',fonts)
 %%%%%%%%%%%%%%%%PLOT PHASE%%%%%%%%%%%%%
-subplot(5,1,4);
+subplot(4,1,3);
 plot(X,angle(Z),'-','LineWidth',2);
 title('phase')
 xlabel('z','Fontsize',fonts)
-ylabel('\theta','Fontsize',fonts)
+ylabel('theta','Fontsize',fonts)
 set(gca,'Fontsize',fonts)
 %%%%%%%%%%%%GRADIENT%%%%%%%%%%%%%
-subplot(5,1,5);
+subplot(4,1,4);
 plot(X,gradient(abs(Z),dims(1)/2),'-','LineWidth',2);
 disp('gradient mean')
 mean(abs(gradient(abs(Z),dims(1)/2)))
 title('derivative')
 xlabel('z','Fontsize',fonts)
-ylabel('a dash','Fontsize',fonts)
+ylabel('adash','Fontsize',fonts)
 set(gca,'Fontsize',fonts)
 if printit==1
     print -depsc amp_info1.eps
@@ -129,35 +122,3 @@ k=linspace(1,N/2,N/2);
 Pw=pwelch(Z2);
 Pw=Pw(1:length(Pw)/2);
 kw=linspace(dims(1),4*pi/dims(2),length(Pw));
-if plotit==1
-%------------compare with pwelch---------
-figure
-loglog(k,P)
-figure
-loglog(Pw,'b')
-hold on
-loglog(P,'g')
-if printit==1
-    print -depsc spectra1.eps
-end
-%------------now work out scaling---------
-figure
-plot(log(k(20:length(k))),log(P(20:length(k))),'LineWidth',1.5)
-p=polyfit(log(k(20:length(k))),log(P(20:length(k))),1)
-hold on
-fit1=p(1).*log(k(20:length(k)))+p(2);
-fit2=-3.66.*log(k(20:length(k)))+p(2);
-plot(log(k(20:length(k))),fit1,'k')
-plot(log(k(20:length(k))),fit2,'r')
-xlabel('log k','Fontsize',14)
-ylabel('log A','Fontsize',14)
-set(gca,'Fontsize',14)
-if printit==1
-    print -depsc spectra_fit.eps
-end
-figure
-plot(log(kw(20:length(kw))),log(Pw(20:length(kw))),'LineWidth',2)
-xlabel('log k','Fontsize',14)
-ylabel('log A','Fontsize',14)
-set(gca,'Fontsize',14)
-end

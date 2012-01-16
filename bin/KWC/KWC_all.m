@@ -18,7 +18,10 @@ kw=kw'/counter;
 Pw=Pw/counter;
 %%%%%%%%%%%%%%%%%%%%%%DO OUR SPECTRA%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure
-loglog(k,P)
+loglog(k,P,'LineWidth',2)
+xlabel('log_{10} k','Fontsize',16)
+ylabel('log_{10} A','Fontsize',16)
+set(gca,'Fontsize',16)
 p=polyfit(log10(k(30:100)),log10(P(30:100)),1)
 figure('Name','Spectra with fit')
 plot(log10(k(1:length(k)-100)),log10(P(1:length(k)-100)),'k','LineWidth',2)
@@ -41,7 +44,6 @@ plot(log10(k(10:length(k)-50)),smooth(log10((k(10:length(k)-50).^(3)).*P(10:leng
 xlabel('log_{10} k','Fontsize',16)
 ylabel('log_{10} Ak^3, Ak^{3.4}, Ak^{3.66} ','Fontsize',16)
 set(gca,'Fontsize',16)
-
 return
 %%%%%%%%%%%%%%%%%%%%%%NOW WELCH%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 p2=polyfit(log(kw(14:length(kw)-60)),log(Pw(14:length(kw)-60)),1)
