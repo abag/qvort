@@ -16,11 +16,8 @@ case 'empty'
 end
 A=load('./data/ts.log');
 t=A(:,2) ; rcount=A(:,4) ; rmcount=A(:,11) ;
-for i=1:length(t)-1
-  recon_rate(i)=rcount(i+1)-rcount(i);
-  rm_rate(i)=rmcount(i+1)-rmcount(i);
-end
-t2=t(1:length(t)-1);
+recon_rate=gradient(rcount,t(2)-t(1));
+rm_rate=gradient(rmcount,t(2)-t(1));
 switch option
   case 'print'
     figure('visible','off');
@@ -28,7 +25,7 @@ switch option
     figure('Name', 'reconnection rates')      
 end
   subplot(2,2,1)
-    plot(t2,recon_rate,'-r','LineWidth',2);
+    plot(t,recon_rate,'-r','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
     ylabel('recon rate','FontSize',14)
@@ -38,7 +35,7 @@ end
     xlabel('t','FontSize',14)
     ylabel('recon count','FontSize',14)
   subplot(2,2,3)
-    plot(t2,rm_rate,'-b','LineWidth',2);
+    plot(t,rm_rate,'-b','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
     ylabel('rm rate','FontSize',14)
@@ -58,7 +55,7 @@ switch option
     figure('Name', 'recon ratios')      
 end
   subplot(2,1,1)
-    plot(t2,recon_rate./rm_rate,'-b','LineWidth',2);
+    plot(t,recon_rate./rm_rate,'-b','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
     ylabel('recon/rm rate','FontSize',14)
