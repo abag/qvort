@@ -10,8 +10,10 @@ end
 switch option
 case 'loglog'
     disp('will plot both axis on a logscale')
-case 'log'
+case 'logy'
     disp('will plot with a logscale on the y-axis')
+case 'logx'
+    disp('will plot with a logscale on the x-axis')
 case 'print'
     disp('will not print to screen but instead to .eps files')
 case 'empty'
@@ -39,10 +41,14 @@ for i=1:snap_number
       loglog(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
       xlabel('log \kappa','FontSize',14)
       ylabel('log PDF(\kappa)','FontSize',14)
-    case 'log'
+    case 'logy'
       semilogy(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
       xlabel('\kappa','FontSize',14)
       ylabel('log PDF(\kappa)','FontSize',14)
+    case 'logx'
+      semilogx(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
+      xlabel('log \kappa','FontSize',14)
+      ylabel('PDF(\kappa)','FontSize',14)
     otherwise
       plot(B(:,i,1),B(:,i,2),'-','Color',cmap(i,:)) ;
       %plot(B(:,i,1),B(:,i,2),'-','LineWidth',2,'Color',cmap(i,:)) ;

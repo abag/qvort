@@ -5,7 +5,7 @@ A=load('./data/ts.log');
 dims=load('./data/dims.log');
 %now load in vortex points
 for i=1:size(A,1)
-filename=sprintf('data/var%04d.log',i);
+filename=sprintf('./data/var%04d.log',i);
 if dims(4)==1
   fid=fopen(filename);
   if fid<0
@@ -19,6 +19,7 @@ if dims(4)==1
   z=fread(fid,number_of_particles,'float64');
   f=fread(fid,number_of_particles,'int');
   u=fread(fid,number_of_particles,'float64');
+  fclose(fid);
 else
   fid=fopen(filename);
   if fid<0
@@ -45,6 +46,7 @@ else
     u(j)=dummy_vect(5);
   end
   f=uint16(f);
+  fclose(fid);
 end
 total_Lx(i)=0. ;
 total_Ly(i)=0. ;
@@ -83,3 +85,6 @@ subplot(3,1,3)
   xlabel('t','FontSize',16)
   ylabel('L_z','FontSize',16)
   set(gca,'FontSize',16)
+  
+ t_L=A(:,2);
+save ./LxLyLz.mat t_L total_Lx total_Ly total_Lz

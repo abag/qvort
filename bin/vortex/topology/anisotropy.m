@@ -41,3 +41,6 @@ switch option
     disp('printing to aniso.eps')
     print('-depsc','./aniso.eps')
 end
+
+ t_Aniso=A(:,1);
+save ./Anisotropy.mat t_Aniso lpara lperp
