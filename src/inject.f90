@@ -71,9 +71,9 @@ module inject
         !loop over particles (6 loops) setting spatial and 'loop' position
         !first loop - xy plane top of box
         do i=old_pcount+1, old_pcount+inject_size/6
-          f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(inject_size/6))
+          f(i)%x(1)=radius*sin(pi*real(2*i-1)/(inject_size/6))
           f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-          f(i)%x(3)=-4*box_size/8.
+          f(i)%x(3)=box_size/2.01
           if (i==old_pcount+1) then
             f(i)%behind=old_pcount+inject_size/6 ; f(i)%infront=i+1
           else if (i==old_pcount+inject_size/6) then 
@@ -88,7 +88,7 @@ module inject
         do i=old_pcount+inject_size/6+1, old_pcount+inject_size/3
           f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(inject_size/6))
           f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-          f(i)%x(3)=-3*box_size/8.
+          f(i)%x(3)=-box_size/2.01
           if (i==(old_pcount+inject_size/6+1)) then
             f(i)%behind=old_pcount+inject_size/3 ; f(i)%infront=i+1
           else if (i==old_pcount+inject_size/3) then 
@@ -99,11 +99,11 @@ module inject
           !zero the stored velocities
           f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
         end do    
-        !third loop
+        !third loop- yz plane pos side of box 
         do i=old_pcount+inject_size/3+1, old_pcount+inject_size/2
-          f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(inject_size/6))
+          f(i)%x(1)=box_size/2.01
           f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-          f(i)%x(3)=-2*box_size/8.
+          f(i)%x(3)=-radius*sin(pi*real(2*i-1)/(inject_size/6))
           if (i==(old_pcount+inject_size/3+1)) then
             f(i)%behind=old_pcount+inject_size/2 ; f(i)%infront=i+1
           else if (i==old_pcount+inject_size/2) then 
@@ -114,11 +114,11 @@ module inject
           !zero the stored velocities
           f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
         end do
-        !fourth loop
+        !fourth loop- yz plane neg side of box 
         do i=old_pcount+inject_size/2+1, old_pcount+2*inject_size/3
-          f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(inject_size/6))
+          f(i)%x(1)=-box_size/2.01
           f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-          f(i)%x(3)=-box_size/8.
+          f(i)%x(3)=radius*sin(pi*real(2*i-1)/(inject_size/6))
           if (i==(old_pcount+inject_size/2+1)) then
             f(i)%behind=old_pcount+2*inject_size/3 ; f(i)%infront=i+1
           else if (i==old_pcount+2*inject_size/3) then 
@@ -129,11 +129,11 @@ module inject
           !zero the stored velocities
           f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
         end do
-        !fifth loop
+        !fifth loop- xz plane pos side box
         do i=old_pcount+2*inject_size/3+1, old_pcount+5*inject_size/6
           f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(inject_size/6))
-          f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-          f(i)%x(3)=box_size/8.
+          f(i)%x(2)=box_size/2.01
+          f(i)%x(3)=radius*cos(pi*real(2*i-1)/(inject_size/6))
           if (i==(old_pcount+2*inject_size/3+1)) then
             f(i)%behind=old_pcount+5*inject_size/6 ; f(i)%infront=i+1
           else if (i==old_pcount+5*inject_size/6) then 
@@ -144,12 +144,11 @@ module inject
           !zero the stored velocities
           f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
         end do
-        !final loop
+        !final loop- xz plane neg side of box
         do i=old_pcount+5*inject_size/6+1, pcount
-          f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(inject_size/6))
-          f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-          f(i)%x(3)=2*box_size/8.
-
+          f(i)%x(1)=radius*sin(pi*real(2*i-1)/(inject_size/6))
+          f(i)%x(2)=-box_size/2.01
+          f(i)%x(3)=radius*cos(pi*real(2*i-1)/(inject_size/6))
           if (i==(old_pcount+5*inject_size/6+1)) then
             f(i)%behind=pcount ; f(i)%infront=i+1
           else if (i==pcount) then 
@@ -166,7 +165,7 @@ module inject
         do i=old_pcount+1, pcount
           f(i)%x(1)=radius*sin(pi*real(2*i-1)/inject_size)
           f(i)%x(2)=radius*cos(pi*real(2*i-1)/inject_size)
-          f(i)%x(3)=-box_size/2.
+          f(i)%x(3)=-box_size/2.1
           if (i==old_pcount+1) then
             f(i)%behind=pcount ; f(i)%infront=i+1
           else if (i==pcount) then 
@@ -181,7 +180,7 @@ module inject
         radius=(0.75*inject_size*delta)/(2*pi) !75% of potential size
         !loop over particles setting spatial and 'loop' position
         do i=old_pcount+1, pcount
-          f(i)%x(1)=-box_size/2.
+          f(i)%x(1)=-box_size/2.1
           f(i)%x(2)=radius*cos(pi*real(2*i-1)/inject_size)
           f(i)%x(3)=radius*sin(pi*real(2*i-1)/inject_size)
           if (i==old_pcount+1) then
