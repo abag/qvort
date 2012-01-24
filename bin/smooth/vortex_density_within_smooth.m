@@ -87,7 +87,7 @@ for j=1:number_of_particles
       if sw1(i)==1 || sw2(i)==1 || sw3(i)==1
         continue
       end
-      if dummy_x(1,1)>xmesh(sw1(i)-1) && dummy_x(1,1)<xmesh(sw1(i)+2) &&        dummy_x(1,2)>xmesh(sw2(i)-1) && dummy_x(1,2)<xmesh(sw2(i)+2) && dummy_x(1,      3)>xmesh(sw3(i)-1) && dummy_x(1,3)<xmesh(sw3(i)+2)
+      if dummy_x(1,1)>xmesh(sw1(i)) && dummy_x(1,1)<xmesh(sw1(i)+1) &&  dummy_x(1,2)>xmesh(sw2(i)) && dummy_x(1,2)<xmesh(sw2(i)+1) && dummy_x(1,      3)>xmesh(sw3(i)) && dummy_x(1,3)<xmesh(sw3(i)+1)
         can_plot=1;
         break
       end
@@ -101,3 +101,4 @@ for j=1:number_of_particles
   end
 end
 ld_inside=total_length/total_volume;
+
