@@ -27,8 +27,11 @@ module inject
     write(*,'(a,i4.1,a,i3.1,a)') ' loops will be injected every ', inject_skip, ' timesteps with ', inject_size, ' points'
     write(*,'(a,a)') ' inject type is set to: ', trim(inject_type)
     select case(inject_type)
-      case('rand-yz-loop-rot','rand-xyz-loop')
+      case('rand-xyz-loop')
         write(*,'(a,f7.4,a)') ' rotation applied to loops: ', rotation_factor, '*2\pi'
+      case('rand-yz-loop-rot')
+        write(*,'(a,f7.4,a)') ' rotation applied to loops: ', rotation_factor, '*2\pi'
+        write(*,'(a,f7.4,a)') ' loops translated by: ', lattice_ratio, 'box_size'
     end select
     !check if we have set an injection stop time in run.in
     if (inject_stop<1E6) then
@@ -225,8 +228,8 @@ module inject
         anglex=(2.*anglex-1.)*2*pi*rotation_factor
         angley=(2.*angley-1.)*2*pi*rotation_factor
         anglez=(2.*anglez-1.)*2*pi*rotation_factor
-        rand1=box_size*(rand1*2.-1.)/5.
-        rand2=box_size*(rand2*2.-1.)/5.
+        rand1=box_size*(rand1*2.-1.)*lattice_ratio
+        rand2=box_size*(rand2*2.-1.)*lattice_ratio
         do i=old_pcount+1, pcount
           dummy_xp_1(1)=0.
           dummy_xp_1(2)=radius*cos(pi*real(2*i-1)/inject_size)
