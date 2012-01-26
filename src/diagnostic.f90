@@ -123,7 +123,7 @@ module diagnostic
     uinfo(:,1)=sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
     uinfo(:,2)=sqrt((f(:)%u1(1)-f(:)%u2(1))**2+&
                     (f(:)%u1(2)-f(:)%u2(2))**2+&
-                    (f(:)%u1(3)-f(:)%u2(3))**2)
+                    (f(:)%u1(3)-f(:)%u2(3))**2)/dt
     maxu=maxval(uinfo(:,1)) ; maxdu=maxval(uinfo(:,2))
     open(unit=34,file='./data/basic_velocity_info.log',position='append')
       write(34,*) t, maxval(uinfo(:,1)), sum(uinfo(:,1))/pcount, minval(uinfo(:,1),mask=uinfo(:,1)>0)
