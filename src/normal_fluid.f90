@@ -11,6 +11,7 @@ module normal_fluid
     real, parameter, private :: abc_A=1., abc_B=1., abc_C=1.
     real, private :: norm_k
     real, private :: normal_direction(3) !used  by random_xflow
+    real, private :: xflow_noise=0. !used by noisy xflow
     real, private :: urms_norm
     real, private :: t_change=-100. !a little less than 0!
     !>normal fluid mesh - all grid based normal velocities use this (e.g. Navier Stokes future)
@@ -43,6 +44,13 @@ module normal_fluid
         case('xflow')
           urms_norm=norm_vel_xflow
           write(*,'(a,f6.3)') ' u(x)=', norm_vel_xflow
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/norm_vel_xflow !time-taken to cross box
+          close(77)
+        case('noisy_xflow')
+          urms_norm=norm_vel_xflow
+          write(*,'(a,f6.3,a)') ' u(x)=', norm_vel_xflow, ' +noise'
+          write(*,'(a,i6.6)') ' noise changed every ',normal_fluid_freq, ' timesteps'
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/norm_vel_xflow !time-taken to cross box
           close(77)
@@ -123,6 +131,20 @@ module normal_fluid
           u=0. ! no flow
         case('xflow')
           u=0. ; u(1)=norm_vel_xflow !flow in the x direction
+        case('noisy_xflow')
+          !do we need to generate a new noise?
+          if ((mod(itime,normal_fluid_freq)==0).or.(itime==1)) then
+            if (t>t_change) then !by using t_change we only
+              !change the noise once, not for every point
+              xflow_noise=rnorm(0.,(norm_vel_xflow/10.)**2)
+              print*, xflow_noise
+              open(unit=37,file='./data/noisy_xflow.log',position='append')
+                write(37,*) t, norm_vel_xflow+xflow_noise
+              close(37)
+              t_change=t
+            end if
+          end if
+          u=0. ; u(1)=norm_vel_xflow+xflow_noise
         case('random_xflow')
           !do we need to generate a new direction?
           if ((mod(itime,normal_fluid_freq)==0).or.(itime==1)) then
@@ -135,7 +157,7 @@ module normal_fluid
               close(37)
               t_change=t
             end if
-        end if
+          end if
           u=norm_vel_xflow*normal_direction
         case('ABC')
           !commonly used toy model - turbulence/dynamo

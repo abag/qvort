@@ -20,15 +20,18 @@ module hyperviscous
       max_curv=2./delta
       write(*,'(a,f9.2,a)') ' curvature above ', max_curv*hyp_curv, ' are damped'
       write(*,'(a,i4.2)') ' degree of polynomial ', hyp_power
+      !a constant to make sure whatever the polynomal alpha(curv_max)=1
       hyp_const=1./((max_curv-hyp_curv*max_curv)**hyp_power)
       open(unit=37,file='./data/hyperviscous.log')
       do i=1,100
+        !create a vector (length 100) from 0 to max curvature
         plot_x(i)=max_curv*(2*i-1)/200.
         if (plot_x(i)<hyp_curv*max_curv) then
           plot_y(i)=0.
         else
           plot_y(i)=hyp_const*(plot_x(i)-hyp_curv*max_curv)**hyp_power
         end if
+        !print function to file
         write(37,*) plot_x(i),plot_y(i)
       end do 
       close(37)
@@ -43,6 +46,7 @@ module hyperviscous
       if (curv<hyp_curv*max_curv) then
         hyp_alpha=0.
       else
+        !simple form for hyperviscous function defined below
         hyp_alpha=hyp_const*(curv-hyp_curv*max_curv)**hyp_power
       end if
     end subroutine

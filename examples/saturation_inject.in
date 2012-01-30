@@ -1,0 +1,16 @@
+--------------required parameters------------
+nsteps 200000
+shots 200
+pcount 100
+dt 9E-5
+delta 0.002
+box_size 0.1
+velocity LIA
+initf single_loop
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+tree_theta 0.5
+inject_type rand-xyz-loop
+inject_size 100
+inject_skip 1000

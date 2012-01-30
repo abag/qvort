@@ -117,7 +117,7 @@ module timestep
         !first get the local part (similar to LIA)
         call get_deriv_1(i,f_dot) !general.mod
         call get_deriv_2(i,f_ddot) !general.mod
-        beta=(quant_circ/(4.*pi))*log((1.1/corea)*sqrt(distf(i,f(i)%infront)*distf(i,f(i)%behind)))
+        beta=(quant_circ/(4.*pi))*log((1.1/corea)*sqrt(dist_gen(f(i)%x,f(i)%ghosti)*dist_gen(f(i)%x,f(i)%ghostb)))
         u=beta*cross_product(f_dot,f_ddot) !general.mod
         !now we do the non-local part
         u_bs=0. !always 0 before calling the routine
@@ -161,7 +161,7 @@ module timestep
         !first get the local part (similar to LIA)
         call get_deriv_1(i,f_dot) !general.mod
         call get_deriv_2(i,f_ddot) !general.mod
-        beta=(quant_circ/(4.*pi))*log((1.1/corea)*sqrt(distf(i,f(i)%infront)*distf(i,f(i)%behind)))
+        beta=(quant_circ/(4.*pi))*log((1.1/corea)*sqrt(dist_gen(f(i)%x,f(i)%ghosti)*dist_gen(f(i)%x,f(i)%ghostb)))
         u=beta*cross_product(f_dot,f_ddot) !general.mod
         !now walk the tree to get the non-local contribution
         u_bs=0. !zero u_bs
@@ -185,9 +185,8 @@ module timestep
           u=u+u_bs
         else if (periodic_bc_notxy) then
           !we must shift the mesh in z direction, 3 permutations needed, not so bad
-          !double wrap
           u_bs=0. !zero u_bs
-          do perk=-3,3
+          do perk=-1,1
             if (perk==0) cycle
             call tree_walk(i,vtree,(/0.,0.,perk*box_size/),u_bs) !tree.mod
           end do
@@ -230,8 +229,13 @@ module timestep
     end if
     if (sticky_z_boundary) then
       !particles at top/bottom of box are fixed
-      if ((abs(f(i)%x(3))-box_size/2.)>-1.5*delta) then
-        !particle is sufficiently close to top boundary stick
+      !if ((abs(f(i)%x(3))-box_size/2.)>-1.5*delta) then
+      !  !particle is sufficiently close to top boundary stick
+      !  u=0.
+      !end if
+      if (f(i)%x(3)<=minval(f(:)%x(3))) then
+        u=0.
+      else if (f(i)%x(3)>=maxval(f(:)%x(3))) then
         u=0.
       end if
     end if

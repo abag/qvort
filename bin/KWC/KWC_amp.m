@@ -103,6 +103,19 @@ set(gca,'Fontsize',fonts)
 if printit==1
     print -depsc amp_info1.eps
 end
+%%%%%%%%%%CURVATURE%%%%%%%%%%%%%%%%
+curv=gradient(abs(Z),dims(1)/2);
+curv=abs(gradient(curv,dims(1)/2));
+min(curv)
+figure('Name','Curvature')
+ind=find(curv>0.);
+[f_curv,xi_curv] = ksdensity(curv(ind),'support','positive');
+%[f_curv,xi_curv] = ksdensity(curv(ind));
+plot(xi_curv,f_curv,'LineWidth',2)
+axis([0. .75/dims(1) -inf inf])
+xlabel('\kappa','Fontsize',fonts)
+ylabel('PDF(\kappa)','Fontsize',fonts)
+set(gca,'Fontsize',fonts)
 %%%%%%%%%%%%%%%%%%REMOVE END POINTS%%%%%%%%%%%%%%%%%%
 figure
 plot(X2,abs(Z2),'-','LineWidth',2);
