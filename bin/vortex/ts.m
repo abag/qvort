@@ -45,7 +45,7 @@ end
     plot(t,l,'-g','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
-    ylabel('L','FontSize',14)
+    ylabel('Length (\Lambda)','FontSize',14)
 if option=='print'
     disp('printing to filament_information.eps')
     print('-depsc','./filament_information.eps')
@@ -97,7 +97,7 @@ end
     plot(t,density,'-','LineWidth',2,'Color',rgb('HotPink'));
     set(gca,'FontSize',14);
     xlabel('t','FontSize',14);
-    ylabel('line density','FontSize',14);
+    ylabel('line density (L)','FontSize',14);
   subplot(2,2,4)
     plot(t,spacing,'-','LineWidth',2,'Color',rgb('DarkSeaGreen'));
     set(gca,'FontSize',14);
