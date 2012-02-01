@@ -42,6 +42,10 @@ module forcing
       case('box_shake')
         write(*,'(a,f5.3,a,i4.3,a)') 'box shaking forcing with amplitude ', force_amp, &
         ' forcing direction changed every ', ceiling(force_freq), 'timesteps'
+      case('potential_vortex')
+        write(*,'(a)') ' simple potential vortex in xy-plane'
+      case('looping_potential_vortex')
+        write(*,'(a)') ' potential vortex in xy-plane that moves in a loop'
       case('delta_corr')
         write(*,'(a,f5.3)') 'delta correlated (time/space) forcing with amplitude ', force_amp
       case('LS_force')
@@ -56,6 +60,7 @@ module forcing
       if (force_cutoff<1000.) then
         write(*,'(a,f6.3)') ' forcing is turned off when t=',force_cutoff 
       end if
+      if (forcing_mesh_fileprint) write(*,*) 'printing forcing array to file'
   end subroutine
   !***********************************************
   !>force the particles - an additional velocity at position
@@ -65,6 +70,7 @@ module forcing
     integer, intent(IN) :: i
     real, intent(OUT) :: u(3)
     integer :: j !for looping
+    integer :: peri, perj, perk !used to loop in periodic cases
     select case(force)
       case('off')
         u=0.
@@ -82,6 +88,38 @@ module forcing
         end if
       case('box_shake')
         u=force_direction*force_amp
+      case('potential_vortex')
+        u(1)=-f(i)%x(2)/(f(i)%x(1)**2+f(i)%x(2)**2+(box_size/80)**2)
+        u(2)=f(i)%x(1)/(f(i)%x(1)**2+f(i)%x(2)**2+(box_size/80)**2)
+        u(3)=0.
+        if (periodic_bc) then
+          do peri=-1,1 ; do perj=-1,1 
+            if (peri==0.and.perj==0) cycle
+            u(1)=u(1)-(f(i)%x(2)-perj*box_size)/&
+            ((f(i)%x(1)-peri*box_size)**2+(f(i)%x(2)-perj*box_size)**2+(box_size/80)**2)
+            u(2)=u(2)+(f(i)%x(1)-peri*box_size)/&
+            ((f(i)%x(1)-peri*box_size)**2+(f(i)%x(2)-perj*box_size)**2+(box_size/80)**2)
+          end do ; end do
+        end if
+        u=u*(box_size/40)
+      case('looping_potential_vortex')
+        u(1)=-(f(i)%x(2)-force_direction(2))/&
+            ((f(i)%x(1)-force_direction(1))**2+(f(i)%x(2)-force_direction(2))**2+(box_size/80)**2)
+        u(2)=(f(i)%x(1)-force_direction(1))/&
+            ((f(i)%x(1)-force_direction(1))**2+(f(i)%x(2)-force_direction(2))**2+(box_size/80)**2)
+        u(3)=0.
+        if (periodic_bc) then
+          do peri=-1,1 ; do perj=-1,1 
+            if (peri==0.and.perj==0) cycle
+            u(1)=u(1)-(f(i)%x(2)-perj*box_size-force_direction(2))/&
+            ((f(i)%x(1)-peri*box_size-force_direction(1))**2+&
+            (f(i)%x(2)-perj*box_size-force_direction(2))**2+(box_size/80)**2)
+            u(2)=u(2)+(f(i)%x(1)-peri*box_size-force_direction(1))/&
+            ((f(i)%x(1)-peri*box_size-force_direction(1))**2+&
+            (f(i)%x(2)-perj*box_size-force_direction(2))**2+(box_size/80)**2)
+          end do ; end do
+        end if
+        u=u*(box_size/40)
       case('delta_corr')
         !at each time and position generate a new random vector
         call random_number(force_direction)
@@ -104,7 +142,8 @@ module forcing
     end select
   end subroutine
   !***********************************************
-  !>routine to randomise certain forcing routines every timestep
+  !>routine to randomise certain forcing routines every timestep, if required
+  !>we can also print to file in here
   subroutine randomise_forcing
     implicit none
     integer :: j
@@ -126,7 +165,17 @@ module forcing
               write(47,*) LS_k, LS_A, LS_B
             close(47)
           end if 
-        end if 
+        end if
+      case('looping_potential_vortex')
+        !the potential vortex 
+        force_direction(1)=(box_size/4.)*cos(2*pi*t*force_freq)
+        force_direction(2)=(box_size/4.)*sin(2*pi*t*force_freq)
+        force_direction(3)=0.
+        if (mod(itime,shots)==0) then
+           open(unit=72,file='./data/looping_pot_vortex.log',position='append')
+            write(72,*) t, force_direction(1:3)
+          close(72)
+        end if
       case('wave_force')
         !uniform distributed random phase from 0->2\pi
         if (mod(itime,ceiling(force_freq))==0) then
@@ -134,8 +183,39 @@ module forcing
             force_phase(j)=runif(0.,2.*pi)
           end do 
         end if
-    end select
+    end select 
+    if (forcing_mesh_fileprint) then
+      if (mod(itime,mesh_shots)==0) then
+        call print_forcing_mesh
+      end if
+    end if
   end subroutine
+    !**********************************************************
+    !>if selected print forcing field (discretized on a cubic mesh) to a binary file
+    subroutine print_forcing_mesh
+      implicit none
+      real :: forcing_mesh(64,64,3) !only 2d at present
+      real :: x(64), u(3)
+      integer :: i, j !for looping
+      character (len=40) :: print_file
+      do i=1, 64
+        x(i)=(box_size/64)*real(2*i-1)/2.-(box_size/2.)
+      end do 
+      do j=1, 64  ; do i=1, 64
+        !get the forcing field 
+        call get_forcing_gen((/x(i),x(j),0./),u) !forcing must be in general forcing
+        forcing_mesh(j,i,1)=u(1)
+        forcing_mesh(j,i,2)=u(2)
+        forcing_mesh(j,i,3)=u(3)
+      end do ; end do 
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/forcing_mesh",itime/mesh_shots,".dat"
+      open(unit=92,file=print_file,form='unformatted',status='replace',access='stream')
+        write(92) x(1:64)
+        write(92) forcing_mesh(:,:,1)
+        write(92) forcing_mesh(:,:,2)
+        write(92) forcing_mesh(:,:,2)
+      close(92)
+    end subroutine
   !***********************************************
   !>Large scale forcing routine, very similar to KS with one
   !>random large scale mode, this sets up k, A and B for use in
@@ -173,6 +253,7 @@ module forcing
     implicit none
     real, intent(IN) :: x(3)
     real, intent(OUT) :: u(3)
+    integer :: peri, perj, perk !used to loop in periodic cases
     select case(force)
       case('off')
         u=0.
@@ -191,6 +272,38 @@ module forcing
         force_direction=force_direction/sqrt(dot_product(force_direction,force_direction))
         !use this as the forcing
         u=force_direction*force_amp
+      case('potential_vortex')
+        u(1)=-x(2)/(x(1)**2+x(2)**2+(box_size/80)**2)
+        u(2)=x(1)/(x(1)**2+x(2)**2+(box_size/80)**2)
+        u(3)=0.
+        if (periodic_bc) then
+          do peri=-1,1 ; do perj=-1,1 
+            if (peri==0.and.perj==0) cycle
+            u(1)=u(1)-(x(2)-perj*box_size)/&
+            ((x(1)-peri*box_size)**2+(x(2)-perj*box_size)**2+(box_size/80)**2)
+            u(2)=u(2)+(x(1)-peri*box_size)/&
+            ((x(1)-peri*box_size)**2+(x(2)-perj*box_size)**2+(box_size/80)**2)
+          end do ; end do
+        end if
+        u=u*(box_size/40)
+      case('looping_potential_vortex')
+        u(1)=-(x(2)-force_direction(2))/&
+            ((x(1)-force_direction(1))**2+(x(2)-force_direction(2))**2+(box_size/80)**2)
+        u(2)=(x(1)-force_direction(1))/&
+            ((x(1)-force_direction(1))**2+(x(2)-force_direction(2))**2+(box_size/80)**2)
+        u(3)=0.
+        if (periodic_bc) then
+          do peri=-1,1 ; do perj=-1,1 
+            if (peri==0.and.perj==0) cycle
+            u(1)=u(1)-(x(2)-perj*box_size-force_direction(2))/&
+            ((x(1)-peri*box_size-force_direction(1))**2+&
+            (x(2)-perj*box_size-force_direction(2))**2+(box_size/80)**2)
+            u(2)=u(2)+(x(1)-peri*box_size-force_direction(1))/&
+            ((x(1)-peri*box_size-force_direction(1))**2+&
+            (x(2)-perj*box_size-force_direction(2))**2+(box_size/80)**2)
+          end do ; end do
+        end if
+        u=u*(box_size/40)
       case default
         call fatal_error('forcing.mod','this forcing function is not compatible with a general call')
     end select

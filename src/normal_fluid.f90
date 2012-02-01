@@ -72,6 +72,11 @@ module normal_fluid
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/urms_norm !size of box scaled by urms
           close(77)
+        case('potential_vortex')
+          call setup_gen_normalf !normal_fluid.mod
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/urms_norm !size of box scaled by urms
+          close(77)
         case('expand','expand_rot','collapse_rot')
           call setup_gen_normalf !normal_fluid.mod
           open(unit=77,file='./data/normal_timescale.log',status='replace')
@@ -125,6 +130,7 @@ module normal_fluid
       real, intent(OUT) :: u(3) !velocity at x
       real :: r, phi, theta !used to convert to polar coords
       real :: u_r, u_theta !used to convert to polar coords
+      integer :: peri, perj, perk !used to loop in periodic cases
       u=0. ! a safety check , 0 the field before we begin!
       select case(normal_velocity)
         case('zero')
@@ -164,6 +170,20 @@ module normal_fluid
           u(1)=abc_B*cos(norm_k*x(2))+abc_C*sin(norm_k*x(3))
           u(2)=abc_C*cos(norm_k*x(3))+abc_A*sin(norm_k*x(1))
           u(3)=abc_A*cos(norm_k*x(1))+abc_B*sin(norm_k*x(2))
+        case('potential_vortex')
+          u(1)=-x(2)/(x(1)**2+x(2)**2+(box_size/80)**2)
+          u(2)=x(1)/(x(1)**2+x(2)**2+(box_size/80)**2)
+          u(3)=0.
+          if (periodic_bc) then
+            do peri=-1,1 ; do perj=-1,1 
+              if (peri==0.and.perj==0) cycle
+              u(1)=u(1)-(x(2)-perj*box_size)/&
+              ((x(1)-peri*box_size)**2+(x(2)-perj*box_size)**2+(box_size/80)**2)
+              u(2)=u(2)+(x(1)-peri*box_size)/&
+              ((x(1)-peri*box_size)**2+(x(2)-perj*box_size)**2+(box_size/80)**2)
+            end do ; end do
+          end if
+          u=u*(box_size/40)
         case('taylor-green')
           !The Taylor-Green Vortex
           !u(1)=sin(norm_k*x(1))*cos(norm_k*x(2))*cos(norm_k*x(3))
