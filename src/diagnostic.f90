@@ -118,17 +118,38 @@ module diagnostic
   !>on the filament
   subroutine velocity_info()
     implicit none
-    real, allocatable :: uinfo(:,:)
-    allocate(uinfo(pcount,2))
+    real, allocatable :: uinfo(:,:), xinfo(:,:)
+    allocate(uinfo(pcount,5), xinfo(pcount,3))
     uinfo(:,1)=sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
     uinfo(:,2)=sqrt((f(:)%u1(1)-f(:)%u2(1))**2+&
                     (f(:)%u1(2)-f(:)%u2(2))**2+&
                     (f(:)%u1(3)-f(:)%u2(3))**2)/dt
     maxu=maxval(uinfo(:,1)) ; maxdu=maxval(uinfo(:,2))
+    uinfo(:,3)=f(:)%u(1) ; uinfo(:,4)=f(:)%u(2) ; uinfo(:,5)=f(:)%u(3)
+	xinfo(:,1)=f(:)%x(1) ; xinfo(:,2)=f(:)%x(2) ; xinfo(:,3)=f(:)%x(3)
+	!rather than use pcount more correct to use count(mask=f(:)%infront>0)
+	!---------------------------------------------------------------------------
     open(unit=34,file='./data/basic_velocity_info.log',position='append')
       write(34,*) t, maxval(uinfo(:,1)), sum(uinfo(:,1))/pcount, minval(uinfo(:,1),mask=uinfo(:,1)>0)
     close(34)
-    deallocate(uinfo)
+    !---------------------------------------------------------------------------
+    open(unit=34,file='./data/daniel_basic_velocity_info.log',position='append')
+      write(34,*) t, sum(uinfo(:,3))/pcount, sum(uinfo(:,4))/pcount, sum(uinfo(:,5))/pcount, sum(uinfo(:,1))/pcount 
+    close(34)
+    !---------------------------------------------------------------------------
+    open(unit=34,file='./data/daniel_com_info.log',position='append')
+      write(34,*) t, sum(xinfo(:,1))/pcount, sum(xinfo(:,2))/pcount, sum(xinfo(:,3))/pcount 
+    close(34)
+    !---------------------------------------------------------------------------
+    open(unit=34,file='./data/daniel_spread_info.log',position='append')
+      write(34,*) t,	maxval(xinfo(:,1),mask=f(:)%infront>0), minval(xinfo(:,1),mask=f(:)%infront>0),&
+						maxval(xinfo(:,2),mask=f(:)%infront>0), minval(xinfo(:,2),mask=f(:)%infront>0),&
+						maxval(xinfo(:,3),mask=f(:)%infront>0), minval(xinfo(:,3),mask=f(:)%infront>0),&
+						maxval(xinfo(:,1),mask=f(:)%infront>0)-minval(xinfo(:,1),mask=f(:)%infront>0),&
+						maxval(xinfo(:,2),mask=f(:)%infront>0)-minval(xinfo(:,2),mask=f(:)%infront>0),&
+						maxval(xinfo(:,3),mask=f(:)%infront>0)-minval(xinfo(:,3),mask=f(:)%infront>0)
+    close(34)
+    deallocate(uinfo, xinfo)
   end subroutine
   !*************************************************
   !>get the boxed vorticity by summing circulation vectors in

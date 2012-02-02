@@ -113,6 +113,7 @@ module normal_fluid
           else
             call fatal_error('normal_fluid.mod','comrpressible v needs periodic b.c.')
           end if
+        !case('nf_macro_ring') %nothing to do yet
       end select
       write(*,'(a,f6.4,a,f6.4)') ' mutual friction coefficients alpha=',alpha(1),' alpha`=',alpha(2) 
       if (normal_fluid_cutoff<1000.) then
@@ -242,6 +243,8 @@ module normal_fluid
         case('compressible')
           !compressible flow on a mesh, needs interpolation
           call nfm_interpolation(x,u)
+        case('nf_macro_ring')
+          call get_nf_macro_ring(x,u) !normal_fluid.mod
         case default
           call fatal_error('normal_fluid.mod:get_normal_fluid', &
           'correct parameter for normal_veloctity not set')
@@ -494,6 +497,56 @@ module normal_fluid
         write(92) nfm(:,:,:)%u(3)
       close(92)
     end subroutine
+    !************************************************************
+    subroutine get_nf_macro_ring(x,u)
+      use cdata
+      use general      
+      implicit none
+      integer :: i,actual_line_count
+      real,dimension(3) :: cov,x,u  ! centre of vorticity
+      real :: phi  ! angle between y-axis and 'hat'-axis
+      real :: cov_y_hat,pv_y_hat  ! y_hat-coord of cov and pv
+      real :: delta_x,delta_y1,delta_y2,theta1,theta2,r1,r2
+      real :: u_theta1,u_theta2,u_y_hat  ! velocities in 'hat' plane
+
+      ! Find 'centre of vorticity' 
+      do i=1,3
+        cov(i)=sum(f(:)%x(i))/pcount
+      end do
+    
+	  ! Find phi for each vortex point
+	  phi=atan( (x(3)-cov(3)) / (x(2)-cov(2)) )
+	
+	  ! Find theta1 and theta2 for each vortex point
+	  cov_y_hat=cov(2)/cos(phi)
+	  pv_y_hat=x(2)/cos(phi)
+	  delta_x=x(1)-cov(1)
+	  delta_y1=pv_y_hat-cov_y_hat-macro_ring_R
+	  delta_y2=pv_y_hat-cov_y_hat+macro_ring_R
+	  theta1=atan( delta_y1 / delta_x )
+	  theta2=atan( delta_y2 / delta_x )
+	
+	  ! Find u for each vortex point
+	  r1=sqrt(delta_x**2+delta_y1**2)
+	  r2=sqrt(delta_x**2+delta_y2**2)
+	  actual_line_count=3*line_count*(line_count-1)+1
+	  if(r1.le.macro_ring_a) then
+	    u_theta1=(actual_line_count*quant_circ*r1)/(2*pi*macro_ring_a**2)
+      else
+        u_theta1=(actual_line_count*quant_circ)/(2*pi*r1)
+      end if
+    	if(r2.le.macro_ring_a) then
+	    u_theta2=-(actual_line_count*quant_circ*r2)/(2*pi*macro_ring_a**2)
+      else
+        u_theta2=(actual_line_count*quant_circ)/(2*pi*r2)
+      end if
+      u(1)=u_theta1*sin(theta1)+u_theta2*sin(theta2)
+      u_y_hat=u_theta1*cos(theta1)+u_theta2*cos(theta2)
+      u(2)=u_y_hat*cos(phi)
+      u(3)=u_y_hat*sin(phi)
+    
+    end subroutine
+    !************************************************************
 end module
 !>\page NF Normal fluid velocity field
 !!Normal fluid velocity field is set in run.in throught the parameter normal_velocity\n
