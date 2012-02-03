@@ -38,14 +38,21 @@ for i=1:n
   end
 end
 k=1:midpt;
-k2=(floor(midpt/2):midpt);
+dims=load('data/dims.log');
+k=k*2*pi/dims(2);
+%k2=(floor(midpt/2):midpt);
 plot(k(1:midpt),spect(1:midpt),'k','LineWidth',2)
 for i=1:length(k)-1
   if (k(i)<=breakpoint) && (k(i+1)>breakpoint)
     breakpoint_index=i;
   end
 end
+for i=1:length(k)-1
+  if (k(i)<=2*pi/dims(1)) && (k(i+1)>2*pi/dims(1))
+    breakpoint_index2=i;
+  end
+end
 I1=simpsons(spect(1:breakpoint_index),k(1),k(breakpoint_index),[]) 
-I2=simpsons(spect(breakpoint_index+1:400),k(breakpoint_index+1),k(400),[]) 
+I2=simpsons(spect(breakpoint_index+1:breakpoint_index2),k(breakpoint_index+1),k(breakpoint_index2),[]) 
 I1/I2
 
