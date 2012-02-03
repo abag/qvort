@@ -221,6 +221,63 @@ module initial_line
     end do
   end subroutine
   !*************************************************************************
+  !> 3 bundles of lines in all 3 cartesian directions
+  subroutine setup_isotropic_bundles
+    implicit none
+    integer :: pcount_required
+    integer :: line_size, line_position
+    integer :: i, j
+    real :: rand1, rand2
+    if (periodic_bc) then 
+      !make sure line_count is a multiple of 4
+      if (mod(line_count,3)/=0) then
+        call fatal_error('init.mod:setup_big_bundles', &
+        'line_count needs to be a multiple of 3')
+       end if
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length/delta and line_count'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_big_bundles', &
+      'periodic boundary conditions required')
+    end if
+    write(*,*) 'initf: big bundles' 
+    line_size=int(pcount/line_count)
+    do i=1, line_count
+      rand1=runif(-1.,1.) ; rand2=runif(-1.,1.)
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        if (real(i)/line_count<=0.3333333333) then
+          f(line_position)%x(1)=-box_size/4.+(box_size/10.)*rand1
+          f(line_position)%x(3)=box_size/4.+(box_size/10.)*rand2
+          f(line_position)%x(2)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        else if (real(i)/line_count<=0.666666666) then
+          f(line_position)%x(3)=(box_size/10.)*rand1
+          f(line_position)%x(2)=(box_size/10.)*rand2
+          f(line_position)%x(1)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+        else 
+          f(line_position)%x(1)=box_size/4.+(box_size/10.)*rand1
+          f(line_position)%x(2)=box_size/4.+(box_size/10.)*rand2
+          f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+        end if
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
+      end do
+    end do
+  end subroutine
+  !*************************************************************************
   !> single bundle of lines in centre of box can be polarised or random
   !> depending on bundle_type parameter in run.in
   subroutine setup_central_bundle
