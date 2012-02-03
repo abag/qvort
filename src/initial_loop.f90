@@ -347,7 +347,7 @@ module initial_loop
     write(*,*) 'energy should be:', ring_energy
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
-      f(i)%x(1)=0.
+      f(i)%x(1)=-box_size/2.
       f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
       f(i)%x(3)=radius*sin(pi*real(2*i-1)/pcount)
       if (i==1) then
