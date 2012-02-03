@@ -16,8 +16,8 @@ usupx=squeeze(B(3,:,:));
 usupy=squeeze(B(4,:,:));
 usupz=squeeze(B(5,:,:));
 unormx=squeeze(B(6,:,:));
-unormy=squeeze(B(6,:,:));
-unormz=squeeze(B(6,:,:));
+unormy=squeeze(B(7,:,:));
+unormz=squeeze(B(8,:,:));
 %line below gives energy if this is needed rather than rms
 %urms=mean(mean(usupx(:,:,:).^2+usupy(:,:,:).^2+usupz(:,:,:).^2))/2;
 urms=sqrt(mean(mean(usupx(:,:,:).^2+usupy(:,:,:).^2+usupz(:,:,:).^2)));

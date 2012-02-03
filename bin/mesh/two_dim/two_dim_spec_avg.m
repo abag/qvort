@@ -26,8 +26,8 @@ for i=filenumbers
     usupy=squeeze(B(4,:,:));
     usupz=squeeze(B(5,:,:));
     unormx=squeeze(B(6,:,:));
-    unormy=squeeze(B(6,:,:));
-    unormz=squeeze(B(6,:,:));
+    unormy=squeeze(B(7,:,:));
+    unormz=squeeze(B(8,:,:));
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%SPECTRA%%%%%%%%%%%%%%%%%%%
     n=s;
     fux=fftn(usupx)/(n^2);

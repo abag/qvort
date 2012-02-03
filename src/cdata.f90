@@ -211,10 +211,11 @@ module cdata
   logical, protected :: KS_maximise_rey=.false.
   real, protected :: KS_bubble=0.
   !-----------------forcing------------------------------------------------------
-  character(len=20), protected :: force='off'
+  character(len=30), protected :: force='off'
   real, protected :: force_amp=0.
   real, protected :: force_freq=0.
-  real, protected :: force_cutoff=1E8 !impossibly high time  
+  real, protected :: force_cutoff=1E8 !impossibly high time 
+  logical, protected :: forcing_mesh_fileprint=.false. 
   !-----------------special data dumps-------------------------------------------
   !do we want to dump 'f' at a specific timeu1, i.e. before a reconnection etc.
   real, protected :: special_dump=0. !special dump time
@@ -394,6 +395,8 @@ module cdata
              read(buffer, *, iostat=ios) force !force the vortices
           case ('force_amp')
              read(buffer, *, iostat=ios) force_amp !forcing amplitude
+          case ('forcing_mesh_fileprint')
+             read(buffer, *, iostat=ios) forcing_mesh_fileprint !print forcing array to file
           case ('closest_distance')
              read(buffer, *, iostat=ios) closest_distance !track minimum separation between points?
           case ('force_freq')

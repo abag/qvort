@@ -18,8 +18,8 @@ for i=start:finish
   usupy=squeeze(B(4,:,:));
   usupz=squeeze(B(5,:,:));
   unormx=squeeze(B(6,:,:));
-  unormy=squeeze(B(6,:,:));
-  unormz=squeeze(B(6,:,:));
+  unormy=squeeze(B(7,:,:));
+  unormz=squeeze(B(8,:,:));
   figure('visible','off')
   uu=sqrt(usupx.^2+usupy.^2+usupz.^2);
   vcoff=1. ;

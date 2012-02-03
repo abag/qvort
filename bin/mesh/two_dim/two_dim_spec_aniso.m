@@ -28,8 +28,8 @@ usupx=squeeze(B(3,:,:));
 usupy=squeeze(B(4,:,:));
 usupz=squeeze(B(5,:,:));
 unormx=squeeze(B(6,:,:));
-unormy=squeeze(B(6,:,:));
-unormz=squeeze(B(6,:,:));
+unormy=squeeze(B(7,:,:));
+unormz=squeeze(B(8,:,:));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%SPECTRA%%%%%%%%%%%%%%%%%%%
 n=s;
 fux=fftn(usupx)/(n^2);
@@ -110,8 +110,8 @@ usupx=squeeze(B(3,:,:));
 usupy=squeeze(B(4,:,:));
 usupz=squeeze(B(5,:,:));
 unormx=squeeze(B(6,:,:));
-unormy=squeeze(B(6,:,:));
-unormz=squeeze(B(6,:,:));
+unormy=squeeze(B(7,:,:));
+unormz=squeeze(B(8,:,:));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%SPECTRA%%%%%%%%%%%%%%%%%%%
 n=s;
 fux=fftn(usupx)/(n^2);
@@ -170,5 +170,5 @@ if do_fit==1
   hold on
   loglog(k,dummy_spect,'--r','LineWidth',2)
 end
-xlabel('log k','FontSize',16) ; ylabel('log E_{\perp}(k)','FontSize',16)
+xlabel('log k','FontSize',16) ; ylabel('log E_{||}(k)','FontSize',16)
 set(gca,'FontSize',16)

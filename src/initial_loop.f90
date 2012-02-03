@@ -555,13 +555,13 @@ module initial_loop
     write(*,'(a,f6.3,a,f6.3)') ' major radius ', macro_ring_R, ' minor radius ', macro_ring_a
     write(*,'(a,i3.1,a)') ' drawing', actual_line_count, ' loops in the z-y plane'
     !how big does a loop need to be?
-    loop_size=nint(2*pi*macro_ring_R/(0.75*delta))
+    loop_size=nint(2*pi*macro_ring_R/(1.0*delta)) ! For simplicity keep full macro_ring_R size - AWB uses factor 0.75
     pcount_required=loop_size*actual_line_count !# particles needed
     print*, 'changing size of pcount to fit with major_R, delta and line_count'
     print*, 'pcount is now', pcount_required
     average_loop_sep=sqrt(pi)*macro_ring_a/sqrt(real(actual_line_count))
-    if  (average_loop_sep< delta/2.) then
-      call fatal_error('init.mod','separation of loops is less than resolution')
+    if  (average_loop_sep< 10.0*delta) then
+      call fatal_error('init.mod','separation of loops is too close to resolution')
     end if
     deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     !now we need to find shift values to create the torus
@@ -602,7 +602,7 @@ module initial_loop
           f(loop_position)%behind=loop_position-1
           f(loop_position)%infront=loop_position+1
         end if
-        f(loop_position)%u1=0. ; f(loop_position)%u2=0. ; f(loop_position)%u3=0.
+        f(loop_position)%u1=0. ; f(loop_position)%u2=0.
       end do
     end do 
     deallocate(rad_shift,x_shift,rad_shift_r,rad_shift_theta)

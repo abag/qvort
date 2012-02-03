@@ -28,15 +28,15 @@ usupx=squeeze(B(3,:,:));
 usupy=squeeze(B(4,:,:));
 usupz=squeeze(B(5,:,:));
 unormx=squeeze(B(6,:,:));
-unormy=squeeze(B(6,:,:));
-unormz=squeeze(B(6,:,:));
+unormy=squeeze(B(7,:,:));
+unormz=squeeze(B(8,:,:));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%SPECTRA%%%%%%%%%%%%%%%%%%%
 n=s;
 fux=fftn(usupx)/(n^2);
 fuy=fftn(usupy)/(n^2);
 fuz=fftn(usupz)/(n^2);
-energyr=real(fuy).^2+real(fuz).^2;
-energyi=imag(fuy).^2+imag(fuz).^2;
+energyr=real(fux).^2+real(fuy).^2;
+energyi=imag(fux).^2+imag(fuy).^2;
 midpt=n/2+1;
 spect(1:1.5*n)=0.;
 if ifile==filenumbers(1)
@@ -109,15 +109,15 @@ usupx=squeeze(B(3,:,:));
 usupy=squeeze(B(4,:,:));
 usupz=squeeze(B(5,:,:));
 unormx=squeeze(B(6,:,:));
-unormy=squeeze(B(6,:,:));
-unormz=squeeze(B(6,:,:));
+unormy=squeeze(B(7,:,:));
+unormz=squeeze(B(8,:,:));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%SPECTRA%%%%%%%%%%%%%%%%%%%
 n=s;
 fux=fftn(usupx)/(n^2);
 fuy=fftn(usupy)/(n^2);
 fuz=fftn(usupz)/(n^2);
-energyr=real(fux).^2;
-energyi=imag(fux).^2;
+energyr=real(fuz).^2;
+energyi=imag(fuz).^2;
 midpt=n/2+1;
 spect(1:1.5*n)=0.;
 if ifile==filenumbers(1)
@@ -162,8 +162,10 @@ avg_spect=avg_spect./length(filenumbers);
 figure('Name','average E(k) para')
   loglog(k(1:midpt-cutoff),spect(1:midpt-cutoff),'Color','k','LineWidth',1.5)
 if do_fit==1
-  disp(sprintf('fitting a slope of %f to average spect',fit))
-  dummy_spect=k.^(fit);
+  %disp(sprintf('fitting a slope of %f to average spect',fit))
+  %dummy_spect=k.^(fit);
+  disp(sprintf('fitting a slope of -3 to average spect',fit))
+  dummy_spect=k.^(-3);
   scaling_factor=0.8*sum(avg_spect(1:10))/sum(dummy_spect(1:10));
   dummy_spect=dummy_spect*scaling_factor;
   hold on
