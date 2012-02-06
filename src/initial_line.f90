@@ -253,19 +253,19 @@ module initial_line
         !------------------lines -z to z--------------------
         if (real(i)/line_count<=0.166666666) then
           f(line_position)%x(1)=-box_size/4.+(box_size/10.)*rand1
-          f(line_position)%x(3)=-box_size/4.+(box_size/10.)*rand2
-          f(line_position)%x(2)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+          f(line_position)%x(2)=-box_size/4.+(box_size/10.)*rand2
+          f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
         else if (real(i)/line_count<=0.3333333333) then
           f(line_position)%x(1)=box_size/4.+(box_size/10.)*rand1
-          f(line_position)%x(3)=box_size/4.+(box_size/10.)*rand2
-          f(line_position)%x(2)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+          f(line_position)%x(2)=box_size/4.+(box_size/10.)*rand2
+          f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
         !------------------lines -y to y--------------------
         else if (real(i)/line_count<=0.5) then
-          f(line_position)%x(1)=0.
+          f(line_position)%x(1)=(box_size/10.)*rand1
           f(line_position)%x(2)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
           f(line_position)%x(3)=box_size/4.+(box_size/10.)*rand2
         else if (real(i)/line_count<=0.666666666) then
-          f(line_position)%x(1)=0.
+          f(line_position)%x(1)=(box_size/10.)*rand1
           f(line_position)%x(2)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
           f(line_position)%x(3)=-box_size/4.+(box_size/10.)*rand2
         !------------------lines -x to x--------------------

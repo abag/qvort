@@ -104,7 +104,7 @@ module line
       end if
     end do
     !calculate average separation of particles
-    avg_sep=total_length/old_pcount
+    avg_sep=total_length/(old_pcount-count(mask=f(:)%infront==0))
   end subroutine
   !*************************************************************************
   !>remove points along the filament if they are compressed to the point where
