@@ -72,6 +72,17 @@ for j=1:number_of_particles
               pointz(counterz,2)=y(j);
               counterz=counterz+1;
           end
+        case 'yz'
+          if y(j)*y(round(f(j)))<0
+              pointy(countery,1)=z(j);
+              pointy(countery,2)=x(j);
+              countery=countery+1;
+          end
+          if z(j)*z(round(f(j)))<0
+              pointz(counterz,1)=x(j);
+              pointz(counterz,2)=y(j);
+              counterz=counterz+1;
+          end
       end
     end
   end
@@ -79,10 +90,41 @@ end
 switch plane
   case 'x'
     plot(pointx(:,1),pointx(:,2),'ko','MarkerFaceColor','k')
+    axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2])
+    set(gca,'FontSize',16)
+    xlabel('y','FontSize',14)
+    ylabel('z','FontSize',14)
   case 'y'
-    plot(pointy(:,1),pointy(:,2),'ko','MarkerFaceColor','k')
+    plot(pointy(:,1),pointy(:,2),'k.')
+    axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2])
+    set(gca,'FontSize',16)
+    xlabel('z','FontSize',14)
+    ylabel('x','FontSize',14)
   case 'z'
-    plot(pointz(:,1),pointz(:,2),'ko','MarkerFaceColor','k')
+    plot(pointz(:,1),pointz(:,2),'k.')
+    axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2])
+    set(gca,'FontSize',16)
+    xlabel('x','FontSize',14)
+    ylabel('y','FontSize',14)
+  case 'yz'
+	subplot(3,4,[1 5 9])
+    	plot(pointy(:,1),pointy(:,2),'k.')
+        axis([-.2 .2 -dims(2)/2 dims(2)/2],'equal')
+        set(gca,'FontSize',16)
+    	xlabel('z','FontSize',16)
+    	ylabel('x','FontSize',16)
+	subplot(3,4,[6 7 8])
+    	plot(pointz(:,1),pointz(:,2),'k.')
+        axis([-dims(2)/2 dims(2)/2 -.2 .2],'equal')
+        set(gca,'FontSize',16) 
+    	xlabel('x','FontSize',16)
+    	ylabel('y','FontSize',16)
 end
-axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2])
-set(gca,'FontSize',16)
+s1='t=';
+s2=num2str(time);
+str=strcat(s1,s2);
+if (dims(2)>0.)
+  text(-.6*dims(2),.6*dims(2),.7*dims(2),str,'FontSize',16)
+else
+  text(-0.06,0.06,0.07,str,'FontSize',16)
+end

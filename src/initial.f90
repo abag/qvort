@@ -169,6 +169,8 @@ module initial
           call setup_crow !initial_line.mod
         case('big_bundles')
           call setup_big_bundles !initial_line.mod
+        case('isotropic_bundles')
+          call setup_isotropic_bundles !initial_line.mod
         case('central_bundle')
           call setup_central_bundle !initial_line.mod
         case('helix')
