@@ -67,7 +67,7 @@ end
 if do_fit==1
   disp(sprintf('fitting a slope of %f to plot',fit))
   dummy_spect=k.^(fit);
-  scaling_factor=0.8*sum(spect(1:10))/sum(dummy_spect(1:10));
+  scaling_factor=1.2*sum(spect(1:10))/sum(dummy_spect(1:10));
   dummy_spect=dummy_spect*scaling_factor;
   hold on
   loglog(k,dummy_spect,'--r','LineWidth',2)
@@ -79,7 +79,7 @@ set(gca,'FontSize',16)
 if length(filenumbers)>1
   avg_spect=avg_spect./length(filenumbers);
   figure('Name','avgerage E(k)')
-  loglog(k(1:midpt-cutoff),spect(1:midpt-cutoff),'Color','k','LineWidth',1.5)
+  loglog(k(1:midpt-cutoff),avg_spect(1:midpt-cutoff),'Color','k','LineWidth',1.5)
   if do_fit==1
     disp(sprintf('fitting a slope of %f to average spect',fit))
     dummy_spect=k.^(fit);
