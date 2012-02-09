@@ -229,13 +229,8 @@ module timestep
     end if
     if (sticky_z_boundary) then
       !particles at top/bottom of box are fixed
-      !if ((abs(f(i)%x(3))-box_size/2.)>-1.5*delta) then
-      !  !particle is sufficiently close to top boundary stick
-      !  u=0.
-      !end if
-      if (f(i)%x(3)<=minval(f(:)%x(3))) then
-        u=0.
-      else if (f(i)%x(3)>=maxval(f(:)%x(3))) then
+      if ((abs(f(i)%x(3))-box_size/2.)>-1.5*delta) then
+        !particle is sufficiently close to top boundary stick
         u=0.
       end if
     end if
