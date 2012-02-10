@@ -25,5 +25,13 @@ figure('Name','u(x)')
   plot(squeeze(ux(32,32,:)))
 %plot slices of field+isosurface
 mesh_slices(x,ux,uy,uz,msize,'initial normal fluid')
-figure('Name','quiver')
- quiver(ux,uy,uz);  
+%plot slices of divergence of field
+figure('Name','div(u)')
+div = divergence(ux,uy,uz);
+pcolor(squeeze(div(32,:,:))) ; shading interp
+colorbar
+%plot slices of curl of field
+figure('Name','curl(u)')
+curlz = curl(ux,uy,uz);
+pcolor(squeeze(curlz(32,:,:))) ; shading interp
+colorbar
