@@ -554,6 +554,7 @@ module initial_line
   subroutine setup_wave_line
     implicit none
     real :: wave_number, prefactor
+    real :: estimate_speed
     real :: amp, random_shift
     real :: xpos, ypos
     integer :: pcount_required
@@ -580,6 +581,12 @@ module initial_line
     write(*,'(a,i3.1)') ' starting wavenumber ', wave_start
     write(*,'(a,f9.5)') ' starting amplitude', wave_amp*delta
     write(*,'(a,i3.1)') ' wavenumber separation', wave_skip 
+    if ((line_count==1).and.(wave_type=='helical')) then
+      estimate_speed=abs((quant_circ*(2*pi*wave_start/box_size)/(4*pi))*(log(2./((2*pi*wave_start/box_size)*corea))-0.57721))
+      !estimate_speed=(quant_circ/(2*pi*corea**2))*&
+!(1.-sqrt(1+BesY0((2*pi*wave_start/box_size)*corea)/BesY1((2*pi*wave_start/box_size)*corea)))
+      print*, 'just one helical wave, speed should be', estimate_speed
+    end if
     line_size=int(pcount/line_count)
     !START THE LOOP
     do i=1, line_count

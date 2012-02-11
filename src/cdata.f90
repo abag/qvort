@@ -193,8 +193,9 @@ module cdata
   logical, protected :: phonon_emission=.false. !do we want it one?
   real, protected :: phonon_percent=0.95 !what percentage of 2/delta?
   logical, protected :: hyperviscosity=.false. !instead of smoothing use hyperviscosity
-  integer, protected :: hyp_power=4
-  real, protected :: hyp_curv=0.4
+  integer, protected :: hyp_power=4 !degree of hyperviscosity
+  real, protected :: hyp_curv=0. !allow some curvature undamped
+  real, protected :: hyp_nu=1. !scaling parameter
   !----------------------mesh information----------------------------------------
   integer, protected :: mesh_size=0
   integer, protected :: mesh_shots=100
@@ -413,6 +414,8 @@ module cdata
              read(buffer, *, iostat=ios) hyp_power !use hyperviscosity to dissipate KWC
           case ('hyp_curv')
              read(buffer, *, iostat=ios) hyp_curv !use hyperviscosity to dissipate KWC
+          case ('hyp_nu')
+             read(buffer, *, iostat=ios) hyp_nu !use hyperviscosity to dissipate KWC
            case ('special_dump')
              read(buffer, *, iostat=ios) special_dump !special dump
           case ('quasi_pcount')
