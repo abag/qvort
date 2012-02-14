@@ -66,6 +66,11 @@ remove_count
         write(78,*) t, linking_number, writhing_number
       close(78)
     end if
+    if (hyperviscosity) then
+      open(unit=78,file='./data/hyperviscous_power.log',position='append')
+        write(78,*) t, hyp_power_dissipate
+      close(78)
+    end if
   end subroutine
   !**********************************************************************
   !>print the f (filament) array as (un)formatted data for use with gnuplot/matlab

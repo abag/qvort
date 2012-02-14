@@ -194,6 +194,7 @@ module cdata
   real, protected :: phonon_percent=0.95 !what percentage of 2/delta?
   logical, protected :: hyperviscosity=.false. !instead of smoothing use hyperviscosity
   integer, protected :: hyp_power=4 !degree of hyperviscosity
+  real :: hyp_power_dissipate !power dissipated by friction
   real, protected :: hyp_curv=0. !allow some curvature undamped
   real, protected :: hyp_nu=1. !scaling parameter
   !----------------------mesh information----------------------------------------

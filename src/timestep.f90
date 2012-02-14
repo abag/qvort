@@ -30,8 +30,11 @@ module timestep
       case('Rotate')
         call differential_rotation
         return !exit the routine once applied
-    end select    
-    max_error=0.
+    end select
+    !any quantaties that need zeroing before velocity calculation here    
+    max_error=0. 
+    hyp_power_dissipate=0.
+    !now loop over all points and get the velocity field
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
       call calc_velocity(u,i)
@@ -197,6 +200,11 @@ module timestep
     !hyperviscosity
     if (hyperviscosity) then
       call get_hyp_alpha(sqrt(dot_product(f_ddot,f_ddot)),hyperviscous_alpha) !hyperviscous.mod
+      if (mod(itime,shots)==0) then!only calculate P_{mf} every shots timesteps
+        !P_{mf}=-\alpha*\rho_s\Gamma \int |s' \times v_s| d\xi
+        hyp_power_dissipate=hyp_power_dissipate-hyperviscous_alpha*quant_circ*&
+                          vector_norm(cross_product(f_dot,u))*dist_gen(f(i)%x,f(i)%ghosti)
+      end if
       if (hyperviscous_alpha>epsilon(0.)) then
         u=u+hyperviscous_alpha*cross_product(f_dot,(-u))
       end if
