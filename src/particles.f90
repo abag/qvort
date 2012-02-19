@@ -14,7 +14,8 @@ module particles
   !>setup the particles in as set by initp
   subroutine setup_particles
     implicit none
-    integer :: i
+    integer :: i, j, k
+    integer :: counter
     allocate(p(part_count))
     write(*,*) 'setting up particles in ', trim(initp),' configuration'
     write(*,'(a,a,a,i4.1)') ' particle type: ', trim(particle_type), ', particle count: ', part_count
@@ -47,7 +48,8 @@ module particles
         do i=1, part_count
           p(i)%x(1)=0.75*box_size/2.*cos(2*pi*(2.*i-1.)/(2.*part_count))
           p(i)%x(2)=0.75*box_size/2.*sin(2*pi*(2.*i-1.)/(2.*part_count))
-          p(i)%x(3)=-box_size/2.
+          !p(i)%x(3)=-box_size/2.
+          p(i)%x(3)=0.
           p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
         end do
       case('pairs')
@@ -67,6 +69,18 @@ module particles
           p(i+1)%x=p(i)%x ; p(i+1)%x(3)=p(i)%x(3)+0.001
           p(i+1)%u=0. ; p(i+1)%u1=0. ; p(i+1)%u2=0. !0 the velocity fields
         end do
+      case('lattice')
+        counter=0
+        do i=1, floor(sqrt(real(part_count))) ; do k=1, floor(sqrt(real(part_count)))
+          p((i-1)*floor(sqrt(real(part_count)))+k)%x(1)=(-box_size/2.+box_size*((2.*i-1.)/(2*sqrt(real(part_count)))))*lattice_ratio
+          p((i-1)*floor(sqrt(real(part_count)))+k)%x(2)=(-box_size/2.+box_size*((2.*k-1.)/(2*sqrt(real(part_count)))))*lattice_ratio
+          p((i-1)*floor(sqrt(real(part_count)))+k)%x(3)=0.
+          counter=counter+1
+        end do ; end do
+        if (counter/=part_count) then
+          call fatal_error('init.mod:setup_particles', &
+          'part_count must be a square number')  
+        end if
       case default
         call fatal_error('setup_particles','initp not set to available value')
     end select
