@@ -163,6 +163,8 @@ module initial
           call setup_xline_noise !initial_line.mod
         case('ellipse')
           call setup_ellipse !initial_loop.mod
+        case('tg-loops')
+          call setup_tg_loops !initial_loop.mod
         case('random_loops')
           call setup_random_loops !initial_loop.mod
         case('crow')

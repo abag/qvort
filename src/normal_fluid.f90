@@ -191,8 +191,8 @@ module normal_fluid
           !u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
           !u(3)=0.
           !TG vorticity field - commented out but useful!
-          u(1)=cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
-          u(2)=sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
+          u(1)=-cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
+          u(2)=-sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
           u(3)=2.*sin(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
         case('shear')
           u=0.
