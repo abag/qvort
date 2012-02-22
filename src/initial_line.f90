@@ -109,6 +109,50 @@ module initial_line
       f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
   end subroutine
+!****************************************************************************
+  !>hyperboloid - http://mathworld.wolfram.com/Hyperboloid.html
+  subroutine setup_hyperboloid
+    implicit none
+    integer :: pcount_required
+    integer :: line_size, line_position
+    integer :: i, j
+    real :: u, v !helper variables
+    if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.in
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length/delta and line_count'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_central_bundle', &
+      'periodic boundary conditions required')
+    end if
+    write(*,*) 'initf: hyperboloid,'
+    write(*,'(a,f8.4,a)') 'bundle will occupy ', lattice_ratio, ' of box' 
+    line_size=int(pcount/line_count)
+    do i=1, line_count
+      v=pi*real(2*i-1)/line_count
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        u=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)   
+        f(line_position)%x(1)=20.*delta*sqrt(1.+(u/box_size)**2)*cos(v) 
+        f(line_position)%x(2)=20.*delta*sqrt(1.+(u/box_size)**2)*sin(v)
+        f(line_position)%x(3)=u
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
+      end do
+    end do
+  end subroutine
   !*************************************************************************
   !>anti parallel lines from -z to z which drives the crow instability
   !>particle count automatically adjusted

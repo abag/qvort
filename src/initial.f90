@@ -185,6 +185,8 @@ module initial
           call setup_smooth_test_wave !initial_line.mod  
         case('leap-frog')
           call setup_leap_frog !initial_loop.mod
+        case('hyperboloid')
+          call setup_hyperboloid !initial_line.mod
         case('loop_train')
           call setup_loop_train !initial_loop.mod
         case('loop_stream')
