@@ -269,6 +269,7 @@ module cdata
   !------------------------------filament injection-------------------------------
   integer, protected :: inject_skip=10000000!how often we insert the vortice
   integer, protected :: inject_size=0 !number of points used
+  integer, protected :: inject_freq=10000000!how often we switch injection direction
   real, protected :: inject_stop=1E8 !when to stop injection - arbitrarily high
   character(len=20),protected :: inject_type='off' !how we inject loops
   !----------------------------code testing---------------------------------------
@@ -537,6 +538,8 @@ module cdata
              read(buffer, *, iostat=ios) inject_size !size of injected filaments
           case ('inject_skip')
              read(buffer, *, iostat=ios) inject_skip !how often we inject
+          case ('inject_freq')
+             read(buffer, *, iostat=ios) inject_freq !how often we switch injection
           case ('inject_type')
              read(buffer, *, iostat=ios) inject_type !how we inject new vortices
           case ('inject_stop')
