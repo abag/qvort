@@ -120,6 +120,7 @@ module particles
     implicit none
     real :: u(3)
     integer :: i
+    !$omp parallel do
     do i=1, part_count
       call velocity_fluidp(i,u)
       select case(particle_type)
@@ -160,6 +161,7 @@ module particles
         !put it back in the other side....
       end if
     end do
+    !$omp end parallel do
   end subroutine
   !************************************************************
   !> calculate the velocity at each particle

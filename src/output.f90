@@ -20,6 +20,7 @@ module output
       write(77,*) part_count, '%number of particles'
       write(77,*) quasi_pcount, '%number of quasi-particles'
       write(77,*) xdim_scaling_factor, '%length of x direction'
+      write(77,*) two_dim, '%size of 2D mesh'
     close(77)
   end subroutine
   !**********************************************************************

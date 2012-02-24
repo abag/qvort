@@ -389,45 +389,52 @@ module diagnostic
     use timestep
     implicit none
     integer, intent(IN) :: filenumber
-    real :: u_norm(3), u_sup(3)=0., x(3)=0.
     integer :: i, j, peri, perj, perk
     character (len=40) :: print_file
-    if (two_dim<1) return
-    write(unit=print_file,fmt="(a,i4.4,a)")"./data/vel_slice_2D",filenumber,".dat"
-    open(unit=32,file=print_file,status='replace',form='unformatted',access='stream')
-    do i=1, two_dim
-      do j=1, two_dim
-        x(1)=((2.*i-1)/(2.*two_dim))*box_size-box_size/2.
-        x(2)=((2.*j-1)/(2.*two_dim))*box_size-box_size/2.
+    if (two_dim<1) return  
+    !$omp parallel do
+    do j=1, two_dim
+      do i=1, two_dim
         !superfluid velocity
         select case(velocity)
           case('BS')
-            u_sup=0. !always 0 before making initial BS call
-            call biot_savart_general(x,u_sup)
+            mesh2D(j,i)%u_sup=0. !always 0 before making initial BS call
+            call biot_savart_general(mesh2D(j,i)%x,mesh2D(j,i)%u_sup)
             if (periodic_bc) then
-              !we must shift the mesh in all 3 directions, all 26 permutations needed!
+              !we must shift the tree-mesh in all 3 directions, all 26 permutations needed!
               do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
                 if (peri==0.and.perj==0.and.perk==0) cycle
-                call biot_savart_general_shift(x,u_sup, &
+                call biot_savart_general_shift(mesh2D(j,i)%x,mesh2D(j,i)%u_sup, &
                 (/peri*box_size,perj*box_size,perk*box_size/)) !timestep.mod
               end do ; end do ;end do
             end if
           case('Tree')
-            u_sup=0. !must be zeroed for all algorithms
-            call tree_walk_general(x,vtree,(/0.,0.,0./),u_sup)
+            mesh2D(j,i)%u_sup=0. !always 0 before making initial BS call
+            call tree_walk_general(mesh2D(j,i)%x,vtree,(/0.,0.,0./),mesh2D(j,i)%u_sup)
             if (periodic_bc) then
-              !we must shift the mesh in all 3 directions, all 26 permutations needed!
+              !we must shift the tree-mesh in all 3 directions, all 26 permutations needed!
               do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
                 if (peri==0.and.perj==0.and.perk==0) cycle
-                call tree_walk_general(x,vtree, &
-                     (/peri*box_size,perj*box_size,perk*box_size/),u_sup) !tree.mod
+                call tree_walk_general(mesh2D(j,i)%x,vtree, &
+                     (/peri*box_size,perj*box_size,perk*box_size/),mesh2D(j,i)%u_sup) !tree.mod
               end do ; end do ;end do
             end if
         end select
-        call get_normal_velocity(x,u_norm)
-        write(32) x(1), x(2), u_sup, u_norm 
+        !normal fluid velocity
+        call get_normal_velocity(mesh2D(j,i)%x,mesh2D(j,i)%u_norm)
       end do
     end do
+    !$omp end parallel do
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/vel_slice_2D",filenumber,".dat"
+    open(unit=32,file=print_file,status='replace',form='unformatted',access='stream')
+      write(32) t
+      write(32) mesh2D(1,:)%x(1)
+      write(32) mesh2D(:,:)%u_norm(1)
+      write(32) mesh2D(:,:)%u_norm(2)
+      write(32) mesh2D(:,:)%u_norm(3)
+      write(32) mesh2D(:,:)%u_sup(1)
+      write(32) mesh2D(:,:)%u_sup(2)
+      write(32) mesh2D(:,:)%u_sup(3)
     close(32)
   end subroutine
   !*************************************************
@@ -446,6 +453,7 @@ module diagnostic
     integer, parameter :: bin_num=10 !number of bins used in KDE
     real :: kdensity(bin_num), kdmesh(bin_num), bwidth !all for KDE
     allocate(curvi(pcount)) !allocate this array pcount size
+    !$omp parallel do
     do i=1, pcount
       if (f(i)%infront==0) then
         curvi(i)=0. !check for 'empty' particles
@@ -453,6 +461,7 @@ module diagnostic
         curvi(i)=curvature(i) !general.mod
       end if
     end do
+    !$omp end parallel do
     !compute the average/min/max of this array
     kappa_bar=sum(curvi)/count(mask=f(:)%infront>0)
     kappa_max=maxval(curvi)
@@ -493,6 +502,7 @@ module diagnostic
     integer, parameter :: bin_num=10 !number of bins used in KDE
     real :: kdensity(bin_num), kdmesh(bin_num), bwidth !all for KDE
     allocate(torsioni(pcount)) !allocate this array pcount size
+    !$omp parallel do
     do i=1, pcount
       if (f(i)%infront==0) then
         torsioni(i)=0. !check for 'empty' particles
@@ -511,6 +521,7 @@ module diagnostic
                                            cross_product(sdot,sddot))
       end if
     end do
+    !$omp end parallel do
     !compute the average/min/max of this array
     tors_bar=sum(torsioni)/count(mask=f(:)%infront>0)
     tors_max=maxval(torsioni)

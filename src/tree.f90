@@ -200,6 +200,7 @@ module tree
     !loop over all the particles and find the closest one to i using the tree mesh
     implicit none
     integer :: i
+    !$omp parallel do
     do i=1, pcount
       f(i)%closestd=100. !arbitrarily high
       if (f(i)%infront==0) cycle !empty particle
@@ -209,6 +210,7 @@ module tree
       end if 
       call closest_tree(i,vtree)
     end do
+    !$omp end parallel do
   end subroutine
   !********************************************************************************
   !>recurisve routine used by pclose_tree to find the closest particle to i
@@ -262,11 +264,13 @@ module tree
     !loop over all the particles and find the closest one to i using the tree mesh
     implicit none
     integer :: i
+    !$omp parallel do
     do i=1, pcount
       f(i)%closestd_loop=100. !arbitrarily high
       if (f(i)%infront==0) cycle !empty particle
       call closest_tree_loop(i,vtree)
     end do
+    !$omp end parallel do
   end subroutine
   !********************************************************************************
   !>recurisve routine used by pclose_tree_loop to find the closest particle to i

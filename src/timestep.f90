@@ -35,11 +35,14 @@ module timestep
     max_error=0. 
     hyp_power_dissipate=0.
     !now loop over all points and get the velocity field
+    !$omp parallel do
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
       call calc_velocity(u,i)
       f(i)%u(:)=u(:) !store the velocity for time-step
     end do
+    !$omp end parallel do
+    !$omp parallel do
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
       if (maxval(abs(f(i)%u1))==0) then
@@ -63,6 +66,7 @@ module timestep
       f(i)%u2(:)=f(i)%u1(:)  
       f(i)%u1(:)=f(i)%u(:)
     end do
+    !$omp end parallel do
     !adjust timestep
     if (dt_adapt) then
       !at present done every 5 timesteps this needs to be experimented with
@@ -252,6 +256,7 @@ module timestep
     integer :: i,j,k
     integer :: peri, perj, perk !used to loop in periodic cases
     real :: normurms
+   !$omp parallel do
     do k=1, mesh_size
       if (mesh_size>=64) then
         write(*,'(a,i4.1,a,i4.1)') 'drawing mesh section ', k, ' of ', mesh_size
@@ -320,6 +325,7 @@ module timestep
         end do
       end do
     end do
+    !$omp end parallel do
   end subroutine
   !**************************************************************************
   !>the desingularised biot savart integral 
