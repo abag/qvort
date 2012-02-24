@@ -8,7 +8,7 @@ module periodic
   subroutine ghostp
     implicit none
     integer :: i
-    !$omp parallel do
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particles
       call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb,f(i)%ghostii, f(i)%ghostbb)
@@ -188,7 +188,7 @@ module periodic
   subroutine enforce_periodic()
     implicit none
     integer :: i
-    !$omp parallel do
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       !-------------x------------------     
@@ -219,7 +219,7 @@ module periodic
   subroutine enforce_periodic_yz()
     implicit none
     integer :: i
-    !$omp parallel do
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       !-------------y------------------
@@ -250,7 +250,7 @@ module periodic
   subroutine enforce_periodic_z()
     implicit none
     integer :: i
-    !$omp parallel do
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       !-------------x------------------     

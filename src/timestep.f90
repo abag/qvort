@@ -35,14 +35,14 @@ module timestep
     max_error=0. 
     hyp_power_dissipate=0.
     !now loop over all points and get the velocity field
-    !$omp parallel do
+    !$omp parallel do private(i,u)
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
       call calc_velocity(u,i)
       f(i)%u(:)=u(:) !store the velocity for time-step
     end do
     !$omp end parallel do
-    !$omp parallel do
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
       if (maxval(abs(f(i)%u1))==0) then
@@ -222,7 +222,9 @@ module timestep
         !check that either of the mutual friction coefficients are >0
         if ((abs(alpha(1))>epsilon(0.)).or.(abs(alpha(2))>epsilon(0.))) then
           if (t<normal_fluid_cutoff) then !cutoff time set in run.in
+            !omp critical
             call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
+            !omp end critical
             ! \todo this could be improved calculating same thing twice 
             f(i)%u_mf=alpha(1)*cross_product(f_dot,(u_norm-u))- &
                       alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
@@ -256,7 +258,7 @@ module timestep
     integer :: i,j,k
     integer :: peri, perj, perk !used to loop in periodic cases
     real :: normurms
-   !$omp parallel do
+   !$omp parallel do private(i,j,k,peri,perj,perk)
     do k=1, mesh_size
       if (mesh_size>=64) then
         write(*,'(a,i4.1,a,i4.1)') 'drawing mesh section ', k, ' of ', mesh_size
@@ -321,7 +323,9 @@ module timestep
               end if
           end select
           !normal fluid
+          !omp critical
           call get_normal_velocity(mesh(k,j,i)%x,mesh(k,j,i)%u_norm)
+          !omp end critical
         end do
       end do
     end do

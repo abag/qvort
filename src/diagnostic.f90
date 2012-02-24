@@ -391,8 +391,9 @@ module diagnostic
     integer, intent(IN) :: filenumber
     integer :: i, j, peri, perj, perk
     character (len=40) :: print_file
+    real :: u(3)
     if (two_dim<1) return  
-    !$omp parallel do
+    !$omp parallel do private(i,j,peri,perj,perk,u)
     do j=1, two_dim
       do i=1, two_dim
         !superfluid velocity
@@ -421,20 +422,22 @@ module diagnostic
             end if
         end select
         !normal fluid velocity
-        call get_normal_velocity(mesh2D(j,i)%x,mesh2D(j,i)%u_norm)
+        !$OMP critical
+        call get_normal_velocity(mesh2D(j,i)%x,u)
+        !$OMP end critical
+        mesh2D(j,i)%u_norm=u
       end do
     end do
     !$omp end parallel do
     write(unit=print_file,fmt="(a,i4.4,a)")"./data/vel_slice_2D",filenumber,".dat"
     open(unit=32,file=print_file,status='replace',form='unformatted',access='stream')
-      write(32) t
-      write(32) mesh2D(1,:)%x(1)
-      write(32) mesh2D(:,:)%u_norm(1)
-      write(32) mesh2D(:,:)%u_norm(2)
-      write(32) mesh2D(:,:)%u_norm(3)
-      write(32) mesh2D(:,:)%u_sup(1)
-      write(32) mesh2D(:,:)%u_sup(2)
-      write(32) mesh2D(:,:)%u_sup(3)
+      write(32) mesh2D(1,1:two_dim)%x(1)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_norm(1)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_norm(2)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_norm(3)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_sup(1)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_sup(2)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_sup(3)
     close(32)
   end subroutine
   !*************************************************
@@ -453,7 +456,7 @@ module diagnostic
     integer, parameter :: bin_num=10 !number of bins used in KDE
     real :: kdensity(bin_num), kdmesh(bin_num), bwidth !all for KDE
     allocate(curvi(pcount)) !allocate this array pcount size
-    !$omp parallel do
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) then
         curvi(i)=0. !check for 'empty' particles
@@ -502,7 +505,6 @@ module diagnostic
     integer, parameter :: bin_num=10 !number of bins used in KDE
     real :: kdensity(bin_num), kdmesh(bin_num), bwidth !all for KDE
     allocate(torsioni(pcount)) !allocate this array pcount size
-    !$omp parallel do
     do i=1, pcount
       if (f(i)%infront==0) then
         torsioni(i)=0. !check for 'empty' particles
@@ -521,7 +523,6 @@ module diagnostic
                                            cross_product(sdot,sddot))
       end if
     end do
-    !$omp end parallel do
     !compute the average/min/max of this array
     tors_bar=sum(torsioni)/count(mask=f(:)%infront>0)
     tors_max=maxval(torsioni)

@@ -428,7 +428,7 @@ module initial
     write(*,'(a,i3.2,a,f7.6)') ' creating an n^3 mesh, n=', mesh_size, ' resolution=', mesh_delta
     write(*,'(a,i5.2,a)') ' mesh information will be printed every ', mesh_shots, ' time-steps'
     allocate(mesh(mesh_size,mesh_size,mesh_size))
-    !$omp parallel do
+    !$omp parallel do private(k,j,i,x,y,z)
     do k=1, mesh_size
       do j=1, mesh_size
         do i=1, mesh_size
@@ -450,7 +450,7 @@ module initial
     integer :: i,j
     real :: x,y
     allocate(mesh2D(two_dim,two_dim))
-    !$omp parallel do
+    !$omp parallel do private(i,j,x,y)
     do j=1, two_dim
       do i=1, two_dim
         x=(real(box_size)/two_dim)*real(2*i-1)/2.-(box_size/2.)

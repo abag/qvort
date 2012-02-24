@@ -200,7 +200,7 @@ module tree
     !loop over all the particles and find the closest one to i using the tree mesh
     implicit none
     integer :: i
-    !$omp parallel do
+    !$omp parallel do private(i)
     do i=1, pcount
       f(i)%closestd=100. !arbitrarily high
       if (f(i)%infront==0) cycle !empty particle
@@ -264,7 +264,7 @@ module tree
     !loop over all the particles and find the closest one to i using the tree mesh
     implicit none
     integer :: i
-    !$omp parallel do
+    !$omp parallel do private(i)
     do i=1, pcount
       f(i)%closestd_loop=100. !arbitrarily high
       if (f(i)%infront==0) cycle !empty particle

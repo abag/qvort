@@ -187,7 +187,7 @@ module line
     implicit none
     integer :: i, j
     real :: dist
-    !$omp parallel do
+    !$omp parallel do private(i,j,dist)
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       f(i)%closestd=100. !arbitrarily high
