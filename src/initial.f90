@@ -359,7 +359,10 @@ module initial
       write(*,'(a,i5.3,a,f5.2)')' calculation on ',one_dim_lattice_count,' lines from -z to +z with lattice ratio ', lattice_ratio 
       call setup_one_dim_lattice
     end if   
-    if (two_dim>0) write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
+    if (two_dim>0) then
+      write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
+      call setup_mesh2D
+    end if
     if (boxed_vorticity) then
       write(*,'(a,i5.3,a)') 'calculating boxed vorticity every ',mesh_shots, ' timesteps'
       write(*,'(a,i5.3)') 'size of mesh: ',boxed_vorticity_size
@@ -425,6 +428,7 @@ module initial
     write(*,'(a,i3.2,a,f7.6)') ' creating an n^3 mesh, n=', mesh_size, ' resolution=', mesh_delta
     write(*,'(a,i5.2,a)') ' mesh information will be printed every ', mesh_shots, ' time-steps'
     allocate(mesh(mesh_size,mesh_size,mesh_size))
+    !$omp parallel do
     do k=1, mesh_size
       do j=1, mesh_size
         do i=1, mesh_size
@@ -437,6 +441,26 @@ module initial
         end do
       end do
     end do
+    !$omp end parallel do
+  end subroutine
+  !****************************************************************
+  !> setup the 2D mesh if set by two_dim being non-zero in run.in
+  subroutine setup_mesh2D
+    implicit none
+    integer :: i,j
+    real :: x,y
+    allocate(mesh2D(two_dim,two_dim))
+    !$omp parallel do
+    do j=1, two_dim
+      do i=1, two_dim
+        x=(real(box_size)/two_dim)*real(2*i-1)/2.-(box_size/2.)
+        y=(real(box_size)/two_dim)*real(2*j-1)/2.-(box_size/2.)
+        mesh2D(j,i)%x(1)=x ; mesh2D(j,i)%x(2)=y ; mesh2D(j,i)%x(3)=0.
+        !clear the velocity slots - for safety
+        mesh2D(j,i)%u_sup=0. ; mesh2D(j,i)%u_norm=0.
+      end do
+    end do
+    !$omp end parallel do
   end subroutine
   !******************************************************************
   !> check the timestep is OK if we have a vortex filament only

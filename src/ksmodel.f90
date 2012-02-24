@@ -8,7 +8,6 @@
 !!\f]
 !!where \f$\phi_n=\mathbf{k}_n\cdot\mathbf{x}+\omega_n t\f$, \f$N_\textrm{KS}\f$ is the number of
 !!modes, \f$\mathbf{k}_n\f$ and \f$\omega_n=k_n u_n\f$ are their wave vectors and frequencies.
-
 module KSmodel
   use cdata
   use general
@@ -64,10 +63,8 @@ module KSmodel
         call warning_message('ksmodel.mod, setup_KS','mesh resolution not sufficient to resolve KS model')
       end if
       call wavenumbers
-  
       !put the wavelengths in order
       call order(klengths,KS_modes,1,kk) !the 1 means ascending order
-  
       !sort the wave-vectors into the same order as their corresponding lengths
       do i=1,KS_modes
         do j=1,KS_modes
@@ -131,7 +128,7 @@ module KSmodel
     subroutine wavenumbers
       implicit none
       real,dimension(3) :: angle,dir_in
-      integer, parameter :: total=10000000
+      integer, parameter :: total=100000
       real :: k_option(3,total), mkunit(total)
       real:: bubble
       integer ::direction(3)
@@ -139,7 +136,7 @@ module KSmodel
       logical :: ne
       !check the value of KS_rey_int to see if it will be displayed correctly
       num=1
-      !get the k-vectors now 
+      !get the k-vectors now
       do i=1,total  
         call random_number(angle)  
         !make sure none of the random numbers are zero at the given resolution 

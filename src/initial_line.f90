@@ -129,15 +129,16 @@ module initial_line
       'periodic boundary conditions required')
     end if
     write(*,*) 'initf: hyperboloid,'
-    write(*,'(a,f8.4,a)') 'bundle will occupy ', lattice_ratio, ' of box' 
+    write(*,'(a,f8.4)') ' width of bundle (at centre): ', hyperboloid_r*delta
+    write(*,'(a,f8.4)') ' hyperboloid_e: ', hyperboloid_e
     line_size=int(pcount/line_count)
     do i=1, line_count
       v=pi*real(2*i-1)/line_count
       do j=1, line_size
         line_position=j+(i-1)*line_size
         u=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)   
-        f(line_position)%x(1)=20.*delta*sqrt(1.+(u/box_size)**2)*cos(v) 
-        f(line_position)%x(2)=20.*delta*sqrt(1.+(u/box_size)**2)*sin(v)
+        f(line_position)%x(1)=hyperboloid_r*delta*sqrt(1.+(hyperboloid_e*u/box_size)**2)*cos(v) 
+        f(line_position)%x(2)=hyperboloid_r*delta*sqrt(1.+(hyperboloid_e*u/box_size)**2)*sin(v)
         f(line_position)%x(3)=u
         if(j==1) then
           f(line_position)%behind=i*line_size

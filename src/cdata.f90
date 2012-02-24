@@ -3,6 +3,7 @@
 !>also contains important routines for initialising random number generator and
 !>reading in runfile
 module cdata
+  use omp_lib
   !**********VORTEX FILAMENT******************************************************
   !>our main structure which holds vortex points
   !!@param x position of the vortex point  
@@ -50,6 +51,7 @@ module cdata
   end type
   !>3D allocatable mesh
   type(grid), allocatable :: mesh(:,:,:)
+  type(grid), allocatable :: mesh2D(:,:)
   !>1D allocatable mesh
   type(grid), allocatable :: lat_mesh_1D(:,:)
   !>the mesh resolution box_size/mesh_size^3
@@ -178,6 +180,9 @@ module cdata
   !--------for macro_ring initf--------------
   real, protected :: macro_ring_R=0. !major radius
   real, protected :: macro_ring_a=0. !minor radius
+  !--------for hyperboloid initf--------------
+  real, protected :: hyperboloid_r=2. !radius of bundle (terms of delta)
+  real, protected :: hyperboloid_e=1. !effects curvature of bundle
   !---------for central_bundle------------------------
   character(len=30), protected :: bundle_type='polarised' !polarised or random
   !---------for torus_knot initf---------------------- 
@@ -285,6 +290,8 @@ module cdata
   logical, protected :: batch_mode=.false. !set to true to enable messaging
   character(len=80),protected :: batch_name='qvort run' !what is the name of the run
   character(len=60),protected :: batch_email='a.w.baggaley@gmail.com' !who you gonna call?
+  !------------------------------openmp--------------------------------------------
+  logical,private :: serial_run=.false.
   contains
   !*************************************************************************************************  
   !>read the file run.in obtaining all parameters at runtime, avoiding the need to recompile the code
@@ -462,6 +469,10 @@ module cdata
              read(buffer, *, iostat=ios) macro_ring_R !for macro_ring initial conditions
           case ('macro_ring_a')
              read(buffer, *, iostat=ios) macro_ring_a !for macro_ring initial conditions
+          case ('hyperboloid_e')
+             read(buffer, *, iostat=ios) hyperboloid_e !for hyperboloid initial conditions
+          case ('hyperboloid_r')
+             read(buffer, *, iostat=ios) hyperboloid_r !for hyperboloid initial conditions
           case ('curv_hist')
              read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
           case ('torsion_hist')
@@ -552,6 +563,8 @@ module cdata
              read(buffer, *, iostat=ios) batch_name !what is the name of the run
           case ('batch_email')
              read(buffer, *, iostat=ios) batch_email !where do we message?
+          case ('serial_run')
+             read(buffer, *, iostat=ios) serial_run !where do we message?
           case default
              !print *, 'Skipping invalid label at line', line
           end select
@@ -771,6 +784,19 @@ module cdata
      call random_seed(put = seed)
      deallocate(seed)
   end subroutine 
+  !*************************************************
+  subroutine init_openmp
+    implicit none
+    integer :: nthreads, thread_limit
+    write(*,'(a)') ' ------------------------OPENMP-----------------------' 
+    if (serial_run) then
+      call omp_set_num_threads(1) 
+      write(*,'(a)') 'serial run, running on one process'
+    else
+      nthreads=omp_get_max_threads()
+      write(*,'(a,i2.2,a)') ' parallel run, running on ', nthreads, ' processes'
+    end if
+  end subroutine
   !**************************************************************************************************  
 end module
 !>\page BUG Code testing and bug fixing
