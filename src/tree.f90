@@ -396,6 +396,13 @@ module tree
      if (vtree%pcount==1.or.theta<tree_theta) then
        !use the contribution of this cell
        if (dist<epsilon(0.)) return !avoid 1/0.
+       !use hollow core model?
+       if (hollow_mesh_core) then
+         if (dist<delta/4.) then
+           u=0. !0 the velocity and return
+           return
+         end if
+       end if 
        vect(1)=((vtree%centx+shift(1))-x(1)) 
        vect(2)=((vtree%centy+shift(2))-x(2)) 
        vect(3)=((vtree%centz+shift(3))-x(3))
