@@ -397,12 +397,6 @@ module tree
        !use the contribution of this cell
        if (dist<epsilon(0.)) return !avoid 1/0.
        !use hollow core model?
-       if (hollow_mesh_core) then
-         if (dist<delta/4.) then
-           u=0. !0 the velocity and return
-           return
-         end if
-       end if 
        vect(1)=((vtree%centx+shift(1))-x(1)) 
        vect(2)=((vtree%centy+shift(2))-x(2)) 
        vect(3)=((vtree%centz+shift(3))-x(3))
@@ -413,6 +407,11 @@ module tree
        u_bs=cross_product(vect,vtree%circ)
        u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
        u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
+       if (hollow_mesh_core) then
+         if (dist<delta) then
+           u_bs=0. !0 the velocity
+         end if
+       end if 
        u=u+u_bs
      else
        !open the box up and use the child cells

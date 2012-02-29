@@ -205,6 +205,7 @@ module cdata
   !----------------------mesh information----------------------------------------
   integer, protected :: mesh_size=0
   integer, protected :: mesh_shots=100
+  logical, protected :: hollow_mesh_core=.false.
   !------------normal fluid component--------------------------------------------
   character(len=30), protected :: normal_velocity='zero'
   real, protected :: alpha(2)=0. !mutual friction coefficients
@@ -356,6 +357,8 @@ module cdata
              !mesh for outputting veloctiy fields, by default is 0, enter
              !natural number
              read(buffer, *, iostat=ios) mesh_size !size of mesh
+          case('hollow_mesh_core')
+             read(buffer, *, iostat=ios) hollow_mesh_core
           case ('mesh_shots')
              read(buffer, *, iostat=ios) mesh_shots !how often to print mesh to file
           case ('velocity')

@@ -442,6 +442,7 @@ module initial
       end do
     end do
     !$omp end parallel do
+    if (hollow_mesh_core) print*, ' using hollow core model for mesh calculations'
   end subroutine
   !****************************************************************
   !> setup the 2D mesh if set by two_dim being non-zero in run.in
