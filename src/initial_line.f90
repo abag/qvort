@@ -855,12 +855,14 @@ module initial_line
     end if
     line_size=int(pcount/line_count)
     do i=1, line_count
-      call random_number(rand1)
-      call random_number(rand2)
-      call random_number(rand3)
-      call random_number(rand4)
-      rand1=(rand1-.5)*box_size
-      rand2=(rand2-.5)*box_size
+      if ((mod(i,2)==0).or.(i==1)) then
+        call random_number(rand1)
+        call random_number(rand2)
+        call random_number(rand3)
+        call random_number(rand4)
+        rand1=(rand1-.5)*box_size
+        rand2=(rand2-.5)*box_size
+      end if
       if (rand4<0.5) then
         rand4=-1
       else
@@ -869,8 +871,13 @@ module initial_line
       if (rand3<0.33333333) then
         do j=1, line_size
           line_position=j+(i-1)*line_size
-          f(line_position)%x(1)=rand1
-          f(line_position)%x(2)=rand2
+          if (mod(i,2)==0) then
+            f(line_position)%x(1)=rand1
+            f(line_position)%x(2)=rand2
+          else
+            f(line_position)%x(1)=rand1+delta
+            f(line_position)%x(2)=rand2+delta
+          end if
           f(line_position)%x(3)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
           if(j==1) then
             f(line_position)%behind=i*line_size
@@ -887,9 +894,14 @@ module initial_line
       else if (rand3<0.6666666) then
         do j=1, line_size
           line_position=j+(i-1)*line_size
-          f(line_position)%x(1)=rand1
+          if (mod(i,2)==0) then
+            f(line_position)%x(1)=rand1
+            f(line_position)%x(3)=rand2
+          else
+            f(line_position)%x(1)=rand1+delta
+            f(line_position)%x(3)=rand2+delta
+          end if
           f(line_position)%x(2)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
-          f(line_position)%x(3)=rand2
           if(j==1) then
             f(line_position)%behind=i*line_size
             f(line_position)%infront=line_position+1
@@ -906,8 +918,13 @@ module initial_line
         do j=1, line_size
           line_position=j+(i-1)*line_size
           f(line_position)%x(1)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
-          f(line_position)%x(2)=rand1
-          f(line_position)%x(3)=rand2
+          if (mod(i,2)==0) then
+            f(line_position)%x(2)=rand1
+            f(line_position)%x(3)=rand2
+          else
+            f(line_position)%x(2)=rand1+delta
+            f(line_position)%x(3)=rand2+delta
+          end if
           if(j==1) then
             f(line_position)%behind=i*line_size
             f(line_position)%infront=line_position+1
