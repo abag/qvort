@@ -34,8 +34,7 @@ if (msize==0)
   disp('2D mesh size is zero exiting script')
   return
 end
-
-t=fread(fid,1,'float64');
+%t=fread(fid,1,'float64');
 x=fread(fid,msize,'float64');
 unormx=fread(fid,msize^2,'float64');
 unormy=fread(fid,msize^2,'float64');
@@ -56,24 +55,28 @@ yy=x;
 figure('Name','2D (super) velocity slice')
 subplot(2,2,1)
 imagesc(xx,yy,usupx) ; shading interp
+set(gca,'YDir','normal')
 axis square
 set(gca,'FontSize',14)
 xlabel('u_x','FontSize',14)
 colorbar
 subplot(2,2,2)
 imagesc(xx,yy,usupy) ; shading interp
+set(gca,'YDir','normal')
 axis square
 set(gca,'FontSize',14)
 xlabel('u_y','FontSize',14)
 colorbar
 subplot(2,2,3)
 imagesc(xx,yy,usupz) ; shading interp
+set(gca,'YDir','normal')
 axis square
 set(gca,'FontSize',14)
 xlabel('u_z','FontSize',14)
 colorbar
 subplot(2,2,4)
 imagesc(xx,yy,log(sqrt(usupx.^2+usupy.^2+usupz.^2))) ; shading interp
+set(gca,'YDir','normal')
 axis square
 set(gca,'FontSize',14)
 xlabel('log|u|','FontSize',14)
@@ -89,6 +92,7 @@ index = find(uu > vcoff);
 uu(index) = vcoff;
 clear index
 imagesc(xx,yy,uu) ; shading interp
+ set(gca,'YDir','normal')
 set(gca,'FontSize',14)
 xlabel('|u|','FontSize',14)
 if firecolor==1
@@ -96,28 +100,32 @@ if firecolor==1
 end
 colorbar
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
+if std(std(sqrt(unormx.^2+unormy.^2+unormz.^2)))>0
   figure('Name','2D (normal) velocity slice')
   subplot(2,2,1)
   imagesc(xx,yy,unormx) ; shading interp
+  set(gca,'YDir','normal')
   axis square
   set(gca,'FontSize',14)
   xlabel('u_x','FontSize',14)
   colorbar
   subplot(2,2,2)
   imagesc(xx,yy,unormy) ; shading interp
+  set(gca,'YDir','normal')
   axis square
   set(gca,'FontSize',14)
   xlabel('u_y','FontSize',14)
   colorbar
   subplot(2,2,3)
   imagesc(xx,yy,unormz) ; shading interp
+  set(gca,'YDir','normal')
   axis square
   set(gca,'FontSize',14)
   xlabel('u_z','FontSize',14)
   colorbar
   subplot(2,2,4)
   imagesc(xx,yy,sqrt(unormx.^2+unormy.^2+unormz.^2)) ; shading interp
+  set(gca,'YDir','normal')
   axis square
   set(gca,'FontSize',14)
   xlabel('|u|','FontSize',14)
@@ -128,6 +136,7 @@ if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
 
   figure('Name','2D (normal) |u| slice')
   imagesc(xx,yy,sqrt(unormx.^2+unormy.^2+unormz.^2)) ; shading interp
+  set(gca,'YDir','normal')
   set(gca,'FontSize',14)
   xlabel('x','FontSize',14)
   ylabel('y','FontSize',14)
@@ -195,7 +204,7 @@ xlabel('log k','FontSize',14) ; ylabel('log E(k)*k','FontSize',14)
 axis tight
 set(gca,'FontSize',14)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if std(sqrt(unormx.^2+unormy.^2+unormz.^2))>0
+if std(std(sqrt(unormx.^2+unormy.^2+unormz.^2)))>0
   fux=fftn(unormx)/(n^2);
   fuy=fftn(unormy)/(n^2);
   fuz=fftn(unormz)/(n^2);

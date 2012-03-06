@@ -185,6 +185,9 @@ module cdata
   real, protected :: hyperboloid_e=1. !effects curvature of bundle
   !---------for central_bundle------------------------
   character(len=30), protected :: bundle_type='polarised' !polarised or random
+  !---------for criss-cross------------------------
+  integer, protected :: criss_cross_bundle=1 !typical size of bundles
+  real, protected :: criss_cross_width=1. !width in terms of \delta
   !---------for torus_knot initf---------------------- 
   integer, protected :: torus_p=1, torus_q=1 !for torus_knot initf
   real, protected :: torus_epsilon=1.
@@ -454,6 +457,10 @@ module cdata
              read(buffer, *, iostat=ios) torus_q !q integer for torus knot initial condition
           case ('torus_p')
              read(buffer, *, iostat=ios) torus_p !p integer for torus knot initial condition
+          case('criss_cross_bundle')
+             read(buffer, *, iostat=ios) criss_cross_bundle !for criss-cross initial condition
+          case('criss_cross_width')
+             read(buffer, *, iostat=ios) criss_cross_width !for criss-cross initial condition
           case ('torus_epsilon')
              read(buffer, *, iostat=ios) torus_epsilon !epsilon real for torus knot initial condition
           case ('wave_count')

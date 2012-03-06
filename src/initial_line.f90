@@ -833,6 +833,7 @@ module initial_line
   subroutine setup_criss_cross
     implicit none
     real :: rand1, rand2, rand3, rand4
+    real :: rand5, rand6
     integer :: pcount_required
     integer :: line_size
     integer:: line_position
@@ -848,6 +849,10 @@ module initial_line
       pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
       write(*,*) 'changing size of pcount to fit with box_length and delta'
       write(*,*) 'pcount is now', pcount_required
+      if (criss_cross_bundle>1) then
+        write(*,'(a,i4.3)') ' putting in some bundling with size: ', criss_cross_bundle
+        write(*,'(a,f6.4)') ' width of bundles ', criss_cross_width*delta
+      end if
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
       call fatal_error('init.mod:setup_criss_cross',&
@@ -855,29 +860,26 @@ module initial_line
     end if
     line_size=int(pcount/line_count)
     do i=1, line_count
-      if ((mod(i,2)==0).or.(i==1)) then
+      if ((mod(i,criss_cross_bundle)==0).or.(i==1)) then
         call random_number(rand1)
         call random_number(rand2)
         call random_number(rand3)
         call random_number(rand4)
         rand1=(rand1-.5)*box_size
         rand2=(rand2-.5)*box_size
+        if (rand4<0.5) then
+          rand4=-1
+         else
+          rand4=1
+         end if
       end if
-      if (rand4<0.5) then
-        rand4=-1
-      else
-        rand4=1
-      end if
+      rand5=runif(-criss_cross_width*delta,criss_cross_width*delta)
+      rand6=runif(-criss_cross_width*delta,criss_cross_width*delta)
       if (rand3<0.33333333) then
         do j=1, line_size
           line_position=j+(i-1)*line_size
-          if (mod(i,2)==0) then
-            f(line_position)%x(1)=rand1
-            f(line_position)%x(2)=rand2
-          else
-            f(line_position)%x(1)=rand1+delta
-            f(line_position)%x(2)=rand2+delta
-          end if
+          f(line_position)%x(1)=rand1+rand5
+          f(line_position)%x(2)=rand2+rand6
           f(line_position)%x(3)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
           if(j==1) then
             f(line_position)%behind=i*line_size
@@ -894,13 +896,8 @@ module initial_line
       else if (rand3<0.6666666) then
         do j=1, line_size
           line_position=j+(i-1)*line_size
-          if (mod(i,2)==0) then
-            f(line_position)%x(1)=rand1
-            f(line_position)%x(3)=rand2
-          else
-            f(line_position)%x(1)=rand1+delta
-            f(line_position)%x(3)=rand2+delta
-          end if
+          f(line_position)%x(1)=rand1+rand5
+          f(line_position)%x(3)=rand2+rand6
           f(line_position)%x(2)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
           if(j==1) then
             f(line_position)%behind=i*line_size
@@ -918,13 +915,8 @@ module initial_line
         do j=1, line_size
           line_position=j+(i-1)*line_size
           f(line_position)%x(1)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
-          if (mod(i,2)==0) then
-            f(line_position)%x(2)=rand1
-            f(line_position)%x(3)=rand2
-          else
-            f(line_position)%x(2)=rand1+delta
-            f(line_position)%x(3)=rand2+delta
-          end if
+          f(line_position)%x(2)=rand1+rand5
+          f(line_position)%x(3)=rand2+rand6
           if(j==1) then
             f(line_position)%behind=i*line_size
             f(line_position)%infront=line_position+1
