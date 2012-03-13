@@ -109,6 +109,51 @@ module initial_line
       f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
   end subroutine
+!****************************************************************************
+  !>hyperboloid - http://mathworld.wolfram.com/Hyperboloid.html
+  subroutine setup_hyperboloid
+    implicit none
+    integer :: pcount_required
+    integer :: line_size, line_position
+    integer :: i, j
+    real :: u, v !helper variables
+    if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.in
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length/delta and line_count'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_central_bundle', &
+      'periodic boundary conditions required')
+    end if
+    write(*,*) 'initf: hyperboloid,'
+    write(*,'(a,f8.4)') ' width of bundle (at centre): ', hyperboloid_r*delta
+    write(*,'(a,f8.4)') ' hyperboloid_e: ', hyperboloid_e
+    line_size=int(pcount/line_count)
+    do i=1, line_count
+      v=pi*real(2*i-1)/line_count
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        u=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)   
+        f(line_position)%x(1)=hyperboloid_r*delta*sqrt(1.+(hyperboloid_e*u/box_size)**2)*cos(v) 
+        f(line_position)%x(2)=hyperboloid_r*delta*sqrt(1.+(hyperboloid_e*u/box_size)**2)*sin(v)
+        f(line_position)%x(3)=u
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
+      end do
+    end do
+  end subroutine
   !*************************************************************************
   !>anti parallel lines from -z to z which drives the crow instability
   !>particle count automatically adjusted
@@ -205,6 +250,78 @@ module initial_line
           f(line_position)%x(1)=box_size/4.+(box_size/10.)*rand1
           f(line_position)%x(2)=box_size/4.+(box_size/10.)*rand2
           f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+        end if
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
+      end do
+    end do
+  end subroutine
+  !*************************************************************************
+  !> 3 bundles of lines in all 3 cartesian directions
+  subroutine setup_isotropic_bundles
+    implicit none
+    integer :: pcount_required
+    integer :: line_size, line_position
+    integer :: i, j
+    real :: rand1, rand2
+    if (periodic_bc) then 
+      !make sure line_count is a multiple of 4
+      if (mod(line_count,6)/=0) then
+        call fatal_error('init.mod:setup_big_bundles', &
+        'line_count needs to be a multiple of 6')
+       end if
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length/delta and line_count'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_big_bundles', &
+      'periodic boundary conditions required')
+    end if
+    write(*,*) 'initf: big bundles' 
+    line_size=int(pcount/line_count)
+    do i=1, line_count
+      rand1=runif(-1.,1.) ; rand2=runif(-1.,1.)
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        !------------------lines -z to z--------------------
+        if (real(i)/line_count<=0.166666666) then
+          f(line_position)%x(1)=-box_size/4.+(box_size/10.)*rand1
+          f(line_position)%x(2)=-box_size/4.+(box_size/10.)*rand2
+          f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+        else if (real(i)/line_count<=0.3333333333) then
+          f(line_position)%x(1)=box_size/4.+(box_size/10.)*rand1
+          f(line_position)%x(2)=box_size/4.+(box_size/10.)*rand2
+          f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        !------------------lines -y to y--------------------
+        else if (real(i)/line_count<=0.5) then
+          f(line_position)%x(1)=(box_size/10.)*rand1
+          f(line_position)%x(2)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+          f(line_position)%x(3)=box_size/4.+(box_size/10.)*rand2
+        else if (real(i)/line_count<=0.666666666) then
+          f(line_position)%x(1)=(box_size/10.)*rand1
+          f(line_position)%x(2)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+          f(line_position)%x(3)=-box_size/4.+(box_size/10.)*rand2
+        !------------------lines -x to x--------------------
+        else if (real(i)/line_count<=0.833333333) then
+          f(line_position)%x(1)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+          f(line_position)%x(2)=box_size/4.+(box_size/10.)*rand1
+          f(line_position)%x(3)=box_size/4.+(box_size/10.)*rand2
+        else 
+          f(line_position)%x(1)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+          f(line_position)%x(2)=-box_size/4.+(box_size/10.)*rand1
+          f(line_position)%x(3)=-box_size/4.+(box_size/10.)*rand2
         end if
         if(j==1) then
           f(line_position)%behind=i*line_size
@@ -482,6 +599,7 @@ module initial_line
   subroutine setup_wave_line
     implicit none
     real :: wave_number, prefactor
+    real :: estimate_speed
     real :: amp, random_shift
     real :: xpos, ypos
     integer :: pcount_required
@@ -508,6 +626,12 @@ module initial_line
     write(*,'(a,i3.1)') ' starting wavenumber ', wave_start
     write(*,'(a,f9.5)') ' starting amplitude', wave_amp*delta
     write(*,'(a,i3.1)') ' wavenumber separation', wave_skip 
+    if ((line_count==1).and.(wave_type=='helical')) then
+      estimate_speed=abs((quant_circ*(2*pi*wave_start/box_size)/(4*pi))*(log(2./((2*pi*wave_start/box_size)*corea))-0.57721))
+      !estimate_speed=(quant_circ/(2*pi*corea**2))*&
+!(1.-sqrt(1+BesY0((2*pi*wave_start/box_size)*corea)/BesY1((2*pi*wave_start/box_size)*corea)))
+      print*, 'just one helical wave, speed should be', estimate_speed
+    end if
     line_size=int(pcount/line_count)
     !START THE LOOP
     do i=1, line_count
@@ -709,6 +833,7 @@ module initial_line
   subroutine setup_criss_cross
     implicit none
     real :: rand1, rand2, rand3, rand4
+    real :: rand5, rand6
     integer :: pcount_required
     integer :: line_size
     integer:: line_position
@@ -724,6 +849,10 @@ module initial_line
       pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
       write(*,*) 'changing size of pcount to fit with box_length and delta'
       write(*,*) 'pcount is now', pcount_required
+      if (criss_cross_bundle>1) then
+        write(*,'(a,i4.3)') ' putting in some bundling with size: ', criss_cross_bundle
+        write(*,'(a,f6.4)') ' width of bundles ', criss_cross_width*delta
+      end if
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
       call fatal_error('init.mod:setup_criss_cross',&
@@ -731,22 +860,26 @@ module initial_line
     end if
     line_size=int(pcount/line_count)
     do i=1, line_count
-      call random_number(rand1)
-      call random_number(rand2)
-      call random_number(rand3)
-      call random_number(rand4)
-      rand1=(rand1-.5)*box_size
-      rand2=(rand2-.5)*box_size
-      if (rand4<0.5) then
-        rand4=-1
-      else
-        rand4=1
+      if ((mod(i,criss_cross_bundle)==0).or.(i==1)) then
+        call random_number(rand1)
+        call random_number(rand2)
+        call random_number(rand3)
+        call random_number(rand4)
+        rand1=(rand1-.5)*box_size
+        rand2=(rand2-.5)*box_size
+        if (rand4<0.5) then
+          rand4=-1
+         else
+          rand4=1
+         end if
       end if
+      rand5=runif(-criss_cross_width*delta,criss_cross_width*delta)
+      rand6=runif(-criss_cross_width*delta,criss_cross_width*delta)
       if (rand3<0.33333333) then
         do j=1, line_size
           line_position=j+(i-1)*line_size
-          f(line_position)%x(1)=rand1
-          f(line_position)%x(2)=rand2
+          f(line_position)%x(1)=rand1+rand5
+          f(line_position)%x(2)=rand2+rand6
           f(line_position)%x(3)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
           if(j==1) then
             f(line_position)%behind=i*line_size
@@ -763,9 +896,9 @@ module initial_line
       else if (rand3<0.6666666) then
         do j=1, line_size
           line_position=j+(i-1)*line_size
-          f(line_position)%x(1)=rand1
+          f(line_position)%x(1)=rand1+rand5
+          f(line_position)%x(3)=rand2+rand6
           f(line_position)%x(2)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
-          f(line_position)%x(3)=rand2
           if(j==1) then
             f(line_position)%behind=i*line_size
             f(line_position)%infront=line_position+1
@@ -782,8 +915,8 @@ module initial_line
         do j=1, line_size
           line_position=j+(i-1)*line_size
           f(line_position)%x(1)=rand4*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
-          f(line_position)%x(2)=rand1
-          f(line_position)%x(3)=rand2
+          f(line_position)%x(2)=rand1+rand5
+          f(line_position)%x(3)=rand2+rand6
           if(j==1) then
             f(line_position)%behind=i*line_size
             f(line_position)%infront=line_position+1

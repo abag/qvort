@@ -104,7 +104,7 @@ module line
       end if
     end do
     !calculate average separation of particles
-    avg_sep=total_length/old_pcount
+    avg_sep=total_length/(old_pcount-count(mask=f(:)%infront==0))
   end subroutine
   !*************************************************************************
   !>remove points along the filament if they are compressed to the point where
@@ -187,6 +187,7 @@ module line
     implicit none
     integer :: i, j
     real :: dist
+    !$omp parallel do private(i,j,dist)
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       f(i)%closestd=100. !arbitrarily high
@@ -210,6 +211,7 @@ module line
         end if
       end do
     end do
+    !$omp end parallel do
   end subroutine
   !******************************************************************
   !>reconnect filaments if they become too close - this is a dummy routine which

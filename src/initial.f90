@@ -163,12 +163,16 @@ module initial
           call setup_xline_noise !initial_line.mod
         case('ellipse')
           call setup_ellipse !initial_loop.mod
+        case('tg-loops')
+          call setup_tg_loops !initial_loop.mod
         case('random_loops')
           call setup_random_loops !initial_loop.mod
         case('crow')
           call setup_crow !initial_line.mod
         case('big_bundles')
           call setup_big_bundles !initial_line.mod
+        case('isotropic_bundles')
+          call setup_isotropic_bundles !initial_line.mod
         case('central_bundle')
           call setup_central_bundle !initial_line.mod
         case('helix')
@@ -181,6 +185,8 @@ module initial
           call setup_smooth_test_wave !initial_line.mod  
         case('leap-frog')
           call setup_leap_frog !initial_loop.mod
+        case('hyperboloid')
+          call setup_hyperboloid !initial_line.mod
         case('loop_train')
           call setup_loop_train !initial_loop.mod
         case('loop_stream')
@@ -353,7 +359,10 @@ module initial
       write(*,'(a,i5.3,a,f5.2)')' calculation on ',one_dim_lattice_count,' lines from -z to +z with lattice ratio ', lattice_ratio 
       call setup_one_dim_lattice
     end if   
-    if (two_dim>0) write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
+    if (two_dim>0) then
+      write(*,'(a,i5.3)') ' printing 2D velocity info to file, mesh size: ', two_dim
+      call setup_mesh2D
+    end if
     if (boxed_vorticity) then
       write(*,'(a,i5.3,a)') 'calculating boxed vorticity every ',mesh_shots, ' timesteps'
       write(*,'(a,i5.3)') 'size of mesh: ',boxed_vorticity_size
@@ -419,6 +428,7 @@ module initial
     write(*,'(a,i3.2,a,f7.6)') ' creating an n^3 mesh, n=', mesh_size, ' resolution=', mesh_delta
     write(*,'(a,i5.2,a)') ' mesh information will be printed every ', mesh_shots, ' time-steps'
     allocate(mesh(mesh_size,mesh_size,mesh_size))
+    !$omp parallel do private(k,j,i,x,y,z)
     do k=1, mesh_size
       do j=1, mesh_size
         do i=1, mesh_size
@@ -431,6 +441,27 @@ module initial
         end do
       end do
     end do
+    !$omp end parallel do
+    if (hollow_mesh_core) print*, ' using hollow core model for mesh calculations'
+  end subroutine
+  !****************************************************************
+  !> setup the 2D mesh if set by two_dim being non-zero in run.in
+  subroutine setup_mesh2D
+    implicit none
+    integer :: i,j
+    real :: x,y
+    allocate(mesh2D(two_dim,two_dim))
+    !$omp parallel do private(i,j,x,y)
+    do j=1, two_dim
+      do i=1, two_dim
+        x=(real(box_size)/two_dim)*real(2*i-1)/2.-(box_size/2.)
+        y=(real(box_size)/two_dim)*real(2*j-1)/2.-(box_size/2.)
+        mesh2D(j,i)%x(1)=x ; mesh2D(j,i)%x(2)=y ; mesh2D(j,i)%x(3)=0.
+        !clear the velocity slots - for safety
+        mesh2D(j,i)%u_sup=0. ; mesh2D(j,i)%u_norm=0.
+      end do
+    end do
+    !$omp end parallel do
   end subroutine
   !******************************************************************
   !> check the timestep is OK if we have a vortex filament only

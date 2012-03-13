@@ -191,8 +191,8 @@ module normal_fluid
           !u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
           !u(3)=0.
           !TG vorticity field - commented out but useful!
-          u(1)=cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
-          u(2)=sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
+          u(1)=-cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
+          u(2)=-sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
           u(3)=2.*sin(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
         case('shear')
           u=0.
@@ -445,17 +445,21 @@ module normal_fluid
       allocate(nfm(nfm_size,nfm_size,nfm_size))
       nfm_res=(real(box_size)/nfm_size)
       nfm_inv_res=1./nfm_res
+      !$omp parallel do private(i,j,k)
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         nfm(k,j,i)%x(1)=nfm_res*real(2*i-1)/2.-(box_size/2.)
         nfm(k,j,i)%x(2)=nfm_res*real(2*j-1)/2.-(box_size/2.)
         nfm(k,j,i)%x(3)=nfm_res*real(2*k-1)/2.-(box_size/2.)
       end do ; end do ; end do
+      !$omp end parallel do
       urms_norm=0. !0 the root mean squared velocity
+      !$omp parallel do private(i,j,k)
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         !get the velocity field - shearing wave
         call get_normal_velocity(nfm(k,j,i)%x,nfm(k,j,i)%u)
         urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
       end do ; end do ; end do
+      !$omp end parallel do 
       urms_norm=sqrt(urms_norm/(nfm_size**3))
       write(*,'(a)') ' velocity field calculated, printing to ./data/norm_init_mesh.dat'
       open(unit=92,file='./data/norm_init_mesh.dat',form='unformatted',status='replace',access='stream')
@@ -477,11 +481,13 @@ module normal_fluid
       allocate(nfm(nfm_size,nfm_size,nfm_size))
       nfm_res=(real(box_size)/nfm_size)
       nfm_inv_res=1./nfm_res
+      !$omp parallel do private(i,j,k)
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         nfm(k,j,i)%x(1)=nfm_res*real(2*i-1)/2.-(box_size/2.)
         nfm(k,j,i)%x(2)=nfm_res*real(2*j-1)/2.-(box_size/2.)
         nfm(k,j,i)%x(3)=nfm_res*real(2*k-1)/2.-(box_size/2.)
       end do ; end do ; end do
+      !$omp end parallel do
       urms_norm=0. !0 the root mean squared velocity
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         !get the velocity field - ABC flow

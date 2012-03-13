@@ -7,23 +7,32 @@ module inject
   use cdata
   use general
   use periodic
+  integer,private :: injection_direction=1
   contains
   !>check all the necessary conditions to inject vortices are set in run.in
   subroutine setup_vortex_injection()
     implicit none
-    !check requirements of specific conditions
     select case(inject_type)
       case('off')
         return !leave the routine
-      case('edge_pulse')
-        if (mod(inject_size,6)/=0) then
-          call fatal_error('inject.mod','inject size must be a multiple of 6')
-        end if
     end select
     !check inject size is not too small
     if (inject_size<5) call fatal_error('inject.mod','inject size is too small')
     !print to screen pertinent details
-    write(*,'(a)') ' ------------------VORTEX INJECTION-------------------' 
+    write(*,'(a)') ' ------------------VORTEX INJECTION-------------------'
+    !check requirements of specific conditions
+    select case(inject_type)
+      case('edge_pulse')
+        if (mod(inject_size,6)/=0) then
+          call fatal_error('inject.mod','inject size must be a multiple of 6')
+        end if
+      case('loop_stream')
+        if (mod(inject_size,2)/=0) then
+          call fatal_error('inject.mod','inject size must be a multiple of 2')
+        end if
+        write(*,*) 'I recommend injecting', nint(0.245*box_size*4*pi/(0.75*delta)), ' particles'
+        write(*,*) 'switching injection direction every ', inject_freq, ' timesteps'
+    end select 
     write(*,'(a,i4.1,a,i3.1,a)') ' loops will be injected every ', inject_skip, ' timesteps with ', inject_size, ' points'
     write(*,'(a,a)') ' inject type is set to: ', trim(inject_type)
     select case(inject_type)
@@ -162,6 +171,59 @@ module inject
           !zero the stored velocities
           f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
         end do
+      case('loop_stream')!two rings top and bottom in corners
+        radius=(0.75*inject_size*delta)/(4*pi) !75% of potential size 
+        !loop over particles (2 loops) setting spatial and 'loop' position
+        !first loop - xy plane top of box
+        do i=old_pcount+1, old_pcount+inject_size/2
+          if (injection_direction==1) then
+            f(i)%x(1)=radius*sin(pi*real(2*i-1)/(inject_size/2))+box_size/5
+            f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/2))+box_size/5
+            f(i)%x(3)=box_size/2.01
+          else if (injection_direction==2) then
+            f(i)%x(2)=radius*sin(pi*real(2*i-1)/(inject_size/2))+box_size/5
+            f(i)%x(3)=radius*cos(pi*real(2*i-1)/(inject_size/2))+box_size/5
+            f(i)%x(1)=box_size/2.01
+          else if (injection_direction==3) then
+            f(i)%x(3)=radius*sin(pi*real(2*i-1)/(inject_size/2))+box_size/5
+            f(i)%x(1)=radius*cos(pi*real(2*i-1)/(inject_size/2))+box_size/5
+            f(i)%x(2)=box_size/2.01
+          end if
+          if (i==old_pcount+1) then
+            f(i)%behind=old_pcount+inject_size/2 ; f(i)%infront=i+1
+          else if (i==old_pcount+inject_size/2) then 
+            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
+          else
+            f(i)%behind=i-1 ; f(i)%infront=i+1
+          end if
+          !zero the stored velocities
+          f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+        end do
+        !second loop- xy plane bottom of box
+        do i=old_pcount+inject_size/2+1, pcount
+          if (injection_direction==1) then
+            f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(inject_size/2))-box_size/5
+            f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/2))-box_size/5
+            f(i)%x(3)=-box_size/2.01
+          else if (injection_direction==2) then
+            f(i)%x(2)=-radius*sin(pi*real(2*i-1)/(inject_size/2))-box_size/5
+            f(i)%x(3)=radius*cos(pi*real(2*i-1)/(inject_size/2))-box_size/5
+            f(i)%x(1)=-box_size/2.01
+          else if (injection_direction==3) then
+            f(i)%x(3)=-radius*sin(pi*real(2*i-1)/(inject_size/2))-box_size/5
+            f(i)%x(1)=radius*cos(pi*real(2*i-1)/(inject_size/2))-box_size/5
+            f(i)%x(2)=-box_size/2.01
+          end if
+          if (i==(old_pcount+inject_size/2+1)) then
+            f(i)%behind=pcount ; f(i)%infront=i+1
+          else if (i==pcount) then 
+            f(i)%behind=i-1 ; f(i)%infront=old_pcount+inject_size/2+1
+          else
+            f(i)%behind=i-1 ; f(i)%infront=i+1
+          end if
+          !zero the stored velocities
+          f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+        end do    
       case('xy-loop')!loops in xy-plane injected at bottom of box
         radius=(0.75*inject_size*delta)/(2*pi) !75% of potential size
         !loop over particles setting spatial and 'loop' position
@@ -351,5 +413,16 @@ module inject
       case default
         call fatal_error('inject.mod','inject_type not set to useable value')    
     end select
+    !finally see if we need to switch the injection direction
+    if (mod(itime,inject_freq)==0) then
+      !OK we can change injection direction
+      if (injection_direction==1) then
+        injection_direction=2
+      else if (injection_direction==2) then
+        injection_direction=3
+      else if (injection_direction==3) then
+        injection_direction=1
+      end if      
+    end if
   end subroutine
 end module

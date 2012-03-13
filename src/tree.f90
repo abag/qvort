@@ -200,6 +200,7 @@ module tree
     !loop over all the particles and find the closest one to i using the tree mesh
     implicit none
     integer :: i
+    !$omp parallel do private(i)
     do i=1, pcount
       f(i)%closestd=100. !arbitrarily high
       if (f(i)%infront==0) cycle !empty particle
@@ -209,6 +210,7 @@ module tree
       end if 
       call closest_tree(i,vtree)
     end do
+    !$omp end parallel do
   end subroutine
   !********************************************************************************
   !>recurisve routine used by pclose_tree to find the closest particle to i
@@ -262,11 +264,13 @@ module tree
     !loop over all the particles and find the closest one to i using the tree mesh
     implicit none
     integer :: i
+    !$omp parallel do private(i)
     do i=1, pcount
       f(i)%closestd_loop=100. !arbitrarily high
       if (f(i)%infront==0) cycle !empty particle
       call closest_tree_loop(i,vtree)
     end do
+    !$omp end parallel do
   end subroutine
   !********************************************************************************
   !>recurisve routine used by pclose_tree_loop to find the closest particle to i
@@ -392,6 +396,7 @@ module tree
      if (vtree%pcount==1.or.theta<tree_theta) then
        !use the contribution of this cell
        if (dist<epsilon(0.)) return !avoid 1/0.
+       !use hollow core model?
        vect(1)=((vtree%centx+shift(1))-x(1)) 
        vect(2)=((vtree%centy+shift(2))-x(2)) 
        vect(3)=((vtree%centz+shift(3))-x(3))
@@ -402,6 +407,11 @@ module tree
        u_bs=cross_product(vect,vtree%circ)
        u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
        u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
+       if (hollow_mesh_core) then
+         if (dist<delta) then
+           u_bs=0. !0 the velocity
+         end if
+       end if 
        u=u+u_bs
      else
        !open the box up and use the child cells

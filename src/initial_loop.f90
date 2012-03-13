@@ -35,7 +35,52 @@ module initial_loop
       f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do   
   end subroutine
-    !*************************************************************************
+  !*************************************************************************
+  subroutine setup_tg_loops
+    implicit none
+    real :: radius
+    real :: place_loc(2)
+    real :: dummy_x(3), anglez, anglez2, anglez3
+    integer :: i
+    call random_number(place_loc) 
+    place_loc=place_loc*box_size-box_size/2.
+    place_loc(2)=box_size/4.
+    place_loc(1)=box_size/4.
+    anglez=-atan2(place_loc(2),place_loc(1))
+    anglez2=atan(abs(place_loc(2)/place_loc(1)))
+    anglez3=anglez2
+    if (anglez2>pi/4) then
+      anglez2=pi/2.-anglez2
+    end if
+    radius=box_size/(2.*cos(anglez2))-sqrt(place_loc(1)**2+place_loc(2)**2)
+    write(*,*) 'initf: single loop, radius of loop:', radius
+    write(*,*) 'initf: position of loop:', place_loc
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount
+      !initial_loop
+      dummy_x(1)=radius*cos(pi*real(2*i-1)/pcount)
+      dummy_x(2)=0. !+ box_size/2.
+      dummy_x(3)=radius*sin(pi*real(2*i-1)/pcount)
+      !rotate
+      f(i)%x(1)=dummy_x(1)*cos(anglez)+dummy_x(2)*sin(anglez)
+      f(i)%x(2)=dummy_x(1)*(-sin(anglez))+dummy_x(2)*cos(anglez)
+      f(i)%x(3)=dummy_x(3)
+      !translate
+      f(i)%x(1)=f(i)%x(1)+place_loc(1)+cos(anglez3)*sign(radius,place_loc(1))
+      f(i)%x(2)=f(i)%x(2)+place_loc(2)+sin(anglez3)*sign(radius,place_loc(2))
+      f(i)%x(3)=f(i)%x(3)+box_size/2.
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do   
+  end subroutine
+  !*************************************************************************
   !>set up an ellips in the x-y plane, it's size is dictated by the initial 
   !>number of particles set and the size of \f$\delta\f$ 
   !>\todo put eccentricity in run.in
@@ -347,7 +392,7 @@ module initial_loop
     write(*,*) 'energy should be:', ring_energy
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
-      f(i)%x(1)=0.
+      f(i)%x(1)=-box_size/2.
       f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
       f(i)%x(3)=radius*sin(pi*real(2*i-1)/pcount)
       if (i==1) then

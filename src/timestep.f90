@@ -98,13 +98,19 @@ module timestep
       case('Rotate')
         call differential_rotation
         return !exit the routine once applied
-    end select    
-    max_error=0.
+    end select
+    !any quantaties that need zeroing before velocity calculation here    
+    max_error=0. 
+    hyp_power_dissipate=0.
+    !now loop over all points and get the velocity field
+    !$omp parallel do private(i,u)
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
       call calc_velocity(u,i)
       f(i)%u(:)=u(:) !store the velocity for time-step
     end do
+    !$omp end parallel do
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) cycle !check for 'empty' particles
       if (maxval(abs(f(i)%u1))==0) then
@@ -128,6 +134,7 @@ module timestep
       f(i)%u2(:)=f(i)%u1(:)  
       f(i)%u1(:)=f(i)%u(:)
     end do
+    !$omp end parallel do
     !adjust timestep
     if (dt_adapt) then
       !at present done every 5 timesteps this needs to be experimented with
@@ -266,6 +273,11 @@ module timestep
     !hyperviscosity
     if (hyperviscosity) then
       call get_hyp_alpha(sqrt(dot_product(f_ddot,f_ddot)),hyperviscous_alpha) !hyperviscous.mod
+      if (mod(itime,shots)==0) then!only calculate P_{mf} every shots timesteps
+        !P_{mf}=-\alpha*\rho_s\Gamma \int |s' \times v_s| d\xi
+        hyp_power_dissipate=hyp_power_dissipate-hyperviscous_alpha*quant_circ*&
+                          vector_norm(cross_product(f_dot,u))*dist_gen(f(i)%x,f(i)%ghosti)
+      end if
       if (hyperviscous_alpha>epsilon(0.)) then
         u=u+hyperviscous_alpha*cross_product(f_dot,(-u))
       end if
@@ -279,7 +291,9 @@ module timestep
         !check that either of the mutual friction coefficients are >0
         if ((abs(alpha(1))>epsilon(0.)).or.(abs(alpha(2))>epsilon(0.))) then
           if (t<normal_fluid_cutoff) then !cutoff time set in run.in
+            !omp critical
             call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
+            !omp end critical
             ! \todo this could be improved calculating same thing twice 
             f(i)%u_mf=alpha(1)*cross_product(f_dot,(u_norm-u))- &
                       alpha(2)*cross_product(f_dot,cross_product(f_dot,(u_norm-u)))
@@ -298,13 +312,8 @@ module timestep
     end if
     if (sticky_z_boundary) then
       !particles at top/bottom of box are fixed
-      !if ((abs(f(i)%x(3))-box_size/2.)>-1.5*delta) then
-      !  !particle is sufficiently close to top boundary stick
-      !  u=0.
-      !end if
-      if (f(i)%x(3)<=minval(f(:)%x(3))) then
-        u=0.
-      else if (f(i)%x(3)>=maxval(f(:)%x(3))) then
+      if ((abs(f(i)%x(3))-box_size/2.)>-1.5*delta) then
+        !particle is sufficiently close to top boundary stick
         u=0.
       end if
     end if
@@ -318,6 +327,7 @@ module timestep
     integer :: i,j,k
     integer :: peri, perj, perk !used to loop in periodic cases
     real :: normurms
+   !$omp parallel do private(i,j,k,peri,perj,perk)
     do k=1, mesh_size
       if (mesh_size>=64) then
         write(*,'(a,i4.1,a,i4.1)') 'drawing mesh section ', k, ' of ', mesh_size
@@ -382,10 +392,13 @@ module timestep
               end if
           end select
           !normal fluid
+          !omp critical
           call get_normal_velocity(mesh(k,j,i)%x,mesh(k,j,i)%u_norm)
+          !omp end critical
         end do
       end do
     end do
+    !$omp end parallel do
   end subroutine
   !**************************************************************************
   !>the desingularised biot savart integral 

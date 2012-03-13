@@ -17,21 +17,29 @@ if fid<0
   return
 end
 dims=load('./data/dims.log');
-A=fread(fid,'float64');
-s=length(A); s=s/8; s=sqrt(s);
-B=reshape(A,8,s,s);
-x=squeeze(B(1,:,:));
-y=squeeze(B(2,:,:));
-xx=squeeze(x(1,1,:));
-yy=squeeze(y(1,:,1));
-usupx=squeeze(B(3,:,:));
-usupy=squeeze(B(4,:,:));
-usupz=squeeze(B(5,:,:));
-unormx=squeeze(B(6,:,:));
-unormy=squeeze(B(7,:,:));
-unormz=squeeze(B(8,:,:));
+load data/dims.log;
+msize=dims(8);
+if (msize==0) 
+  disp('2D mesh size is zero exiting script')
+  return
+end
+x=fread(fid,msize,'float64');
+unormx=fread(fid,msize^2,'float64');
+unormy=fread(fid,msize^2,'float64');
+unormz=fread(fid,msize^2,'float64');
+usupx=fread(fid,msize^2,'float64');
+usupy=fread(fid,msize^2,'float64');
+usupz=fread(fid,msize^2,'float64');
+unormx=reshape(unormx,msize,msize);
+unormy=reshape(unormy,msize,msize);
+unormz=reshape(unormz,msize,msize);
+usupx=reshape(usupx,msize,msize);
+usupy=reshape(usupy,msize,msize);
+usupz=reshape(usupz,msize,msize);
+xx=x;
+yy=x;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%SPECTRA%%%%%%%%%%%%%%%%%%%
-n=s;
+n=msize;
 fux=fftn(usupx)/(n^2);
 fuy=fftn(usupy)/(n^2);
 fuz=fftn(usupz)/(n^2);
@@ -70,7 +78,7 @@ if do_fit==1
   scaling_factor=1.2*sum(spect(1:10))/sum(dummy_spect(1:10));
   dummy_spect=dummy_spect*scaling_factor;
   hold on
-  loglog(k,dummy_spect,'--r','LineWidth',2)
+  loglog(k(1:midpt-cutoff-50),dummy_spect(1:midpt-cutoff-50),'--r','LineWidth',2)
 end 
 %%%%%%%%%%%%ANNOTATE%%%%%%%%%%%%%%%%%%%%%%
 xlabel('log k','FontSize',16) ; ylabel('log E(k)','FontSize',16)
@@ -78,6 +86,8 @@ set(gca,'FontSize',16)
 %%%%%%%%%%%%AVERAGE SPECTRA%%%%%%%%%%%%%%%
 if length(filenumbers)>1
   avg_spect=avg_spect./length(filenumbers);
+  %avg_spect(2)=avg_spect(2)*1.1;
+  avg_spect(2)=avg_spect(2)*.8;
   figure('Name','avgerage E(k)')
   loglog(k(1:midpt-cutoff),avg_spect(1:midpt-cutoff),'Color','k','LineWidth',1.5)
   if do_fit==1
@@ -86,8 +96,10 @@ if length(filenumbers)>1
     scaling_factor=0.8*sum(avg_spect(1:10))/sum(dummy_spect(1:10));
     dummy_spect=dummy_spect*scaling_factor;
     hold on
-    loglog(k,dummy_spect,'--r','LineWidth',2)
+    loglog(k(1:midpt-cutoff-50),dummy_spect(1:midpt-cutoff-50),'--r','LineWidth',2)
   end
   xlabel('log k','FontSize',16) ; ylabel('log E(k)','FontSize',16)
   set(gca,'FontSize',16)
+  figure('Name','compensated avgerage E(k)')
+  loglog(k(1:midpt-cutoff),(k(1:midpt-cutoff).^(-fit)).*avg_spect(1:midpt-cutoff),'Color','k','LineWidth',1.5)
 end

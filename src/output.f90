@@ -20,6 +20,7 @@ module output
       write(77,*) part_count, '%number of particles'
       write(77,*) quasi_pcount, '%number of quasi-particles'
       write(77,*) xdim_scaling_factor, '%length of x direction'
+      write(77,*) two_dim, '%size of 2D mesh'
       write(77,*) macro_ring_R, '%major radius of macro ring'
       write(77,*) macro_ring_a, '%minor radius of macro ring'
       write(77,*) nf_mra_factor, '%factor by which minor radius in NF ring is larger than in SF ring'
@@ -67,6 +68,11 @@ remove_count
     if (topo_inf) then
       open(unit=78,file='./data/topology.log',position='append')
         write(78,*) t, linking_number, writhing_number
+      close(78)
+    end if
+    if (hyperviscosity) then
+      open(unit=78,file='./data/hyperviscous_power.log',position='append')
+        write(78,*) t, hyp_power_dissipate
       close(78)
     end if
   end subroutine

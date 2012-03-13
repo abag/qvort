@@ -1,20 +1,21 @@
 --------------required parameters------------
-nsteps 160000
+nsteps 1000000
 shots 10
 pcount 100
-dt 1E-2
-delta 1.
+dt 1E-3
+delta 2.
 box_size 128
-velocity LIA
+velocity BS
 initf wave_line
-boundary periodic
+boundary openxy
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-binary_print F
 tree_theta 0.4
-quant_circ 6.28318531
-wave_start 10
-wave_amp 10.
+quant_circ 12.5663706
+corea 1.
+wave_start 5
+wave_amp 7.5
 wave_count 1
 wave_type helical
-overide_timestep_check T
+deriv_order fourth
+

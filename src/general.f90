@@ -144,6 +144,15 @@ module general
     cross_product(2)=a(3)*b(1)-a(1)*b(3)
     cross_product(3)=a(1)*b(2)-a(2)*b(1)
   end function
+  !*********************************************************************
+  !>calculate the L2-norm of input a
+  !!\f[ |mathbf{x}|=\sqrt{x_1^2+x_2^2+x_3^2} \f]
+  real function vector_norm(a)
+    use Cdata
+    implicit none
+    real, dimension(3), intent(IN) :: a
+    vector_norm=(sqrt(dot_product(a,a)))
+  end function
   !**************************************************
   !>a routine to test if two points are on the same loop
   !>returns a logical arguement with the answer

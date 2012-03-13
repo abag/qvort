@@ -4,9 +4,9 @@ rms=sqrt(sum(sum(sum(u2)))/(n^3))
 u2=sqrt(u2);
 u2=permute(u2,[2 3 1]);
 figure('Name',strcat('Iso-surface-|u|, fluid:',fluid));
-  p=patch(isosurface(x,x,x,u2,2.2*rms));
+  p=patch(isosurface(x,x,x,u2,1.7*rms));
   isonormals(x,x,x,u2, p)
-  set(p, 'FaceColor', 'm', 'EdgeColor', 'none');
+  set(p, 'FaceColor', rgb('Orange'), 'EdgeColor', 'none');
   alpha(0.5)
   daspect([1 1 1]); axis tight;
   camup([0 0 1 ]); campos([0.7686    0.1432    0.3043])

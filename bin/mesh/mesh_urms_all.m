@@ -21,20 +21,20 @@ for i=start:skip:finish
     nu2(i)=nurms;
   case '2d'
     [urms2 nurms2]=two_dim_urms(i);
-    u22(i)=urms2;
-    nu22(i)=nurms2;
+    u2(i)=urms2;
+    nu2(i)=nurms2;
   end
   counter=counter+1;
 end
 disp('saving to u2.mat file')
-save u2.mat u22
+save u2.mat u2
 switch option
   case '3d'
     figure('Name','urms calculated from 3d mesh')
-    plot(tt,u2,'k','LineWidth',2)
+    plot(tt,smooth(u2,smooth_fac),'k','LineWidth',2)
   case '2d'
     figure('Name','urms calculated from 2d mesh')
-    plot(smooth(u22,smooth_fac),'k','LineWidth',2)
+    plot(smooth(u2,smooth_fac),'k','LineWidth',2)
 end
 set(gca,'FontSize',14)
 xlabel('t','FontSize',14)

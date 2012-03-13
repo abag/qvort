@@ -23,6 +23,7 @@ program run
   call read_run_file !cdata.mod
   !initial conditions - checks for restart?
   call init_setup !initial.mod
+  call init_openmp !cdata.mod
   if (seg_fault) write(*,*) 'here1'
   !print dimensions info for matlab plotting
   call print_dims !output.mod
