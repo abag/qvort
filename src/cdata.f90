@@ -34,7 +34,27 @@ module cdata
   !>main filament vector
   type(qvort), allocatable :: f(:) 
   !>number of vortex points in the simulation - size of f is pcount
-  integer :: pcount 
+  integer :: pcount
+  !----------------------------------------------------------------------
+  !centre of vorticity data
+  type centre_of_vorticity
+    real :: x(3), x_old(3), u(3)
+  end type
+  type(centre_of_vorticity) :: cov
+  !macro ring radii data - 2 types
+  type macro_ring_radii_1
+    real :: x_max(4), x_min(4), x_spread(4)
+    real :: r, r_old, r_u, a, a_old, a_u, ra
+  end type
+  type(macro_ring_radii_1) :: mrr1 
+  type macro_ring_radii_2
+    real :: r(5), a(5)
+  end type
+  type(macro_ring_radii_2), allocatable :: mrr2(:)
+  !other variables for macro ring radii data - type 2
+  real :: avg_r(5), avg_r_old(5), avg_r_u(5)
+  real :: avg_a(5), avg_a_old(5), avg_a_u(5)
+  real :: avg_ra(5)
   !**********MESH STRUCTURE********************************************************
   !>mesh structure - normal and superfluid velocities are calculated on the mesh
   !>which runs from -box_size /2 to box_size/2 to with mesh_size^3
@@ -178,6 +198,7 @@ module cdata
   !--------for macro_ring initf--------------
   real, protected :: macro_ring_R=0. !major radius
   real, protected :: macro_ring_a=0. !minor radius
+  real, protected :: nf_mra_factor=1. !factor to increase size of 'a' in NF
   !---------for central_bundle------------------------
   character(len=30), protected :: bundle_type='polarised' !polarised or random
   !---------for torus_knot initf---------------------- 
@@ -457,6 +478,8 @@ module cdata
              read(buffer, *, iostat=ios) macro_ring_R !for macro_ring initial conditions
           case ('macro_ring_a')
              read(buffer, *, iostat=ios) macro_ring_a !for macro_ring initial conditions
+          case ('nf_mra_factor')
+             read(buffer, *, iostat=ios) nf_mra_factor !for factor for minor radius in NF                 
           case ('curv_hist')
              read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
           case ('torsion_hist')

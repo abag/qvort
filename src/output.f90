@@ -20,6 +20,9 @@ module output
       write(77,*) part_count, '%number of particles'
       write(77,*) quasi_pcount, '%number of quasi-particles'
       write(77,*) xdim_scaling_factor, '%length of x direction'
+      write(77,*) macro_ring_R, '%major radius of macro ring'
+      write(77,*) macro_ring_a, '%minor radius of macro ring'
+      write(77,*) nf_mra_factor, '%factor by which minor radius in NF ring is larger than in SF ring'
     close(77)
   end subroutine
   !**********************************************************************

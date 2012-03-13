@@ -555,7 +555,7 @@ module initial_loop
     write(*,'(a,f6.3,a,f6.3)') ' major radius ', macro_ring_R, ' minor radius ', macro_ring_a
     write(*,'(a,i3.1,a)') ' drawing', actual_line_count, ' loops in the z-y plane'
     !how big does a loop need to be?
-    loop_size=nint(2*pi*macro_ring_R/(1.0*delta)) ! For simplicity keep full macro_ring_R size - AWB uses factor 0.75
+    loop_size=nint(2*pi*macro_ring_R/(0.75*delta)) ! For simplicity keep full macro_ring_R size - AWB uses factor 0.75
     pcount_required=loop_size*actual_line_count !# particles needed
     print*, 'changing size of pcount to fit with major_R, delta and line_count'
     print*, 'pcount is now', pcount_required
@@ -573,25 +573,25 @@ module initial_loop
       do i=2,line_count
         do j=1,((i-1)*6)
           shift_counter=shift_counter+1
-          rad_shift_r(shift_counter)=macro_ring_a*(real(i-1)/line_count)
-          rad_shift_theta(shift_counter)=pi*(2.*j-1.)/((i-1)*6)
+          rad_shift_r(shift_counter)=macro_ring_a*(real(i)/line_count)
+          rad_shift_theta(shift_counter)=2.*pi*real(j-1)/((i-1)*6)
         end do
       end do
     end if
     open(unit=37,file='./data/macro_loop_profile.log')
     do i=1, actual_line_count
-      rad_shift(i)=rad_shift_r(i)*cos(rad_shift_theta(i))
-      x_shift(i)=rad_shift_r(i)*sin(rad_shift_theta(i))
-      write(37,*) i, rad_shift(i), x_shift(i)
+      rad_shift(i)=rad_shift_r(i)*sin(rad_shift_theta(i))
+      x_shift(i)=rad_shift_r(i)*cos(rad_shift_theta(i))
+      write(37,*) i, rad_shift_r(i), rad_shift_theta(i), rad_shift(i), x_shift(i)
     end do
    close(37)
     !START THE LOOP
     do i=1, actual_line_count
       do j=1, loop_size
         loop_position=j+(i-1)*loop_size
-        f(loop_position)%x(1)=-box_size/2.+1.5*macro_ring_a+x_shift(i)
-        f(loop_position)%x(2)=(macro_ring_R+rad_shift(i))*cos(pi*real(2*j-1)/loop_size)
-        f(loop_position)%x(3)=(macro_ring_R+rad_shift(i))*sin(pi*real(2*j-1)/loop_size)
+        f(loop_position)%x(1)=-box_size/2.+1.5*nf_mra_factor*macro_ring_a+x_shift(i)
+        f(loop_position)%x(2)=(macro_ring_R+rad_shift(i))*cos(2.*pi*real(j-1)/loop_size)
+        f(loop_position)%x(3)=(macro_ring_R+rad_shift(i))*sin(2.*pi*real(j-1)/loop_size)
         if(j==1) then
           f(loop_position)%behind=i*loop_size
           f(loop_position)%infront=loop_position+1

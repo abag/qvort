@@ -41,6 +41,10 @@ program run
     if (seg_fault) write(*,*) 'here2'
     !---------------------create mirror array----------------------
     if (mirror_bc) call mirror_init !mirror.mod
+    !---------centre of vorticity & macro ring radii data-----------------
+    call get_cov_data !timestep.mod
+    call get_macro_ring_radii_1 !timestep.mod
+    call get_macro_ring_radii_2 !timestep.mod
     !---------------------velocity operations----------------------
     call pmotion !timestep.mod
     if (seg_fault) write(*,*) 'here3'

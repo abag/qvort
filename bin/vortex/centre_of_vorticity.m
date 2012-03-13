@@ -1,4 +1,4 @@
-%read in the com_info (centre of mass) file and plot various com information
+%read in the cov_info (centre of vorticity) file and plot various cov information
 %if given the option print will print to .eps file rather than screen
 function centre_of_vorticity(option)
 if nargin==0     
@@ -12,31 +12,57 @@ case 'empty'
   disp('incorrect option, aborting script')
   return
 end
-A=load('./data/daniel_com_info.log');
-t=A(:,1) ; comx=A(:,2) ; comy=A(:,3) ; comz=A(:,4) ;
-
+A=load('./data/centre_of_vorticity_info.log');
+t=A(:,1) ; covx=A(:,2) ; covy=A(:,3) ; covz=A(:,4) ;
+covux=A(:,5) ; covuy=A(:,6) ; covuz=A(:,7) ;
 switch option
   case 'print'
     figure('visible','off');
   otherwise
-    figure('Name', 'Centre of mass information')      
+    figure('Name', 'Centre of vorticity - position')      
 end
   subplot(3,1,1)
-    plot(t,comx,'-r','LineWidth',2);
+    plot(t,covx,'-r','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
-    ylabel('com(x)','FontSize',14)
+    ylabel('x','FontSize',14)
   subplot(3,1,2)
-    plot(t,comy,'-b','LineWidth',2);
+    plot(t,covy,'-b','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
-    ylabel('com(y)','FontSize',14)
+    ylabel('y','FontSize',14)
   subplot(3,1,3)
-    plot(t,comz,'-m','LineWidth',2);
+    plot(t,covz,'-m','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
-    ylabel('com(z)','FontSize',14)
+    ylabel('z','FontSize',14)
 if option=='print'
-    disp('printing to com_info.eps')
-    print('-depsc','./com_info.eps')
+    disp('printing to cov_position_info.eps')
+    print('-depsc','./cov_position_info.eps')
 end
+switch option
+  case 'print'
+    figure('visible','off');
+  otherwise
+    figure('Name', 'Centre of vorticity - velocity')      
+end
+  subplot(3,1,1)
+    plot(t,covux,'-r','LineWidth',2);
+    set(gca,'FontSize',14)
+    xlabel('t','FontSize',14)
+    ylabel('u(x)','FontSize',14)
+  subplot(3,1,2)
+    plot(t,covuy,'-b','LineWidth',2);
+    set(gca,'FontSize',14)
+    xlabel('t','FontSize',14)
+    ylabel('u(y)','FontSize',14)
+  subplot(3,1,3)
+    plot(t,covuz,'-m','LineWidth',2);
+    set(gca,'FontSize',14)
+    xlabel('t','FontSize',14)
+    ylabel('u(z)','FontSize',14)
+if option=='print'
+    disp('printing to cov_velocity_info.eps')
+    print('-depsc','./cov_velocity_info.eps')
+end
+

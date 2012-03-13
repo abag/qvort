@@ -38,8 +38,8 @@ module diagnostic
     close(72)
   end subroutine
   !*************************************************
-  !> The routine to calculate numberof loops with their sizes and dumps them 
-  !!to file to plot histograms.
+  !> The routine to calculate number of loops with their sizes and dumps them 
+  !>to file to plot histograms.
   subroutine get_full_loop_count()
     implicit none
     real,allocatable :: line(:,:,:)
@@ -118,38 +118,36 @@ module diagnostic
   !>on the filament
   subroutine velocity_info()
     implicit none
-    real, allocatable :: uinfo(:,:), xinfo(:,:)
-    allocate(uinfo(pcount,5), xinfo(pcount,3))
+    real, allocatable :: uinfo(:,:)
+    allocate(uinfo(pcount,5))
     uinfo(:,1)=sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
     uinfo(:,2)=sqrt((f(:)%u1(1)-f(:)%u2(1))**2+&
                     (f(:)%u1(2)-f(:)%u2(2))**2+&
                     (f(:)%u1(3)-f(:)%u2(3))**2)/dt
     maxu=maxval(uinfo(:,1)) ; maxdu=maxval(uinfo(:,2))
     uinfo(:,3)=f(:)%u(1) ; uinfo(:,4)=f(:)%u(2) ; uinfo(:,5)=f(:)%u(3)
-	xinfo(:,1)=f(:)%x(1) ; xinfo(:,2)=f(:)%x(2) ; xinfo(:,3)=f(:)%x(3)
 	!rather than use pcount more correct to use count(mask=f(:)%infront>0)
 	!---------------------------------------------------------------------------
     open(unit=34,file='./data/basic_velocity_info.log',position='append')
-      write(34,*) t, maxval(uinfo(:,1)), sum(uinfo(:,1))/pcount, minval(uinfo(:,1),mask=uinfo(:,1)>0)
+      write(34,'(7e13.4)') t, maxval(uinfo(:,1)),&
+                              sum(uinfo(:,1))/count(mask=f(:)%infront>0),&
+                              minval(uinfo(:,1),mask=uinfo(:,1)>0),&
+                              sum(uinfo(:,3))/count(mask=f(:)%infront>0),&
+                              sum(uinfo(:,4))/count(mask=f(:)%infront>0),&
+                              sum(uinfo(:,5))/count(mask=f(:)%infront>0)
     close(34)
     !---------------------------------------------------------------------------
-    open(unit=34,file='./data/daniel_basic_velocity_info.log',position='append')
-      write(34,*) t, sum(uinfo(:,3))/pcount, sum(uinfo(:,4))/pcount, sum(uinfo(:,5))/pcount, sum(uinfo(:,1))/pcount 
+    open(unit=34,file='./data/centre_of_vorticity_info.log',position='append')
+      write(34,'(7e13.4)') t, cov%x, cov%u
     close(34)
     !---------------------------------------------------------------------------
-    open(unit=34,file='./data/daniel_com_info.log',position='append')
-      write(34,*) t, sum(xinfo(:,1))/pcount, sum(xinfo(:,2))/pcount, sum(xinfo(:,3))/pcount 
+    open(unit=34,file='./data/R_spread_info_1.log',position='append')
+      write(34,'(18e13.4)') t, mrr1%x_max, mrr1%x_min, mrr1%x_spread, mrr1%r, mrr1%a, mrr1%r_u, mrr1%a_u, mrr1%ra
     close(34)
-    !---------------------------------------------------------------------------
-    open(unit=34,file='./data/daniel_spread_info.log',position='append')
-      write(34,*) t,	maxval(xinfo(:,1),mask=f(:)%infront>0), minval(xinfo(:,1),mask=f(:)%infront>0),&
-						maxval(xinfo(:,2),mask=f(:)%infront>0), minval(xinfo(:,2),mask=f(:)%infront>0),&
-						maxval(xinfo(:,3),mask=f(:)%infront>0), minval(xinfo(:,3),mask=f(:)%infront>0),&
-						maxval(xinfo(:,1),mask=f(:)%infront>0)-minval(xinfo(:,1),mask=f(:)%infront>0),&
-						maxval(xinfo(:,2),mask=f(:)%infront>0)-minval(xinfo(:,2),mask=f(:)%infront>0),&
-						maxval(xinfo(:,3),mask=f(:)%infront>0)-minval(xinfo(:,3),mask=f(:)%infront>0)
-    close(34)
-    deallocate(uinfo, xinfo)
+    open(unit=34,file='./data/R_spread_info_2.log',position='append')
+      write(34,'(26e13.4)') t, avg_r, avg_a, avg_r_u, avg_a_u, avg_ra
+    close(34)           
+    deallocate(uinfo)
   end subroutine
   !*************************************************
   !>get the boxed vorticity by summing circulation vectors in
