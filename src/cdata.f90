@@ -200,13 +200,10 @@ module cdata
   !--------for macro_ring initf--------------
   real, protected :: macro_ring_R=0. !major radius
   real, protected :: macro_ring_a=0. !minor radius
-<<<<<<< HEAD
   real, protected :: nf_mra_factor=1. !factor to increase size of 'a' in NF
-=======
   !--------for hyperboloid initf--------------
   real, protected :: hyperboloid_r=2. !radius of bundle (terms of delta)
   real, protected :: hyperboloid_e=1. !effects curvature of bundle
->>>>>>> 9e620ccdfbfe541915845ce014ae45d5e81a2810
   !---------for central_bundle------------------------
   character(len=30), protected :: bundle_type='polarised' !polarised or random
   !---------for criss-cross------------------------
@@ -503,15 +500,12 @@ module cdata
              read(buffer, *, iostat=ios) macro_ring_R !for macro_ring initial conditions
           case ('macro_ring_a')
              read(buffer, *, iostat=ios) macro_ring_a !for macro_ring initial conditions
-<<<<<<< HEAD
           case ('nf_mra_factor')
              read(buffer, *, iostat=ios) nf_mra_factor !for factor for minor radius in NF                 
-=======
           case ('hyperboloid_e')
              read(buffer, *, iostat=ios) hyperboloid_e !for hyperboloid initial conditions
           case ('hyperboloid_r')
              read(buffer, *, iostat=ios) hyperboloid_r !for hyperboloid initial conditions
->>>>>>> 9e620ccdfbfe541915845ce014ae45d5e81a2810
           case ('curv_hist')
              read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
           case ('torsion_hist')
