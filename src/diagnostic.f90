@@ -126,8 +126,8 @@ module diagnostic
                     (f(:)%u1(3)-f(:)%u2(3))**2)
     maxu=maxval(uinfo(:,1)) ; maxdu=maxval(uinfo(:,2))
     uinfo(:,3)=f(:)%u(1) ; uinfo(:,4)=f(:)%u(2) ; uinfo(:,5)=f(:)%u(3)
-	!rather than use pcount more correct to use count(mask=f(:)%infront>0)
-	!---------------------------------------------------------------------------
+    !rather than use pcount more correct to use count(mask=f(:)%infront>0)
+    !---------------------------------------------------------------------------
     open(unit=34,file='./data/basic_velocity_info.log',position='append')
       write(34,'(7e13.4)') t, maxval(uinfo(:,1)),&
                               sum(uinfo(:,1))/count(mask=f(:)%infront>0),&
@@ -136,17 +136,20 @@ module diagnostic
                               sum(uinfo(:,4))/count(mask=f(:)%infront>0),&
                               sum(uinfo(:,5))/count(mask=f(:)%infront>0)
     close(34)
-    !---------------------------------------------------------------------------
-    open(unit=34,file='./data/centre_of_vorticity_info.log',position='append')
-      write(34,'(7e13.4)') t, cov%x, cov%u
-    close(34)
-    !---------------------------------------------------------------------------
-    open(unit=34,file='./data/R_spread_info_1.log',position='append')
-      write(34,'(18e13.4)') t, mrr1%x_max, mrr1%x_min, mrr1%x_spread, mrr1%r, mrr1%a, mrr1%r_u, mrr1%a_u, mrr1%ra
-    close(34)
-    open(unit=34,file='./data/R_spread_info_2.log',position='append')
-      write(34,'(26e13.4)') t, avg_r, avg_a, avg_r_u, avg_a_u, avg_ra
-    close(34)           
+    if (initf=='macro_ring') then
+      !additional diagnostics for macro_ring initial_condition
+      !---------------------------------------------------------------------------
+      open(unit=34,file='./data/centre_of_vorticity_info.log',position='append')
+        write(34,'(7e13.4)') t, cov%x, cov%u
+      close(34)
+      !---------------------------------------------------------------------------
+      open(unit=34,file='./data/R_spread_info_1.log',position='append')
+        write(34,'(18e13.4)') t, mrr1%x_max, mrr1%x_min, mrr1%x_spread, mrr1%r, mrr1%a, mrr1%r_u,   mrr1%a_u, mrr1%ra
+      close(34)
+      open(unit=34,file='./data/R_spread_info_2.log',position='append')
+        write(34,'(26e13.4)') t, avg_r, avg_a, avg_r_u, avg_a_u, avg_ra
+      close(34)        
+    end if   
     deallocate(uinfo)
   end subroutine
   !*************************************************

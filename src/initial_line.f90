@@ -367,18 +367,18 @@ module initial_line
         line_position=j+(i-1)*line_size
         select case(bundle_type)
           case('polarised')
-            f(line_position)%x(1)=(box_size*lattice_ratio)*rand1
-            f(line_position)%x(2)=(box_size*lattice_ratio)*rand2
+            f(line_position)%x(1)=(box_size*lattice_ratio)*rand1/2.
+            f(line_position)%x(2)=(box_size*lattice_ratio)*rand2/2.
             f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
           case('random')
             rand3=runif(0.,1.)
             if (rand3>0.5) then
-              f(line_position)%x(1)=(box_size*lattice_ratio)*rand1
-              f(line_position)%x(2)=(box_size*lattice_ratio)*rand2
+              f(line_position)%x(1)=(box_size*lattice_ratio)*rand1/2.
+              f(line_position)%x(2)=(box_size*lattice_ratio)*rand2/2.
               f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size) 
             else
-              f(line_position)%x(1)=(box_size*lattice_ratio)*rand1
-              f(line_position)%x(2)=-box_size/4.+(box_size*lattice_ratio)*rand2
+              f(line_position)%x(1)=(box_size*lattice_ratio)*rand1/2.
+              f(line_position)%x(2)=-box_size/4.+(box_size*lattice_ratio)*rand2/2.
               f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
             end if
            case default

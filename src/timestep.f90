@@ -9,74 +9,6 @@ module timestep
   use mirror
   contains
   !*************************************************
-  ! find the position and velocity of the
-  ! centre of vorticity of all vortex points
-  subroutine get_cov_data
-    implicit none
-    integer :: i
-    do i=1,3
-      cov%x(i)=sum(f(:)%x(i))/count(mask=f(:)%infront>0)
-    end do
-    if(itime.gt.1) then
-      cov%u=(cov%x-cov%x_old)/dt
-    else
-      cov%u=0.0
-    end if
-    cov%x_old=cov%x
-  end subroutine
-  ! now find macro ring radii (R and a) - 2 routines
-  subroutine get_macro_ring_radii_1 ! first routine to find macro ring radii (R and a)
-    implicit none
-    integer :: i
-    do i=1,3   
-      mrr1%x_max(i)=maxval(f(:)%x(i),mask=f(:)%infront>0)
-      mrr1%x_min(i)=minval(f(:)%x(i),mask=f(:)%infront>0)
-    end do    
-    mrr1%x_max(4)=(maxval(f(:)%x(2),mask=f(:)%infront>0)+maxval(f(:)%x(2),mask=f(:)%infront>0))/2.;
-    mrr1%x_min(4)=(minval(f(:)%x(2),mask=f(:)%infront>0)+minval(f(:)%x(2),mask=f(:)%infront>0))/2.;
-    do i=1,4
-      mrr1%x_spread(i)=mrr1%x_max(i)-mrr1%x_min(i)
-    end do
-    mrr1%r=(mrr1%x_spread(4)-mrr1%x_spread(1))/2.
-    mrr1%a=mrr1%x_spread(1)/2.
-    mrr1%ra=mrr1%r/mrr1%a
-    if(itime.gt.1) then
-      mrr1%r_u=(mrr1%r-mrr1%r_old)/dt
-      mrr1%a_u=(mrr1%a-mrr1%a_old)/dt
-    else
-      mrr1%r_u=0.0
-      mrr1%a_u=0.0
-    end if
-    mrr1%r_old=mrr1%r
-    mrr1%a_old=mrr1%a   
-  end subroutine
-  subroutine get_macro_ring_radii_2 ! second routine to find macro ring radii (R and a)
-    implicit none
-    integer :: i
-    allocate(mrr2(pcount))
-    do i=1,3
-      mrr2(:)%r(i)=sqrt((f(:)%x(i)-cov%x(i))**2)
-    end do
-    mrr2(:)%r(4)=sqrt((f(:)%x(2)-cov%x(2))**2 + (f(:)%x(3)-cov%x(3))**2) 
-    mrr2(:)%r(5)=sqrt((f(:)%x(1)-cov%x(1))**2 + (f(:)%x(2)-cov%x(2))**2 + (f(:)%x(3)-cov%x(3))**2)
-    do i=1,5
-      avg_r(i)=sum(mrr2(:)%r(i))/count(mask=f(:)%infront>0)
-      mrr2(:)%a(i)=abs(mrr2(:)%r(i)-avg_r(i))
-      avg_a(i)=sum(mrr2(:)%a(i))/count(mask=f(:)%infront>0)
-      avg_ra(i)=avg_r(i)/avg_a(i)
-    end do
-    if(itime.gt.1) then
-      avg_r_u=(avg_r-avg_r_old)/dt
-      avg_a_u=(avg_a-avg_a_old)/dt
-    else
-      avg_r_u=0.0
-      avg_a_u=0.0
-    end if
-    avg_r_old=avg_r
-    avg_a_old=avg_a
-    deallocate(mrr2)
-  end subroutine
-  !*************************************************
   !>implement adams bashforth time-stepping scheme to move particles
   !>\f[
   !! \mathbf{s}_{i}^{n+1}=\mathbf{s}_{i}^{n}+\frac{\Delta t}{12}(23\mathbf{u}_{i}^{n}
@@ -92,7 +24,9 @@ module timestep
     real :: rot_r, rot_theta !for differential rotation
     integer :: i
     !intialise forcing every timestep incase there is a random element
-    call randomise_forcing
+    call randomise_forcing !forcing.mod
+    !likewise with normal fluid
+    call initialise_normal_fluid !normal_fluid.mod
     !begin by testing if we have special velocity field Rotate
     select case(velocity)
       case('Rotate')
