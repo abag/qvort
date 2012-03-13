@@ -113,7 +113,11 @@ module normal_fluid
           else
             call fatal_error('normal_fluid.mod','comrpressible v needs periodic b.c.')
           end if
-        !case('nf_macro_ring') %nothing to do yet
+        case('nf_macro_ring')
+          !initialise some quantities to 0
+          cov%u=0. ; cov%x_old=0.
+          mrr1%r_old=0. ; mrr1%a_old=0.
+          avg_r_old=0. ; avg_a_old=0.
       end select
       write(*,'(a,f6.4,a,f6.4)') ' mutual friction coefficients alpha=',alpha(1),' alpha`=',alpha(2) 
       if (normal_fluid_cutoff<1000.) then
@@ -566,7 +570,6 @@ module normal_fluid
       
       ! Add translational velocity of NF vortex ring
       u(:)=u(:)+cov%u(:)
-    
     end subroutine
     !************************************************************
     ! find the position and velocity of the
@@ -577,8 +580,9 @@ module normal_fluid
       do i=1,3
         cov%x(i)=sum(f(:)%x(i))/count(mask=f(:)%infront>0)
       end do
-      if(itime.gt.1) then
-        cov%u=(cov%x-cov%x_old)/dt
+      if (sqrt(dot_product(cov%x_old,cov%x_old))>epsilon(0.)) then
+          cov%u=(cov%x-cov%x_old)/dt
+          print*, 'here'
       else
         cov%u=0.0
       end if
@@ -601,7 +605,7 @@ module normal_fluid
       mrr1%r=(mrr1%x_spread(4)-mrr1%x_spread(1))/2.
       mrr1%a=mrr1%x_spread(1)/2.
       mrr1%ra=mrr1%r/mrr1%a
-      if(itime.gt.1) then
+      if ((mrr1%r_old<=epsilon(0.)).and.(mrr1%a_old>epsilon(0.))) then
         mrr1%r_u=(mrr1%r-mrr1%r_old)/dt
         mrr1%a_u=(mrr1%a-mrr1%a_old)/dt
       else
@@ -627,7 +631,7 @@ module normal_fluid
         avg_a(i)=sum(mrr2(:)%a(i))/count(mask=f(:)%infront>0)
         avg_ra(i)=avg_r(i)/avg_a(i)
       end do
-      if(itime.gt.1) then
+      if ((sqrt(dot_product(avg_r_old,avg_r_old))>epsilon(0.)).and.(sqrt(dot_product(avg_a_old,avg_a_old))>epsilon(0.))) then
         avg_r_u=(avg_r-avg_r_old)/dt
         avg_a_u=(avg_a-avg_a_old)/dt
       else
