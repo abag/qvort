@@ -82,9 +82,9 @@ for l=1:500
     old_next=next;
     next=f(next);
     counter(l)=counter(l)+1;
-    dummy_pos(counter(l),1)=100*x(old_next)/dims(2);
-    dummy_pos(counter(l),2)=100*y(old_next)/dims(2);
-    dummy_pos(counter(l),3)=100*z(old_next)/dims(2);
+    dummy_pos(counter(l),1)=x(old_next)/dims(2);
+    dummy_pos(counter(l),2)=y(old_next)/dims(2);
+    dummy_pos(counter(l),3)=z(old_next)/dims(2);
     if next==next_old
       break
       counter(l)
@@ -100,8 +100,17 @@ for l=1:500
       dlmwrite(fOUT,dummy_pos(1:10:length(dummy_pos),:),'delimiter','\t','precision', 6);
     case 'plot'
     dummy_pos(length(dummy_pos)+1,1:3)=dummy_pos(1,1:3);
+    for k=1:(length(dummy_pos)-1)
+      dist=sqrt((dummy_pos(k+1,1)-dummy_pos(k,1))^2+(dummy_pos(k+1,2)-dummy_pos(k,2))^2+(dummy_pos(k+1,3)-dummy_pos(k,3))^2);
+      if dist>10*dims(1)
+        disp('here')
+        dummy_pos(k,:)=NaN;
+      end
+    end
     plot3(dummy_pos(:,1),dummy_pos(:,2),dummy_pos(:,3),'Color',cmap(l,:),'LineWidth',1.5)
     hold on
+    [T,N,B,k,t] = frenet(dummy_pos(:,1),dummy_pos(:,2),dummy_pos(:,3));
+    curvature(l)=nanmean(k)
   end
   clear dummy_pos
   line_count=line_count+1;
@@ -147,3 +156,7 @@ hist(counter(1:line_count))
 xlabel('number of particles','FontSize',16)
 ylabel('frequency','FontSize',16)
 set(gca,'FontSize',16)
+figure
+plot(curvature)
+figure
+ksdensity(curvature)
