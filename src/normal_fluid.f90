@@ -582,7 +582,6 @@ module normal_fluid
       end do
       if (sqrt(dot_product(cov%x_old,cov%x_old))>epsilon(0.)) then
           cov%u=(cov%x-cov%x_old)/dt
-          print*, 'here'
       else
         cov%u=0.0
       end if
@@ -605,7 +604,7 @@ module normal_fluid
       mrr1%r=(mrr1%x_spread(4)-mrr1%x_spread(1))/2.
       mrr1%a=mrr1%x_spread(1)/2.
       mrr1%ra=mrr1%r/mrr1%a
-      if ((mrr1%r_old<=epsilon(0.)).and.(mrr1%a_old>epsilon(0.))) then
+      if ((mrr1%r_old>epsilon(0.)).and.(mrr1%a_old>epsilon(0.))) then
         mrr1%r_u=(mrr1%r-mrr1%r_old)/dt
         mrr1%a_u=(mrr1%a-mrr1%a_old)/dt
       else

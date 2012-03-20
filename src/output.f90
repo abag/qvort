@@ -59,7 +59,7 @@ remove_count
     end if
     if (recon_info) then
       open(unit=72,file='data/recon_extra_info.log',position='append')
-        write(72,*) self_rcount, vv_rcount
+        write(72,*) self_rcount, vv_rcount, self_r_length, vv_r_length,phonon_length
       close(72)
     end if
     open(unit=79,file='data/curvature.log',position='append')

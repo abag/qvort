@@ -155,13 +155,18 @@ module line
   !>too large then smooth
   subroutine enforce_phonon_emission(i)
     implicit none
+    real :: lbefore, lafter
     integer, intent(IN) :: i
     real :: f_ddot(3), curv, disti
-    if (curvature(i)>phonon_percent*(2./delta)) then
+    call get_deriv_2(i,f_ddot) !general.mod
+    curv=sqrt(dot_product(f_ddot,f_ddot)) !get the curvature
+    if (curv>phonon_percent*(2./delta)) then
       !curvature is too large so smooth
-      call get_deriv_2(f(i)%behind,f_ddot) !general.mod
-      curv=sqrt(dot_product(f_ddot,f_ddot)) !get the curvature
       disti=dist_gen(f(i)%ghostb,f(i)%ghosti) !general.f90
+      if (recon_info) then
+        lbefore=dist_gen(f(i)%ghostb,f(i)%x)+&
+                dist_gen(f(i)%x,f(i)%ghosti) 
+      end if
       if (curv>1E-5) then !if curvature very small linear interpolation OK
         curv=curv**(-1) !actually we want the inverse
         if (curv**2-0.25*disti**2>0.) then
@@ -177,6 +182,11 @@ module line
         f(i)%x=0.5*(f(i)%ghostb+f(i)%ghosti)
       end if
       phonon_count=phonon_count+1 !increment the counter
+      if (recon_info) then
+        lafter=dist_gen(f(i)%ghostb,f(i)%x)+&
+               dist_gen(f(i)%x,f(i)%ghosti) 
+        phonon_length=phonon_length+(lbefore-lafter)
+      end if
     end if
   end subroutine
   !******************************************************************

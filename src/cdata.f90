@@ -138,8 +138,10 @@ module cdata
   real :: kappa_min, kappa_max !min/max curvature 
   !>self reconnection count
   integer :: self_rcount=0 
+  real :: self_r_length=0.
   !>vortex vortex reconnection count 
   integer :: vv_rcount=0
+  real :: vv_r_length=0.
   !>linking number - http://en.wikipedia.org/wiki/Linking_number
   real :: linking_number
   !>writhing number - http://mathworld.wolfram.com/Writhe.html
@@ -222,6 +224,7 @@ module cdata
   logical, protected :: phonon_emission=.false. !do we want it one?
   real, protected :: phonon_percent=0.95 !what percentage of 2/delta?
   logical, protected :: hyperviscosity=.false. !instead of smoothing use hyperviscosity
+  real :: phonon_length=0. !amount of length lost to phonon emission
   integer, protected :: hyp_power=4 !degree of hyperviscosity
   real :: hyp_power_dissipate !power dissipated by friction
   real, protected :: hyp_curv=0. !allow some curvature undamped
