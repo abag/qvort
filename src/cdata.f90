@@ -320,6 +320,7 @@ module cdata
   character(len=60),protected :: batch_email='a.w.baggaley@gmail.com' !who you gonna call?
   !------------------------------openmp--------------------------------------------
   logical,private :: serial_run=.false.
+  integer,private :: qvort_nproc=0
   contains
   !*************************************************************************************************  
   !>read the file run.in obtaining all parameters at runtime, avoiding the need to recompile the code
@@ -600,7 +601,9 @@ module cdata
           case ('batch_email')
              read(buffer, *, iostat=ios) batch_email !where do we message?
           case ('serial_run')
-             read(buffer, *, iostat=ios) serial_run !where do we message?
+             read(buffer, *, iostat=ios) serial_run !do not run in parallel
+          case ('qvort_nproc')
+             read(buffer, *, iostat=ios) qvort_nproc !specify number of processes
           case default
              !print *, 'Skipping invalid label at line', line
           end select
@@ -823,14 +826,17 @@ module cdata
   !*************************************************
   subroutine init_openmp
     implicit none
-    integer :: nthreads, thread_limit
     write(*,'(a)') ' ------------------------OPENMP-----------------------' 
     if (serial_run) then
       call omp_set_num_threads(1) 
       write(*,'(a)') 'serial run, running on one process'
     else
-      nthreads=omp_get_max_threads()
-      write(*,'(a,i2.2,a)') ' parallel run, running on ', nthreads, ' processes'
+      if (qvort_nproc>0) then
+        call omp_set_num_threads(qvort_nproc) 
+      else
+        qvort_nproc=omp_get_max_threads()
+      end if
+      write(*,'(a,i2.2,a)') ' parallel run, running on ', qvort_nproc, ' processes'
     end if
   end subroutine
   !**************************************************************************************************  
