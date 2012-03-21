@@ -1,9 +1,6 @@
 default: run
-
 run:
 	make -C src 
-double:
-	make -C src double
 man:
 	make -C doc
 clean:

@@ -8,10 +8,12 @@ module periodic
   subroutine ghostp
     implicit none
     integer :: i
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particles
       call get_ghost_p(i,f(i)%ghosti, f(i)%ghostb,f(i)%ghostii, f(i)%ghostbb)
     end do
+    !$omp end parallel do
   end subroutine
   !******************************************************************
   !>set the ghost particles, essentially these are the positions of the
@@ -186,6 +188,7 @@ module periodic
   subroutine enforce_periodic()
     implicit none
     integer :: i
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       !-------------x------------------     
@@ -207,6 +210,7 @@ module periodic
         f(i)%x(3)=f(i)%x(3)+box_size
       end if
     end do
+    !$omp end parallel do
   end subroutine
   !******************************************************************
   !>if a point/particle leaves one side of the box, 
@@ -215,6 +219,7 @@ module periodic
   subroutine enforce_periodic_yz()
     implicit none
     integer :: i
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       !-------------y------------------
@@ -236,6 +241,7 @@ module periodic
         call boundary_loop_remove(i)
       end if
     end do
+    !$omp end parallel do
   end subroutine
   !******************************************************************
   !>if a point/particle leaves one side of the box, 
@@ -244,6 +250,7 @@ module periodic
   subroutine enforce_periodic_z()
     implicit none
     integer :: i
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       !-------------x------------------     
@@ -265,6 +272,7 @@ module periodic
         f(i)%x(3)=f(i)%x(3)+box_size
       end if
     end do
+    !$omp end parallel do
   end subroutine
   !******************************************************************
   !> remove loops which hit the boundaries

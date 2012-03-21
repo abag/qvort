@@ -9,7 +9,7 @@ module smoothing
   implicit none
   !> mesh points on the smoothed mesh
   !>@param x the position of the mesh point
-  !>@param w the smoothed field either vorticity 
+  !>@param w the smoothed vorticity field  
   type smoothing_grid
      private
      real :: x(3)
@@ -96,6 +96,7 @@ module smoothing
         write(78,*) t, sm_sigma
       close(78)
     end if
+    !$omp parallel do private(i,j,k,w,peri,perj,perk)
     do k=1, sm_size  ; do j=1, sm_size ; do i=1, sm_size
       w=0. !0 this before each call
       call tree_smooth(sm(k,j,i)%x,vtree,(/0.,0.,0./),w)
@@ -108,6 +109,7 @@ module smoothing
       end if
       sm(k,j,i)%w=w
     end do ; end do ; end do
+    !$omp end parallel do
   end subroutine
   !**********************************************************
   !>given a specific position x, get the smoothed field wsmooth

@@ -113,7 +113,11 @@ module normal_fluid
           else
             call fatal_error('normal_fluid.mod','comrpressible v needs periodic b.c.')
           end if
-        !case('nf_macro_ring') %nothing to do yet
+        case('nf_macro_ring')
+          !initialise some quantities to 0
+          cov%u=0. ; cov%x_old=0.
+          mrr1%r_old=0. ; mrr1%a_old=0.
+          avg_r_old=0. ; avg_a_old=0.
       end select
       write(*,'(a,f6.4,a,f6.4)') ' mutual friction coefficients alpha=',alpha(1),' alpha`=',alpha(2) 
       if (normal_fluid_cutoff<1000.) then
@@ -121,6 +125,18 @@ module normal_fluid
       end if
       write(*,'(a,f8.4)') ' normal fluid rms velocity is: ', urms_norm
       write(*,'(a)') ' normal fluid timescale printed to ./data/normal_timescale.log'
+    end subroutine
+    !***************************************************************************
+    !>initialise the normal fluid velocity every timestep if needed
+    subroutine initialise_normal_fluid
+      implicit none
+      select case(normal_velocity)    
+        case('nf_macro_ring')
+          !---------centre of vorticity & macro ring radii data-----------------
+          call get_cov_data !normal_fluid.mod
+          call get_macro_ring_radii_1 !normal_fluid.mod
+          call get_macro_ring_radii_2 !normal_fluid.mod 
+      end select
     end subroutine
     !************************************************************
     !>get the velocity (u) of the normal fluid at a position (x)
@@ -191,8 +207,8 @@ module normal_fluid
           !u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
           !u(3)=0.
           !TG vorticity field - commented out but useful!
-          u(1)=cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
-          u(2)=sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
+          u(1)=-cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
+          u(2)=-sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
           u(3)=2.*sin(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
         case('shear')
           u=0.
@@ -445,17 +461,21 @@ module normal_fluid
       allocate(nfm(nfm_size,nfm_size,nfm_size))
       nfm_res=(real(box_size)/nfm_size)
       nfm_inv_res=1./nfm_res
+      !$omp parallel do private(i,j,k)
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         nfm(k,j,i)%x(1)=nfm_res*real(2*i-1)/2.-(box_size/2.)
         nfm(k,j,i)%x(2)=nfm_res*real(2*j-1)/2.-(box_size/2.)
         nfm(k,j,i)%x(3)=nfm_res*real(2*k-1)/2.-(box_size/2.)
       end do ; end do ; end do
+      !$omp end parallel do
       urms_norm=0. !0 the root mean squared velocity
+      !$omp parallel do private(i,j,k)
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         !get the velocity field - shearing wave
         call get_normal_velocity(nfm(k,j,i)%x,nfm(k,j,i)%u)
         urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
       end do ; end do ; end do
+      !$omp end parallel do 
       urms_norm=sqrt(urms_norm/(nfm_size**3))
       write(*,'(a)') ' velocity field calculated, printing to ./data/norm_init_mesh.dat'
       open(unit=92,file='./data/norm_init_mesh.dat',form='unformatted',status='replace',access='stream')
@@ -477,11 +497,13 @@ module normal_fluid
       allocate(nfm(nfm_size,nfm_size,nfm_size))
       nfm_res=(real(box_size)/nfm_size)
       nfm_inv_res=1./nfm_res
+      !$omp parallel do private(i,j,k)
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         nfm(k,j,i)%x(1)=nfm_res*real(2*i-1)/2.-(box_size/2.)
         nfm(k,j,i)%x(2)=nfm_res*real(2*j-1)/2.-(box_size/2.)
         nfm(k,j,i)%x(3)=nfm_res*real(2*k-1)/2.-(box_size/2.)
       end do ; end do ; end do
+      !$omp end parallel do
       urms_norm=0. !0 the root mean squared velocity
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         !get the velocity field - ABC flow
@@ -502,51 +524,123 @@ module normal_fluid
       use cdata
       use general      
       implicit none
+      real, intent(IN) :: x(3) !position of the particle
+      real, intent(OUT) :: u(3) !velocity at x
       integer :: i,actual_line_count
-      real,dimension(3) :: cov,x,u  ! centre of vorticity
       real :: phi  ! angle between y-axis and 'hat'-axis
+      real :: nf_mra ! value of minor radius to be used in NF 
       real :: cov_y_hat,pv_y_hat  ! y_hat-coord of cov and pv
       real :: delta_x,delta_y1,delta_y2,theta1,theta2,r1,r2
       real :: u_theta1,u_theta2,u_y_hat  ! velocities in 'hat' plane
-
-      ! Find 'centre of vorticity' 
-      do i=1,3
-        cov(i)=sum(f(:)%x(i))/pcount
-      end do
-    
+      ! Change size of macro_ring_a for NF
+      nf_mra=macro_ring_a*nf_mra_factor
 	  ! Find phi for each vortex point
-	  phi=atan( (x(3)-cov(3)) / (x(2)-cov(2)) )
+	  !phi=atan( (x(3)-cov(3)) / (x(2)-cov(2)) )
+	  phi=atan2( (x(3)-cov%x(3)), (x(2)-cov%x(2)) )
 	
 	  ! Find theta1 and theta2 for each vortex point
-	  cov_y_hat=cov(2)/cos(phi)
+	  cov_y_hat=cov%x(2)/cos(phi)
 	  pv_y_hat=x(2)/cos(phi)
-	  delta_x=x(1)-cov(1)
+	  delta_x=x(1)-cov%x(1)
 	  delta_y1=pv_y_hat-cov_y_hat-macro_ring_R
 	  delta_y2=pv_y_hat-cov_y_hat+macro_ring_R
-	  theta1=atan( delta_y1 / delta_x )
-	  theta2=atan( delta_y2 / delta_x )
+	  !theta1=atan( delta_y1 / delta_x )
+	  theta1=atan2( delta_y1 , delta_x )
+	  !theta2=atan( delta_y2 / delta_x )
+	  theta2=atan2( delta_y2 , delta_x )
 	
 	  ! Find u for each vortex point
 	  r1=sqrt(delta_x**2+delta_y1**2)
 	  r2=sqrt(delta_x**2+delta_y2**2)
 	  actual_line_count=3*line_count*(line_count-1)+1
-	  if(r1.le.macro_ring_a) then
-	    u_theta1=(actual_line_count*quant_circ*r1)/(2*pi*macro_ring_a**2)
+	  if(r1.le.nf_mra) then
+	    u_theta1=(actual_line_count*quant_circ*r1)/(2*pi*(nf_mra**2))
       else
         u_theta1=(actual_line_count*quant_circ)/(2*pi*r1)
       end if
-    	if(r2.le.macro_ring_a) then
-	    u_theta2=-(actual_line_count*quant_circ*r2)/(2*pi*macro_ring_a**2)
+      if(r2.le.nf_mra) then
+	    u_theta2=-(actual_line_count*quant_circ*r2)/(2*pi*(nf_mra**2))
       else
         u_theta2=(actual_line_count*quant_circ)/(2*pi*r2)
       end if
-      u(1)=u_theta1*sin(theta1)+u_theta2*sin(theta2)
+      u(1)=-u_theta1*sin(theta1)-u_theta2*sin(theta2)
       u_y_hat=u_theta1*cos(theta1)+u_theta2*cos(theta2)
       u(2)=u_y_hat*cos(phi)
       u(3)=u_y_hat*sin(phi)
-    
+      
+      ! Add translational velocity of NF vortex ring
+      u(:)=u(:)+cov%u(:)
     end subroutine
     !************************************************************
+    ! find the position and velocity of the
+    ! centre of vorticity of all vortex points
+    subroutine get_cov_data
+      implicit none
+      integer :: i
+      do i=1,3
+        cov%x(i)=sum(f(:)%x(i))/count(mask=f(:)%infront>0)
+      end do
+      if (sqrt(dot_product(cov%x_old,cov%x_old))>epsilon(0.)) then
+          cov%u=(cov%x-cov%x_old)/dt
+      else
+        cov%u=0.0
+      end if
+      cov%x_old=cov%x
+    end subroutine
+    !*************************************************
+    ! now find macro ring radii (R and a) - 2 routines
+    subroutine get_macro_ring_radii_1 ! first routine to find macro ring radii (R and a)
+      implicit none
+      integer :: i
+      do i=1,3   
+        mrr1%x_max(i)=maxval(f(:)%x(i),mask=f(:)%infront>0)
+        mrr1%x_min(i)=minval(f(:)%x(i),mask=f(:)%infront>0)
+      end do    
+      mrr1%x_max(4)=(maxval(f(:)%x(2),mask=f(:)%infront>0)+maxval(f(:)%x(2),mask=f(:)%infront>0))/2.;
+      mrr1%x_min(4)=(minval(f(:)%x(2),mask=f(:)%infront>0)+minval(f(:)%x(2),mask=f(:)%infront>0))/2.;
+      do i=1,4
+        mrr1%x_spread(i)=mrr1%x_max(i)-mrr1%x_min(i)
+      end do
+      mrr1%r=(mrr1%x_spread(4)-mrr1%x_spread(1))/2.
+      mrr1%a=mrr1%x_spread(1)/2.
+      mrr1%ra=mrr1%r/mrr1%a
+      if ((mrr1%r_old>epsilon(0.)).and.(mrr1%a_old>epsilon(0.))) then
+        mrr1%r_u=(mrr1%r-mrr1%r_old)/dt
+        mrr1%a_u=(mrr1%a-mrr1%a_old)/dt
+      else
+        mrr1%r_u=0.0
+        mrr1%a_u=0.0
+      end if
+      mrr1%r_old=mrr1%r
+      mrr1%a_old=mrr1%a   
+    end subroutine
+    !*************************************************
+    subroutine get_macro_ring_radii_2 ! second routine to find macro ring radii (R and a)
+      implicit none
+      integer :: i
+      allocate(mrr2(pcount))
+      do i=1,3
+        mrr2(:)%r(i)=sqrt((f(:)%x(i)-cov%x(i))**2)
+      end do
+      mrr2(:)%r(4)=sqrt((f(:)%x(2)-cov%x(2))**2 + (f(:)%x(3)-cov%x(3))**2) 
+      mrr2(:)%r(5)=sqrt((f(:)%x(1)-cov%x(1))**2 + (f(:)%x(2)-cov%x(2))**2 + (f(:)%x(3)-cov%x(3))**2)
+      do i=1,5
+        avg_r(i)=sum(mrr2(:)%r(i))/count(mask=f(:)%infront>0)
+        mrr2(:)%a(i)=abs(mrr2(:)%r(i)-avg_r(i))
+        avg_a(i)=sum(mrr2(:)%a(i))/count(mask=f(:)%infront>0)
+        avg_ra(i)=avg_r(i)/avg_a(i)
+      end do
+      if ((sqrt(dot_product(avg_r_old,avg_r_old))>epsilon(0.)).and.(sqrt(dot_product(avg_a_old,avg_a_old))>epsilon(0.))) then
+        avg_r_u=(avg_r-avg_r_old)/dt
+        avg_a_u=(avg_a-avg_a_old)/dt
+      else
+        avg_r_u=0.0
+        avg_a_u=0.0
+      end if
+      avg_r_old=avg_r
+      avg_a_old=avg_a
+      deallocate(mrr2)
+    end subroutine
 end module
 !>\page NF Normal fluid velocity field
 !!Normal fluid velocity field is set in run.in throught the parameter normal_velocity\n

@@ -3,6 +3,7 @@
 !>also contains important routines for initialising random number generator and
 !>reading in runfile
 module cdata
+  use omp_lib
   !**********VORTEX FILAMENT******************************************************
   !>our main structure which holds vortex points
   !!@param x position of the vortex point  
@@ -34,7 +35,27 @@ module cdata
   !>main filament vector
   type(qvort), allocatable :: f(:) 
   !>number of vortex points in the simulation - size of f is pcount
-  integer :: pcount 
+  integer :: pcount
+  !----------------------------------------------------------------------
+  !centre of vorticity data
+  type centre_of_vorticity
+    real :: x(3), x_old(3), u(3)
+  end type
+  type(centre_of_vorticity) :: cov
+  !macro ring radii data - 2 types
+  type macro_ring_radii_1
+    real :: x_max(4), x_min(4), x_spread(4)
+    real :: r, r_old, r_u, a, a_old, a_u, ra
+  end type
+  type(macro_ring_radii_1) :: mrr1 
+  type macro_ring_radii_2
+    real :: r(5), a(5)
+  end type
+  type(macro_ring_radii_2), allocatable :: mrr2(:)
+  !other variables for macro ring radii data - type 2
+  real :: avg_r(5), avg_r_old(5), avg_r_u(5)
+  real :: avg_a(5), avg_a_old(5), avg_a_u(5)
+  real :: avg_ra(5)
   !**********MESH STRUCTURE********************************************************
   !>mesh structure - normal and superfluid velocities are calculated on the mesh
   !>which runs from -box_size /2 to box_size/2 to with mesh_size^3
@@ -50,6 +71,7 @@ module cdata
   end type
   !>3D allocatable mesh
   type(grid), allocatable :: mesh(:,:,:)
+  type(grid), allocatable :: mesh2D(:,:)
   !>1D allocatable mesh
   type(grid), allocatable :: lat_mesh_1D(:,:)
   !>the mesh resolution box_size/mesh_size^3
@@ -116,8 +138,10 @@ module cdata
   real :: kappa_min, kappa_max !min/max curvature 
   !>self reconnection count
   integer :: self_rcount=0 
+  real :: self_r_length=0.
   !>vortex vortex reconnection count 
   integer :: vv_rcount=0
+  real :: vv_r_length=0.
   !>linking number - http://en.wikipedia.org/wiki/Linking_number
   real :: linking_number
   !>writhing number - http://mathworld.wolfram.com/Writhe.html
@@ -178,8 +202,15 @@ module cdata
   !--------for macro_ring initf--------------
   real, protected :: macro_ring_R=0. !major radius
   real, protected :: macro_ring_a=0. !minor radius
+  real, protected :: nf_mra_factor=1. !factor to increase size of 'a' in NF
+  !--------for hyperboloid initf--------------
+  real, protected :: hyperboloid_r=2. !radius of bundle (terms of delta)
+  real, protected :: hyperboloid_e=1. !effects curvature of bundle
   !---------for central_bundle------------------------
   character(len=30), protected :: bundle_type='polarised' !polarised or random
+  !---------for criss-cross------------------------
+  integer, protected :: criss_cross_bundle=1 !typical size of bundles
+  real, protected :: criss_cross_width=1. !width in terms of \delta
   !---------for torus_knot initf---------------------- 
   integer, protected :: torus_p=1, torus_q=1 !for torus_knot initf
   real, protected :: torus_epsilon=1.
@@ -193,11 +224,15 @@ module cdata
   logical, protected :: phonon_emission=.false. !do we want it one?
   real, protected :: phonon_percent=0.95 !what percentage of 2/delta?
   logical, protected :: hyperviscosity=.false. !instead of smoothing use hyperviscosity
-  integer, protected :: hyp_power=4
-  real, protected :: hyp_curv=0.4
+  real :: phonon_length=0. !amount of length lost to phonon emission
+  integer, protected :: hyp_power=4 !degree of hyperviscosity
+  real :: hyp_power_dissipate !power dissipated by friction
+  real, protected :: hyp_curv=0. !allow some curvature undamped
+  real, protected :: hyp_nu=1. !scaling parameter
   !----------------------mesh information----------------------------------------
   integer, protected :: mesh_size=0
   integer, protected :: mesh_shots=100
+  logical, protected :: hollow_mesh_core=.false.
   !------------normal fluid component--------------------------------------------
   character(len=30), protected :: normal_velocity='zero'
   real, protected :: alpha(2)=0. !mutual friction coefficients
@@ -267,6 +302,7 @@ module cdata
   !------------------------------filament injection-------------------------------
   integer, protected :: inject_skip=10000000!how often we insert the vortice
   integer, protected :: inject_size=0 !number of points used
+  integer, protected :: inject_freq=10000000!how often we switch injection direction
   real, protected :: inject_stop=1E8 !when to stop injection - arbitrarily high
   character(len=20),protected :: inject_type='off' !how we inject loops
   !----------------------------code testing---------------------------------------
@@ -282,6 +318,9 @@ module cdata
   logical, protected :: batch_mode=.false. !set to true to enable messaging
   character(len=80),protected :: batch_name='qvort run' !what is the name of the run
   character(len=60),protected :: batch_email='a.w.baggaley@gmail.com' !who you gonna call?
+  !------------------------------openmp--------------------------------------------
+  logical,private :: serial_run=.false.
+  integer,private :: qvort_nproc=0
   contains
   !*************************************************************************************************  
   !>read the file run.in obtaining all parameters at runtime, avoiding the need to recompile the code
@@ -346,6 +385,8 @@ module cdata
              !mesh for outputting veloctiy fields, by default is 0, enter
              !natural number
              read(buffer, *, iostat=ios) mesh_size !size of mesh
+          case('hollow_mesh_core')
+             read(buffer, *, iostat=ios) hollow_mesh_core
           case ('mesh_shots')
              read(buffer, *, iostat=ios) mesh_shots !how often to print mesh to file
           case ('velocity')
@@ -413,6 +454,8 @@ module cdata
              read(buffer, *, iostat=ios) hyp_power !use hyperviscosity to dissipate KWC
           case ('hyp_curv')
              read(buffer, *, iostat=ios) hyp_curv !use hyperviscosity to dissipate KWC
+          case ('hyp_nu')
+             read(buffer, *, iostat=ios) hyp_nu !use hyperviscosity to dissipate KWC
            case ('special_dump')
              read(buffer, *, iostat=ios) special_dump !special dump
           case ('quasi_pcount')
@@ -439,6 +482,10 @@ module cdata
              read(buffer, *, iostat=ios) torus_q !q integer for torus knot initial condition
           case ('torus_p')
              read(buffer, *, iostat=ios) torus_p !p integer for torus knot initial condition
+          case('criss_cross_bundle')
+             read(buffer, *, iostat=ios) criss_cross_bundle !for criss-cross initial condition
+          case('criss_cross_width')
+             read(buffer, *, iostat=ios) criss_cross_width !for criss-cross initial condition
           case ('torus_epsilon')
              read(buffer, *, iostat=ios) torus_epsilon !epsilon real for torus knot initial condition
           case ('wave_count')
@@ -457,6 +504,12 @@ module cdata
              read(buffer, *, iostat=ios) macro_ring_R !for macro_ring initial conditions
           case ('macro_ring_a')
              read(buffer, *, iostat=ios) macro_ring_a !for macro_ring initial conditions
+          case ('nf_mra_factor')
+             read(buffer, *, iostat=ios) nf_mra_factor !for factor for minor radius in NF                 
+          case ('hyperboloid_e')
+             read(buffer, *, iostat=ios) hyperboloid_e !for hyperboloid initial conditions
+          case ('hyperboloid_r')
+             read(buffer, *, iostat=ios) hyperboloid_r !for hyperboloid initial conditions
           case ('curv_hist')
              read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
           case ('torsion_hist')
@@ -533,6 +586,8 @@ module cdata
              read(buffer, *, iostat=ios) inject_size !size of injected filaments
           case ('inject_skip')
              read(buffer, *, iostat=ios) inject_skip !how often we inject
+          case ('inject_freq')
+             read(buffer, *, iostat=ios) inject_freq !how often we switch injection
           case ('inject_type')
              read(buffer, *, iostat=ios) inject_type !how we inject new vortices
           case ('inject_stop')
@@ -545,6 +600,10 @@ module cdata
              read(buffer, *, iostat=ios) batch_name !what is the name of the run
           case ('batch_email')
              read(buffer, *, iostat=ios) batch_email !where do we message?
+          case ('serial_run')
+             read(buffer, *, iostat=ios) serial_run !do not run in parallel
+          case ('qvort_nproc')
+             read(buffer, *, iostat=ios) qvort_nproc !specify number of processes
           case default
              !print *, 'Skipping invalid label at line', line
           end select
@@ -764,6 +823,22 @@ module cdata
      call random_seed(put = seed)
      deallocate(seed)
   end subroutine 
+  !*************************************************
+  subroutine init_openmp
+    implicit none
+    write(*,'(a)') ' ------------------------OPENMP-----------------------' 
+    if (serial_run) then
+      call omp_set_num_threads(1) 
+      write(*,'(a)') 'serial run, running on one process'
+    else
+      if (qvort_nproc>0) then
+        call omp_set_num_threads(qvort_nproc) 
+      else
+        qvort_nproc=omp_get_max_threads()
+      end if
+      write(*,'(a,i2.2,a)') ' parallel run, running on ', qvort_nproc, ' processes'
+    end if
+  end subroutine
   !**************************************************************************************************  
 end module
 !>\page BUG Code testing and bug fixing

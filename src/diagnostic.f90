@@ -38,8 +38,8 @@ module diagnostic
     close(72)
   end subroutine
   !*************************************************
-  !> The routine to calculate numberof loops with their sizes and dumps them 
-  !!to file to plot histograms.
+  !> The routine to calculate number of loops with their sizes and dumps them 
+  !>to file to plot histograms.
   subroutine get_full_loop_count()
     implicit none
     real,allocatable :: line(:,:,:)
@@ -118,38 +118,39 @@ module diagnostic
   !>on the filament
   subroutine velocity_info()
     implicit none
-    real, allocatable :: uinfo(:,:), xinfo(:,:)
-    allocate(uinfo(pcount,5), xinfo(pcount,3))
+    real, allocatable :: uinfo(:,:)
+    allocate(uinfo(pcount,5))
     uinfo(:,1)=sqrt(f(:)%u(1)**2+f(:)%u(2)**2+f(:)%u(3)**2)
     uinfo(:,2)=sqrt((f(:)%u1(1)-f(:)%u2(1))**2+&
                     (f(:)%u1(2)-f(:)%u2(2))**2+&
                     (f(:)%u1(3)-f(:)%u2(3))**2)
     maxu=maxval(uinfo(:,1)) ; maxdu=maxval(uinfo(:,2))
     uinfo(:,3)=f(:)%u(1) ; uinfo(:,4)=f(:)%u(2) ; uinfo(:,5)=f(:)%u(3)
-	xinfo(:,1)=f(:)%x(1) ; xinfo(:,2)=f(:)%x(2) ; xinfo(:,3)=f(:)%x(3)
-	!rather than use pcount more correct to use count(mask=f(:)%infront>0)
-	!---------------------------------------------------------------------------
+    !rather than use pcount more correct to use count(mask=f(:)%infront>0)
+    !---------------------------------------------------------------------------
     open(unit=34,file='./data/basic_velocity_info.log',position='append')
-      write(34,*) t, maxval(uinfo(:,1)), sum(uinfo(:,1))/pcount, minval(uinfo(:,1),mask=uinfo(:,1)>0)
+      write(34,'(7e13.4)') t, maxval(uinfo(:,1)),&
+                              sum(uinfo(:,1))/count(mask=f(:)%infront>0),&
+                              minval(uinfo(:,1),mask=uinfo(:,1)>0),&
+                              sum(uinfo(:,3))/count(mask=f(:)%infront>0),&
+                              sum(uinfo(:,4))/count(mask=f(:)%infront>0),&
+                              sum(uinfo(:,5))/count(mask=f(:)%infront>0)
     close(34)
-    !---------------------------------------------------------------------------
-    open(unit=34,file='./data/daniel_basic_velocity_info.log',position='append')
-      write(34,*) t, sum(uinfo(:,3))/pcount, sum(uinfo(:,4))/pcount, sum(uinfo(:,5))/pcount, sum(uinfo(:,1))/pcount 
-    close(34)
-    !---------------------------------------------------------------------------
-    open(unit=34,file='./data/daniel_com_info.log',position='append')
-      write(34,*) t, sum(xinfo(:,1))/pcount, sum(xinfo(:,2))/pcount, sum(xinfo(:,3))/pcount 
-    close(34)
-    !---------------------------------------------------------------------------
-    open(unit=34,file='./data/daniel_spread_info.log',position='append')
-      write(34,*) t,	maxval(xinfo(:,1),mask=f(:)%infront>0), minval(xinfo(:,1),mask=f(:)%infront>0),&
-						maxval(xinfo(:,2),mask=f(:)%infront>0), minval(xinfo(:,2),mask=f(:)%infront>0),&
-						maxval(xinfo(:,3),mask=f(:)%infront>0), minval(xinfo(:,3),mask=f(:)%infront>0),&
-						maxval(xinfo(:,1),mask=f(:)%infront>0)-minval(xinfo(:,1),mask=f(:)%infront>0),&
-						maxval(xinfo(:,2),mask=f(:)%infront>0)-minval(xinfo(:,2),mask=f(:)%infront>0),&
-						maxval(xinfo(:,3),mask=f(:)%infront>0)-minval(xinfo(:,3),mask=f(:)%infront>0)
-    close(34)
-    deallocate(uinfo, xinfo)
+    if (initf=='macro_ring') then
+      !additional diagnostics for macro_ring initial_condition
+      !---------------------------------------------------------------------------
+      open(unit=34,file='./data/centre_of_vorticity_info.log',position='append')
+        write(34,'(7e13.4)') t, cov%x, cov%u
+      close(34)
+      !---------------------------------------------------------------------------
+      open(unit=34,file='./data/R_spread_info_1.log',position='append')
+        write(34,'(18e13.4)') t, mrr1%x_max, mrr1%x_min, mrr1%x_spread, mrr1%r, mrr1%a, mrr1%r_u,   mrr1%a_u, mrr1%ra
+      close(34)
+      open(unit=34,file='./data/R_spread_info_2.log',position='append')
+        write(34,'(26e13.4)') t, avg_r, avg_a, avg_r_u, avg_a_u, avg_ra
+      close(34)        
+    end if   
+    deallocate(uinfo)
   end subroutine
   !*************************************************
   !>get the boxed vorticity by summing circulation vectors in
@@ -389,45 +390,55 @@ module diagnostic
     use timestep
     implicit none
     integer, intent(IN) :: filenumber
-    real :: u_norm(3), u_sup(3)=0., x(3)=0.
     integer :: i, j, peri, perj, perk
     character (len=40) :: print_file
-    if (two_dim<1) return
-    write(unit=print_file,fmt="(a,i4.4,a)")"./data/vel_slice_2D",filenumber,".dat"
-    open(unit=32,file=print_file,status='replace',form='unformatted',access='stream')
-    do i=1, two_dim
-      do j=1, two_dim
-        x(1)=((2.*i-1)/(2.*two_dim))*box_size-box_size/2.
-        x(2)=((2.*j-1)/(2.*two_dim))*box_size-box_size/2.
+    real :: u(3)
+    if (two_dim<1) return  
+    !$omp parallel do private(i,j,peri,perj,perk,u)
+    do j=1, two_dim
+      do i=1, two_dim
         !superfluid velocity
         select case(velocity)
           case('BS')
-            u_sup=0. !always 0 before making initial BS call
-            call biot_savart_general(x,u_sup)
+            mesh2D(j,i)%u_sup=0. !always 0 before making initial BS call
+            call biot_savart_general(mesh2D(j,i)%x,mesh2D(j,i)%u_sup)
             if (periodic_bc) then
-              !we must shift the mesh in all 3 directions, all 26 permutations needed!
+              !we must shift the tree-mesh in all 3 directions, all 26 permutations needed!
               do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
                 if (peri==0.and.perj==0.and.perk==0) cycle
-                call biot_savart_general_shift(x,u_sup, &
+                call biot_savart_general_shift(mesh2D(j,i)%x,mesh2D(j,i)%u_sup, &
                 (/peri*box_size,perj*box_size,perk*box_size/)) !timestep.mod
               end do ; end do ;end do
             end if
           case('Tree')
-            u_sup=0. !must be zeroed for all algorithms
-            call tree_walk_general(x,vtree,(/0.,0.,0./),u_sup)
+            mesh2D(j,i)%u_sup=0. !always 0 before making initial BS call
+            call tree_walk_general(mesh2D(j,i)%x,vtree,(/0.,0.,0./),mesh2D(j,i)%u_sup)
             if (periodic_bc) then
-              !we must shift the mesh in all 3 directions, all 26 permutations needed!
+              !we must shift the tree-mesh in all 3 directions, all 26 permutations needed!
               do peri=-1,1 ; do perj=-1,1 ; do perk=-1,1
                 if (peri==0.and.perj==0.and.perk==0) cycle
-                call tree_walk_general(x,vtree, &
-                     (/peri*box_size,perj*box_size,perk*box_size/),u_sup) !tree.mod
+                call tree_walk_general(mesh2D(j,i)%x,vtree, &
+                     (/peri*box_size,perj*box_size,perk*box_size/),mesh2D(j,i)%u_sup) !tree.mod
               end do ; end do ;end do
             end if
         end select
-        call get_normal_velocity(x,u_norm)
-        write(32) x(1), x(2), u_sup, u_norm 
+        !normal fluid velocity
+        !$OMP critical
+        call get_normal_velocity(mesh2D(j,i)%x,u)
+        !$OMP end critical
+        mesh2D(j,i)%u_norm=u
       end do
     end do
+    !$omp end parallel do
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/vel_slice_2D",filenumber,".dat"
+    open(unit=32,file=print_file,status='replace',form='unformatted',access='stream')
+      write(32) mesh2D(1,1:two_dim)%x(1)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_norm(1)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_norm(2)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_norm(3)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_sup(1)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_sup(2)
+      write(32) mesh2D(1:two_dim,1:two_dim)%u_sup(3)
     close(32)
   end subroutine
   !*************************************************
@@ -446,6 +457,7 @@ module diagnostic
     integer, parameter :: bin_num=10 !number of bins used in KDE
     real :: kdensity(bin_num), kdmesh(bin_num), bwidth !all for KDE
     allocate(curvi(pcount)) !allocate this array pcount size
+    !$omp parallel do private(i)
     do i=1, pcount
       if (f(i)%infront==0) then
         curvi(i)=0. !check for 'empty' particles
@@ -453,6 +465,7 @@ module diagnostic
         curvi(i)=curvature(i) !general.mod
       end if
     end do
+    !$omp end parallel do
     !compute the average/min/max of this array
     kappa_bar=sum(curvi)/count(mask=f(:)%infront>0)
     kappa_max=maxval(curvi)

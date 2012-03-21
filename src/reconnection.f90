@@ -181,8 +181,10 @@ module reconnection
               call same_loop_test(i,j,same_loop) !line.mod
               if (same_loop) then
                 self_rcount=self_rcount+1 
+                self_r_length=self_r_length+(l_before-l_after) 
               else
                 vv_rcount=vv_rcount+1
+                vv_r_length=vv_r_length+(l_before-l_after)
               end if
             end if
             !set correct behind_infront

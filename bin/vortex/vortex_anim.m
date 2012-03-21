@@ -13,6 +13,8 @@ for i=start:skip:final
     fOUT=sprintf('data/var%04d.png',i)
     print('-dpng',fOUT)
   end 
+  %close all open files
+  fclose('all');
 end
 figure('visible','on');
 close all

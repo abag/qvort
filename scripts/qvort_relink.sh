@@ -36,7 +36,7 @@ do
   esac
 done
 #THE MOST IMPORTANT LINE IN THIS SCRIPT MAKE SURE IT IS SET CORRECTLY
-PRJ_HOME=${HOME}/svnprojects/qvort
+PRJ_HOME=${HOME}/qvort
 #i will check it at least exists
 if [ ! -d "$PRJ_HOME" ]; then
   echo "arghhhh, qvort home directory does not exist!!"
@@ -51,7 +51,7 @@ if [ ! -f "$PRJ_HOME/run.sh" ] ; then
   echo "the directory you have set as qvort's home exists but is incorrect..."
   exit 1
 fi
-if [ ! -f "$PRJ_HOME/README.sh" ] ; then
+if [ ! -f "$PRJ_HOME/README.md" ] ; then
   echo "the directory you have set as qvort's home exists but is incorrect..."
   exit 1
 fi
