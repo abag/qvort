@@ -1,24 +1,16 @@
 --------------required parameters------------
-nsteps 9900000
+nsteps 1
 shots 1
-pcount 700
-dt 5.0E-5
-delta 0.00149
-!box_size 0.2
-box_size 1.0
+mesh_shots 1
+pcount 6000
+dt 0.
+delta .002
+box_size 0.1
 velocity Tree
-initf macro_ring
-macro_ring_R 0.09
-macro_ring_a 0.0223
-nf_mra_factor 2.0
-boundary open
-line_count 2
+initf lattice
+line_count 25
+boundary periodic
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-tree_theta 0.3
 binary_print T
-normal_velocity nf_macro_ring
-alpha 0.098 0.016
-!two_dim 512 
-!mesh_size 128
-!mesh_shots 2
+tree_theta 0.4

@@ -50,8 +50,8 @@ for i=1:n
     if ii>midpt ; ii=n-ii+1; ; end ;
     if jj>midpt ; jj=n-jj+1; ; end ;
     r=int16(sqrt(ii^2+jj^2));
-    spect(r)=spect(r)+energyr(i,j)+energyi(i,j);
-    avg_spect(r)=avg_spect(r)+energyr(i,j)+energyi(i,j);
+    spect(r)=spect(r)+(energyr(i,j)+energyi(i,j))*1.5;
+    avg_spect(r)=avg_spect(r)+(energyr(i,j)+energyi(i,j))*1.5;
   end
 end
 k=(1:midpt)*(2*pi/dims(2));
@@ -132,8 +132,8 @@ for i=1:n
     if ii>midpt ; ii=n-ii+1; ; end ;
     if jj>midpt ; jj=n-jj+1; ; end ;
     r=int16(sqrt(ii^2+jj^2));
-    spect(r)=spect(r)+energyr(i,j)+energyi(i,j);
-    avg_spect(r)=avg_spect(r)+energyr(i,j)+energyi(i,j);
+    spect(r)=spect(r)+3*(energyr(i,j)+energyi(i,j));
+    avg_spect(r)=avg_spect(r)+3*(energyr(i,j)+energyi(i,j));
   end
 end
 k=(1:midpt)*(2*pi/dims(2));
