@@ -7,7 +7,7 @@ module diagnostic
   !>dummy routine to call all diagnostic routines
   subroutine calculate_diagnostics()
     implicit none
-    if (mod(itime, 1)==0) then
+    if (mod(itime, 5)==0) then
       if (closest_distance) call get_min_distance !diagnostics.mod    
     end if
     if (mod(itime, shots)==0) then
