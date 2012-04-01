@@ -672,7 +672,7 @@ module initial_line
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
         if (wave_count==1) random_shift=0. !0 this for a single wave
-        amp=prefactor*(wave_number**wave_slope)
+        amp=prefactor*(wave_number**(wave_slope/2.))
         if (i==1) then
           write(34,'(f9.5,f9.5,f9.5)') wave_number, amp, random_shift
         end if
@@ -698,6 +698,11 @@ module initial_line
                 normalf(line_position)*amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))+&
                 binormalf(line_position)*amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
               end if
+            case('KWC')
+              f(line_position)%x(1)=f(line_position)%x(1)+&
+              amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+              f(line_position)%x(2)=f(line_position)%x(2)+&
+              amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
             case default
               call fatal_error('initial.mod:wave_line','incorrect wave type parameter')
           end select

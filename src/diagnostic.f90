@@ -307,6 +307,7 @@ module diagnostic
         case('y')
           x(2)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
         case('z')
+          x(1)=-0.0025
           x(3)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
       end select
       !superfluid velocity
