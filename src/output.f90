@@ -3,6 +3,7 @@
 module output
   use cdata
   use tree
+  use diagnostic
   contains
   !**********************************************************************
   !> print various dimensions/flags to file for matlab to read in for plotting
@@ -27,10 +28,34 @@ module output
     close(77)
   end subroutine
   !**********************************************************************
+  !> all mesh shots calls are in here
+  subroutine mesh_shot_print_calls()
+    implicit none
+    !print the mesh to a binary file
+    if (multiple_initial_loop) then 
+      call print_mesh(mloop) !output.mod
+    else
+      call print_mesh(itime/mesh_shots) !output.mod
+    end if
+    !can also print full velocity field for statistics 
+    if (vel_print) call print_velocity(itime/mesh_shots)!output.mod
+    call one_dim_vel(itime/mesh_shots) !diagnostics.mod
+    call one_dim_lattice_vel(itime/mesh_shots) !diagnostics.mod
+    if (multiple_initial_loop) then 
+      call two_dim_vel(mloop) !diagnostics.mod
+    else 
+      call two_dim_vel(itime/mesh_shots) !diagnostics.mod
+    end if
+  end subroutine
+  !**********************************************************************
   !>print information to screen/file
   subroutine print_info()
     implicit none
-    call printf(itime/shots) !output.mod
+    if (multiple_initial_loop) then 
+      call printf(mloop) !output.mod
+    else
+      call printf(itime/shots) !output.mod
+    end if
     open(unit=78,file='data/ts.log',position='append')
     if (itime==shots) then
       write(*,'(a)') '--var--------t-------pcount-------recon----avg_d-----length&

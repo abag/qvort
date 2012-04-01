@@ -22,6 +22,8 @@ program run
   !read in parameters
   call read_run_file !cdata.mod
   !initial conditions - checks for restart?
+  do mloop=1, multiple_initial_count
+  call setup_multiple_initial_loop !initial.mod
   call init_setup !initial.mod
   call init_openmp !cdata.mod
   if (seg_fault) write(*,*) 'here1'
@@ -88,19 +90,15 @@ program run
     if (seg_fault) write(*,*) 'here7'
     !--------------now do all data output--------------------------
     if (mod(itime, shots)==0) then
-      !store data to a binary file for reload
-      call data_dump !output.mod
+      if (multiple_initial_loop.eqv..false.) then
+        !store data to a binary file for reload
+        call data_dump !output.mod
+      end if
       if(particles_only.eqv..false.) call print_info !output.mod
       if (mod(itime, mesh_shots)==0) then
-        !print the mesh to a binary file
-        call print_mesh(itime/mesh_shots) !output.mod
         !print the smoothed mesh to binary file
         if (sm_size>0) call print_smooth_mesh(itime/mesh_shots)!smoothing.mod
-        !can also print full velocity field for statistics 
-        if (vel_print) call print_velocity(itime/mesh_shots)!output.mod
-        call one_dim_vel(itime/mesh_shots) !diagnostics.mod
-        call one_dim_lattice_vel(itime/mesh_shots) !diagnostics.mod
-        call two_dim_vel(itime/mesh_shots) !diagnostics.mod
+        call mesh_shot_print_calls !output.mod
       end if
     end if
     if (seg_fault) write(*,*) 'here8'
@@ -146,9 +144,10 @@ program run
     if (seg_fault) write(*,*) 'here12'
     !--------------------final sanity checks----------------------
     if (NAN_test) call NAN_finder !general.mod
-  end do
-  call completion_message
-  !deallocate(f,mesh) !tidy up
+  end do !close main loop
+  call completion_message!cdata.mod
+  call full_deallocation !tidy up (cdata.mod)
+  end do !close multiple initial loop
 end program
 !------------MAIN PAGE FOR DOXYGEN IS HERE----------------
 !>\mainpage Qvort Main Page

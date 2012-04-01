@@ -533,5 +533,13 @@ module initial
       write(77,*) one_dim_lattice
     close(77)
   end subroutine
+  !********************************************************************
+  subroutine setup_multiple_initial_loop
+    implicit none
+    if (multiple_initial_loop) then
+      write(*,*) '----------------multiple initial------------------' 
+      write(*,'(a,i3.3,a,i3.3)') ' in loop ', mloop, ' of ', multiple_initial_count
+    end if    
+  end subroutine
 end module
-!********************************************************************
+

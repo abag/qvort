@@ -40,7 +40,7 @@ pristine: cleann
 cdata.o: cdata.f90 ../run.in
 # 
 #
-output.o: output.f90 cdata.o tree.o
+output.o: output.f90 cdata.o tree.o diagnostic.o
 #
 periodic.o: periodic.f90 cdata.o
 #

@@ -310,6 +310,9 @@ module cdata
   logical, protected :: seg_fault=.false.!use print statements to try and isolate segmentation faults
   logical, protected :: NAN_test=.true.!test for NANs in arrays
   logical, protected :: overide_timestep_check=.false.!do not perform initial dt test
+  logical, protected :: multiple_initial_loop=.false. !loop over multiple initial conditions
+  integer, protected :: multiple_initial_count=1 !loop over multiple initial conditions
+  integer :: mloop !for looping over multiple initial conditions
   !----------------------------warnings---------------------------------------
   integer, private :: max_warn_count=5 !maximum warning count code can survive
   integer, private :: warn_count=0 !number of warnings
@@ -604,6 +607,10 @@ module cdata
              read(buffer, *, iostat=ios) serial_run !do not run in parallel
           case ('qvort_nproc')
              read(buffer, *, iostat=ios) qvort_nproc !specify number of processes
+          case ('multiple_initial_loop')
+             read(buffer, *, iostat=ios) multiple_initial_loop !re-loop over multiple initial conditions
+          case ('multiple_initial_count')
+             read(buffer, *, iostat=ios) multiple_initial_count !re-loop over multiple initial conditions
           case default
              !print *, 'Skipping invalid label at line', line
           end select
@@ -777,7 +784,7 @@ module cdata
       trim(batch_name), '" | mail -s qvort_finished ',trim(batch_email)
       call system(message_file)
     end if
-    stop
+    !stop
   end subroutine
   !*************************************************************************************************  
   !>print a warning message to screen - will not stop the code
@@ -794,6 +801,15 @@ module cdata
     if (warn_count>max_warn_count) then
       call fatal_error('warning count','maximum number of warning counts exceeded')
     end if
+  end subroutine
+  !*************************************************************************************************  
+  !>deallocate all user allocated arrays
+  subroutine full_deallocation
+    implicit none      
+    deallocate(f)
+    if (allocated(mesh)) deallocate(mesh)
+    if (allocated(mesh2D)) deallocate(mesh2D)
+    itime=0
   end subroutine
   !*************************************************************************************************  
   !>generate a new random seed, or read one in from ./data if restating code

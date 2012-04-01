@@ -301,13 +301,14 @@ module diagnostic
     write(unit=print_file,fmt="(a,i4.4,a)")"./data/vel_slice_1D",filenumber,".log"
     open(unit=32,file=print_file)
     do i=1, one_dim
+      x=0.
       select case (one_dim_direction)
         case('x')
           x(1)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
         case('y')
           x(2)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
         case('z')
-          x(1)=-0.0025
+          x(1)=-0.005
           x(3)=((2.*i-1)/(2.*one_dim))*box_size-box_size/2.
       end select
       !superfluid velocity
@@ -323,6 +324,7 @@ module diagnostic
               (/peri*box_size,perj*box_size,perk*box_size/)) !timestep.mod
             end do ; end do ;end do
           end if
+        case('Tree')
           u_sup=0. !must be zeroed for all algorithms
           call tree_walk_general(x,vtree,(/0.,0.,0./),u_sup)
           if (periodic_bc) then
@@ -335,7 +337,14 @@ module diagnostic
           end if
       end select
       call get_normal_velocity(x,u_norm)
-      write(32,*) x(1), u_sup, u_norm 
+      select case (one_dim_direction)
+        case('x')
+          write(32,*) x(1), u_sup, u_norm 
+        case('y')
+          write(32,*) x(2), u_sup, u_norm 
+        case('z')
+          write(32,*) x(3), u_sup, u_norm 
+      end select
     end do
     close(32)
   end subroutine
