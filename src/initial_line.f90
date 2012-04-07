@@ -155,6 +155,56 @@ module initial_line
     end do
   end subroutine
   !*************************************************************************
+  !>orthogonal lines from -z to z and -x to x which drives reconnection
+  !>particle count automatically adjusted
+  subroutine setup_orthog_lines
+    implicit none
+    integer :: pcount_required
+    integer :: i 
+    if (periodic_bc) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=2*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length and delta'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_crow', &
+      'periodic boundary conditions required')
+    end if
+    write(*,*) 'initf: crow, separation of lines is:', 2.*delta 
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount/2
+      f(i)%x(1)=0.
+      f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(pcount)
+      f(i)%x(2)=0.5*delta !-(delta/16.)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
+      if (i==1) then
+        f(i)%behind=pcount/2 ; f(i)%infront=i+1
+      else if (i==pcount/2) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.; f(i)%u3=0.
+    end do
+    !second line
+    do i=pcount/2+1, pcount
+      f(i)%x(1)=box_size/2.-box_size*real(2*(i-pcount/2)-1)/(pcount)
+      f(i)%x(2)=-0.5*delta!+(delta/16.)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
+      f(i)%x(3)=0.
+      if (i==(pcount/2+1)) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1+pcount/2
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do    
+  end subroutine
+  !************************************************************************
   !>anti parallel lines from -z to z which drives the crow instability
   !>particle count automatically adjusted
   subroutine setup_crow
