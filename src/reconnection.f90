@@ -40,7 +40,7 @@ module reconnection
           !reconnect the filaments
           recon_count=recon_count+1 !keep track of the total # of recons
           if (recon_info) then !more reconnection information
-            call same_loop_test(i,j,same_loop) !line.mod
+            call same_loop_test(i,j,same_loop) !general.mod
             if (same_loop) then
               self_rcount=self_rcount+1 
             else
@@ -110,7 +110,7 @@ module reconnection
           !reconnect the filaments
           recon_count=recon_count+1 !keep track of the total # of recons
           if (recon_info) then !more reconnection information
-            call same_loop_test(i,j,same_loop) !line.mod
+            call same_loop_test(i,j,same_loop) !general.mod
             if (same_loop) then
               self_rcount=self_rcount+1 
             else
@@ -178,7 +178,7 @@ module reconnection
             !reconnect the filaments
             recon_count=recon_count+1 !keep track of the total # of recons
             if (recon_info) then !more reconnection information
-              call same_loop_test(i,j,same_loop) !line.mod
+              call same_loop_test(i,j,same_loop) !general.mod
               if (same_loop) then
                 self_rcount=self_rcount+1 
                 self_r_length=self_r_length+(l_before-l_after) 
@@ -245,7 +245,7 @@ module reconnection
           !reconnect the filaments
           recon_count=recon_count+1 !keep track of the total # of recons
           if (recon_info) then !more reconnection information
-            call same_loop_test(i,j,same_loop) !line.mod
+            call same_loop_test(i,j,same_loop) !general.mod
             if (same_loop) then
               self_rcount=self_rcount+1 
             else
@@ -342,7 +342,7 @@ module reconnection
               !reconnect the filaments
               recon_count=recon_count+1 !keep track of the total # of recons
               if (recon_info) then !more reconnection information
-                call same_loop_test(i,j,same_loop) !line.mod
+                call same_loop_test(i,j,same_loop) !general.mod
                 if (same_loop) then
                   self_rcount=self_rcount+1 
                 else

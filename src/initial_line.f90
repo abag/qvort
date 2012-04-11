@@ -227,7 +227,10 @@ module initial_line
     do i=1, pcount/2
       f(i)%x(1)=0.
       f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(pcount)
-      f(i)%x(2)=delta-(delta/16.)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
+      !tiny pertubation from straight line
+      !f(i)%x(2)=delta-(delta/16.)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
+      !really bent lines below
+      f(i)%x(2)=3*delta-(2*delta)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
       if (i==1) then
         f(i)%behind=pcount/2 ; f(i)%infront=i+1
       else if (i==pcount/2) then 
@@ -242,7 +245,10 @@ module initial_line
     do i=pcount/2+1, pcount
       f(i)%x(1)=0.
       f(i)%x(3)=box_size/2.-box_size*real(2*(i-pcount/2)-1)/(pcount)
-      f(i)%x(2)=-delta+(delta/16.)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
+      !tiny pertubation from straight line
+      !f(i)%x(2)=-delta+(delta/16.)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
+      !really bent lines below
+      f(i)%x(2)=-3*delta+(2*delta)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
       if (i==(pcount/2+1)) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
