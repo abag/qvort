@@ -49,4 +49,8 @@ figure('Name','KS k vectors')
   set(gca,'FontSize',14)
     xlabel('N','FontSize',14)
     ylabel('k_N','FontSize',14)
-  
+
+[curlx,curly,curlz] = curl(ux,uy,uz) ;  
+mesh_iso(x,curlx,curly,curlz,64,'KS vorticity')
+figure
+imagesc(curlx(:,:,32)) ; shading interp

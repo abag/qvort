@@ -18,5 +18,6 @@ boundary periodic
 ---delete all below for a 'standard' run-----
 tree_theta 0.4
 two_dim 512
-one_dim 1024
-one_dim_direction 'z'
+mesh_size 256
+multiple_initial_loop T
+multiple_initial_count 4
