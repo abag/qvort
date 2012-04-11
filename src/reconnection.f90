@@ -146,6 +146,7 @@ module reconnection
     real :: distr, min_distr !reconnection distances
     real :: dot_val, tangent1(3), tangent2(3) !used to determine if filaments parallel
     real :: l_before, l_after !to check line length before and after
+    integer :: arc_dist !separation of points along the filament
     integer :: pari, parb, parii, parbb, parji, parjb !particles infront/behind
     integer :: par_recon !the particle we reconnect with
     integer :: i, j !we must do a double loop over all particles N^2
@@ -178,14 +179,22 @@ module reconnection
             !reconnect the filaments
             recon_count=recon_count+1 !keep track of the total # of recons
             if (recon_info) then !more reconnection information
-              call same_loop_test(i,j,same_loop) !general.mod
+              call same_loop_test_arc_length(i,j,same_loop,arc_dist) !general.mod
               if (same_loop) then
                 self_rcount=self_rcount+1 
-                self_r_length=self_r_length+(l_before-l_after) 
+                self_r_length=self_r_length+(l_before-l_after)
+                open(unit=61,file='./data/recon_same_loop_sep.log',position='append')
+                  write(61,*) t, arc_dist*avg_sep, arc_dist
+                close(61)
               else
                 vv_rcount=vv_rcount+1
                 vv_r_length=vv_r_length+(l_before-l_after)
               end if
+              !print the time of the recon and its location
+              !also include the angle between the reconnecting filaments
+              open(unit=61,file='./data/recon_location.log',position='append')
+                write(61,*) t, 0.5*(f(i)%x+f(j)%x), acos(dot_val)
+              close(61)  
             end if
             !set correct behind_infront
             f(parjb)%infront=pari

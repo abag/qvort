@@ -175,6 +175,57 @@ module general
        if (next==i) exit
      end do
    end subroutine
+  !**************************************************
+  !>a routine to test if two points are on the same loop
+  !>returns a logical arguement with the answer
+  !>this routine also returns the separation of the points
+  !>along the filament
+  subroutine same_loop_test_arc_length(i,j,same_loop,arc_dist)
+     use Cdata
+     implicit none
+     integer,intent(IN) :: i,j !the points
+     integer,intent(OUT) :: arc_dist !what is the separation between i&j
+     integer :: k !for looping
+     integer :: next !helper
+     logical :: same_loop !are the points on the same loop?
+     integer :: arc_dist_dummy !helper
+     !aim  of routine is to find out wether the links are on the same loop
+     same_loop=.false. !initial condition now try and prove if true
+     !initialise
+     next=i
+     arc_dist_dummy=0
+     do k=1, pcount
+       next=f(next)%infront
+       arc_dist_dummy=arc_dist_dummy+1
+       if (next==j) then
+         same_loop=.true.
+         exit
+       end if
+       if (next==i) exit
+     end do
+     arc_dist=arc_dist_dummy
+     !now we go the other way and see if arc_dist is reduced 
+     if (same_loop) then !only do if on same loop!
+       !re-initialise
+       next=i
+       arc_dist_dummy=0
+       do k=1, pcount
+         next=f(next)%behind
+         arc_dist_dummy=arc_dist_dummy+1
+         if (next==j) then
+           exit
+         end if
+         !probably don't need this but keep in for safety
+         if (next==i) then
+           call fatal_error('same_loop_test_arc_length','major issue')
+         end if
+       end do
+     end if
+     !if arc distance has been reduced then set to new value
+     if (arc_dist_dummy<arc_dist) then
+       arc_dist=arc_dist_dummy
+     end if
+   end subroutine
   !*********************************************************************
   !> a routine to find any NANs in the positions of all the allocated main
   !> arrays
