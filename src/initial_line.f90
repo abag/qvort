@@ -557,7 +557,7 @@ module initial_line
       write(*,'(a,i7.1)') ' pcount is now:', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
-      call fatal_error('init.mod:setup_wave_line', &
+      call fatal_error('init.mod:setup_smooth_test_wave', &
       'periodic boundary conditions required')
     end if
     write(*,'(a,i3.1,a)') ' drawing', my_line_count, ' lines from -z to +z'
@@ -638,7 +638,7 @@ module initial_line
                 binormalf(line_position)*amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
               end if
             case default
-              call fatal_error('initial.mod:wave_line','incorrect wave type parameter')
+              call fatal_error('initial.mod:smooth_wave_test','incorrect wave type parameter')
           end select
         end do
         call ghostp !we must call this routine at the end of adding every wave 
@@ -716,7 +716,7 @@ module initial_line
         f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.  
       end do
       !we have now drawn the basic line, now we add the wave pertubations
-      prefactor=wave_amp/(wave_start**wave_slope) !our starting wavenumber is wave_start
+      prefactor=wave_amp/(wave_start**(wave_slope/2)) !our starting wavenumber is wave_start
       if (i==1) then !only write this once
         write(*,*)'wave information recorded in ./data/wave_info.log'
         open(unit=34,file='./data/wave_info.log')
@@ -724,7 +724,7 @@ module initial_line
       end if
       do k=1, wave_count !wave_count set in run.in
         wave_number=wave_start+(k-1)*wave_skip
-        amp=prefactor*(wave_number**wave_slope)
+        !amp=prefactor*(wave_number**wave_slope)
         call random_number(random_shift) !help things along with a 
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
         if (wave_count==1) random_shift=0. !0 this for a single wave
@@ -992,6 +992,122 @@ module initial_line
         end do
       end if
     end do
+  end subroutine
+!*************************************************************************
+  subroutine setup_criss_cross_wave
+    implicit none
+    real :: wave_number, prefactor
+    real :: estimate_speed
+    real :: amp, random_shift
+    real :: xpos, ypos
+    real :: dir, axis
+    integer :: pcount_required
+    integer :: line_size, line_position
+    integer :: i, j, k
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:criss_cross_wave', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=line_count*nint(box_size/(0.45*delta)) !100% as waves are added
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,'(a,i7.1)') ' pcount is now:', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_criss_cross_wavee', &
+      'periodic boundary conditions required')
+    end if
+    write(*,'(a,i3.1,a)') ' drawing', line_count, ' lines in random directions'
+    write(*,'(i4.1,a,a,a)') wave_count, ' ',trim(wave_type),' wave pertubations'
+    write(*,'(a,i3.1)') ' starting wavenumber ', wave_start
+    write(*,'(a,f9.5)') ' starting amplitude', wave_amp*delta
+    write(*,'(a,i3.1)') ' wavenumber separation', wave_skip 
+    line_size=int(pcount/line_count)
+    !START THE LOOP
+    do i=1, line_count
+      if (line_count==1) then
+        xpos=0. ; ypos=0.
+      else
+        call random_number(xpos) ; call random_number(ypos)
+        call random_number(dir) ; call random_number(axis)
+        xpos=(xpos-.5)*box_size
+        ypos=(ypos-.5)*box_size
+        if (dir<0.5) then
+          dir=1. 
+        else
+          dir=-1.
+        end if
+      end if 
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        if (axis<0.333333333) then
+          f(line_position)%x(1)=xpos
+          f(line_position)%x(2)=ypos
+          f(line_position)%x(3)=dir*box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        else if (axis<0.66666666666) then
+          f(line_position)%x(2)=xpos
+          f(line_position)%x(3)=ypos
+          f(line_position)%x(1)=dir*box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        else
+          f(line_position)%x(3)=xpos
+          f(line_position)%x(1)=ypos
+          f(line_position)%x(2)=dir*box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        end if
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.  
+      end do
+      !we have now drawn the basic line, now we add the wave pertubations
+      prefactor=wave_amp/(wave_start**(wave_slope/2.)) !our starting wavenumber is wave_start
+      if (i==1) then !only write this once
+        write(*,*)'wave information recorded in ./data/wave_info.log'
+        open(unit=34,file='./data/wave_info.log')
+        write(34,*) '%------------------WAVE INFORMATION-------------------'
+      end if
+      do k=1, wave_count !wave_count set in run.in
+        wave_number=wave_start+(k-1)*wave_skip
+        call random_number(random_shift) !help things along with a 
+        random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
+        if (wave_count==1) random_shift=0. !0 this for a single wave
+        amp=prefactor*(wave_number**(wave_slope/2.))
+        if (i==1) then
+          write(34,'(f9.5,f9.5,f9.5)') wave_number, amp, random_shift
+        end if
+        do j=1, line_size !reloop over particles
+          line_position=j+(i-1)*line_size
+          if (axis<0.333333333333) then
+            f(line_position)%x(1)=f(line_position)%x(1)+&
+            amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+            f(line_position)%x(2)=f(line_position)%x(2)+&
+            amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+          else if (axis<0.66666666666) then
+            f(line_position)%x(2)=f(line_position)%x(2)+&
+            amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+            f(line_position)%x(3)=f(line_position)%x(3)+&
+            amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+          else
+            f(line_position)%x(3)=f(line_position)%x(3)+&
+            amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+            f(line_position)%x(1)=f(line_position)%x(1)+&
+            amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+          end if
+        end do
+      end do !close k loop
+      if (i==1) then
+        close(34)
+      end if 
+    end do !closes the i loop
   end subroutine
 end module
 

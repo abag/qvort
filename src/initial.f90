@@ -217,6 +217,8 @@ module initial
           call setup_tangle !initial_line.mod
         case('criss-cross')
           call setup_criss_cross !initial_line.mod
+        case('criss-cross-wave')
+          call setup_criss_cross_wave !initial_line.mod
         case default
           call fatal_error('cdata.mod:init_setup', &
                          'invalid choice for initf parameter') !cdata.mod
