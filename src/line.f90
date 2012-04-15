@@ -125,6 +125,11 @@ module line
         !or the particle infront is pinned
         if (f(f(i)%infront)%pinnedi) cycle 
       end if 
+      !do not remove points used in tracking reconnection distances
+      if (active_recon_distance) then
+        if (f(i)%infront==full_recon_distance%i) cycle
+        if (f(i)%infront==full_recon_distance%j) cycle
+      end if
       do_remove=.false.
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)

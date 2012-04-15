@@ -252,7 +252,7 @@ module initial_loop
       call fatal_error('init.mod:setup_linked_filaments', &
       'pcount is not a multiple of 2-aborting')
     end if
-    radius=(0.75*pcount*delta)/(4*pi) !75% of potential size
+    radius=(0.7*pcount*delta)/(4*pi) !75% of potential size
     write(*,'(a,f9.6)') ' initf: linked filaments, radius of loops:', radius 
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount/2
@@ -271,8 +271,8 @@ module initial_loop
     end do
     !second loop
     do i=pcount/2+1, pcount
-      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius/0.55
-      f(i)%x(2)=0.
+      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius
+      f(i)%x(2)=radius/1.05
       f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
 
       if (i==(pcount/2+1)) then
@@ -316,7 +316,7 @@ module initial_loop
     end do
     !second loop
     do i=pcount/2+1, pcount
-      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+2.07*radius
+      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+2.08*radius
       f(i)%x(2)=0.
       f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
 
@@ -339,7 +339,7 @@ module initial_loop
     real :: radius
     integer :: i 
     if (mod(pcount,2)/=0) then
-      call fatal_error('init.mod:setup_linked_filaments', &
+      call fatal_error('init.mod:setup_colliding_loops', &
       'pcount is not a multiple of 2-aborting')
     end if
     radius=(0.75*pcount*delta)/(4*pi) !75% of potential size
@@ -413,7 +413,7 @@ module initial_loop
     real :: radius
     integer :: i 
     if (mod(pcount,4)/=0) then
-      call fatal_error('init.mod:setup_linked_filaments', &
+      call fatal_error('init.mod:setup_kivotedes', &
       'pcount is not a multiple of 4-aborting')
     end if
     radius=(0.75*pcount*delta)/(8*pi) !75% of potential size

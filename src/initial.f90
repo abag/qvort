@@ -18,6 +18,7 @@ module initial
   subroutine init_setup()
     use quasip
     use particles
+    use reconnection
     implicit none
     logical :: restart
     write(*,'(a)') ' ---------------------VORTEX PARAMETERS------------------' 
@@ -327,6 +328,10 @@ module initial
     if (topo_inf) write(*,*) 'printing topological information to file'
     if (sep_inf) write(*,*) 'printing point separation info+histogram to file'
     if (recon_time_info) write(*,*) 'printing time difference between reconnections at points (mesh_shots used)'
+    if (recon_info) then
+     write(*,*) 'activating reconnection distace array'
+     call setup_recon_distance_array !reconnection.mod
+    end if
     if (line_sep_inf) then
       if (tree_theta>0.) then
         write(*,*) 'printing separation of nearest filaments+histogram to file'

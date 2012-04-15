@@ -230,7 +230,8 @@ module initial_line
       !tiny pertubation from straight line
       !f(i)%x(2)=delta-(delta/16.)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
       !really bent lines below
-      f(i)%x(2)=3*delta-(2*delta)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
+      f(i)%x(2)=16*delta-(12*delta)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
+      !f(i)%x(2)=2*f(i)%x(2)
       if (i==1) then
         f(i)%behind=pcount/2 ; f(i)%infront=i+1
       else if (i==pcount/2) then 
@@ -248,7 +249,8 @@ module initial_line
       !tiny pertubation from straight line
       !f(i)%x(2)=-delta+(delta/16.)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
       !really bent lines below
-      f(i)%x(2)=-3*delta+(2*delta)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
+      f(i)%x(2)=-16*delta+(12*delta)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
+      !f(i)%x(2)=2*f(i)%x(2)
       if (i==(pcount/2+1)) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 

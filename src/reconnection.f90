@@ -2,6 +2,7 @@
 module reconnection
   use cdata
   use general
+  implicit none
   contains
   !******************************************************************
   !>reconnect filaments if they become too close removing the two points
@@ -153,11 +154,19 @@ module reconnection
     logical :: same_loop
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
+      !if (active_recon_distance) then
+      !  if (i==full_recon_distance%i) cycle
+      !  if (i==full_recon_distance%j) cycle
+      !end if
       pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
       parii=f(pari)%infront ; parbb=f(parb)%behind !find particle twice infront/behind
       !now we determine if we can reconnect
       if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
         j=f(i)%closest
+        !if (active_recon_distance) then
+        !  if (j==full_recon_distance%i) cycle
+        !  if (j==full_recon_distance%j) cycle
+        !end if
         !another saftery check
         if (j==pari) cycle ; if (j==parb) cycle ; if (j==0) cycle
         !these two could have reconnected earlier in this case j will be empty
@@ -194,22 +203,32 @@ module reconnection
               !also include the angle between the reconnecting filaments
               open(unit=61,file='./data/recon_location.log',position='append')
                 write(61,*) t, 0.5*(f(i)%x+f(j)%x), acos(dot_val)
-              close(61)  
+              close(61)
+              !now see if we setup reconnection distance array
+              if (active_recon_distance.eqv..false.) then
+                full_recon_distance%i=i !set i and 
+                full_recon_distance%j=j !j then say the array is 
+                active_recon_distance=.true.!active and reset the
+                full_recon_distance%counter=1 !counter
+                full_recon_distance%angle=acos(dot_val) !set the angle
+              end if 
             end if
             !set correct behind_infront
             f(parjb)%infront=pari
             f(pari)%behind=parjb
             f(i)%infront=j
             f(j)%behind=i
-            !set reconnection times
-            f(parjb)%t_recon(2)=f(parjb)%t_recon(1) !move last recon to slot 2
-            f(parjb)%t_recon(1)=t !set current time
-            f(pari)%t_recon(2)=f(pari)%t_recon(1) 
-            f(pari)%t_recon(1)=t 
-            f(i)%t_recon(2)=f(i)%t_recon(1) 
-            f(i)%t_recon(1)=t 
-            f(j)%t_recon(2)=f(j)%t_recon(1) 
-            f(j)%t_recon(1)=t 
+            if (recon_time_info) then
+              !set reconnection times
+              f(parjb)%t_recon(2)=f(parjb)%t_recon(1) !move last recon to slot 2
+              f(parjb)%t_recon(1)=t !set current time
+              f(pari)%t_recon(2)=f(pari)%t_recon(1) 
+              f(pari)%t_recon(1)=t 
+              f(i)%t_recon(2)=f(i)%t_recon(1) 
+              f(i)%t_recon(1)=t 
+              f(j)%t_recon(2)=f(j)%t_recon(1) 
+              f(j)%t_recon(1)=t 
+            end if
             !check the size of these new loops
             call loop_killer(pari) ; call loop_killer(i)
           end if
@@ -411,6 +430,53 @@ module reconnection
           exit  
         end if
       end do
+    end if
+  end subroutine
+  !**************************************************
+  !> small subroutine which allocates full_recon_distance 
+  subroutine setup_recon_distance_array
+    implicit none
+    write(*,*) 'length of reconnection distance array: ', full_recon_distance%sarray
+    allocate(full_recon_distance%curvi(full_recon_distance%sarray))
+    allocate(full_recon_distance%curvj(full_recon_distance%sarray))
+    allocate(full_recon_distance%dist(full_recon_distance%sarray))
+    full_recon_distance%file_count=1
+  end subroutine
+  !**************************************************
+  !> called by run.f90 set the reconnection distance and print to file
+  !> if the array is full 
+  subroutine set_recon_dist
+    implicit none
+    character (len=40) :: print_file
+    integer :: i !for looping
+    !first check to see if either i or j has been removed
+    if (f(full_recon_distance%i)%infront==0) then
+      !deactivate the array 
+      active_recon_distance=.false.
+    else if (f(full_recon_distance%j)%infront==0) then
+      !deactivate the array 
+      active_recon_distance=.false.
+    end if
+    !now set the distances and curvatures
+    full_recon_distance%dist(full_recon_distance%counter)=distf(full_recon_distance%i,full_recon_distance%j)
+    full_recon_distance%curvi(full_recon_distance%counter)=curvature(full_recon_distance%i)
+    full_recon_distance%curvj(full_recon_distance%counter)=curvature(full_recon_distance%j)
+    !increment counter
+    full_recon_distance%counter=full_recon_distance%counter+1
+    if (full_recon_distance%counter==full_recon_distance%sarray+1) then
+      !deactivate the array 
+      active_recon_distance=.false.
+      !print to file
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/recon_dist",full_recon_distance%file_count,".log"
+      open(unit=45,file=print_file,status='replace')
+        write(45,*) t, '%time'
+        write(45,*) full_recon_distance%angle, '%initial angle'
+        do i=1, full_recon_distance%sarray 
+           write(45,*) full_recon_distance%dist(i), full_recon_distance%curvi(i), full_recon_distance%curvj(i) 
+        end do
+      close(45)
+      !increment file_count
+      full_recon_distance%file_count=full_recon_distance%file_count+1
     end if
   end subroutine
 end module
