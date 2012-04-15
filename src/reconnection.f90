@@ -154,19 +154,19 @@ module reconnection
     logical :: same_loop
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
-      !if (active_recon_distance) then
-      !  if (i==full_recon_distance%i) cycle
-      !  if (i==full_recon_distance%j) cycle
-      !end if
+      if (active_recon_distance) then
+        if (i==full_recon_distance%i) cycle
+        if (i==full_recon_distance%j) cycle
+      end if
       pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
       parii=f(pari)%infront ; parbb=f(parb)%behind !find particle twice infront/behind
       !now we determine if we can reconnect
       if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
         j=f(i)%closest
-        !if (active_recon_distance) then
-        !  if (j==full_recon_distance%i) cycle
-        !  if (j==full_recon_distance%j) cycle
-        !end if
+        if (active_recon_distance) then
+          if (j==full_recon_distance%i) cycle
+          if (j==full_recon_distance%j) cycle
+        end if
         !another saftery check
         if (j==pari) cycle ; if (j==parb) cycle ; if (j==0) cycle
         !these two could have reconnected earlier in this case j will be empty
@@ -463,6 +463,7 @@ module reconnection
     full_recon_distance%curvj(full_recon_distance%counter)=curvature(full_recon_distance%j)
     !increment counter
     full_recon_distance%counter=full_recon_distance%counter+1
+    print*, full_recon_distance%counter
     if (full_recon_distance%counter==full_recon_distance%sarray+1) then
       !deactivate the array 
       active_recon_distance=.false.
