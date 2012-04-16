@@ -72,7 +72,7 @@ module reconnection
   end subroutine
   !******************************************************************
   !>reconnect filaments if they become too close removing the two points
-  !>which are reconnected, the two closest points. This is the original scheme of
+  !>which are reconnected, the two closest points. This is the scheme of
   !>Schwarz
   subroutine precon_schwarz
     implicit none
@@ -155,6 +155,8 @@ module reconnection
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
       if (active_recon_distance) then
+        !do not reconnect points being monitored for reconnection dist
+        !this is probably slightly dodgy!
         if (i==full_recon_distance%i) cycle
         if (i==full_recon_distance%j) cycle
       end if
@@ -164,6 +166,8 @@ module reconnection
       if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
         j=f(i)%closest
         if (active_recon_distance) then
+          !do not reconnect points being monitored for reconnection dist
+          !this is probably slightly dodgy!
           if (j==full_recon_distance%i) cycle
           if (j==full_recon_distance%j) cycle
         end if
@@ -207,7 +211,7 @@ module reconnection
               !now see if we setup reconnection distance array
               if (active_recon_distance.eqv..false.) then
                 full_recon_distance%i=i !set i and 
-                full_recon_distance%j=j !j then say the array is 
+                full_recon_distance%j=pari !j then say the array is 
                 active_recon_distance=.true.!active and reset the
                 full_recon_distance%counter=1 !counter
                 full_recon_distance%angle=acos(dot_val) !set the angle
@@ -463,7 +467,6 @@ module reconnection
     full_recon_distance%curvj(full_recon_distance%counter)=curvature(full_recon_distance%j)
     !increment counter
     full_recon_distance%counter=full_recon_distance%counter+1
-    print*, full_recon_distance%counter
     if (full_recon_distance%counter==full_recon_distance%sarray+1) then
       !deactivate the array 
       active_recon_distance=.false.
@@ -471,6 +474,8 @@ module reconnection
       write(unit=print_file,fmt="(a,i4.4,a)")"./data/recon_dist",full_recon_distance%file_count,".log"
       open(unit=45,file=print_file,status='replace')
         write(45,*) t, '%time'
+        write(45,*) dt, '%timestep'
+        write(45,*)  full_recon_distance%sarray, '%array size'
         write(45,*) full_recon_distance%angle, '%initial angle'
         do i=1, full_recon_distance%sarray 
            write(45,*) full_recon_distance%dist(i), full_recon_distance%curvi(i), full_recon_distance%curvj(i) 

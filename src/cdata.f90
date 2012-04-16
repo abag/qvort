@@ -111,16 +111,16 @@ module cdata
   !***********RECONNECTION DISTANCE ARRAY****************************************
   type recon_distance_array
     integer :: i, j !particles involved in recon
-    integer :: sarray=200 !size of array
+    integer :: sarray=1000 !size of array
     integer :: counter !for looping
     integer :: file_count ! for printing to file 
     real :: angle !initial angle 
     !curvature of particles and distance between them
-    real, allocatable :: curvi(:), curvj(:), dist(:)
+    real, allocatable, dimension(:) :: curvi, curvj, dist
   end type
-  type(recon_distance_array) :: full_recon_distance 
+  type(recon_distance_array),save :: full_recon_distance 
   !>is the reconnection distance algorithm active?
-  logical :: active_recon_distance=.false.
+  logical :: active_recon_distance=.false. !inactive by default
   !**************TIME PARAMS*******************************************************
   !>time held globally
   real :: t=0. 
