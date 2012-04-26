@@ -22,6 +22,7 @@ module timestep
     real :: adap_x(3) !dummy variable to check timestep
     real :: dummy_max_error, max_error !maximum error between 2nd and 3rd order method
     real :: rot_r, rot_theta !for differential rotation
+    real :: mean_x, mean_y !mean x and y position
     integer :: i
     !intialise forcing every timestep incase there is a random element
     call randomise_forcing !forcing.mod
@@ -82,6 +83,13 @@ module timestep
         if (dt>1E-5) dt=1E-5 !max timestep
       end if
     end if 
+    if (sticky_z_boundary) then
+      !if the vortex has wandered in x or y move it back
+      mean_x=sum(f(:)%x(1), mask=f(:)%infront>0)/count(mask=f(:)%infront>0)
+      mean_y=sum(f(:)%x(2), mask=f(:)%infront>0)/count(mask=f(:)%infront>0)
+      f(:)%x(1)=f(:)%x(1)-mean_x 
+      f(:)%x(2)=f(:)%x(2)-mean_y
+    end if
   end subroutine
   !*************************************************
   !>get the velocity of each particle subject to the superfluid velocity
@@ -244,7 +252,7 @@ module timestep
       !check the flux through the boundaries is 0
       call mirror_flux_check(i,u) !mirror.mod
     end if
-    if (sticky_z_boundary) then
+    if (1==2) then
       !particles at top/bottom of box are fixed
       if ((abs(f(i)%x(3))-box_size/2.)>-1.5*delta) then
         !particle is sufficiently close to top boundary stick
