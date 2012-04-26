@@ -97,7 +97,9 @@ module general
     integer, intent(IN) :: i
     real :: length !length of vector
     !now determine the vector (low order finite diff.)
-    norm_tanf(:)=(f(i)%ghosti(:)-f(i)%x(:))
+    !norm_tanf(:)=(f(i)%ghosti(:)-f(i)%x(:))
+    !new method is to use high order finite diff.
+    call get_deriv_1(i,norm_tanf)
     !calculate length of vector
     length=sqrt(norm_tanf(1)**2+norm_tanf(2)**2+norm_tanf(3)**2)
     norm_tanf(:)=norm_tanf(:)/length !normalise

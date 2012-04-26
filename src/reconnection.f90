@@ -180,6 +180,7 @@ module reconnection
         !now check whether parallel
         tangent1=norm_tanf(i) ; tangent2=norm_tanf(j) !general.mod
         dot_val=dot_product(tangent1,tangent2) !intrinsic function
+        print*, dot_val
         if ((dot_val>0.9)) then
           !we cannot reconnect as filaments are parallel          
         else
@@ -452,17 +453,41 @@ module reconnection
   subroutine set_recon_dist
     implicit none
     character (len=40) :: print_file
+    real :: dist
     integer :: i !for looping
     !first check to see if either i or j has been removed
     if (f(full_recon_distance%i)%infront==0) then
       !deactivate the array 
       active_recon_distance=.false.
+      return
     else if (f(full_recon_distance%j)%infront==0) then
       !deactivate the array 
       active_recon_distance=.false.
+      return
     end if
     !now set the distances and curvatures
-    full_recon_distance%dist(full_recon_distance%counter)=distf(full_recon_distance%i,full_recon_distance%j)
+    dist=distf(full_recon_distance%i,full_recon_distance%j)
+    if (dist>0.5*box_size) then
+      !deactivate the array 
+      active_recon_distance=.false.
+      !do an additional check if the distance array is 75% full we are better off
+      !printing to file - note here we only write up to the current counter not the 
+      !full array size
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/recon_dist",full_recon_distance%file_count,".log"
+      open(unit=45,file=print_file,status='replace')
+        write(45,*) t, '%time'
+        write(45,*) dt, '%timestep'
+        write(45,*)  full_recon_distance%counter, '%array size (reduced)'
+        write(45,*) full_recon_distance%angle, '%initial angle'
+        do i=1, full_recon_distance%counter
+           write(45,*) full_recon_distance%dist(i), full_recon_distance%curvi(i), full_recon_distance%curvj(i) 
+        end do
+      close(45)
+      !increment file_count
+      full_recon_distance%file_count=full_recon_distance%file_count+1
+      return
+    end if 
+    full_recon_distance%dist(full_recon_distance%counter)=dist
     full_recon_distance%curvi(full_recon_distance%counter)=curvature(full_recon_distance%i)
     full_recon_distance%curvj(full_recon_distance%counter)=curvature(full_recon_distance%j)
     !increment counter
