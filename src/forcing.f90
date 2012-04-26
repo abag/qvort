@@ -11,6 +11,7 @@ module forcing
   real, private :: force_direction(3)=0. 
   !> @param force_phase a vector to force Kelvin wave cascade
   real, private :: force_phase(3)=0. 
+  real :: force_dir1(3)=1, force_dir2(3)=1
   !> @param LS_k Large scale forcing wavenumber
   !> @param LS_A Large scale forcing - vector perp to k
   !> @param LS_B Large scale forcing - vector perp to k
@@ -136,8 +137,8 @@ module forcing
         u=0. !initialise to 0
         !now sum over three wavenumbers
         do j=9,11
-          u(1)=u(1)+force_amp*cos(2*pi*j*f(i)%x(3)/box_size+force_phase(j-8))
-          u(2)=u(2)+force_amp*sin(2*pi*j*f(i)%x(3)/box_size+force_phase(j-8))
+          u(1)=u(1)+force_amp*force_dir1(j-8)*cos(2*pi*j*f(i)%x(3)/box_size+force_phase(j-8))
+          u(2)=u(2)+force_amp*force_dir2(j-8)*sin(2*pi*j*f(i)%x(3)/box_size+force_phase(j-8))
         end do
     end select
   end subroutine
@@ -181,6 +182,18 @@ module forcing
         if (mod(itime,ceiling(force_freq))==0) then
           do j=1, 3
             force_phase(j)=runif(0.,2.*pi)
+            call random_number(force_dir1(j))
+            call random_number(force_dir2(j))
+            if (force_dir1(j)>0.5) then
+              force_dir1(j)=-1.
+            else 
+              force_dir1(j)=1.
+            end if
+            if (force_dir2(j)>0.5) then
+              force_dir2(j)=-1.
+            else 
+              force_dir2(j)=1.
+            end if
           end do 
         end if
     end select 
