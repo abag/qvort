@@ -58,11 +58,13 @@ for j=1:number_of_particles
 end
 amp2=sortrows(amp,1);
 X=(-dims(2)/2:dims(1)/2:dims(2)/2.);
-Yx=interp1(amp2(:,1),amp2(:,2),X,'cubic');
-Yy=interp1(amp2(:,1),amp2(:,3),X,'cubic');
+%Yx=interp1(amp2(:,1),amp2(:,2),X,'cubic');
+%Yy=interp1(amp2(:,1),amp2(:,3),X,'cubic');
+Yx=interpft(amp2(:,2),length(X));
+Yy=interpft(amp2(:,3),length(X));
 Z=Yx+i.*Yy;
-X2=X(5:length(X)-3);
-Z2=Z(5:length(Z)-3);
+X2=X(1:length(X));
+Z2=Z(1:length(Z));
 if plotit==1
 figure
 plot(amp(:,1),sqrt(amp(:,2).^2+amp(:,3).^2),'o');

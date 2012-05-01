@@ -10,8 +10,8 @@ module forcing
   !> @param force_direction a helper vector to force a particle in 3 spatial dimensions
   real, private :: force_direction(3)=0. 
   !> @param force_phase a vector to force Kelvin wave cascade
-  real, private :: force_phase(3)=0. 
-  real :: force_dir1(3)=1, force_dir2(3)=1
+  real, private :: force_phase(6)=0. 
+  real, private :: wave_tail_freq(3)=0.
   !> @param LS_k Large scale forcing wavenumber
   !> @param LS_A Large scale forcing - vector perp to k
   !> @param LS_B Large scale forcing - vector perp to k
@@ -22,6 +22,7 @@ module forcing
   !>check all the necessary conditions to use forcing are set in run.in
   subroutine setup_forcing()
     implicit none
+    integer :: j !for looping
     select case(force)
       case('off')
         write(*,*) 'no forcing employed'
@@ -54,6 +55,14 @@ module forcing
       case('wave_force')
         write(*,'(a,f5.3)') 'force wavemodes  9,10,11 with amplitude ', force_amp
         write(*,'(a,i6.2,a)') 'phase changed every, ', ceiling(force_freq), ',timesteps'
+      case('wave_tail')
+        write(*,'(a,f5.3)') 'force tail of vortex  with modes 9,10,11 with amplitude ', force_amp
+        write(*,'(a,i6.2,a)') 'phase changed every, ', ceiling(force_freq), ',timesteps'
+        do j=9,11
+          wave_tail_freq(j-8)=(quant_circ*((j*2.*pi/box_size)**2)/(4*pi))*&
+                                   log((2./(((10.*2.*pi/box_size)**2)*corea))-0.57721)
+        end do
+        write(*,'(a,3f13.6)') 'frequencies are, ', wave_tail_freq(:)
       case default
         call fatal_error('forcing.mod:setup_forcing', &
         'incorrect forcing parameter set in run.in') !cdata.mod
@@ -66,10 +75,11 @@ module forcing
   !***********************************************
   !>force the particles - an additional velocity at position
   !>of f(i)%x
-  subroutine get_forcing(i,u)
+  subroutine get_forcing(i,u,u_BS)
     implicit none
     integer, intent(IN) :: i
     real, intent(OUT) :: u(3)
+    real, intent(INOUT) :: u_BS(3)
     integer :: j !for looping
     integer :: peri, perj, perk !used to loop in periodic cases
     select case(force)
@@ -137,9 +147,26 @@ module forcing
         u=0. !initialise to 0
         !now sum over three wavenumbers
         do j=9,11
-          u(1)=u(1)+force_amp*force_dir1(j-8)*cos(2*pi*j*f(i)%x(3)/box_size+force_phase(j-8))
-          u(2)=u(2)+force_amp*force_dir2(j-8)*sin(2*pi*j*f(i)%x(3)/box_size+force_phase(j-8))
+          u(1)=u(1)+force_amp*cos(2*pi*j*f(i)%x(3)/box_size+force_phase(j-8))
+          u(2)=u(2)+force_amp*sin(2*pi*j*f(i)%x(3)/box_size+force_phase(j-8))
+          u(1)=u(1)+force_amp*cos(-2*pi*j*f(i)%x(3)/box_size+force_phase(j-5))
+          u(2)=u(2)+force_amp*sin(-2*pi*j*f(i)%x(3)/box_size+force_phase(j-5))
         end do
+      case('wave_tail')
+        u=0.
+        if (abs(f(i)%x(3))<epsilon(0.)) then
+          !print*, i
+          !0 the Biot-Savart velocity
+          u_BS=0.
+          !particle is sufficiently close to top boundary to force
+          open(unit=67,file='./data/wave_tail_pos.log',position='append')
+            write(67,*) i,itime, f(i)%x(1), f(i)%x(2)
+          close(67)
+          do j=1,1
+            !u(1)=u(1)+force_amp*cos(t*wave_tail_freq(j))
+            u(2)=u(2)+force_amp*sin(t*wave_tail_freq(j)+pi/2)
+          end do
+        end if
     end select
   end subroutine
   !***********************************************
@@ -177,23 +204,11 @@ module forcing
             write(72,*) t, force_direction(1:3)
           close(72)
         end if
-      case('wave_force')
+      case('wave_force','wave_tail')
         !uniform distributed random phase from 0->2\pi
         if (mod(itime,ceiling(force_freq))==0) then
-          do j=1, 3
+          do j=1, 6
             force_phase(j)=runif(0.,2.*pi)
-            call random_number(force_dir1(j))
-            call random_number(force_dir2(j))
-            if (force_dir1(j)>0.5) then
-              force_dir1(j)=-1.
-            else 
-              force_dir1(j)=1.
-            end if
-            if (force_dir2(j)>0.5) then
-              force_dir2(j)=-1.
-            else 
-              force_dir2(j)=1.
-            end if
           end do 
         end if
     end select 

@@ -133,6 +133,10 @@ module initial
           call fatal_error('init','sticky_z_boundary needs periodic bc.')
         end if
       end if
+      if (remove_mean_pos) then
+        write(*,*) 'removing mean of x/y vortex positions every timestep'
+        write(*,*) 'this is intended to be used for kelvin wave simulations only'
+      end if
     else
       call fatal_error('init_setup:', 'box size is less than zero')
     end if

@@ -83,7 +83,7 @@ module timestep
         if (dt>1E-5) dt=1E-5 !max timestep
       end if
     end if 
-    if (sticky_z_boundary) then
+    if (remove_mean_pos) then
       !if the vortex has wandered in x or y move it back
       mean_x=sum(f(:)%x(1), mask=f(:)%infront>0)/count(mask=f(:)%infront>0)
       mean_y=sum(f(:)%x(2), mask=f(:)%infront>0)/count(mask=f(:)%infront>0)
@@ -245,14 +245,14 @@ module timestep
     end select
     !forcing?
     if (t<force_cutoff) then
-      call get_forcing(i,u_force)
+      call get_forcing(i,u_force,u)
       u=u+u_force
     end if
     if (mirror_bc) then
       !check the flux through the boundaries is 0
       call mirror_flux_check(i,u) !mirror.mod
     end if
-    if (1==2) then
+    if (sticky_z_boundary) then
       !particles at top/bottom of box are fixed
       if ((abs(f(i)%x(3))-box_size/2.)>-1.5*delta) then
         !particle is sufficiently close to top boundary stick

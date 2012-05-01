@@ -11,6 +11,7 @@ module initial_line
   subroutine setup_single_line
     implicit none
     integer :: pcount_required
+    integer :: mid_point
     integer :: i
     if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
       !work out the number of particles required for single line
@@ -23,6 +24,7 @@ module initial_line
       call fatal_error('init.mod:setup_single_line', &
       'periodic boundary conditions required')
     end if
+    mid_point=(pcount+1)/2
     do i=1, pcount
       f(i)%x(1)=0. !box_size/3
       f(i)%x(2)=0. !-box_size/3
@@ -671,7 +673,7 @@ module initial_line
     if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
       !work out the number of particles required for single line
       !given the box size specified in run.i
-      pcount_required=line_count*nint(box_size/(0.25*delta)) !100% as waves are added
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !100% as waves are added
       write(*,*) 'changing size of pcount to fit with box_length and delta'
       write(*,'(a,i7.1)') ' pcount is now:', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))

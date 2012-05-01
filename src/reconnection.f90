@@ -180,7 +180,6 @@ module reconnection
         !now check whether parallel
         tangent1=norm_tanf(i) ; tangent2=norm_tanf(j) !general.mod
         dot_val=dot_product(tangent1,tangent2) !intrinsic function
-        print*, dot_val
         if ((dot_val>0.9)) then
           !we cannot reconnect as filaments are parallel          
         else

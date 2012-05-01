@@ -12,8 +12,9 @@ for i=start:skip:finish
   Pw=Pw+dum_Pw;
   counter=counter+1;
 end
+counter=counter-1;
 k=k/counter;
-P=P/counter;
+P=P'/counter;
 kw=kw'/counter;
 Pw=Pw/counter;
 %%%%%%%%%%%%%%%%%%%%%%DO OUR SPECTRA%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -22,6 +23,8 @@ loglog(k,P,'LineWidth',2)
 xlabel('log_{10} k','Fontsize',16)
 ylabel('log_{10} A','Fontsize',16)
 set(gca,'Fontsize',16)
+length(k)
+length(P)
 p=polyfit(log10(k(30:100)),log10(P(30:100)),1)
 figure('Name','Spectra with fit')
 plot(log10(k(1:length(k)-100)),log10(P(1:length(k)-100)),'k','LineWidth',2)
@@ -32,15 +35,15 @@ xlabel('log_{10} k','Fontsize',16)
 ylabel('log_{10} A','Fontsize',16)
 set(gca,'Fontsize',16)
 figure('Name','Compensated -17/5')
-plot(log(k(14:length(k)-50)),smooth(log((k(14:length(k)-50).^(17/5)).*P(14:length(k)-50)),10),'k','LineWidth',2)
+plot(log(k(14:length(k)-100)),smooth(log((k(14:length(k)-100).^(17/5)).*P(14:length(k)-100)),10),'k','LineWidth',2)
 figure('Name','Compensated -11/3')
-plot(log(k(14:length(k)-50)),smooth(log((k(14:length(k)-50).^(11/3)).*P(14:length(k)-50)),10),'k','LineWidth',2)
+plot(log(k(14:length(k)-100)),smooth(log((k(14:length(k)-100).^(11/3)).*P(14:length(k)-100)),10),'k','LineWidth',2)
 figure('Name','Componstated on same scale')
-plot(log10(k(10:length(k)-50)),smooth(log10((k(10:length(k)-50).^(17/5)).*P(10:length(k)-50)),10),'k','LineWidth',2)
+plot(log10(k(10:length(k)-100)),smooth(log10((k(10:length(k)-100).^(17/5)).*P(10:length(k)-100)),10),'k','LineWidth',2)
 hold on
-plot(log10(k(10:length(k)-50)),smooth(log10((k(10:length(k)-50).^(11/3)).*P(10:length(k)-50)),10),'r','LineWidth',2)
+plot(log10(k(10:length(k)-100)),smooth(log10((k(10:length(k)-100).^(11/3)).*P(10:length(k)-100)),10),'r','LineWidth',2)
 hold on
-plot(log10(k(10:length(k)-50)),smooth(log10((k(10:length(k)-50).^(3)).*P(10:length(k)-50)),10),'b','LineWidth',2)
+plot(log10(k(10:length(k)-100)),smooth(log10((k(10:length(k)-100).^(3)).*P(10:length(k)-100)),10),'b','LineWidth',2)
 xlabel('log_{10} k','Fontsize',16)
 ylabel('log_{10} Ak^3, Ak^{3.4}, Ak^{3.66} ','Fontsize',16)
 set(gca,'Fontsize',16)

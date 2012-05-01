@@ -188,6 +188,7 @@ module cdata
   logical :: periodic_bc_notxy=.false.
   real :: xdim_scaling_factor=1.
   logical :: sticky_z_boundary=.false.
+  logical :: remove_mean_pos=.false.
   !>which reconnection algorithm to use
   character(len=30), protected :: recon_type='original'  
   !>are boundaries solid?
@@ -460,6 +461,8 @@ module cdata
              read(buffer, *, iostat=ios) force_freq !forcing frequency
           case ('sticky_z_boundary')
              read(buffer, *, iostat=ios) sticky_z_boundary !particles stuck to top/bottom boundaries
+          case ('remove_mean_pos')
+             read(buffer, *, iostat=ios) remove_mean_pos !remove zero mode in KWC simulations
           case ('phonon_emission')
              read(buffer, *, iostat=ios) phonon_emission !phonon emission on or off
           case ('phonon_percent')

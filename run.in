@@ -1,16 +1,17 @@
 --------------required parameters------------
-nsteps 1
-shots 1
-mesh_shots 1
-pcount 6000
-dt 0.
-delta .002
+nsteps 10000000
+shots 100
+pcount 1000
+dt 0.6E-5
+delta 0.0005
 box_size 0.1
 velocity Tree
-initf lattice
-line_count 25
-boundary periodic
+initf single_line
+boundary openxy
 --------------optional parameters------------
 ---delete all below for a 'standard' run-----
-binary_print T
 tree_theta 0.4
+force wave_force
+force_amp .03
+force_freq 1
+remove_mean_pos T
