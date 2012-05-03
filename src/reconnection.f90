@@ -150,27 +150,31 @@ module reconnection
     integer :: arc_dist !separation of points along the filament
     integer :: pari, parb, parii, parbb, parji, parjb !particles infront/behind
     integer :: par_recon !the particle we reconnect with
-    integer :: i, j !we must do a double loop over all particles N^2
+    integer :: i, j, k !we must do a double loop over all particles N^2
     logical :: same_loop
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
-      if (active_recon_distance) then
-        !do not reconnect points being monitored for reconnection dist
-        !this is probably slightly dodgy!
-        if (i==full_recon_distance%i) cycle
-        if (i==full_recon_distance%j) cycle
-      end if
+      do k=1, n_recon_track
+        if (full_recon_distance(k)%active) then
+          !do not reconnect points being monitored for reconnection dist
+          !this is probably slightly dodgy!
+          if (i==full_recon_distance(k)%i) cycle
+          if (i==full_recon_distance(k)%j) cycle
+        end if
+      end do
       pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
       parii=f(pari)%infront ; parbb=f(parb)%behind !find particle twice infront/behind
       !now we determine if we can reconnect
       if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
         j=f(i)%closest
-        if (active_recon_distance) then
-          !do not reconnect points being monitored for reconnection dist
-          !this is probably slightly dodgy!
-          if (j==full_recon_distance%i) cycle
-          if (j==full_recon_distance%j) cycle
-        end if
+        do k=1, n_recon_track
+          if (full_recon_distance(k)%active) then
+            !do not reconnect points being monitored for reconnection dist
+            !this is probably slightly dodgy!
+            if (j==full_recon_distance(k)%i) cycle
+            if (j==full_recon_distance(k)%j) cycle
+          end if
+        end do
         !another saftery check
         if (j==pari) cycle ; if (j==parb) cycle ; if (j==0) cycle
         !these two could have reconnected earlier in this case j will be empty
@@ -209,13 +213,15 @@ module reconnection
                 write(61,*) t, 0.5*(f(i)%x+f(j)%x), acos(dot_val), (l_before-l_after)
               close(61)
               !now see if we setup reconnection distance array
-              if (active_recon_distance.eqv..false.) then
-                full_recon_distance%i=i !set i and 
-                full_recon_distance%j=pari !j then say the array is 
-                active_recon_distance=.true.!active and reset the
-                full_recon_distance%counter=1 !counter
-                full_recon_distance%angle=acos(dot_val) !set the angle
-              end if 
+              do k=1, n_recon_track
+                if (full_recon_distance(k)%active.eqv..false.) then
+                  full_recon_distance(k)%i=i !set i and 
+                  full_recon_distance(k)%j=pari !j then say the array is 
+                  full_recon_distance(k)%active=.true.!active and reset the
+                  full_recon_distance(k)%counter=1 !counter
+                  full_recon_distance(k)%angle=acos(dot_val) !set the angle
+                end if
+              end do 
             end if
             !set correct behind_infront
             f(parjb)%infront=pari
@@ -440,11 +446,16 @@ module reconnection
   !> small subroutine which allocates full_recon_distance 
   subroutine setup_recon_distance_array
     implicit none
-    write(*,*) 'length of reconnection distance array: ', full_recon_distance%sarray
-    allocate(full_recon_distance%curvi(full_recon_distance%sarray))
-    allocate(full_recon_distance%curvj(full_recon_distance%sarray))
-    allocate(full_recon_distance%dist(full_recon_distance%sarray))
-    full_recon_distance%file_count=1
+    integer :: i
+    write(*,*) 'length of reconnection distance array: ', size_recon_array
+    write(*,*) 'number of pairs being tracked (simultaniously): ', n_recon_track
+    allocate(full_recon_distance(n_recon_track))
+    do i=1,n_recon_track
+      allocate(full_recon_distance(i)%curvi(size_recon_array))
+      allocate(full_recon_distance(i)%curvj(size_recon_array))
+      allocate(full_recon_distance(i)%dist(size_recon_array))
+    end do
+    file_count_recon_array=1
   end subroutine
   !**************************************************
   !> called by run.f90 set the reconnection distance and print to file
@@ -453,60 +464,66 @@ module reconnection
     implicit none
     character (len=40) :: print_file
     real :: dist
-    integer :: i !for looping
-    !first check to see if either i or j has been removed
-    if (f(full_recon_distance%i)%infront==0) then
-      !deactivate the array 
-      active_recon_distance=.false.
-      return
-    else if (f(full_recon_distance%j)%infront==0) then
-      !deactivate the array 
-      active_recon_distance=.false.
-      return
-    end if
-    !now set the distances and curvatures
-    dist=distf(full_recon_distance%i,full_recon_distance%j)
-    if (dist>0.5*box_size) then
-      !deactivate the array 
-      active_recon_distance=.false.
-      !do an additional check if the distance array is 75% full we are better off
-      !printing to file - note here we only write up to the current counter not the 
-      !full array size
-      write(unit=print_file,fmt="(a,i4.4,a)")"./data/recon_dist",full_recon_distance%file_count,".log"
-      open(unit=45,file=print_file,status='replace')
-        write(45,*) t, '%time'
-        write(45,*) dt, '%timestep'
-        write(45,*)  full_recon_distance%counter, '%array size (reduced)'
-        write(45,*) full_recon_distance%angle, '%initial angle'
-        do i=1, full_recon_distance%counter
-           write(45,*) full_recon_distance%dist(i), full_recon_distance%curvi(i), full_recon_distance%curvj(i) 
-        end do
-      close(45)
-      !increment file_count
-      full_recon_distance%file_count=full_recon_distance%file_count+1
-      return
-    end if 
-    full_recon_distance%dist(full_recon_distance%counter)=dist
-    full_recon_distance%curvi(full_recon_distance%counter)=curvature(full_recon_distance%i)
-    full_recon_distance%curvj(full_recon_distance%counter)=curvature(full_recon_distance%j)
-    !increment counter
-    full_recon_distance%counter=full_recon_distance%counter+1
-    if (full_recon_distance%counter==full_recon_distance%sarray+1) then
-      !deactivate the array 
-      active_recon_distance=.false.
-      !print to file
-      write(unit=print_file,fmt="(a,i4.4,a)")"./data/recon_dist",full_recon_distance%file_count,".log"
-      open(unit=45,file=print_file,status='replace')
-        write(45,*) t, '%time'
-        write(45,*) dt, '%timestep'
-        write(45,*)  full_recon_distance%sarray, '%array size'
-        write(45,*) full_recon_distance%angle, '%initial angle'
-        do i=1, full_recon_distance%sarray 
-           write(45,*) full_recon_distance%dist(i), full_recon_distance%curvi(i), full_recon_distance%curvj(i) 
-        end do
-      close(45)
-      !increment file_count
-      full_recon_distance%file_count=full_recon_distance%file_count+1
-    end if
+    integer :: i, k !for looping
+    do k=1, n_recon_track !loop over all points we are tracking
+      !skip k index if not active
+      if (full_recon_distance(k)%active.eqv..false.) cycle
+      !first check to see if either i or j has been removed
+      if (f(full_recon_distance(k)%i)%infront==0) then
+        !deactivate the array 
+        full_recon_distance(k)%active=.false.
+        return
+      else if (f(full_recon_distance(k)%j)%infront==0) then
+        !deactivate the array 
+        full_recon_distance(k)%active=.false.
+        return
+      end if
+      !now set the distances and curvatures
+      dist=distf(full_recon_distance(k)%i,full_recon_distance(k)%j)
+      if (dist>0.5*box_size) then
+        !deactivate the array 
+        full_recon_distance(k)%active=.false.
+        !do an additional check if the distance array is 75% full we are better off
+        !printing to file - note here we only write up to the current counter not the 
+        !full array size
+        write(unit=print_file,fmt="(a,i4.4,a)")"./data/recon_dist",file_count_recon_array,".log"
+        open(unit=45,file=print_file,status='replace')
+          write(45,*) t, '%time'
+          write(45,*) dt, '%timestep'
+          write(45,*) k, '% index of reconnection pair being tracked, (interest only)'
+          write(45,*)  full_recon_distance(k)%counter, '%array size (reduced)'
+          write(45,*) full_recon_distance(k)%angle, '%initial angle'
+          do i=1, full_recon_distance(k)%counter
+             write(45,*) full_recon_distance(k)%dist(i), full_recon_distance(k)%curvi(i), full_recon_distance(k)%curvj(i) 
+          end do
+        close(45)
+        !increment file_count
+        file_count_recon_array=file_count_recon_array+1
+        return
+      end if 
+      full_recon_distance(k)%dist(full_recon_distance(k)%counter)=dist
+      full_recon_distance(k)%curvi(full_recon_distance(k)%counter)=curvature(full_recon_distance(k)%i)
+      full_recon_distance(k)%curvj(full_recon_distance(k)%counter)=curvature(full_recon_distance(k)%j)
+      !increment counter
+      full_recon_distance(k)%counter=full_recon_distance(k)%counter+1
+      if (full_recon_distance(k)%counter==size_recon_array+1) then
+        !deactivate the array 
+        full_recon_distance(k)%active=.false.
+        !print to file
+        write(unit=print_file,fmt="(a,i4.4,a)")"./data/recon_dist",file_count_recon_array,".log"
+        open(unit=45,file=print_file,status='replace')
+          write(45,*) t, '%time'
+          write(45,*) dt, '%timestep'
+          write(45,*) k, '% index of reconnection pair being tracked, (interest only)'
+          write(45,*)  size_recon_array, '%array size'
+          write(45,*) full_recon_distance(k)%angle, '%initial angle'
+          do i=1, size_recon_array
+             write(45,*) full_recon_distance(k)%dist(i), full_recon_distance(k)%curvi(i), full_recon_distance(k)%curvj(i) 
+          end do
+        close(45)
+        !increment file_count
+        file_count_recon_array=file_count_recon_array+1
+      end if
+    end do
   end subroutine
 end module

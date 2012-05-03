@@ -111,16 +111,17 @@ module cdata
   !***********RECONNECTION DISTANCE ARRAY****************************************
   type recon_distance_array
     integer :: i, j !particles involved in recon
-    integer :: sarray=1000 !size of array
     integer :: counter !for looping
-    integer :: file_count ! for printing to file 
     real :: angle !initial angle 
     !curvature of particles and distance between them
     real, allocatable, dimension(:) :: curvi, curvj, dist
+    logical :: active=.false. !inactive by default
   end type
-  type(recon_distance_array),save :: full_recon_distance 
+  type(recon_distance_array),save,allocatable :: full_recon_distance(:) 
   !>is the reconnection distance algorithm active?
-  logical :: active_recon_distance=.false. !inactive by default
+  integer :: size_recon_array=1000 !size of array - should be able to set in run.in
+  integer :: file_count_recon_array ! for printing to file 
+  integer, protected :: n_recon_track=2 !number of reconnections we track
   !**************TIME PARAMS*******************************************************
   !>time held globally
   real :: t=0. 
@@ -569,6 +570,8 @@ module cdata
              read(buffer, *, iostat=ios) two_dim !size of 2D print
           case ('recon_info')
              read(buffer, *, iostat=ios) recon_info !extra reconnection information
+          case('n_recon_track')
+             read(buffer, *, iostat=ios) n_recon_track !number of point pairs being tracked by recon_dist
           case ('sep_inf')
              read(buffer, *, iostat=ios) sep_inf !point separation
           case ('line_sep_inf')

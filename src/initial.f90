@@ -72,7 +72,14 @@ module initial
       case default
         call fatal_error('init_setup:', 'incorrect reconnection algorithm selected')
     end select
-    if (recon_info) write(*,*) 'printing extra reconnection information to file'
+    if (recon_info)  then
+      select case(recon_type)
+        case('original')
+          write(*,*) 'printing extra reconnection information to file'
+        case default
+          call fatal_error('init_setup:', 'for recon_info you need original reconneciton algorithm')
+      end select
+    end if
     if (switch_off_recon) call warning_message('init.mod','reconnections switched off: I HOPE YOU KNOW WHAT YOUR DOING!')
     !loop injection
     call setup_vortex_injection !inject.mod

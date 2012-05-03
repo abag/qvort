@@ -65,7 +65,7 @@ program run
       if (seg_fault) write(*,*) 'here5a'
       call premove !line.mod  \todo switchoff premove in run.in
     end if
-    if (active_recon_distance) call set_recon_dist !reconnection.mod
+    if (recon_info) call set_recon_dist !reconnection.mod
     !---------------------smoothed field----------------------
     if (mod(itime,mesh_shots)==0) then
       if (sm_size>0) call get_smoothed_field !smoothing.mod

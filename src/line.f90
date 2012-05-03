@@ -115,7 +115,7 @@ module line
     implicit none
     real :: distii
     integer :: infront, tinfront
-    integer :: i
+    integer :: i, k
     logical :: do_remove 
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
@@ -126,10 +126,12 @@ module line
         if (f(f(i)%infront)%pinnedi) cycle 
       end if 
       !do not remove points used in tracking reconnection distances
-      if (active_recon_distance) then
-        if (f(i)%infront==full_recon_distance%i) cycle
-        if (f(i)%infront==full_recon_distance%j) cycle
-      end if
+      do k=1, n_recon_track
+        if (full_recon_distance(k)%active) then
+          if (f(i)%infront==full_recon_distance(k)%i) cycle
+          if (f(i)%infront==full_recon_distance(k)%j) cycle
+        end if
+      end do
       do_remove=.false.
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)
