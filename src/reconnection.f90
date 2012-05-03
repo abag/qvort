@@ -220,6 +220,7 @@ module reconnection
                   full_recon_distance(k)%active=.true.!active and reset the
                   full_recon_distance(k)%counter=1 !counter
                   full_recon_distance(k)%angle=acos(dot_val) !set the angle
+                  exit !we only set these particles in one of the slots
                 end if
               end do 
             end if
@@ -472,10 +473,14 @@ module reconnection
       if (f(full_recon_distance(k)%i)%infront==0) then
         !deactivate the array 
         full_recon_distance(k)%active=.false.
+        !leave this comment in for now until completely satisfied
+        print*, 'prematurely deacticvating', k
         return
       else if (f(full_recon_distance(k)%j)%infront==0) then
         !deactivate the array 
         full_recon_distance(k)%active=.false.
+        !leave this comment in for now until completely satisfied
+        print*, 'prematurely deacticvating', k
         return
       end if
       !now set the distances and curvatures

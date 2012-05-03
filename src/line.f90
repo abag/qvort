@@ -125,13 +125,6 @@ module line
         !or the particle infront is pinned
         if (f(f(i)%infront)%pinnedi) cycle 
       end if 
-      !do not remove points used in tracking reconnection distances
-      do k=1, n_recon_track
-        if (full_recon_distance(k)%active) then
-          if (f(i)%infront==full_recon_distance(k)%i) cycle
-          if (f(i)%infront==full_recon_distance(k)%j) cycle
-        end if
-      end do
       do_remove=.false.
       !get the distance between the particle and the one twice infront
       distii=distf(i,f(f(i)%infront)%infront)
@@ -141,6 +134,15 @@ module line
       end if  
       if (distii<.499*delta*(f(i)%delta+f(f(i)%infront)%delta))then
         do_remove=.true.
+      end if
+      !do not remove points used in tracking reconnection distances
+      if (do_remove) then
+        do k=1, n_recon_track
+          if (full_recon_distance(k)%active) then
+            if (f(i)%infront==full_recon_distance(k)%i) do_remove=.false.
+            if (f(i)%infront==full_recon_distance(k)%j) do_remove=.false.
+          end if
+        end do
       end if
       if (do_remove) then
         !print to file the curvature of this particle
