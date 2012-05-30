@@ -318,6 +318,7 @@ module cdata
   integer, protected :: inject_skip=10000000!how often we insert the vortice
   integer, protected :: inject_size=0 !number of points used
   integer, protected :: inject_freq=10000000!how often we switch injection direction
+  logical, protected :: randomise_injection=.false.!different meanings for different routines
   real, protected :: inject_stop=1E8 !when to stop injection - arbitrarily high
   character(len=20),protected :: inject_type='off' !how we inject loops
   !----------------------------code testing---------------------------------------
@@ -614,6 +615,8 @@ module cdata
              read(buffer, *, iostat=ios) inject_type !how we inject new vortices
           case ('inject_stop')
              read(buffer, *, iostat=ios) inject_stop !when (if ever) we stop injecting 
+          case ('randomise_injection')
+             read(buffer, *, iostat=ios) randomise_injection !extra random factor to injection 
           case ('full_loop_counter')
              read(buffer, *, iostat=ios) full_loop_counter !check loop count and size
           case ('batch_mode')

@@ -41,6 +41,12 @@ module inject
       case('rand-yz-loop-rot')
         write(*,'(a,f7.4,a)') ' rotation applied to loops: ', rotation_factor, '*2\pi'
         write(*,'(a,f7.4,a)') ' loops translated by: ', lattice_ratio, 'box_size'
+      case('vibrating_mesh')
+        write(*,'(a,i4.1,a)') ' using normal distn., mean loop size is ', inject_size, ' points'
+        write(*,'(a,f9.6)') ' standard deviation is ', line_sigma
+        write(*,*) 'switching injection direction every ', inject_freq, ' timesteps'
+        write(*,*) 'mesh size is ', lattice_ratio, ' of box' 
+        if (randomise_injection) write(*,*) ' randomising loop injection'
     end select
     !check if we have set an injection stop time in run.in
     if (inject_stop<1E6) then
@@ -56,7 +62,7 @@ module inject
     real :: rand1, rand2, rand3 !random numbers
     real :: anglex,angley,anglez !for rotating
     real,dimension(3)::dummy_xp_1, dummy_xp_2, dummy_xp_3, dummy_xp_4
-    integer :: old_pcount
+    integer :: old_pcount, dummy_inject_size
     integer :: i, j !to loop
     !check that inject_size is not 0
     if (inject_size==0) return !leave routine if it is
@@ -64,18 +70,26 @@ module inject
     select case(inject_type)
       case('off')
         return !leave routine
+      case('vibrating_mesh')
+        dummy_inject_size=nint(rnorm(real(inject_size),line_sigma**2))
+      case default
+        dummy_inject_size=inject_size
     end select
+    if (dummy_inject_size<3) then
+      call warning_message('inject','skipping injection, very small or negative loop size, reduce line_sigma')
+      return
+    end if
     !first store the old point count
     old_pcount=pcount
     !now we must resize the array 
     !increment by inject_size using a dummy array tmp
-    allocate(tmp(size(f)+inject_size)) ; tmp(:)%infront=0 !0 the infront array
+    allocate(tmp(size(f)+dummy_inject_size)) ; tmp(:)%infront=0 !0 the infront array
     !copy accross information
     tmp(1:size(f)) = f
     !now deallocate tmp and transfer particles back to f
     !move_alloc is new intrinsic function (fortran 2003)
     call move_alloc(from=tmp,to=f)
-    pcount=pcount+inject_size !increase the particle count
+    pcount=pcount+dummy_inject_size !increase the particle count
     !---------------now check what the inject_type is--------------
     select case(inject_type)
       case('edge_pulse')!six rings at each face of the computational box
@@ -248,6 +262,45 @@ module inject
           f(i)%x(1)=-box_size/2.1
           f(i)%x(2)=radius*cos(pi*real(2*i-1)/inject_size)
           f(i)%x(3)=radius*sin(pi*real(2*i-1)/inject_size)
+          if (i==old_pcount+1) then
+            f(i)%behind=pcount ; f(i)%infront=i+1
+          else if (i==pcount) then 
+            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
+          else
+            f(i)%behind=i-1 ; f(i)%infront=i+1
+          end if
+          !zero the stored velocities
+          f(i)%u1=0. ; f(i)%u2=0.
+        end do
+      case('vibrating_mesh') !loops in yz plane injected at side of box
+        radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
+        rand1=runif(-box_size/2,box_size/2)*lattice_ratio
+        rand2=runif(-box_size/2,box_size/2)*lattice_ratio
+        if (randomise_injection) then
+          call random_number(rand3) !if randomising generate a random
+          if (rand3>0.5) then       !number either -1 or 1
+            rand3=1.
+          else
+            rand3=-1.
+          end if
+        else
+          rand3=1. !else if off always set to be 1
+        end if
+        !loop over particles setting spatial and 'loop' position
+        do i=old_pcount+1, pcount
+          if (injection_direction==1) then
+            f(i)%x(1)=rand3*(-box_size/2.1)
+            f(i)%x(2)=rand3*radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
+            f(i)%x(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
+          else if (injection_direction==2) then
+            f(i)%x(2)=rand3*(-box_size/2.1)
+            f(i)%x(3)=rand3*radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
+            f(i)%x(1)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
+          else if (injection_direction==3) then
+            f(i)%x(3)=rand3*(-box_size/2.1)
+            f(i)%x(1)=rand3*radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
+            f(i)%x(2)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
+          end if
           if (i==old_pcount+1) then
             f(i)%behind=pcount ; f(i)%infront=i+1
           else if (i==pcount) then 
