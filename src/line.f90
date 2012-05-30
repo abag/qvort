@@ -136,7 +136,7 @@ module line
         do_remove=.true.
       end if
       !do not remove points used in tracking reconnection distances
-      if (do_remove) then
+      if (do_remove.and.recon_info) then
         do k=1, n_recon_track
           if (full_recon_distance(k)%active) then
             if (f(i)%infront==full_recon_distance(k)%i) do_remove=.false.

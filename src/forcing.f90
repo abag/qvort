@@ -9,6 +9,7 @@ module forcing
   use general
   !> @param force_direction a helper vector to force a particle in 3 spatial dimensions
   real, private :: force_direction(3)=0. 
+  real, private :: force_direction2(3)=0. 
   !> @param force_phase a vector to force Kelvin wave cascade
   real, private :: force_phase(6)=0. 
   real, private :: wave_tail_freq(3)=0.
@@ -63,6 +64,9 @@ module forcing
                                    log((2./(((10.*2.*pi/box_size)**2)*corea))-0.57721)
         end do
         write(*,'(a,3f13.6)') 'frequencies are, ', wave_tail_freq(:)
+      case('plane_wave')
+        write(*,'(a,f5.3)') 'forcing with a large scale plane wave with amplitude ', force_amp
+        write(*,'(a,i6.2,a)') 'direction changed every, ', ceiling(force_freq), ', timesteps'
       case default
         call fatal_error('forcing.mod:setup_forcing', &
         'incorrect forcing parameter set in run.in') !cdata.mod
@@ -143,6 +147,8 @@ module forcing
         u=cross_product(LS_A,LS_k)*sin(dot_product(LS_k,f(i)%x))/LS_k2+cross_product(LS_B,LS_k)*cos(dot_product(LS_k,f(i)%x))/LS_k2
         !use this as the forcing-multiply by amplitude
         u=u*force_amp
+      case('plane_wave')
+        u=force_direction2*sin(dot_product(f(i)%x,force_direction)+force_phase(1))
       case('wave_force')
         u=0. !initialise to 0
         !now sum over three wavenumbers
@@ -193,6 +199,18 @@ module forcing
               write(47,*) LS_k, LS_A, LS_B
             close(47)
           end if 
+        end if
+      case('plane_wave')
+        call random_number(force_direction)
+        call random_number(force_direction2)
+        force_direction=force_direction*2-1
+        force_direction2=force_direction2*2-1
+        force_direction=nint(force_direction)*4.*pi/box_size
+        force_phase(1)=runif(0.,2.*pi)
+        force_direction2=force_direction2/sqrt(dot_product(force_direction2,force_direction2))
+        force_direction2=cross_product(force_direction,force_direction2)
+        if (maxval(abs(force_direction2))>0.) then
+          force_direction2=force_direction2/sqrt(dot_product(force_direction2,force_direction2))
         end if
       case('looping_potential_vortex')
         !the potential vortex 

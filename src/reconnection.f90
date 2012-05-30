@@ -154,27 +154,31 @@ module reconnection
     logical :: same_loop
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
-      do k=1, n_recon_track
-        if (full_recon_distance(k)%active) then
-          !do not reconnect points being monitored for reconnection dist
-          !this is probably slightly dodgy!
-          if (i==full_recon_distance(k)%i) cycle
-          if (i==full_recon_distance(k)%j) cycle
-        end if
-      end do
+      if (recon_info) then !only do this check if recon_info on
+        do k=1, n_recon_track
+          if (full_recon_distance(k)%active) then
+            !do not reconnect points being monitored for reconnection dist
+            !this is probably slightly dodgy!
+            if (i==full_recon_distance(k)%i) cycle
+            if (i==full_recon_distance(k)%j) cycle
+          end if
+        end do
+      end if
       pari=f(i)%infront ; parb=f(i)%behind !find particle infront/behind
       parii=f(pari)%infront ; parbb=f(parb)%behind !find particle twice infront/behind
       !now we determine if we can reconnect
       if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
         j=f(i)%closest
-        do k=1, n_recon_track
-          if (full_recon_distance(k)%active) then
-            !do not reconnect points being monitored for reconnection dist
-            !this is probably slightly dodgy!
-            if (j==full_recon_distance(k)%i) cycle
-            if (j==full_recon_distance(k)%j) cycle
-          end if
-        end do
+        if (recon_info) then !only do this check if recon_info on
+          do k=1, n_recon_track
+            if (full_recon_distance(k)%active) then
+              !do not reconnect points being monitored for reconnection dist
+              !this is probably slightly dodgy!
+              if (j==full_recon_distance(k)%i) cycle
+              if (j==full_recon_distance(k)%j) cycle
+            end if
+          end do
+        end if
         !another saftery check
         if (j==pari) cycle ; if (j==parb) cycle ; if (j==0) cycle
         !these two could have reconnected earlier in this case j will be empty

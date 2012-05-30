@@ -633,9 +633,9 @@ module initial_line
             case('helical')
               if (k==1) then !normal/binormal undefined for a straight line
                 f(line_position)%x(1)=f(line_position)%x(1)+&
-                amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
-                f(line_position)%x(2)=f(line_position)%x(2)+&
                 amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+                f(line_position)%x(2)=f(line_position)%x(2)+&
+                amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
               else
                 f(line_position)%x(:)=f(line_position)%x(:)+&
                 normalf(line_position)*amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))+&
@@ -750,13 +750,13 @@ module initial_line
             case('helical')
               if (k==1) then !normal/binormal undefined for a straight line
                 f(line_position)%x(1)=f(line_position)%x(1)-&
-                amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
-                f(line_position)%x(2)=f(line_position)%x(2)+&
                 amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+                f(line_position)%x(2)=f(line_position)%x(2)+&
+                amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
               else
                 f(line_position)%x(:)=f(line_position)%x(:)-&
-                normalf(line_position)*amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))+&
-                binormalf(line_position)*amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+                normalf(line_position)*amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))+&
+                binormalf(line_position)*amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
               end if
             case('KWC')
               f(line_position)%x(1)=f(line_position)%x(1)+&

@@ -130,7 +130,7 @@ module smoothing
     theta=vtree%width/dist !the most simple way we can improve this
     if (vtree%pcount==1.or.theta<tree_theta) then
       !use the contribution of this cell
-      smoothing_factor=quant_circ*(1./((2.*pi*(sm_sigma**2))**(3/2)))*exp(-dist2/(2.*(sm_sigma**2)))
+      smoothing_factor=quant_circ*(1./((2.*pi*(sm_sigma**2))**(1.5)))*exp(-dist2/(2.*(sm_sigma**2)))
       wsmooth=wsmooth+vtree%circ*smoothing_factor
     else
       !open the box up and use the child cells
