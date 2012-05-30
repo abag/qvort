@@ -477,14 +477,10 @@ module reconnection
       if (f(full_recon_distance(k)%i)%infront==0) then
         !deactivate the array 
         full_recon_distance(k)%active=.false.
-        !leave this comment in for now until completely satisfied
-        print*, 'prematurely deacticvating', k
         return
       else if (f(full_recon_distance(k)%j)%infront==0) then
         !deactivate the array 
         full_recon_distance(k)%active=.false.
-        !leave this comment in for now until completely satisfied
-        print*, 'prematurely deacticvating', k
         return
       end if
       !now set the distances and curvatures
