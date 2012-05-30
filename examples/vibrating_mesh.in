@@ -1,0 +1,22 @@
+--------------required parameters------------
+nsteps 5000
+shots 100
+recon_shots 1
+pcount 10
+dt 2E-5
+delta 0.002
+box_size 0.1
+velocity Tree
+initf single_loop
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+tree_theta 0.5
+inject_type vibrating_mesh
+inject_size 30
+inject_skip 200
+inject_stop .1
+inject_freq 200
+randomise_injection T
+line_sigma 8.
+lattice_ratio 0.5
