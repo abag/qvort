@@ -72,6 +72,7 @@ itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
 total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
 remove_count
     close(78)
+    print*, 'the real pcount is... ', pcount !delete me once your happy 
     if (phonon_emission) then
       open(unit=78,file='data/phonon_count.log',position='append')
         write(78,*) phonon_count
