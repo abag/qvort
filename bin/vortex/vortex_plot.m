@@ -77,7 +77,7 @@ for i=1:optargin
     case 'thin_line'
       thin_line=1; 
     case 'medium_line'
-      thin_line=1;  
+      medium_line=1;  
       otherwise
       disp('invalid option in input arguements')
       disp('aborting code and printing help:')
