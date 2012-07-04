@@ -421,7 +421,7 @@ module diagnostic
                 (/peri*box_size,perj*box_size,perk*box_size/)) !timestep.mod
               end do ; end do ;end do
             end if
-          case('Tree')
+          case('LIA','Tree')
             mesh2D(j,i)%u_sup=0. !always 0 before making initial BS call
             call tree_walk_general(mesh2D(j,i)%x,vtree,(/0.,0.,0./),mesh2D(j,i)%u_sup)
             if (periodic_bc) then
