@@ -776,6 +776,55 @@ module initial_line
     end do !closes the i loop
   end subroutine
   !*************************************************************************
+  !>lines from the lop of the box to the bottom, helical/planar waves added with
+  !>specific spectrum all set in run.in
+  subroutine setup_hayder_wave
+    implicit none
+    real :: wave_number(5), amp(5)
+    integer :: pcount_required
+    integer :: i, k
+    !test run.in parameters, if wrong program will exit
+    if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=nint(box_size/(0.75*delta)) !100% as waves are added
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,'(a,i7.1)') ' pcount is now:', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_wave_line', &
+      'periodic boundary conditions required')
+    end if
+    write(*,'(a)') ' drawing a line from -z to +z'
+    write(*,'(a)') '5 helical wave pertubations '
+    do i=1, pcount
+      f(i)%x(1)=0. 
+      f(i)%x(2)=0. 
+      f(i)%x(3)=box_size/2.-box_size*real(2*i-1)/(2.*pcount)
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do
+    amp=(/5.5,4.5,3.8,4.0,4.5/)
+    wave_number=(/5.,4.,3.,2.,1./)
+    amp=amp*wave_amp
+    do k=1, 5
+      print*, k,' wavenumber ',wave_number(k),' amp ', amp(k)
+      do i=1, pcount
+        f(i)%x(1)=f(i)%x(1)+&
+                amp(k)*cos(wave_number(k)*2.*pi*real(2.*i-1)/(2.*pcount))
+        f(i)%x(2)=f(i)%x(2)+&
+                amp(k)*sin(wave_number(k)*2.*pi*real(2.*i-1)/(2.*pcount))
+      end do 
+    end do
+  end subroutine
+  !*************************************************************************
   !>lines from the lop of the box to the bottom arranged in a lattice, the number of
   !>lines should be a square number
   subroutine setup_lattice

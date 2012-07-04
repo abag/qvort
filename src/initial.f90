@@ -193,6 +193,8 @@ module initial
           call setup_crow_loop !initial_loop.mod
         case('smooth_test')
           call setup_smooth_test !initial_line.mod 
+        case('hayder_wave')
+          call setup_hayder_wave !initial_line.mod
         case('smooth_test_wave')
           call setup_smooth_test_wave !initial_line.mod  
         case('leap-frog')
@@ -201,6 +203,8 @@ module initial
           call setup_hyperboloid !initial_line.mod
         case('loop_train')
           call setup_loop_train !initial_loop.mod
+        case('rear_collide_loops')
+          call setup_rear_collide_loops !initial_loop.mod
         case('loop_stream')
           call setup_loop_stream !initial_loop.mod       
         case('linked_filaments')
@@ -502,7 +506,7 @@ module initial
         return
     end select
     delta_min=delta/2.
-    dt_max=((delta_min)**2)/(quant_circ*log(delta_min/(pi*corea)))
+    dt_max=abs(((delta_min)**2)/(quant_circ*log(delta_min/(pi*corea))))
     if (dt<dt_max) then
       write(*,'(a,e10.4)') ' dt is below maximum possible dt:', dt_max
     else

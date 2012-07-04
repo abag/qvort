@@ -240,9 +240,10 @@ module diagnostic
       energy=energy+0.5*dist_gen(f(i)%x,f(i)%ghosti)*&
       (dot_product(f(i)%u,cross_product(f(i)%x,sdot))+&
        dot_product(f(infront)%u,cross_product(f(infront)%x,sdoti)))
+      !energy=energy+dist_gen(f(i)%x,f(i)%ghosti)*(dot_product(f(i)%u,cross_product(f(i)%x,sdot)))
     end do
     !multiply by terms outside the integral
-    energy=energy*(quant_circ/2.)
+    energy=energy*(quant_circ)
   end subroutine
   !*************************************************
   !>print to file difference in time between reconnections
