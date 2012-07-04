@@ -82,23 +82,6 @@ module inject
       return
     end if
     allocate(inject_loc(dummy_inject_size)) !we always need this array
-    !print*, 'here_inject1'
-
-!    !*********ALL THIS IS DANGEROUS REMOVE SOON!***************
-!    old_pcount=pcount !first store the old point count
-!    !now we must resize the array 
-!    !increment by inject_size using a dummy array tmp
-!    print*, 'I dummy expanding the array'
-!    allocate(tmp(size(f)+dummy_inject_size)) ; tmp(:)%infront=0 !0 the infront array
-!    !copy accross information
-!    tmp(1:size(f)) = f
-!    !now deallocate tmp and transfer particles back to f
-!    !move_alloc is new intrinsic function (fortran 2003)
-!    call move_alloc(from=tmp,to=f)
-!    pcount=pcount+dummy_inject_size !increase the particle count
-!    !*********ALL ABOVE IS DANGEROUS REMOVE SOON!***************
-
-
     !--------------see if we can insert points into existing gaps----------
     if (count(mask=f(:)%infront==0)>=dummy_inject_size) then
       !print*, 'I have found some space'
@@ -138,228 +121,260 @@ module inject
         inject_loc(i)=old_pcount+i 
       end do
     end if
-    !print*, 'here_inject2'
     !---------------now check what the inject_type is--------------
     select case(inject_type)
-!      case('edge_pulse')!six rings at each face of the computational box
-!        radius=(0.75*inject_size*delta)/(6*2*pi) !75% of potential size 
-!        !loop over particles (6 loops) setting spatial and 'loop' position
-!        !first loop - xy plane top of box
-!        do i=old_pcount+1, old_pcount+inject_size/6
-!          f(i)%x(1)=radius*sin(pi*real(2*i-1)/(inject_size/6))
-!          f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-!          f(i)%x(3)=box_size/2.01
-!          if (i==old_pcount+1) then
-!            f(i)%behind=old_pcount+inject_size/6 ; f(i)%infront=i+1
-!          else if (i==old_pcount+inject_size/6) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
-!        end do
-!        !second loop- xy plane bottom of box
-!        do i=old_pcount+inject_size/6+1, old_pcount+inject_size/3
-!          f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(inject_size/6))
-!          f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-!          f(i)%x(3)=-box_size/2.01
-!          if (i==(old_pcount+inject_size/6+1)) then
-!            f(i)%behind=old_pcount+inject_size/3 ; f(i)%infront=i+1
-!          else if (i==old_pcount+inject_size/3) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+inject_size/6+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
-!        end do    
-!        !third loop- yz plane pos side of box 
-!        do i=old_pcount+inject_size/3+1, old_pcount+inject_size/2
-!          f(i)%x(1)=box_size/2.01
-!          f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-!          f(i)%x(3)=-radius*sin(pi*real(2*i-1)/(inject_size/6))
-!          if (i==(old_pcount+inject_size/3+1)) then
-!            f(i)%behind=old_pcount+inject_size/2 ; f(i)%infront=i+1
-!          else if (i==old_pcount+inject_size/2) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+inject_size/3+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
-!        end do
-!        !fourth loop- yz plane neg side of box 
-!        do i=old_pcount+inject_size/2+1, old_pcount+2*inject_size/3
-!          f(i)%x(1)=-box_size/2.01
-!          f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-!          f(i)%x(3)=radius*sin(pi*real(2*i-1)/(inject_size/6))
-!          if (i==(old_pcount+inject_size/2+1)) then
-!            f(i)%behind=old_pcount+2*inject_size/3 ; f(i)%infront=i+1
-!          else if (i==old_pcount+2*inject_size/3) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+inject_size/2+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
-!        end do
-!        !fifth loop- xz plane pos side box
-!        do i=old_pcount+2*inject_size/3+1, old_pcount+5*inject_size/6
-!          f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(inject_size/6))
-!          f(i)%x(2)=box_size/2.01
-!          f(i)%x(3)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-!          if (i==(old_pcount+2*inject_size/3+1)) then
-!            f(i)%behind=old_pcount+5*inject_size/6 ; f(i)%infront=i+1
-!          else if (i==old_pcount+5*inject_size/6) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+2*inject_size/3+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
-!        end do
-!        !final loop- xz plane neg side of box
-!        do i=old_pcount+5*inject_size/6+1, pcount
-!          f(i)%x(1)=radius*sin(pi*real(2*i-1)/(inject_size/6))
-!          f(i)%x(2)=-box_size/2.01
-!          f(i)%x(3)=radius*cos(pi*real(2*i-1)/(inject_size/6))
-!          if (i==(old_pcount+5*inject_size/6+1)) then
-!            f(i)%behind=pcount ; f(i)%infront=i+1
-!          else if (i==pcount) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+5*inject_size/6+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
-!        end do
+      case('edge_pulse')!six rings at each face of the computational box
+        radius=(0.75*dummy_inject_size*delta)/(6*2*pi) !75% of potential size 
+        !loop over particles (6 loops) setting spatial and 'loop' position
+        !first loop - xy plane top of box
+        do i=1, dummy_inject_size/6
+          f(inject_loc(i))%x(1)=radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
+          f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
+          f(inject_loc(i))%x(3)=box_size/2.01
+          if (i==1) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size/6)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size/6) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0. ; f(inject_loc(i))%u3=0.
+        end do
+        !second loop- xy plane bottom of box
+        do i=dummy_inject_size/6+1, dummy_inject_size/3
+          f(inject_loc(i))%x(1)=-radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
+          f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
+          f(inject_loc(i))%x(3)=-box_size/2.01
+          if (i==(dummy_inject_size/6+1)) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size/3)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size/3) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(dummy_inject_size/6+1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0. ; f(inject_loc(i))%u3=0.
+        end do    
+        !third loop- yz plane pos side of box 
+        do i=dummy_inject_size/3+1, dummy_inject_size/2
+          f(inject_loc(i))%x(1)=box_size/2.01
+          f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
+          f(inject_loc(i))%x(3)=-radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
+          if (i==(dummy_inject_size/3+1)) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size/2)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size/2) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(dummy_inject_size/3+1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0. ; f(inject_loc(i))%u3=0.
+        end do
+        !fourth loop- yz plane neg side of box 
+        do i=dummy_inject_size/2+1, 2*dummy_inject_size/3
+          f(inject_loc(i))%x(1)=-box_size/2.01
+          f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
+          f(inject_loc(i))%x(3)=radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
+          if (i==(dummy_inject_size/2+1)) then
+            f(inject_loc(i))%behind=inject_loc(2*dummy_inject_size/3)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==2*dummy_inject_size/3) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(inject_size/2+1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0. ; f(inject_loc(i))%u3=0.
+        end do
+        !fifth loop- xz plane pos side box
+        do i=2*dummy_inject_size/3+1, 5*dummy_inject_size/6
+          f(inject_loc(i))%x(1)=-radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
+          f(inject_loc(i))%x(2)=box_size/2.01
+          f(inject_loc(i))%x(3)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
+          if (i==(2*dummy_inject_size/3+1)) then
+            f(inject_loc(i))%behind=inject_loc(5*dummy_inject_size/6)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==5*dummy_inject_size/6) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(2*inject_size/3+1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0. ; f(inject_loc(i))%u3=0.
+        end do
+        !final loop- xz plane neg side of box
+        do i=5*dummy_inject_size/6+1, dummy_inject_size
+          f(inject_loc(i))%x(1)=radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
+          f(inject_loc(i))%x(2)=-box_size/2.01
+          f(inject_loc(i))%x(3)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
+          if (i==(5*dummy_inject_size/6+1)) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(5*dummy_inject_size/6+1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0. ; f(inject_loc(i))%u3=0.
+        end do
       case('loop_stream')!two rings top and bottom in corners
         radius=(0.75*dummy_inject_size*delta)/(4*pi) !75% of potential size 
         !loop over particles (2 loops) setting spatial and 'loop' position
         !first loop - xy plane top of box
-        do i=old_pcount+1, old_pcount+inject_size/2 !do i=1, dummy_inject_size/2
+        do i=1, dummy_inject_size/2
           if (injection_direction==1) then
-            f(i)%x(1)=radius*sin(pi*real(2*i-1)/(inject_size/2))+box_size/5
-            f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/2))+box_size/5
-            f(i)%x(3)=box_size/2.01
+            f(inject_loc(i))%x(1)=radius*sin(pi*real(2*i-1)/(dummy_inject_size/2))+box_size/5
+            f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/2))+box_size/5
+            f(inject_loc(i))%x(3)=box_size/2.01
           else if (injection_direction==2) then
-            f(i)%x(2)=radius*sin(pi*real(2*i-1)/(inject_size/2))+box_size/5
-            f(i)%x(3)=radius*cos(pi*real(2*i-1)/(inject_size/2))+box_size/5
-            f(i)%x(1)=box_size/2.01
+            f(inject_loc(i))%x(2)=radius*sin(pi*real(2*i-1)/(dummy_inject_size/2))+box_size/5
+            f(inject_loc(i))%x(3)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/2))+box_size/5
+            f(inject_loc(i))%x(1)=box_size/2.01
           else if (injection_direction==3) then
-            f(i)%x(3)=radius*sin(pi*real(2*i-1)/(inject_size/2))+box_size/5
-            f(i)%x(1)=radius*cos(pi*real(2*i-1)/(inject_size/2))+box_size/5
-            f(i)%x(2)=box_size/2.01
+            f(inject_loc(i))%x(3)=radius*sin(pi*real(2*i-1)/(dummy_inject_size/2))+box_size/5
+            f(inject_loc(i))%x(1)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/2))+box_size/5
+            f(inject_loc(i))%x(2)=box_size/2.01
           end if
-          if (i==old_pcount+1) then
-            f(i)%behind=old_pcount+inject_size/2 ; f(i)%infront=i+1
-          else if (i==old_pcount+inject_size/2) then 
-            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
+          if (i==1) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size/2)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size/2) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(1)
           else
-            f(i)%behind=i-1 ; f(i)%infront=i+1
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
           end if
           !zero the stored velocities
-          f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0. ; f(inject_loc(i))%u3=0.
         end do
         !second loop- xy plane bottom of box
-        do i=old_pcount+inject_size/2+1, pcount !do i=dummy_inject_size/2+1, dummy_inject_size
+        do i=dummy_inject_size/2+1, dummy_inject_size
           if (injection_direction==1) then
-            f(i)%x(1)=-radius*sin(pi*real(2*i-1)/(inject_size/2))-box_size/5
-            f(i)%x(2)=radius*cos(pi*real(2*i-1)/(inject_size/2))-box_size/5
-            f(i)%x(3)=-box_size/2.01
+            f(inject_loc(i))%x(1)=-radius*sin(pi*real(2*i-1)/(dummy_inject_size/2))-box_size/5
+            f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/2))-box_size/5
+            f(inject_loc(i))%x(3)=-box_size/2.01
           else if (injection_direction==2) then
-            f(i)%x(2)=-radius*sin(pi*real(2*i-1)/(inject_size/2))-box_size/5
-            f(i)%x(3)=radius*cos(pi*real(2*i-1)/(inject_size/2))-box_size/5
-            f(i)%x(1)=-box_size/2.01
+            f(inject_loc(i))%x(2)=-radius*sin(pi*real(2*i-1)/(dummy_inject_size/2))-box_size/5
+            f(inject_loc(i))%x(3)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/2))-box_size/5
+            f(inject_loc(i))%x(1)=-box_size/2.01
           else if (injection_direction==3) then
-            f(i)%x(3)=-radius*sin(pi*real(2*i-1)/(inject_size/2))-box_size/5
-            f(i)%x(1)=radius*cos(pi*real(2*i-1)/(inject_size/2))-box_size/5
-            f(i)%x(2)=-box_size/2.01
+            f(inject_loc(i))%x(3)=-radius*sin(pi*real(2*i-1)/(dummy_inject_size/2))-box_size/5
+            f(inject_loc(i))%x(1)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/2))-box_size/5
+            f(inject_loc(i))%x(2)=-box_size/2.01
           end if
-          if (i==(old_pcount+inject_size/2+1)) then
-            f(i)%behind=pcount ; f(i)%infront=i+1
-          else if (i==pcount) then 
-            f(i)%behind=i-1 ; f(i)%infront=old_pcount+inject_size/2+1
+          if (i==(dummy_inject_size/2+1)) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(dummy_inject_size/2+1)
           else
-            f(i)%behind=i-1 ; f(i)%infront=i+1
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
           end if
           !zero the stored velocities
-          f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0. ; f(inject_loc(i))%u3=0.
         end do    
-!      case('xy-loop')!loops in xy-plane injected at bottom of box
-!        radius=(0.75*inject_size*delta)/(2*pi) !75% of potential size
-!        !loop over particles setting spatial and 'loop' position
-!        do i=old_pcount+1, pcount
-!          f(i)%x(1)=radius*sin(pi*real(2*i-1)/inject_size)
-!          f(i)%x(2)=radius*cos(pi*real(2*i-1)/inject_size)
-!          f(i)%x(3)=-box_size/2.1
-!          if (i==old_pcount+1) then
-!            f(i)%behind=pcount ; f(i)%infront=i+1
-!          else if (i==pcount) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0.
-!        end do
-!      case('yz-loop') !loops in yz plane injected at side of box
-!        radius=(0.75*inject_size*delta)/(2*pi) !75% of potential size
-!        !loop over particles setting spatial and 'loop' position
-!        do i=old_pcount+1, pcount
-!          f(i)%x(1)=-box_size/2.1
-!          f(i)%x(2)=radius*cos(pi*real(2*i-1)/inject_size)
-!          f(i)%x(3)=radius*sin(pi*real(2*i-1)/inject_size)
-!          if (i==old_pcount+1) then
-!            f(i)%behind=pcount ; f(i)%infront=i+1
-!          else if (i==pcount) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0.
-!        end do
-!      case('vibrating_mesh') !loops in yz plane injected at side of box
-!        radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
-!        rand1=runif(-box_size/2,box_size/2)*lattice_ratio
-!        rand2=runif(-box_size/2,box_size/2)*lattice_ratio
-!        if (randomise_injection) then
-!          call random_number(rand3) !if randomising generate a random
-!          if (rand3>0.5) then       !number either -1 or 1
-!            rand3=1.
-!          else
-!            rand3=-1.
-!          end if
-!        else
-!          rand3=1. !else if off always set to be 1
-!        end if
-!        !loop over particles setting spatial and 'loop' position
-!        do i=old_pcount+1, pcount
-!          if (injection_direction==1) then
-!            f(i)%x(1)=rand3*(-box_size/2.1)
-!            f(i)%x(2)=rand3*radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
-!            f(i)%x(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
-!          else if (injection_direction==2) then
-!            f(i)%x(2)=rand3*(-box_size/2.1)
-!            f(i)%x(3)=rand3*radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
-!            f(i)%x(1)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
-!          else if (injection_direction==3) then
-!            f(i)%x(3)=rand3*(-box_size/2.1)
-!            f(i)%x(1)=rand3*radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
-!            f(i)%x(2)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
-!          end if
-!          if (i==old_pcount+1) then
-!            f(i)%behind=pcount ; f(i)%infront=i+1
-!          else if (i==pcount) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0.
-!        end do
+      case('xy-loop')!loops in xy-plane injected at bottom of box
+        radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
+        !loop over particles setting spatial and 'loop' position
+        do i=1, dummy_inject_size
+          f(inject_loc(i))%x(1)=radius*sin(pi*real(2*i-1)/dummy_inject_size)
+          f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/dummy_inject_size)
+          f(inject_loc(i))%x(3)=-box_size/2.1
+          if (i==1) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0.
+        end do
+      case('yz-loop') !loops in yz plane injected at side of box
+        radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
+        !loop over particles setting spatial and 'loop' position
+        do i=1, dummy_inject_size
+          f(inject_loc(i))%x(1)=-box_size/2.1
+          f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/dummy_inject_size)
+          f(inject_loc(i))%x(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)
+          if (i==1) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0.
+        end do
+      case('vibrating_mesh') !loops in yz plane injected at side of box
+        radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
+        rand1=runif(-box_size/2,box_size/2)*lattice_ratio
+        rand2=runif(-box_size/2,box_size/2)*lattice_ratio
+        if (randomise_injection) then
+          call random_number(rand3) !if randomising generate a random
+          if (rand3>0.5) then       !number either -1 or 1
+            rand3=1.
+          else
+            rand3=-1.
+          end if
+        else
+          rand3=1. !else if off always set to be 1
+        end if
+        !loop over particles setting spatial and 'loop' position
+        do i=1, dummy_inject_size
+          if (injection_direction==1) then
+            f(inject_loc(i))%x(1)=rand3*(-box_size/2.1)
+            f(inject_loc(i))%x(2)=rand3*radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
+            f(inject_loc(i))%x(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
+          else if (injection_direction==2) then
+            f(inject_loc(i))%x(2)=rand3*(-box_size/2.1)
+            f(inject_loc(i))%x(3)=rand3*radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
+            f(inject_loc(i))%x(1)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
+          else if (injection_direction==3) then
+            f(inject_loc(i))%x(3)=rand3*(-box_size/2.1)
+            f(inject_loc(i))%x(1)=rand3*radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
+            f(inject_loc(i))%x(2)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
+          end if
+          if (i==1) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0.
+        end do
       case('rand-yz-loop') !as yz-loop but with a slight pertubation in positions
         radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
         !loop over particles setting spatial and 'loop' position
@@ -384,137 +399,146 @@ module inject
           !zero the stored velocities
           f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0.
         end do
-!      case('rand-yz-loop-rot') !pertubation in both position and angle
-!        radius=(0.75*inject_size*delta)/(2*pi) !75% of potential size
-!        !loop over particles setting spatial and 'loop' position
-!        call random_number(rand1)
-!        call random_number(rand2)
-!        call random_number(anglex)
-!        call random_number(angley)
-!        call random_number(anglez)
-!        anglex=(2.*anglex-1.)*2*pi*rotation_factor
-!        angley=(2.*angley-1.)*2*pi*rotation_factor
-!        anglez=(2.*anglez-1.)*2*pi*rotation_factor
-!        rand1=box_size*(rand1*2.-1.)*lattice_ratio
-!        rand2=box_size*(rand2*2.-1.)*lattice_ratio
-!        do i=old_pcount+1, pcount
-!          dummy_xp_1(1)=0.
-!          dummy_xp_1(2)=radius*cos(pi*real(2*i-1)/inject_size)
-!          dummy_xp_1(3)=radius*sin(pi*real(2*i-1)/inject_size)
+      case('rand-yz-loop-rot') !pertubation in both position and angle
+        radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
+        !loop over particles setting spatial and 'loop' position
+        call random_number(rand1)
+        call random_number(rand2)
+        call random_number(anglex)
+        call random_number(angley)
+        call random_number(anglez)
+        anglex=(2.*anglex-1.)*2*pi*rotation_factor
+        angley=(2.*angley-1.)*2*pi*rotation_factor
+        anglez=(2.*anglez-1.)*2*pi*rotation_factor
+        rand1=box_size*(rand1*2.-1.)*lattice_ratio
+        rand2=box_size*(rand2*2.-1.)*lattice_ratio
+        do i=1, dummy_inject_size
+          dummy_xp_1(1)=0.
+          dummy_xp_1(2)=radius*cos(pi*real(2*i-1)/dummy_inject_size)
+          dummy_xp_1(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)
 
-!          dummy_xp_2(1)=dummy_xp_1(1)
-!          dummy_xp_2(2)=dummy_xp_1(2)*cos(anglex)+dummy_xp_1(3)*sin(anglex)
-!          dummy_xp_2(3)=dummy_xp_1(2)*(-sin(anglex))+dummy_xp_1(3)*cos(anglex)
+          dummy_xp_2(1)=dummy_xp_1(1)
+          dummy_xp_2(2)=dummy_xp_1(2)*cos(anglex)+dummy_xp_1(3)*sin(anglex)
+          dummy_xp_2(3)=dummy_xp_1(2)*(-sin(anglex))+dummy_xp_1(3)*cos(anglex)
 
-!          dummy_xp_3(1)=dummy_xp_2(1)*cos(angley)+dummy_xp_2(3)*(-sin(angley))
-!          dummy_xp_3(2)=dummy_xp_2(2)
-!          dummy_xp_3(3)=dummy_xp_2(1)*sin(angley)+dummy_xp_2(3)*cos(angley)
+          dummy_xp_3(1)=dummy_xp_2(1)*cos(angley)+dummy_xp_2(3)*(-sin(angley))
+          dummy_xp_3(2)=dummy_xp_2(2)
+          dummy_xp_3(3)=dummy_xp_2(1)*sin(angley)+dummy_xp_2(3)*cos(angley)
 
-!          dummy_xp_4(1)=dummy_xp_3(1)*cos(anglez)+dummy_xp_3(2)*sin(anglez)
-!          dummy_xp_4(2)=dummy_xp_3(1)*(-sin(anglez))+dummy_xp_3(2)*cos(anglez)
-!          dummy_xp_4(3)=dummy_xp_3(3)
-!    
-!          f(i)%x(1)=dummy_xp_4(1)-box_size/2.2
-!          f(i)%x(2)=dummy_xp_4(2)+rand1
-!          f(i)%x(3)=dummy_xp_4(3)+rand2
-!          if (i==old_pcount+1) then
-!            f(i)%behind=pcount ; f(i)%infront=i+1
-!          else if (i==pcount) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0.
-!        end do
-!      case('focus-yz-loop')
-!        radius=(0.75*inject_size*delta)/(2*pi) !75% of potential size
-!        !loop over particles setting spatial and 'loop' position
-!        call random_number(rand1)
-!        call random_number(rand2)
-!        call random_number(anglex)
-!        call random_number(angley)
-!        call random_number(anglez)
-!        anglex=(2.*anglex-1.)*2*pi/10.
-!        angley=(2.*angley-1.)*2*pi/10.
-!        anglez=(2.*anglez-1.)*2*pi/10.
-!        rand1=box_size*(rand1*2.-1.)/20.
-!        rand2=box_size*(rand2*2.-1.)/20.
-!        do i=old_pcount+1, pcount
-!          dummy_xp_1(1)=-box_size/2.
-!          dummy_xp_1(2)=radius*cos(pi*real(2*i-1)/inject_size)+rand1
-!          dummy_xp_1(3)=radius*sin(pi*real(2*i-1)/inject_size)+rand2
+          dummy_xp_4(1)=dummy_xp_3(1)*cos(anglez)+dummy_xp_3(2)*sin(anglez)
+          dummy_xp_4(2)=dummy_xp_3(1)*(-sin(anglez))+dummy_xp_3(2)*cos(anglez)
+          dummy_xp_4(3)=dummy_xp_3(3)
+    
+          f(inject_loc(i))%x(1)=dummy_xp_4(1)-box_size/2.2
+          f(inject_loc(i))%x(2)=dummy_xp_4(2)+rand1
+          f(inject_loc(i))%x(3)=dummy_xp_4(3)+rand2
+          if (i==1) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0.
+        end do
+      case('focus-yz-loop')
+        radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
+        !loop over particles setting spatial and 'loop' position
+        call random_number(rand1)
+        call random_number(rand2)
+        call random_number(anglex)
+        call random_number(angley)
+        call random_number(anglez)
+        anglex=(2.*anglex-1.)*2*pi/10.
+        angley=(2.*angley-1.)*2*pi/10.
+        anglez=(2.*anglez-1.)*2*pi/10.
+        rand1=box_size*(rand1*2.-1.)/20.
+        rand2=box_size*(rand2*2.-1.)/20.
+        do i=1, dummy_inject_size
+          dummy_xp_1(1)=-box_size/2.
+          dummy_xp_1(2)=radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
+          dummy_xp_1(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
 
-!          dummy_xp_2(1)=dummy_xp_1(1)
-!          dummy_xp_2(2)=dummy_xp_1(2)*cos(anglex)+dummy_xp_1(3)*sin(anglex)
-!          dummy_xp_2(3)=dummy_xp_1(2)*(-sin(anglex))+dummy_xp_1(3)*cos(anglex)
+          dummy_xp_2(1)=dummy_xp_1(1)
+          dummy_xp_2(2)=dummy_xp_1(2)*cos(anglex)+dummy_xp_1(3)*sin(anglex)
+          dummy_xp_2(3)=dummy_xp_1(2)*(-sin(anglex))+dummy_xp_1(3)*cos(anglex)
 
-!          dummy_xp_3(1)=dummy_xp_2(1)*cos(angley)+dummy_xp_2(3)*(-sin(angley))
-!          dummy_xp_3(2)=dummy_xp_2(2)
-!          dummy_xp_3(3)=dummy_xp_2(1)*sin(angley)+dummy_xp_2(3)*cos(angley)
+          dummy_xp_3(1)=dummy_xp_2(1)*cos(angley)+dummy_xp_2(3)*(-sin(angley))
+          dummy_xp_3(2)=dummy_xp_2(2)
+          dummy_xp_3(3)=dummy_xp_2(1)*sin(angley)+dummy_xp_2(3)*cos(angley)
 
-!          dummy_xp_4(1)=dummy_xp_3(1)*cos(anglez)+dummy_xp_3(2)*sin(anglez)
-!          dummy_xp_4(2)=dummy_xp_3(1)*(-sin(anglez))+dummy_xp_3(2)*cos(anglez)
-!          dummy_xp_4(3)=dummy_xp_3(3)
-!    
-!          f(i)%x(1)=dummy_xp_4(1)
-!          f(i)%x(2)=dummy_xp_4(2)
-!          f(i)%x(3)=dummy_xp_4(3)
-!          if (i==old_pcount+1) then
-!            f(i)%behind=pcount ; f(i)%infront=i+1
-!          else if (i==pcount) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0.
-!        end do
-!      case('rand-xyz-loop') !completetly random loops
-!        radius=(0.75*inject_size*delta)/(2*pi) !75% of potential size
-!        !loop over particles setting spatial and 'loop' position
-!        call random_number(rand1)
-!        call random_number(rand2)
-!        call random_number(rand3)
-!        call random_number(anglex)
-!        call random_number(angley)
-!        call random_number(anglez)
-!        anglex=(2.*anglex-1.)*2*pi*rotation_factor
-!        angley=(2.*angley-1.)*2*pi*rotation_factor
-!        anglez=(2.*anglez-1.)*2*pi*rotation_factor
-!        rand1=box_size*(rand1*2.-1.)/2.
-!        rand2=box_size*(rand2*2.-1.)/2.
-!        rand3=box_size*(rand3*2.-1.)/2.
-!        do i=old_pcount+1, pcount
-!          dummy_xp_1(1)=0.
-!          dummy_xp_1(2)=radius*cos(pi*real(2*i-1)/inject_size)
-!          dummy_xp_1(3)=radius*sin(pi*real(2*i-1)/inject_size)
+          dummy_xp_4(1)=dummy_xp_3(1)*cos(anglez)+dummy_xp_3(2)*sin(anglez)
+          dummy_xp_4(2)=dummy_xp_3(1)*(-sin(anglez))+dummy_xp_3(2)*cos(anglez)
+          dummy_xp_4(3)=dummy_xp_3(3)
+    
+          f(inject_loc(i))%x(1)=dummy_xp_4(1)
+          f(inject_loc(i))%x(2)=dummy_xp_4(2)
+          f(inject_loc(i))%x(3)=dummy_xp_4(3)
+          if (i==1) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0.
+        end do
+      case('rand-xyz-loop') !completetly random loops
+        radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
+        !loop over particles setting spatial and 'loop' position
+        call random_number(rand1)
+        call random_number(rand2)
+        call random_number(rand3)
+        call random_number(anglex)
+        call random_number(angley)
+        call random_number(anglez)
+        anglex=(2.*anglex-1.)*2*pi*rotation_factor
+        angley=(2.*angley-1.)*2*pi*rotation_factor
+        anglez=(2.*anglez-1.)*2*pi*rotation_factor
+        rand1=box_size*(rand1*2.-1.)/2.
+        rand2=box_size*(rand2*2.-1.)/2.
+        rand3=box_size*(rand3*2.-1.)/2.
+        do i=1, dummy_inject_size
+          dummy_xp_1(1)=0.
+          dummy_xp_1(2)=radius*cos(pi*real(2*i-1)/dummy_inject_size)
+          dummy_xp_1(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)
 
-!          dummy_xp_2(1)=dummy_xp_1(1)
-!          dummy_xp_2(2)=dummy_xp_1(2)*cos(anglex)+dummy_xp_1(3)*sin(anglex)
-!          dummy_xp_2(3)=dummy_xp_1(2)*(-sin(anglex))+dummy_xp_1(3)*cos(anglex)
+          dummy_xp_2(1)=dummy_xp_1(1)
+          dummy_xp_2(2)=dummy_xp_1(2)*cos(anglex)+dummy_xp_1(3)*sin(anglex)
+          dummy_xp_2(3)=dummy_xp_1(2)*(-sin(anglex))+dummy_xp_1(3)*cos(anglex)
 
-!          dummy_xp_3(1)=dummy_xp_2(1)*cos(angley)+dummy_xp_2(3)*(-sin(angley))
-!          dummy_xp_3(2)=dummy_xp_2(2)
-!          dummy_xp_3(3)=dummy_xp_2(1)*sin(angley)+dummy_xp_2(3)*cos(angley)
+          dummy_xp_3(1)=dummy_xp_2(1)*cos(angley)+dummy_xp_2(3)*(-sin(angley))
+          dummy_xp_3(2)=dummy_xp_2(2)
+          dummy_xp_3(3)=dummy_xp_2(1)*sin(angley)+dummy_xp_2(3)*cos(angley)
 
-!          dummy_xp_4(1)=dummy_xp_3(1)*cos(anglez)+dummy_xp_3(2)*sin(anglez)
-!          dummy_xp_4(2)=dummy_xp_3(1)*(-sin(anglez))+dummy_xp_3(2)*cos(anglez)
-!          dummy_xp_4(3)=dummy_xp_3(3)
-!    
-!          f(i)%x(1)=dummy_xp_4(1)+rand1
-!          f(i)%x(2)=dummy_xp_4(2)+rand2
-!          f(i)%x(3)=dummy_xp_4(3)+rand3
-!          if (i==old_pcount+1) then
-!            f(i)%behind=pcount ; f(i)%infront=i+1
-!          else if (i==pcount) then 
-!            f(i)%behind=i-1 ; f(i)%infront=old_pcount+1
-!          else
-!            f(i)%behind=i-1 ; f(i)%infront=i+1
-!          end if
-!          !zero the stored velocities
-!          f(i)%u1=0. ; f(i)%u2=0.
-!        end do
+          dummy_xp_4(1)=dummy_xp_3(1)*cos(anglez)+dummy_xp_3(2)*sin(anglez)
+          dummy_xp_4(2)=dummy_xp_3(1)*(-sin(anglez))+dummy_xp_3(2)*cos(anglez)
+          dummy_xp_4(3)=dummy_xp_3(3)
+    
+          f(inject_loc(i))%x(1)=dummy_xp_4(1)+rand1
+          f(inject_loc(i))%x(2)=dummy_xp_4(2)+rand2
+          f(inject_loc(i))%x(3)=dummy_xp_4(3)+rand3
+          if (i==1) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0.
+        end do
       case default
         call fatal_error('inject.mod','inject_type not set to useable value')    
     end select
@@ -529,8 +553,6 @@ module inject
         injection_direction=1
       end if      
     end if
-    print*, 'here_inject3'
     deallocate(inject_loc) !deallocate the location array
-    print*, 'here_inject4'
   end subroutine
 end module
