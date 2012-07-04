@@ -6,7 +6,8 @@ if nargin<1
   sections=1;
 end
 A=load('./data/ts.log');
-t=A(:,2) ; l=A(:,6) ; 
+dims=load('./data/dims.log');
+t=A(:,2) ; l=A(:,6)/dims(2)^3 ; 
 scrsz = get(0,'ScreenSize');
 figure('Position',[1 scrsz(4) scrsz(3)/1.2 scrsz(4)/2],'PaperPosition',[0.25 2.5 28.0 12.0],'color','w','visible','on','Name', 'line_length')
   subplot(1,2,1)
@@ -29,14 +30,8 @@ figure('Position',[1 scrsz(4) scrsz(3)/1.2 scrsz(4)/2],'PaperPosition',[0.25 2.5
     xlabel('t','FontSize',14)
     ylabel('log l','FontSize',14)
     set(gca,'FontSize',14)
-figure('Name', 'line length only')
+figure('Name', 'line density only')
     plot(t,l,'-k','LineWidth',2);
-    set(gca,'FontSize',14)
-    xlabel('t','FontSize',14)
-    ylabel('l','FontSize',14)
-dims=load('./data/dims.log');
-figure('Name', 'line density')
-    plot(t,1./sqrt(l/(dims(2)^3)),'-k','LineWidth',2);
-    set(gca,'FontSize',14)
-    xlabel('t','FontSize',14)
-    ylabel('L','FontSize',14)
+    set(gca,'FontSize',16)
+    xlabel('t','FontSize',16)
+    ylabel('L','FontSize',16)

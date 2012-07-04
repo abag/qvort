@@ -45,6 +45,11 @@ fuy=fftn(usupy)/(n^2);
 fuz=fftn(usupz)/(n^2);
 energyr=real(fux).^2+real(fuy).^2+real(fuz).^2;
 energyi=imag(fux).^2+imag(fuy).^2+imag(fuz).^2;
+%normalise-----------------------
+%disp('normalising')
+%energyr=energyr/sum(sum(energyr));
+%energyi=energyi/sum(sum(energyi));
+%normalise-----------------------
 midpt=n/2+1;
 spect(1:1.5*n)=0.;
 if ifile==filenumbers(1)
@@ -59,7 +64,7 @@ for i=1:n
     if jj>midpt ; jj=n-jj+1; ; end ;
     r=int16(sqrt(ii^2+jj^2));
     spect(r)=spect(r)+energyr(i,j)+energyi(i,j);
-    avg_spect(r)=spect(r)+energyr(i,j)+energyi(i,j);
+    avg_spect(r)=avg_spect(r)+energyr(i,j)+energyi(i,j);
   end
 end
 k=(1:midpt)*(2*pi/dims(2));

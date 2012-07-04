@@ -72,7 +72,6 @@ itime/shots,t,count(mask=f(:)%infront>0),recon_count,avg_sep/delta,&
 total_length,maxu,maxdu,real(eval_counter)/count(mask=f(:)%infront>0),kappa_bar,&
 remove_count
     close(78)
-    print*, 'the real pcount is... ', pcount !delete me once your happy 
     if (phonon_emission) then
       open(unit=78,file='data/phonon_count.log',position='append')
         write(78,*) phonon_count
@@ -101,6 +100,9 @@ remove_count
         write(78,*) t, hyp_power_dissipate
       close(78)
     end if
+  !  open(unit=71,file='./data/point1.log',position='append')
+  !    write(71,*) t, f(1)%x(1:3)
+  !  close(71)
   end subroutine
   !**********************************************************************
   !>print the f (filament) array as (un)formatted data for use with gnuplot/matlab
