@@ -1,4 +1,4 @@
-function [L_inside L_outside L_total]=kdtree_smooth(filenumber,msize,plot,eval_rms)
+function [L_inside L_outside L_total rms_w]=kdtree_smooth(filenumber,msize,plot,eval_rms)
 global dims
 global x y z
 global f
@@ -74,15 +74,16 @@ if plot==1
 end
 %---------------now work out length inside and outside structures----
 mod_w=(wmesh(:,:,:,1).^2+wmesh(:,:,:,2).^2+wmesh(:,:,:,3).^2);
-rms_w=sqrt(sum(sum(sum(mod_w)))/(msize^3))
-[sw3,sw2,sw1]=ind2sub(size(mod_w),find(mod_w>eval_rms*rms_w));
+rms_w=sqrt(sum(sum(sum(mod_w)))/(msize^3));
+[sw3,sw2,sw1]=ind2sub(size(mod_w),find(sqrt(mod_w)>eval_rms*rms_w));
 for i=1:msize
   xmesh(i)=((2*i-1)/2)*bsize/msize-bsize/2;
 end
 L_inside=0.;
 L_total=0.;
-for l=1:length(varray)
+parfor l=1:length(varray)
   L_total=L_total+sqrt(varray(l,4)^2+varray(l,5)^2+varray(l,6)^2);
+  hold on
   for i=1:length(sw1)
       if sw1(i)==msize || sw2(i)==msize || sw3(i)==msize
         continue

@@ -296,6 +296,7 @@ module cdata
   integer, protected :: one_dim_lattice=0 !create a lattice in z direction to calculate vel info on
   integer, protected :: one_dim_lattice_count=1 !number of 1d spectra to draw - must be a square number
   integer, protected :: two_dim=0 !size of 2d velocity information printed to file
+  character(len=2), protected :: two_dim_plane='xy' !plane 2D mesh lies in
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
@@ -569,6 +570,8 @@ module cdata
              read(buffer, *, iostat=ios) one_dim_lattice_count !number of lines in lattice       
           case ('two_dim')
              read(buffer, *, iostat=ios) two_dim !size of 2D print
+          case ('two_dim_plane')
+             read(buffer, *, iostat=ios) two_dim_plane !plane 2D mesh lies in
           case ('recon_info')
              read(buffer, *, iostat=ios) recon_info !extra reconnection information
           case('n_recon_track')

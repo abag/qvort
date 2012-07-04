@@ -1,0 +1,122 @@
+function kdtree_spec_only
+global dims
+global meshu meshu2 meshu3 
+global meshu4 meshu5 meshu6 
+global meshu7 meshu8 meshu9
+nmesh=256;
+%------------------spectra------------------
+fux=fftn(meshu(:,:,1))/(nmesh^2);
+fuy=fftn(meshu(:,:,2))/(nmesh^2);
+fuz=fftn(meshu(:,:,3))/(nmesh^2);
+energyr=real(fux).^2+real(fuy).^2+real(fuz).^2;
+energyi=imag(fux).^2+imag(fuy).^2+imag(fuz).^2;
+%-------------------------------------
+fux2=fftn(meshu2(:,:,1))/(nmesh^2);
+fuy2=fftn(meshu2(:,:,2))/(nmesh^2);
+fuz2=fftn(meshu2(:,:,3))/(nmesh^2);
+energyr2=real(fux2).^2+real(fuy2).^2+real(fuz2).^2;
+energyi2=imag(fux2).^2+imag(fuy2).^2+imag(fuz2).^2;
+%-------------------------------------
+fux3=fftn(meshu3(:,:,1))/(nmesh^2);
+fuy3=fftn(meshu3(:,:,2))/(nmesh^2);
+fuz3=fftn(meshu3(:,:,3))/(nmesh^2);
+energyr3=real(fux3).^2+real(fuy3).^2+real(fuz3).^2;
+energyi3=imag(fux3).^2+imag(fuy3).^2+imag(fuz3).^2;
+%-------------------------------------
+fux4=fftn(meshu4(:,:,1))/(nmesh^2);
+fuy4=fftn(meshu4(:,:,2))/(nmesh^2);
+fuz4=fftn(meshu4(:,:,3))/(nmesh^2);
+energyr4=real(fux4).^2+real(fuy4).^2+real(fuz4).^2;
+energyi4=imag(fux4).^2+imag(fuy4).^2+imag(fuz4).^2;
+%-------------------------------------
+fux5=fftn(meshu5(:,:,1))/(nmesh^2);
+fuy5=fftn(meshu5(:,:,2))/(nmesh^2);
+fuz5=fftn(meshu5(:,:,3))/(nmesh^2);
+energyr5=real(fux5).^2+real(fuy5).^2+real(fuz5).^2;
+energyi5=imag(fux5).^2+imag(fuy5).^2+imag(fuz5).^2;
+%-------------------------------------
+fux6=fftn(meshu6(:,:,1))/(nmesh^2);
+fuy6=fftn(meshu6(:,:,2))/(nmesh^2);
+fuz6=fftn(meshu6(:,:,3))/(nmesh^2);
+energyr6=real(fux6).^2+real(fuy6).^2+real(fuz6).^2;
+energyi6=imag(fux6).^2+imag(fuy6).^2+imag(fuz6).^2;
+%-------------------------------------
+fux7=fftn(meshu7(:,:,1))/(nmesh^2);
+fuy7=fftn(meshu7(:,:,2))/(nmesh^2);
+fuz7=fftn(meshu7(:,:,3))/(nmesh^2);
+energyr7=real(fux7).^2+real(fuy7).^2+real(fuz7).^2;
+energyi7=imag(fux7).^2+imag(fuy7).^2+imag(fuz7).^2;
+%-------------------------------------
+fux8=fftn(meshu8(:,:,1))/(nmesh^2);
+fuy8=fftn(meshu8(:,:,2))/(nmesh^2);
+fuz8=fftn(meshu8(:,:,3))/(nmesh^2);
+energyr8=real(fux8).^2+real(fuy8).^2+real(fuz8).^2;
+energyi8=imag(fux8).^2+imag(fuy8).^2+imag(fuz8).^2;
+%-------------------------------------
+fux9=fftn(meshu9(:,:,1))/(nmesh^2);
+fuy9=fftn(meshu9(:,:,2))/(nmesh^2);
+fuz9=fftn(meshu9(:,:,3))/(nmesh^2);
+energyr9=real(fux9).^2+real(fuy9).^2+real(fuz9).^2;
+energyi9=imag(fux9).^2+imag(fuy9).^2+imag(fuz9).^2;
+%-------------------------------------
+midpt=nmesh/2+1;
+spect(1:1.5*nmesh)=0.;
+spect2(1:1.5*nmesh)=0.;
+spect3(1:1.5*nmesh)=0.;
+spect4(1:1.5*nmesh)=0.;
+spect5(1:1.5*nmesh)=0.;
+spect6(1:1.5*nmesh)=0.;
+spect7(1:1.5*nmesh)=0.;
+spect8(1:1.5*nmesh)=0.;
+spect9(1:1.5*nmesh)=0.;
+whitebg('w')
+figure('Name','E(k)')
+for i=1:nmesh
+  for j=1:nmesh
+    ii=i;
+    jj=j;
+    if ii>midpt ; ii=nmesh-ii+1; end ;
+    if jj>midpt ; jj=nmesh-jj+1; end ;
+    r=int16(sqrt(ii^2+jj^2));
+    spect(r)=spect(r)+energyr(i,j)+energyi(i,j);
+    spect2(r)=spect2(r)+energyr2(i,j)+energyi2(i,j);
+    spect3(r)=spect3(r)+energyr3(i,j)+energyi3(i,j);
+    spect4(r)=spect4(r)+energyr4(i,j)+energyi4(i,j);
+    spect5(r)=spect5(r)+energyr5(i,j)+energyi5(i,j);
+    spect6(r)=spect6(r)+energyr6(i,j)+energyi6(i,j);
+    spect7(r)=spect7(r)+energyr7(i,j)+energyi7(i,j);
+    spect8(r)=spect8(r)+energyr8(i,j)+energyi8(i,j);
+    spect9(r)=spect9(r)+energyr9(i,j)+energyi9(i,j);
+  end
+end
+k=(1:midpt)*(2*pi/dims(2));
+dummy_spec=k.^(-5.1/3);
+dummy_spec2=k.^(-.96);
+cutoff=85;
+loglog(k(1:midpt-cutoff),spect(1:midpt-cutoff),'Color','k','LineWidth',2)
+hold on
+loglog(k(2:9),14*dummy_spec(2:9),'--k','LineWidth',1.5)
+loglog(k(2:20),0.02*dummy_spec2(2:20),'--k','LineWidth',1.5)
+%loglog(k(1:midpt-cutoff),spect2(1:midpt-cutoff),'Color','r','LineWidth',1.5)
+%loglog(k(1:midpt-cutoff),spect3(1:midpt-cutoff),'Color','b','LineWidth',1.5)
+%loglog(k(1:midpt-cutoff),spect4(1:midpt-cutoff),'Color','y','LineWidth',1.5)
+loglog(k(1:midpt-cutoff),spect5(1:midpt-cutoff),'Color','g','LineWidth',2)
+loglog(k(1:midpt-cutoff),spect6(1:midpt-cutoff),'Color','m','LineWidth',2)
+loglog(k(1:midpt-cutoff),spect7(1:midpt-cutoff),'Color','m','LineWidth',2)
+loglog(k(1:midpt-cutoff),spect8(1:midpt-cutoff),'Color','m','LineWidth',2)
+set(gca,'FontSize',16)
+xlabel('k','FontSize',16)
+ylabel('E(k)','FontSize',16)
+%------------------------------------------------
+figure
+dummy_spec2=k.^(-1);
+loglog(k(2:20),0.2*dummy_spec2(2:20),'--k','LineWidth',1.5)
+hold on
+loglog(k(2:16),0.7*dummy_spec(2:16),'--k','LineWidth',1.5)
+loglog(k(1:midpt-cutoff),spect2(1:midpt-cutoff),'Color','r','LineWidth',2)
+loglog(k(1:midpt-cutoff),spect9(1:midpt-cutoff),'Color','k','LineWidth',2)
+loglog(k(1:midpt-cutoff),spect6(1:midpt-cutoff),'Color','b','LineWidth',2)
+set(gca,'FontSize',16)
+xlabel('k','FontSize',16)
+ylabel('E(k)','FontSize',16)
+%loglog(k(1:midpt-cutoff),spect4(1:midpt-cutoff),'Color','y','LineWidth',1.5)

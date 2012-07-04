@@ -193,6 +193,8 @@ module initial
           call setup_crow_loop !initial_loop.mod
         case('smooth_test')
           call setup_smooth_test !initial_line.mod 
+        case('hayder_wave')
+          call setup_hayder_wave !initial_line.mod
         case('smooth_test_wave')
           call setup_smooth_test_wave !initial_line.mod  
         case('leap-frog')
@@ -201,6 +203,8 @@ module initial
           call setup_hyperboloid !initial_line.mod
         case('loop_train')
           call setup_loop_train !initial_loop.mod
+        case('rear_collide_loops')
+          call setup_rear_collide_loops !initial_loop.mod
         case('loop_stream')
           call setup_loop_stream !initial_loop.mod       
         case('linked_filaments')
@@ -468,13 +472,23 @@ module initial
     implicit none
     integer :: i,j
     real :: x,y
+    write(*,*) '2D mesh lies in ', two_dim_plane, ' plane' 
     allocate(mesh2D(two_dim,two_dim))
     !$omp parallel do private(i,j,x,y)
     do j=1, two_dim
       do i=1, two_dim
         x=(real(box_size)/two_dim)*real(2*i-1)/2.-(box_size/2.)
         y=(real(box_size)/two_dim)*real(2*j-1)/2.-(box_size/2.)
-        mesh2D(j,i)%x(1)=x ; mesh2D(j,i)%x(2)=y ; mesh2D(j,i)%x(3)=0.
+        select case(two_dim_plane)
+          case('xy')
+            mesh2D(j,i)%x(1)=x ; mesh2D(j,i)%x(2)=y ; mesh2D(j,i)%x(3)=0.
+          case('xz')
+            mesh2D(j,i)%x(1)=x ; mesh2D(j,i)%x(2)=0. ; mesh2D(j,i)%x(3)=y
+          case('yz')
+            mesh2D(j,i)%x(1)=0. ; mesh2D(j,i)%x(2)=x ; mesh2D(j,i)%x(3)=y
+          case default
+            call fatal_error('setup_mesh2D','incorrect value for two_dim_plane')
+        end select
         !clear the velocity slots - for safety
         mesh2D(j,i)%u_sup=0. ; mesh2D(j,i)%u_norm=0.
       end do
@@ -492,7 +506,7 @@ module initial
         return
     end select
     delta_min=delta/2.
-    dt_max=((delta_min)**2)/(quant_circ*log(delta_min*1E8/pi))
+    dt_max=abs(((delta_min)**2)/(quant_circ*log(delta_min/(pi*corea))))
     if (dt<dt_max) then
       write(*,'(a,e10.4)') ' dt is below maximum possible dt:', dt_max
     else

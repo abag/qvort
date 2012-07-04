@@ -16,9 +16,28 @@ echo -E 'timestep ($\delta t$):' >> run_info.tex
 awk -F"dt" '{print $2}' run.in | sed '/^$/d' >>run_info.tex
 echo -E 's' >> run_info.tex
 echo -E ' ' >> run_info.tex
-echo -E 'box size ($D$):' >> run_info.tex
-awk -F"box_size" '{print $2}' run.in | sed '/^$/d' >>run_info.tex
-echo -E 'cm' >> run_info.tex
+if grep -q box_size ./run.in ; then 
+  echo -E 'box size ($D$):' >> run_info.tex
+  awk -F"box_size" '{print $2}' run.in | sed '/^$/d' >>run_info.tex
+  echo -E 'cm' >> run_info.tex
+  echo -E ' ' >> run_info.tex
+fi
+if grep -q wave_start ./run.in ; then
+  echo -E 'normalised wave number ($k$):' >> run_info.tex
+  awk -F"wave_start" '{print $2}' run.in | sed '/^$/d' >>run_info.tex
+  echo -E ' ' >> run_info.tex
+fi
+if grep -q wave_amp ./run.in ; then
+  echo -E 'wave amplitude ($A$):' >> run_info.tex
+  awk -F"wave_amp" '{print $2}' run.in | sed '/^$/d' >>run_info.tex
+  echo -E '$\delta$ cm' >> run_info.tex
+  echo -E ' ' >> run_info.tex
+fi
+if grep -q quant_circ ./run.in ; then 
+  echo -E 'quantum of circulation ($\Gamma$):' >> run_info.tex
+  awk -F"quant_circ" '{print $2}' run.in | sed '/^$/d' >>run_info.tex
+  echo -E '${\rm cm}^2/{\rm s}$' >> run_info.tex
+fi
 echo -E ' ' >> run_info.tex
 echo -E 'boundary conditions:' >> run_info.tex
 awk -F"boundary" '{print $2}' run.in | sed '/^$/d' >>run_info.tex

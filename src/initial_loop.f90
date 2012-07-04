@@ -10,15 +10,17 @@ module initial_loop
   !>number of particles set and the size of \f$\delta\f$
   subroutine setup_single_loop
     implicit none
-    real :: velocity, ring_energy
+    real :: velocity, ring_energy, ring_mom
     real :: radius
     integer :: i 
     radius=(0.75*pcount*delta)/(2*pi) !75% of potential size 
     velocity=(quant_circ/(4*pi*radius))*(log(8*radius/corea)-.5)
     ring_energy=0.5*(quant_circ**2)*radius*(log(8*radius/corea)-2.)
+    ring_mom=quant_circ*pi*(radius**2)
     write(*,*) 'initf: single loop, radius of loop:', radius
     write(*,*) 'velocity should be:', velocity
     write(*,*) 'energy should be:', ring_energy
+    write(*,*) 'momentum should be:', ring_mom
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
       f(i)%x(1)=radius*sin(pi*real(2*i-1)/pcount)
@@ -377,6 +379,58 @@ module initial_loop
     end do    
   end subroutine
   !*************************************************************************
+  !>two unlinked loops which move in same direction loops have different sizes
+  !> which drives a reconnection
+  subroutine setup_rear_collide_loops
+    !two linked loops 
+    implicit none
+    real :: radius1, radius2
+    real :: big_loop_size, small_loop_size
+    integer :: breakpoint
+    integer :: i 
+    if (mod(pcount,10)/=0) then
+      call fatal_error('init.mod:setup_colliding_loops', &
+      'pcount is not a multiple of 10-aborting')
+    end if
+    big_loop_size=6. !(measured in 10ths)
+    small_loop_size=10.-big_loop_size !(measured in 10ths)
+    breakpoint=int((big_loop_size/10)*pcount)
+    radius1=(big_loop_size/10)*(0.75*pcount*delta)/(2*pi) !75% of potential size
+    radius2=(small_loop_size/10)*(0.75*pcount*delta)/(2*pi) !75% of potential size
+    write(*,'(a,f9.6)') ' initf: rear collide loops, radius of big loop:', radius1
+    write(*,'(a,f9.6)') ' initf: rear collide loops, radius of small loop:', radius2 
+    !loop over particles setting spatial and 'loop' position
+    do i=1, breakpoint
+      f(i)%x(1)=radius1*sin(pi*real(2*i-1)/((big_loop_size/10)*pcount))
+      f(i)%x(2)=radius1*cos(pi*real(2*i-1)/((big_loop_size/10)*pcount))
+      f(i)%x(3)=-box_size/20.
+      if (i==1) then
+        f(i)%behind=breakpoint ; f(i)%infront=i+1
+      else if (i==breakpoint) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do
+    !second loop
+    do i=breakpoint+1, pcount
+      f(i)%x(1)=radius2*sin(pi*real(2*i-1)/((small_loop_size/10)*pcount))
+      f(i)%x(2)=radius2*cos(pi*real(2*i-1)/((small_loop_size/10)*pcount))+radius1
+      f(i)%x(3)=box_size/20.
+      if (i==(breakpoint+1)) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=breakpoint+1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do    
+  end subroutine
+  !*************************************************************************
   !>set up a single loop in the y-z plane, it's size is dictated by the initial 
   !>number of particles set and the size of \f$\delta\f$
   subroutine setup_single_loop_zy
@@ -392,7 +446,7 @@ module initial_loop
     write(*,*) 'energy should be:', ring_energy
     !loop over particles setting spatial and 'loop' position
     do i=1, pcount
-      f(i)%x(1)=-box_size/2.
+      f(i)%x(1)=-box_size/4.
       f(i)%x(2)=radius*cos(pi*real(2*i-1)/pcount)
       f(i)%x(3)=radius*sin(pi*real(2*i-1)/pcount)
       if (i==1) then
