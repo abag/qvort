@@ -155,6 +155,15 @@ module general
     real, dimension(3), intent(IN) :: a
     vector_norm=(sqrt(dot_product(a,a)))
   end function
+  !*********************************************************************
+  !>calculate sech
+  !!\f[ \sech(x)= 2./(exp(x)+exp(-x)) \f]
+  real function sech(a)
+    use Cdata
+    implicit none
+    real, intent(IN) :: a
+    sech=2./(exp(a)+exp(-a))
+  end function
   !**************************************************
   !>a routine to test if two points are on the same loop
   !>returns a logical arguement with the answer

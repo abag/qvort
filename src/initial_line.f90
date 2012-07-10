@@ -78,6 +78,51 @@ module initial_line
     end do
   end subroutine
   !****************************************************************************
+  !>set up a single line from -z to z, number of particles is automatically adjusted
+  !>to box size and \f$\delta\f$
+  subroutine setup_soliton
+    implicit none
+    integer :: pcount_required
+    integer :: i !for looping
+    real :: ss !helper
+    real :: theta, omega, soli_d !helpers
+    if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=nint(box_size/(0.7*delta)) !75%
+      write(*,*) 'soliton solution from Konno and Kakuhata (2005)'
+      write(*,'(a,f5.2,a,f5.2)') ' \lambda_r= ', soliton_lambda_r, ' \lambda_i= ', soliton_lambda_i
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_single_line', &
+      'periodic boundary conditions required')
+    end if
+    soliton_lambda_i=soliton_lambda_i*2*pi/box_size !scale by box_size
+    soliton_lambda_r=soliton_lambda_r*2*pi/box_size !scale by box_size
+    soli_d=atan(-2*soliton_lambda_r*soliton_lambda_i/(soliton_lambda_i**2-soliton_lambda_r**2))
+    do i=1, pcount
+      ss=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
+      f(i)%x(1)=(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
+                sin(2*soliton_lambda_r*ss+soli_d)*sech(2*soliton_lambda_i*ss)
+      f(i)%x(2)=-(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
+                cos(2*soliton_lambda_r*ss+soli_d)*sech(2*soliton_lambda_i*ss)
+      !f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
+      f(i)%x(3)=ss-(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
+                tanh(2*soliton_lambda_i*ss)
+      if (i==1) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do
+  end subroutine
+  !****************************************************************************
   !>set up a helix from -z to z, number of particles is automatically adjusted
   !>to box size and \f$\delta\f$ 
   subroutine setup_helix
@@ -823,6 +868,84 @@ module initial_line
                 amp(k)*sin(wave_number(k)*2.*pi*real(2.*i-1)/(2.*pcount))
       end do 
     end do
+  end subroutine
+!*************************************************************************
+  !>new initial condition
+  subroutine setup_hayder_multi_wave
+    implicit none
+    real :: xpos, ypos
+    real :: wave_number(5), amp(5), phase(line_count,5)
+    integer :: pcount_required
+    integer :: line_size, line_position
+    integer :: i, j, k
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_wave_line', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !100% as waves are added
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,'(a,i7.1)') ' pcount is now:', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_wave_line', &
+      'periodic boundary conditions required')
+    end if
+    write(*,'(a,i3.1,a)') ' drawing', line_count, ' lines from -z to +z'
+    write(*,'(a)') ' adding 5 helical wave pertubations '
+    line_size=int(pcount/line_count)
+    !START THE LOOP
+    do i=1, line_count
+      if (i==1) then
+        xpos=box_size/5. ; ypos=box_size/5.
+      else if (i==2) then
+        xpos=-box_size/5. ; ypos=-box_size/5.
+      else
+        call random_number(xpos) ; call random_number(ypos)
+        xpos=(xpos-.5)*box_size*0.1 !1/10th of the box
+        ypos=(ypos-.5)*box_size*0.1
+      end if 
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        f(line_position)%x(1)=xpos
+        f(line_position)%x(2)=ypos
+        f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.  
+      end do
+      !---------wavenumbers---------------
+      amp=(/5.5,4.5,3.8,4.0,4.5/)
+      wave_number=(/5.,4.,3.,2.,1./)
+      amp=amp*wave_amp
+      !---------phases---------------
+      call random_number(phase)
+      phase=phase*2.*pi
+      phase(1,:)=0.
+      do k=1, 5
+        if (line_count==1) then
+          print*, k,' wavenumber ',wave_number(k),' amp ', amp(k)
+        end if
+        do j=1, line_size !reloop over particles
+          line_position=j+(i-1)*line_size
+          f(line_position)%x(1)=f(line_position)%x(1)+&
+          amp(k)*cos(phase(i,k)+wave_number(k)*2.*pi*real(2.*j-1)/(2.*line_size))
+          f(line_position)%x(2)=f(line_position)%x(2)+&
+          amp(k)*sin(phase(i,k)+wave_number(k)*2.*pi*real(2.*j-1)/(2.*line_size))
+        end do
+      end do !close k loop
+    end do !closes the i loop
   end subroutine
   !*************************************************************************
   !>lines from the lop of the box to the bottom arranged in a lattice, the number of

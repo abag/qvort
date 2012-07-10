@@ -229,6 +229,8 @@ module cdata
   !---------for torus_knot initf---------------------- 
   integer, protected :: torus_p=1, torus_q=1 !for torus_knot initf
   real, protected :: torus_epsilon=1.
+  !----------for soliton---------------
+  real :: soliton_lambda_i=1., soliton_lambda_r=1.
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
   logical, protected :: binary_print=.true.
@@ -510,6 +512,10 @@ module cdata
              read(buffer, *, iostat=ios) criss_cross_width !for criss-cross initial condition
           case ('torus_epsilon')
              read(buffer, *, iostat=ios) torus_epsilon !epsilon real for torus knot initial condition
+          case ('soliton_lambda_r')
+             read(buffer, *, iostat=ios) soliton_lambda_r !for soliton initial conditions
+          case ('soliton_lambda_i')
+             read(buffer, *, iostat=ios) soliton_lambda_i !for soliton initial conditions
           case ('wave_count')
              read(buffer, *, iostat=ios) wave_count !for wave_spec initial conditions
           case ('wave_slope')

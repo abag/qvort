@@ -195,8 +195,12 @@ module initial
           call setup_smooth_test !initial_line.mod 
         case('hayder_wave')
           call setup_hayder_wave !initial_line.mod
+        case('hayder_multi_wave')
+          call setup_hayder_multi_wave !initial_line.mod
         case('smooth_test_wave')
           call setup_smooth_test_wave !initial_line.mod  
+        case('soliton')
+          call setup_soliton !initial_line.mod
         case('leap-frog')
           call setup_leap_frog !initial_loop.mod
         case('hyperboloid')
