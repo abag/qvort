@@ -47,6 +47,13 @@ module normal_fluid
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/norm_vel_xflow !time-taken to cross box
           close(77)
+        case('shear_xflow')
+          urms_norm=norm_vel_xflow
+          write(*,'(a,f6.3)') ' u(x)=', norm_vel_xflow
+          call setup_gen_normalf !normal_fluid.mod
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/norm_vel_xflow !time-taken to cross box
+          close(77)
         case('noisy_xflow')
           urms_norm=norm_vel_xflow
           write(*,'(a,f6.3,a)') ' u(x)=', norm_vel_xflow, ' +noise'
@@ -154,6 +161,8 @@ module normal_fluid
           u=0. ! no flow
         case('xflow')
           u=0. ; u(1)=norm_vel_xflow !flow in the x direction
+        case('shear_xflow')
+          u=0. ; u(1)=norm_vel_xflow*sin(2*pi*x(3)/box_size) !flow in the x direction
         case('noisy_xflow')
           !do we need to generate a new noise?
           if ((mod(itime,normal_fluid_freq)==0).or.(itime==1)) then

@@ -89,9 +89,11 @@ module initial_line
     if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
       !work out the number of particles required for single line
       !given the box size specified in run.i
-      pcount_required=nint(box_size/(0.7*delta)) !75%
-      write(*,*) 'soliton solution from Konno and Kakuhata (2005)'
-      write(*,'(a,f5.2,a,f5.2)') ' \lambda_r= ', soliton_lambda_r, ' \lambda_i= ', soliton_lambda_i
+      pcount_required=nint(box_size/(0.6*delta)) !75%
+      write(*,*) '2 soliton solution from Konno and Kakuhata (2005)'
+      write(*,'(a,f6.3,a,f6.3)') ' \lambda_r= ', soliton_lambda_r, ' \lambda_i= ', soliton_lambda_i
+      write(*,'(a,f6.1,a,f6.1)') ' shift1= ', soliton_shift1, ' shift2= ', soliton_shift2
+      write(*,'(a,f6.2,a,f6.2)') ' A1= ', soliton_A1, ' A2= ', soliton_A2
       write(*,*) 'changing size of pcount to fit with box_length and delta'
       write(*,*) 'pcount is now', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
@@ -104,13 +106,19 @@ module initial_line
     soli_d=atan(-2*soliton_lambda_r*soliton_lambda_i/(soliton_lambda_i**2-soliton_lambda_r**2))
     do i=1, pcount
       ss=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
-      f(i)%x(1)=(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
-                sin(2*soliton_lambda_r*ss+soli_d)*sech(2*soliton_lambda_i*ss)
-      f(i)%x(2)=-(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
-                cos(2*soliton_lambda_r*ss+soli_d)*sech(2*soliton_lambda_i*ss)
+      f(i)%x(1)=soliton_A1*(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
+                sin(2*soliton_lambda_r*(ss+soliton_shift1)+soli_d)*sech(2*soliton_lambda_i*(ss+soliton_shift1))+&
+                soliton_A2*(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
+                sin(2*soliton_lambda_r*(ss+soliton_shift2)+soli_d)*sech(2*soliton_lambda_i*(ss+soliton_shift2))
+      f(i)%x(2)=-soliton_A1*(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
+                cos(2*soliton_lambda_r*(ss+soliton_shift1)+soli_d)*sech(2*soliton_lambda_i*(ss+soliton_shift1))+&
+                soliton_A2*(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
+                cos(2*soliton_lambda_r*(ss+soliton_shift2)+soli_d)*sech(2*soliton_lambda_i*(ss+soliton_shift2))
       !f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
-      f(i)%x(3)=ss-(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
-                tanh(2*soliton_lambda_i*ss)
+      f(i)%x(3)=ss-soliton_A1*(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
+                tanh(2*soliton_lambda_i*(ss+soliton_shift1))-&
+                soliton_A2*(soliton_lambda_i/(soliton_lambda_i**2+soliton_lambda_r**2))*&
+                tanh(2*soliton_lambda_i*(ss+soliton_shift2))
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -825,7 +833,7 @@ module initial_line
   !>specific spectrum all set in run.in
   subroutine setup_hayder_wave
     implicit none
-    real :: wave_number(5), amp(5)
+    real :: wave_number(5), amp(5), phase(5)
     integer :: pcount_required
     integer :: i, k
     !test run.in parameters, if wrong program will exit
@@ -858,14 +866,16 @@ module initial_line
     end do
     amp=(/5.5,4.5,3.8,4.0,4.5/)
     wave_number=(/5.,4.,3.,2.,1./)
+    phase=(/.3422,.6343,.2213,.989342,.5345/)
     amp=amp*wave_amp
+    phase=2*pi*phase
     do k=1, 5
-      print*, k,' wavenumber ',wave_number(k),' amp ', amp(k)
+      print*, k,' wavenumber ',wave_number(k),' amp ', amp(k), ' phase ', phase(k)
       do i=1, pcount
         f(i)%x(1)=f(i)%x(1)+&
-                amp(k)*cos(wave_number(k)*2.*pi*real(2.*i-1)/(2.*pcount))
+                amp(k)*cos(wave_number(k)*2.*pi*real(2.*i-1)/(2.*pcount)+phase(k))
         f(i)%x(2)=f(i)%x(2)+&
-                amp(k)*sin(wave_number(k)*2.*pi*real(2.*i-1)/(2.*pcount))
+                amp(k)*sin(wave_number(k)*2.*pi*real(2.*i-1)/(2.*pcount)+phase(k))
       end do 
     end do
   end subroutine
@@ -932,7 +942,7 @@ module initial_line
       !---------phases---------------
       call random_number(phase)
       phase=phase*2.*pi
-      phase(1,:)=0.
+      !phase(1,:)=0.
       do k=1, 5
         if (line_count==1) then
           print*, k,' wavenumber ',wave_number(k),' amp ', amp(k)

@@ -231,6 +231,8 @@ module cdata
   real, protected :: torus_epsilon=1.
   !----------for soliton---------------
   real :: soliton_lambda_i=1., soliton_lambda_r=1.
+  real :: soliton_shift1=0., soliton_shift2=-0.
+  real :: soliton_A1=1., soliton_A2=0.
   !--------the following parameters add special features-------------------------
   !---------these should all have default values which 'switch' them off---------
   logical, protected :: binary_print=.true.
@@ -516,6 +518,14 @@ module cdata
              read(buffer, *, iostat=ios) soliton_lambda_r !for soliton initial conditions
           case ('soliton_lambda_i')
              read(buffer, *, iostat=ios) soliton_lambda_i !for soliton initial conditions
+          case ('soliton_shift1')
+             read(buffer, *, iostat=ios) soliton_shift1 !for soliton initial conditions
+          case ('soliton_shift2')
+             read(buffer, *, iostat=ios) soliton_shift2 !for soliton initial conditions
+          case ('soliton_A1')
+             read(buffer, *, iostat=ios) soliton_A1 !for soliton initial conditions
+          case ('soliton_A2')
+             read(buffer, *, iostat=ios) soliton_A2 !for soliton initial conditions
           case ('wave_count')
              read(buffer, *, iostat=ios) wave_count !for wave_spec initial conditions
           case ('wave_slope')
