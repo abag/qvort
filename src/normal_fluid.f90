@@ -128,7 +128,10 @@ module normal_fluid
       end select
       write(*,'(a,f6.4,a,f6.4)') ' mutual friction coefficients alpha=',alpha(1),' alpha`=',alpha(2) 
       if (normal_fluid_cutoff<1000.) then
-        write(*,'(a,f6.3)') ' normal fluid is turned off when t=',normal_fluid_cutoff 
+        write(*,'(a,f6.3)') ' normal fluid is turned off (and T=0) when t=',normal_fluid_cutoff 
+      end if
+      if (t_zero_normal_fluid<1000.) then
+        write(*,'(a,f6.3)') ' normal fluid is zeroed (finite temp. remains) when t=',t_zero_normal_fluid
       end if
       write(*,'(a,f8.4)') ' normal fluid rms velocity is: ', urms_norm
       write(*,'(a)') ' normal fluid timescale printed to ./data/normal_timescale.log'

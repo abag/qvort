@@ -256,6 +256,7 @@ module cdata
   character(len=30), protected :: normal_velocity='zero'
   real, protected :: alpha(2)=0. !mutual friction coefficients
   real, protected :: normal_fluid_cutoff=1E8 !impossibly high time
+  real, protected :: t_zero_normal_fluid=1E8 !impossibly high time
   integer, protected :: normal_fluid_freq=1 !used for certain normal fluid flows
   real, protected :: norm_vel_xflow=0.5
   !------------KS model--------------------------------------------
@@ -426,8 +427,10 @@ module cdata
              read(buffer, *, iostat=ios) normal_velocity !zero/xflow/ABC/KS
           case ('normal_fluid_cutoff')
              read(buffer, *, iostat=ios) normal_fluid_cutoff !turn off nf
+          case ('t_zero_normal_fluid')
+             read(buffer, *, iostat=ios) t_zero_normal_fluid !zero nf
           case ('force_cutoff')
-             read(buffer, *, iostat=ios) force_cutoff !turn off forcing             
+             read(buffer, *, iostat=ios) force_cutoff !turn off forcing 
           case ('normal_fluid_freq')
              read(buffer, *, iostat=ios) normal_fluid_freq !frequency we "drive" nf
           case ('norm_vel_xflow')
