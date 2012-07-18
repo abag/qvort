@@ -33,7 +33,7 @@ filename=sprintf('data/var%04d.log',filenumber);
 box_size=.005 ;
 %set options based on varargin
 rough=0 ; linetrue=1 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0  ; magnetic=0; show_points=0 ; medium_line=0 ; overhead_xz=0;
-log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ; medium_line ; 
+log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ; medium_line=0 ; plot_arrow=0 ; 
 zoomin=0;
 %empty the vmax/min values
 v_max=[] ; v_min=[] ;
@@ -76,6 +76,8 @@ for i=1:optargin
       linetrue=0;
     case 'thin_line'
       thin_line=1; 
+    case 'arrow'
+      plot_arrow=1; 
     case 'medium_line'
       medium_line=1;  
       otherwise
@@ -281,11 +283,32 @@ for j=1:number_of_particles
               end
             else
               if thin_line==1
+                if plot_arrow==1
+                  if mod(j,20)==0
+                    arrow(dummy_x(1,:),dummy_x(2,:),6.,50.)
+                  else
+                    plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',.1)
+                  end  
+                end
                 plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',.1)
               elseif medium_line==1
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',1.)  
+                if plot_arrow==1
+                  if mod(j,20)==0
+                    arrow(dummy_x(1,:),dummy_x(2,:),6.,50.)
+                  else
+                    plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',1.)
+                  end  
+                end
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',1.)
               else
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)  
+                if plot_arrow==1
+                  if mod(j,20)==0
+                    arrow(dummy_x(1,:),dummy_x(2,:),6.,50.)
+                  else
+                    plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2.)
+                  end  
+                end
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2.)  
               end
             end 
           end
