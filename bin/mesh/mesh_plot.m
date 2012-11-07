@@ -28,7 +28,7 @@ for i=1:optargin
   end
 end
 filename=sprintf('data/mesh%03d.dat',filenumber);
-load data/dims.log;
+load ./data/dims.log;
 msize=dims(3);
 if (msize==0) 
   disp('mesh size is zero exiting script')
