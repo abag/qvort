@@ -12,6 +12,7 @@ module inject
   !>check all the necessary conditions to inject vortices are set in run.in
   subroutine setup_vortex_injection()
     implicit none
+    integer :: inject_size_required
     select case(inject_type)
       case('off')
         return !leave the routine
@@ -32,6 +33,27 @@ module inject
         end if
         write(*,*) 'I recommend injecting', nint(0.245*box_size*4*pi/(0.75*delta)), ' particles'
         write(*,*) 'switching injection direction every ', inject_freq, ' timesteps'
+      !******************lucy new code******************************************
+      case('random_bundles')
+        !work out number of particles required and change inject_size to suit
+        inject_size_required=bundle_line_count*nint(box_size/(0.75*delta))
+        write(*,*) 'changing size of inject_size to fit with box_length/delta and bundle_line_count'
+        write(*,*) 'inject_size is now', inject_size_required
+        inject_size=inject_size_required
+        select case(bundle_distribution)
+          case('uniform')
+            write(*,*) 'lines will be uniformly distributed within bundle'
+          case('normal')
+            write(*,*) 'lines will be normaly distributed within bundle'
+          case default
+            call fatal_error('inject.mod','bundle_distribution must be normal or uniform')
+        end select
+        if (bundle_width<0 .or. bundle_width>1) then
+          call fatal_error('inject.mod','bundle width must be between 0 and 1')
+        end if
+        if (bundle_line_count<4) then
+          call fatal_error('inject.mod','bundle line count must be at least 4')
+      !*************************************************************************
     end select 
     write(*,'(a,i4.1,a,i3.1,a)') ' loops will be injected every ', inject_skip, ' timesteps with ', inject_size, ' points'
     write(*,'(a,a)') ' inject type is set to: ', trim(inject_type)
@@ -61,10 +83,10 @@ module inject
     integer, allocatable, dimension(:) :: empty_points_array !location of 0s in f(:)%infront
     integer, allocatable, dimension(:) :: inject_loc !the location where we insert new points
     real :: radius !used for loops
-    real :: rand1, rand2, rand3 !random numbers
+    real :: rand1, rand2, rand3, rand4, theta, R !random numbers lucy changes here
     real :: anglex,angley,anglez !for rotating
     real,dimension(3)::dummy_xp_1, dummy_xp_2, dummy_xp_3, dummy_xp_4
-    integer :: old_pcount, dummy_inject_size
+    integer :: old_pcount, dummy_inject_size, bundle_line_size, bundle_line_position !lucy again
     integer :: i, j, counter !to loop
     !check that inject_size is not 0
     if (inject_size==0) return !leave routine if it is
@@ -234,6 +256,83 @@ module inject
           !zero the stored velocities
           f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0. ; f(inject_loc(i))%u3=0.
         end do
+      !*********************lucy new code*****************************************
+      case('random_bundles')
+        bundle_line_size=int(dummy_inject_size/bundle_line_count)
+        random_number(rand1) !determine direction
+        random_number(rand3) !line location in 1st plane
+        random_number(rand4) !line location in 2nd plane
+        rand3=(rand3*box_size)-box_size/2.
+        rand4=(rand4*box_size)-box_size/2.
+        random_number(theta) !bundle angle
+        theta=theta*2*pi
+        bundle_width=bundle_width*box_size
+        do i=1, bundle_line_count
+          if (bundle_distribution=='normal') then
+           !andrew help - what random number generator to use
+          else if (bundle_distribution=='uniform') then
+           random_number(R) !line offset from centre of bundle
+           R=R*bundle_width
+          end if
+          random_number(rand2) !determine orientation i.e. + to - or - to +
+          do j=1, bundle_line_size
+            bundle_line_position=j+(i-1)*bundle_line_size
+           !------------- lines in z direction-----------------
+            if (rand1<=0.33333333333) then
+             !-----from -z to z--------------
+             if (rand2<=0.5) then
+               f(inject_loc(bundle_line_position))%x(1)=rand3+R*cos(theta)
+               f(inject_loc(bundle_line_position))%x(2)=rand4+R*sin(theta)
+               f(inject_loc(bundle_line_position))%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)             
+             !---- from z to -z-------------
+             else
+               f(inject_loc(bundle_line_position))%x(1)=rand3+R*cos(theta)
+               f(inject_loc(bundle_line_position))%x(2)=rand4+R*sin(theta)
+               f(inject_loc(bundle_line_position))%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+             end if
+           !-------------lines in y direction-----------------
+            else if (rand1<=0.6666666666) then
+             !-----from -y to y-------------
+             if (rand2<=0.5) then
+               f(inject_loc(bundle_line_position))%x(1)=rand3+R*cos(theta)
+               f(inject_loc(bundle_line_position))%x(2)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+               f(inject_loc(bundle_line_position))%x(3)=rand4+R*sin(theta) 
+             !-----from y to -y-------------
+             else
+               f(inject_loc(bundle_line_position))%x(1)=rand3+R*cos(theta)
+               f(inject_loc(bundle_line_position))%x(2)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+               f(inject_loc(bundle_line_position))%x(3)=rand4+R*sin(theta)
+             end if
+           !------------lines in x direction------------------
+           else
+             !-----from -x to x----------------
+             if (rand2<=0.5) then 
+               f(inject_loc(bundle_line_position))%x(1)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+               f(inject_loc(bundle_line_position))%x(2)=rand3+R*cos(theta)
+               f(inject_loc(bundle_line_position))%x(3)=rand4+R*sin(theta)
+             !-----from x to -x---------------
+             else
+               f(inject_loc(bundle_line_position))%x(1)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+               f(inject_loc(bundle_line_position))%x(2)=rand3+R*cos(theta)
+               f(inject_loc(bundle_line_position))%x(3)=rand4+R*sin(theta)
+             end if
+           end if
+           if(j==1) then
+             f(inject_loc(bundle_line_position))%behind=inject_loc(i*bundle_line_size)
+             f(inject_loc(bundle_line_position))%infront=inject_loc(bundle_line_position+1)
+           else if (j==bundle_line_size) then
+             f(inject_loc(bundle_line_position))%behind=inject_loc(bundle_line_position-1)
+             f(inject_loc(bundle_line_position))%infront=inject_loc((i-1)*bundle_line_size+1)
+           else
+             f(inject_loc(bundle_line_position))%behind=inject_loc(bundle_line_position-1)
+             f(inject_loc(bundle_line_position))%infront=inject_loc(bundle_line_position+1)
+           end if
+           f(inject_loc(bundle_line_position))%u1=0.
+           f(inject_loc(bundle_line_position))%u2=0.
+           f(inject_loc(bundle_line_position))%u3=0.
+          end do
+        end do
+      !***************************************************************************
       case('loop_stream')!two rings top and bottom in corners
         radius=(0.75*dummy_inject_size*delta)/(4*pi) !75% of potential size 
         !loop over particles (2 loops) setting spatial and 'loop' position
