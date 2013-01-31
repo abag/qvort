@@ -269,6 +269,7 @@ module cdata
   !------------KS model--------------------------------------------
   integer,protected :: KS_rey_int=8
   real,protected :: KS_slope=-5./3.
+  real,protected :: KS_xflow_intense=0.
   integer, protected :: KS_modes=50
   logical, protected :: KS_maximise_rey=.false.
   real, protected :: KS_bubble=0.
@@ -613,6 +614,8 @@ module cdata
              read(buffer, *, iostat=ios) KS_wave_disc !for KS model
           case ('KS_energy_bump')
              read(buffer, *, iostat=ios) KS_energy_bump !for KS model
+          case ('KS_xflow_intense')
+             read(buffer, *, iostat=ios) KS_xflow_intense !for KS model
           case ('recon_time_info')
              read(buffer, *, iostat=ios) recon_time_info !time diffn between recon
           case ('one_dim')

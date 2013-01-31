@@ -1,0 +1,21 @@
+--------------required parameters------------
+nsteps 10000
+shots 10
+recon_shots 1
+pcount 1000
+dt 2E-5
+delta 0.001
+box_size 0.1
+velocity Tree
+initf random_loops
+line_count 10
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+normal_velocity KS_xflow
+alpha 1.21 -0.3883
+tree_theta 0.4
+KS_rey_int 8
+KS_modes 40
+KS_bubble 5.
+KS_xflow_intense .2

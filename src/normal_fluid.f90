@@ -12,7 +12,7 @@ module normal_fluid
     real, private :: norm_k
     real, private :: normal_direction(3) !used  by random_xflow
     real, private :: xflow_noise=0. !used by noisy xflow
-    real, private :: urms_norm
+    real, private :: urms_norm, urms_KS
     real, private :: t_change=-100. !a little less than 0!
     !>normal fluid mesh - all grid based normal velocities use this (e.g. Navier Stokes future)
     !>@param x the position on the grid
@@ -113,8 +113,16 @@ module normal_fluid
           call setup_KS !ksmodel.mod
           call print_KS_Mesh !normal_fluid.mod
           !Normal vel timescale written in setup_KS (line 109)
+        case('KS_xflow')
+          call setup_KS !ksmodel.mod
+          call print_KS_Mesh !normal_fluid.mod
+          !Normal vel timescale written in setup_KS (line 109)
+          call setup_gen_normalf !normal_fluid.mod
+          write(*,'(a,f6.3,a)') ' u(x)=', norm_vel_xflow, '+KS flow'
+          write(*,'(a,f6.3)') ' turbulent intensity is: ', KS_xflow_intense
+write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
         case('compressible')
-          if (periodic_bc) then 
+          if (periodic_bc) then
             write(*,'(a,i4.2,a)') ' creating gradient of a random field  on a', nfm_size,'^3 mesh'
             call setup_compressible !normal_fluid.mod
             open(unit=77,file='./data/normal_timescale.log',status='replace')
@@ -158,6 +166,7 @@ module normal_fluid
       implicit none
       real, intent(IN) :: x(3) !position of the particle
       real, intent(OUT) :: u(3) !velocity at x
+      real :: u_KS(3) !dummy variable for KS_xflow
       real :: r, phi, theta !used to convert to polar coords
       real :: u_r, u_theta !used to convert to polar coords
       integer :: peri, perj, perk !used to loop in periodic cases
@@ -274,6 +283,12 @@ module normal_fluid
         case('KS')
           !multi-scale model of turbulence
           call get_KS_flow(x,u)
+        case('KS_xflow')
+          !multi-scale model of turbulence
+          call get_KS_flow(x,u_KS)
+          u=0. ; u(1)=norm_vel_xflow !flow in the x direction
+          !add on 'turbulent' component of flow scaled by KS_xflow_intense
+          u=u+KS_xflow_intense*(norm_vel_xflow/urms_KS)*u_KS
         case('compressible')
           !compressible flow on a mesh, needs interpolation
           call nfm_interpolation(x,u)
@@ -536,6 +551,8 @@ module normal_fluid
         write(92) nfm(:,:,:)%u(2)
         write(92) nfm(:,:,:)%u(3)
       close(92)
+      deallocate(nfm)
+      urms_KS=urms_norm
     end subroutine
     !************************************************************
     subroutine get_nf_macro_ring(x,u)
