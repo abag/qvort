@@ -1,0 +1,14 @@
+--------------required parameters------------
+nsteps 100000
+shots 100
+pcount 800
+dt 1E-6
+delta 0.002
+box_size 0.4
+velocity LIA
+initf kursa_recon
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+tree_theta 0.4
+closest_distance T

@@ -1,5 +1,5 @@
 function vortex_anim(start,final,skip)
-vortex=1 %if set to 1 plots vortices
+vortex=0 %if set to 1 plots vortices
 if nargin<1
   disp('I at least need finish filenumbers')
   return
@@ -19,7 +19,7 @@ for i=start:skip:final
     hold on
   end
   particle_plot(i)
-  fOUT=sprintf('data/par%03d.png',i)
-  print('-dpng',fOUT)
+  fOUT=sprintf('data/par%03d.jpeg',i)
+  print('-djpeg',fOUT)
   close all
 end

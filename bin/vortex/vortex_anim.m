@@ -10,8 +10,8 @@ for i=start:skip:final
     fOUT=sprintf('data/var%04d.eps',i)
     print('-depsc',fOUT)
   else
-    fOUT=sprintf('data/var%04d.png',i)
-    print('-dpng',fOUT)
+    fOUT=sprintf('data/var%04d.jpeg',i)
+    print('-djpeg',fOUT)
   end 
   %close all open files
   fclose('all');

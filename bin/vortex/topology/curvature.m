@@ -37,7 +37,8 @@ end
     xlabel('t','FontSize',14)
     ylabel('min curv','FontSize',14)
   subplot(3,1,3)
-    plot(t,cmax,'-m',t,cmaxmax,'--k','LineWidth',2);
+    %plot(t,cmax,'-m',t,cmaxmax,'--k','LineWidth',2);
+    plot(t,cmax,'-m','LineWidth',2);
     set(gca,'FontSize',14)
     xlabel('t','FontSize',14)
     ylabel('max curv','FontSize',14)

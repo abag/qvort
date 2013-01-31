@@ -19,21 +19,14 @@
 %            print: print to file rather than screen
 %            eps: if print is set and eps is set then output eps files
 %
-function vortex_plot(filenumber,varargin)
+function vortex_plot2(varargin)
+global dims
+global x y z
+global f u u2
+global number_of_particles
 optargin = size(varargin,2);
-%check filenumber has been set
-if exist('filenumber')==0
-  disp('you have not set filnumber')
-  disp('aborting code and type "help vortex_plot" for more options')
-  return
-end
-filename=sprintf('data/var%04d.log',filenumber);
-%we set the dimensions of the box here
-%this is overridden if we have periodic B.C.'s
-box_size=.005 ;
-%set options based on varargin
 rough=0 ; linetrue=1 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0  ; magnetic=0; show_points=0 ; medium_line=0 ; overhead_xz=0;
-log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ; medium_line=0 ; plot_arrow=0 ; 
+log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ; medium_line ; 
 zoomin=0;
 %empty the vmax/min values
 v_max=[] ; v_min=[] ;
@@ -76,10 +69,8 @@ for i=1:optargin
       linetrue=0;
     case 'thin_line'
       thin_line=1; 
-    case 'arrow'
-      plot_arrow=1; 
     case 'medium_line'
-      medium_line=1;  
+      thin_line=1;  
       otherwise
       disp('invalid option in input arguements')
       disp('aborting code and printing help:')
@@ -100,104 +91,6 @@ if (magnetic==1)
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%get the dimensions information from dims.log
-dims=load('./data/dims.log');
-if dims(4)==1
-  fid=fopen(filename);
-  if fid<0
-      disp('var file does not exist, exiting script')
-      return
-  end
-  time=fread(fid,1,'float64');
-  number_of_particles=fread(fid,1,'int');
-  x=fread(fid,number_of_particles,'float64');
-  y=fread(fid,number_of_particles,'float64');
-  z=fread(fid,number_of_particles,'float64');
-  f=fread(fid,number_of_particles,'int');
-  u=fread(fid,number_of_particles,'float64');
-  u2=fread(fid,number_of_particles,'float64');
-else 
-  fid=fopen(filename);
-  if fid<0
-      disp('var file does not exist, exiting script')
-      return
-  end
-  %read the time
-  tline=fgetl(fid);
-  dummy=textscan(tline, '%f');
-  time=dummy{:};
-  %how many particles
-  tline=fgetl(fid);
-  dummy=textscan(tline, '%d');  
-  number_of_particles=dummy{:};
-  %get the particles%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  for j=1:number_of_particles
-    tline=fgetl(fid);
-    dummy=textscan(tline, '%f');
-    dummy_vect=dummy{:};
-    x(j)=dummy_vect(1);
-    y(j)=dummy_vect(2);
-    z(j)=dummy_vect(3);
-    f(j)=dummy_vect(4);
-    u(j)=dummy_vect(5);
-    u2(j)=dummy_vect(6);
-  end
-  f=uint16(f);
-end
-if (rough==1)
-    plot3(x,y,z,'.')
-    if (dims(2)>0.)
-      if overhead==1         
-        axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);               
-      else
-        axis([-dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2 -dims(2)/2 dims(2)/2]);
-        box on
-      end
-    else
-      if overhead==1         
-        axis([-box_size box_size -box_size box_size]);
-      else
-        axis([-box_size box_size -box_size box_size -box_size box_size]); 
-        box on
-      end
-    end
-    rotate3d on
-    return
-end
-anglecmap=colormap(jet(320));
-if rainbow==1
-  %scale velocity into a colormap
-  store_caxis=([min(u(u>0)) max(u)]);
-  u=u-min(u(u>0));
-  rainbow_scale=199/max(u) ;
-  u=u*rainbow_scale;
-  rainbowcmap=colormap(jet(200));
-elseif log_rainbow==1
-  rainbow=1 ;
-  %scale velocity into a colormap
-  store_caxis=([min(log10(u(u>0))) max(log10(u))]);
-  u=log10(u)-min(log10(u(u>0)));
-  rainbow_scale=199/max(u) ;
-  u=u*rainbow_scale;
-  rainbowcmap=colormap(jet(200));
-elseif magnetic==1
-  if (max(u)>v_max)
-      disp('v_max is too small ; exiting script')
-      return
-  end 
-  if (min(u)<v_min)
-      disp('v_min is too large ; exiting script')
-      return
-  end 
-  %scale field into a colormap
-  twid=1./u;
-  store_caxis=([v_min v_max]);
-  u=u-v_min;
-  rainbow_scale=299/v_max ;
-  u=u*rainbow_scale;
-  rainbowcmap=colormap(jet(300));
-end
-%now create vectors to plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for j=1:number_of_particles
   if round(f(j))==0
   else
@@ -284,29 +177,11 @@ for j=1:number_of_particles
               end
             else
               if thin_line==1
-                if plot_arrow==1
-                  if mod(j,20)==0
-                    arrow(dummy_x(1,:),dummy_x(2,:),6.,50.)
-                  else
-                    plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',.1)
-                  end  
-                end
                 plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',.1)
               elseif medium_line==1
-                if plot_arrow==1
-                  if mod(j,20)==0
-                    arrow(dummy_x(1,:),dummy_x(2,:),6.,50.)
-                  else
-                    plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',1.)
-                  end  
-                end
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',1.)
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',1.)  
               else
-                if plot_arrow==1
-                  angle_color=floor(100*acos(dot((dummy_x(2,:)-dummy_x(1,:))/dist,[0 1 0])));
-                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',anglecmap(max(1,angle_color),:),'LineWidth',2.0)   
-                end
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2.)  
+                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2)  
               end
             end 
           end

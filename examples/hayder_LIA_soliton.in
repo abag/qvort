@@ -1,0 +1,22 @@
+--------------required parameters------------
+nsteps 1000000
+shots 100
+pcount 100
+dt 1E-2
+delta 2.
+box_size 200
+velocity LIA
+initf soliton
+boundary openxy
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+quant_circ 12.5663706
+corea 1.
+deriv_order fourth
+soliton_lambda_r 1.
+soliton_lambda_i .9
+soliton_A1 .8
+soliton_A2 .8
+soliton_shift1 50.
+soliton_shift2 -50.
+switch_off_recon T

@@ -21,6 +21,7 @@ ux=reshape(ux,msize,msize,msize);
 uy=reshape(uy,msize,msize,msize);
 uz=reshape(uz,msize,msize,msize);
 unorm=max(sqrt(ux.^2+uy.^2+uz.^2));
+writevtk(sqrt(ux.^2+uy.^2+uz.^2),'para_KS.vtk')
 %plot slices of field+isosurface
 mesh_slices(x,ux,uy,uz,msize,'forcing: vel field')
 %---------------------vorticity---------------------
