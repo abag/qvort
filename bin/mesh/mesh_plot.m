@@ -3,7 +3,7 @@ close all
 optargin = size(varargin,2);
 %set options based on varargin
 slice=0 ; iso=0 ; spect=0 ; struct=0 ; print=0 ; para=0 ; 
-vort_slice=0 ; vort_iso=0 ; smoothme=0 ; 
+vort_slice=0 ; vort_iso=0 ; smoothme=0 ; get_phi=0 ; 
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'slice'
@@ -22,6 +22,8 @@ for i=1:optargin
       struct=1;
     case 'smooth'
       smoothme=1;
+    case 'get_phi'
+      get_phi=1;
     case 'print'
       print=1;
       disp('printing to file')
@@ -29,6 +31,7 @@ for i=1:optargin
 end
 filename=sprintf('data/mesh%03d.dat',filenumber);
 load data/dims.log;
+global ux uy uz
 msize=dims(3);
 if (msize==0) 
   disp('mesh size is zero exiting script')
@@ -60,6 +63,10 @@ if smoothme==1
   ux=smooth3(ux,'box',3);
   uy=smooth3(uy,'box',3);
   uz=smooth3(uz,'box',3);
+end
+if get_phi==1
+  mesh_get_phi(ux,uy,uz,msize,0) %don't plot
+  mesh_get_phi(ux,uy,uz,msize,1) %do plot
 end
 %plot slices of field
 if slice==1
