@@ -12,7 +12,7 @@ module inject
   !>check all the necessary conditions to inject vortices are set in run.in
   subroutine setup_vortex_injection()
     implicit none
-    integer :: inject_size_required
+    integer :: inject_size_required !lucy added this
     select case(inject_type)
       case('off')
         return !leave the routine
@@ -53,6 +53,7 @@ module inject
         end if
         if (bundle_line_count<4) then
           call fatal_error('inject.mod','bundle line count must be at least 4')
+        end if
       !*************************************************************************
     end select 
     write(*,'(a,i4.1,a,i3.1,a)') ' loops will be injected every ', inject_skip, ' timesteps with ', inject_size, ' points'
@@ -259,22 +260,23 @@ module inject
       !*********************lucy new code*****************************************
       case('random_bundles')
         bundle_line_size=int(dummy_inject_size/bundle_line_count)
-        random_number(rand1) !determine direction
-        random_number(rand3) !line location in 1st plane
-        random_number(rand4) !line location in 2nd plane
+        call random_number(rand1) !determine direction
+        call random_number(rand3) !line location in 1st plane
+        call random_number(rand4) !line location in 2nd plane
         rand3=(rand3*box_size)-box_size/2.
         rand4=(rand4*box_size)-box_size/2.
-        random_number(theta) !bundle angle
-        theta=theta*2*pi
-        bundle_width=bundle_width*box_size
         do i=1, bundle_line_count
           if (bundle_distribution=='normal') then
            !andrew help - what random number generator to use
+           call random_number(R) !for now until I find normal generator
+           R=R*bundle_width*box_size
           else if (bundle_distribution=='uniform') then
-           random_number(R) !line offset from centre of bundle
-           R=R*bundle_width
+           call random_number(R) !line offset from centre of bundle
+           R=R*bundle_width*box_size
           end if
-          random_number(rand2) !determine orientation i.e. + to - or - to +
+          call random_number(theta) !line angle
+          theta=theta*2*pi
+          call random_number(rand2) !determine orientation i.e. + to - or - to +
           do j=1, bundle_line_size
             bundle_line_position=j+(i-1)*bundle_line_size
            !------------- lines in z direction-----------------
@@ -283,36 +285,36 @@ module inject
              if (rand2<=0.5) then
                f(inject_loc(bundle_line_position))%x(1)=rand3+R*cos(theta)
                f(inject_loc(bundle_line_position))%x(2)=rand4+R*sin(theta)
-               f(inject_loc(bundle_line_position))%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)             
+               f(inject_loc(bundle_line_position))%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*bundle_line_size)             
              !---- from z to -z-------------
              else
                f(inject_loc(bundle_line_position))%x(1)=rand3+R*cos(theta)
                f(inject_loc(bundle_line_position))%x(2)=rand4+R*sin(theta)
-               f(inject_loc(bundle_line_position))%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+               f(inject_loc(bundle_line_position))%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*bundle_line_size)
              end if
            !-------------lines in y direction-----------------
             else if (rand1<=0.6666666666) then
              !-----from -y to y-------------
              if (rand2<=0.5) then
                f(inject_loc(bundle_line_position))%x(1)=rand3+R*cos(theta)
-               f(inject_loc(bundle_line_position))%x(2)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+               f(inject_loc(bundle_line_position))%x(2)=-box_size/2.+box_size*real(2*j-1)/(2.*bundle_line_size)
                f(inject_loc(bundle_line_position))%x(3)=rand4+R*sin(theta) 
              !-----from y to -y-------------
              else
                f(inject_loc(bundle_line_position))%x(1)=rand3+R*cos(theta)
-               f(inject_loc(bundle_line_position))%x(2)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+               f(inject_loc(bundle_line_position))%x(2)=box_size/2.-box_size*real(2*j-1)/(2.*bundle_line_size)
                f(inject_loc(bundle_line_position))%x(3)=rand4+R*sin(theta)
              end if
            !------------lines in x direction------------------
            else
              !-----from -x to x----------------
              if (rand2<=0.5) then 
-               f(inject_loc(bundle_line_position))%x(1)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+               f(inject_loc(bundle_line_position))%x(1)=-box_size/2.+box_size*real(2*j-1)/(2.*bundle_line_size)
                f(inject_loc(bundle_line_position))%x(2)=rand3+R*cos(theta)
                f(inject_loc(bundle_line_position))%x(3)=rand4+R*sin(theta)
              !-----from x to -x---------------
              else
-               f(inject_loc(bundle_line_position))%x(1)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+               f(inject_loc(bundle_line_position))%x(1)=box_size/2.-box_size*real(2*j-1)/(2.*bundle_line_size)
                f(inject_loc(bundle_line_position))%x(2)=rand3+R*cos(theta)
                f(inject_loc(bundle_line_position))%x(3)=rand4+R*sin(theta)
              end if

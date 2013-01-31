@@ -322,7 +322,7 @@ module cdata
   logical, protected :: smoothing_interspace=.false. !smooth using intervortex spacing?
   !------------------------------filament injection-------------------------------
   integer, protected :: inject_skip=10000000!how often we insert the vortice
-  integer, protected :: inject_size=0 !number of points used
+  integer :: inject_size=0 !number of points used
   integer, protected :: inject_freq=10000000!how often we switch injection direction
   logical, protected :: randomise_injection=.false.!different meanings for different routines
   real, protected :: inject_stop=1E8 !when to stop injection - arbitrarily high
@@ -330,7 +330,7 @@ module cdata
   !******************************lucy new code************************************
   real, protected :: bundle_width=0.0!what proportion of the box is filled with the bundle
   integer, protected :: bundle_line_count=0 !number of lines injected per bundle
-  character(len=20), protected :: bundle_distribution='uniform' !how lines are distributed within bundle
+  character(len=20),protected :: bundle_distribution='uniform' !how lines are distributed within bundle
   !*******************************************************************************
   !----------------------------code testing---------------------------------------
   logical, protected :: switch_off_recon=.false.!turns of reconnection algorithm
