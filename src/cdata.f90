@@ -226,7 +226,7 @@ module cdata
   real, protected :: hyperboloid_e=1. !effects curvature of bundle
   !---------for central_bundle------------------------
   character(len=30), protected :: bundle_type='polarised' !polarised or random
-  character(len=30), protected :: bundle_distribution='uniform' !distribution
+  character(len=30), protected :: cent_bundle_dist='uniform' !distribution
   !---------for criss-cross------------------------
   integer, protected :: criss_cross_bundle=1 !typical size of bundles
   real, protected :: criss_cross_width=1. !width in terms of \delta
@@ -479,8 +479,8 @@ module cdata
              read(buffer, *, iostat=ios) random_loop_collide !used in random_loops condition
           case ('bundle_type')
              read(buffer, *, iostat=ios) bundle_type !used in central_bundle initial conditions
-          case ('bundle_distribution')
-            read(buffer, *, iostat=ios) bundle_distribution !used in central_bundle initial conditions
+          case ('cent_bundle_dist')
+            read(buffer, *, iostat=ios) cent_bundle_dist !used in central_bundle initial conditions
           case ('rotation_factor')
              read(buffer, *, iostat=ios) rotation_factor !how much we rotate loops by
           case ('force')
