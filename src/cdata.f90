@@ -207,13 +207,16 @@ module cdata
   real, protected :: loop_translate(3)=1.!for separate xyz components
   character(len=20), protected :: initial_distribution='uniform'
   real, protected :: rotation_factor=1 !also used in injection routines
+  real, protected :: kursa_angle=5 !used by kursa_recon
+  logical, protected :: random_loop_collide=.false.
   !--------for wave_loop/wave_line initf--------------
   integer, protected :: wave_count=1 !number of waves
   real, protected :: wave_slope=-1.5 !spectral slope
-  integer, protected :: wave_start=1 !starting wavenumber
+  integer, protected :: wave_start=1, wave_start2=1 !starting wavenumber
   integer, protected :: wave_skip=1 !the skip used
   real, protected :: wave_amp=10. !amplitude of 1st wave
   character(len=30), protected :: wave_type='planar' !planar or helical
+  character(len=30), protected :: wave_distribution='spectrum' !spectrum or gaussian
   !--------for macro_ring initf--------------
   real, protected :: macro_ring_R=0. !major radius
   real, protected :: macro_ring_a=0. !minor radius
@@ -223,6 +226,7 @@ module cdata
   real, protected :: hyperboloid_e=1. !effects curvature of bundle
   !---------for central_bundle------------------------
   character(len=30), protected :: bundle_type='polarised' !polarised or random
+  character(len=30), protected :: bundle_distribution='uniform' !distribution
   !---------for criss-cross------------------------
   integer, protected :: criss_cross_bundle=1 !typical size of bundles
   real, protected :: criss_cross_width=1. !width in terms of \delta
@@ -259,12 +263,16 @@ module cdata
   real, protected :: t_zero_normal_fluid=1E8 !impossibly high time
   integer, protected :: normal_fluid_freq=1 !used for certain normal fluid flows
   real, protected :: norm_vel_xflow=0.5
+  real, protected :: norm_shear_omega=0.
   !------------KS model--------------------------------------------
   integer,protected :: KS_rey_int=8
   real,protected :: KS_slope=-5./3.
   integer, protected :: KS_modes=50
   logical, protected :: KS_maximise_rey=.false.
   real, protected :: KS_bubble=0.
+  logical, protected :: KS_wave_cone=.false. !force wavenumbers to cluster at +-z
+  logical, protected :: KS_wave_disc=.false. !force wavenumbers to lie in x/y
+  logical, protected :: KS_energy_bump=.false. !energy spectrum is a bump 
   !-----------------forcing------------------------------------------------------
   character(len=30), protected :: force='off'
   real, protected :: force_amp=0.
@@ -275,6 +283,11 @@ module cdata
   !do we want to dump 'f' at a specific timeu1, i.e. before a reconnection etc.
   real, protected :: special_dump=0. !special dump time
   integer :: int_special_dump=0. !special dump time integer
+  !-----------------small loops-------------------------------------------------
+  integer :: small_loop_remove_count=0
+  real :: small_loop_remove_length=0.
+  integer :: boundary_loop_remove_count=0
+  real :: boundary_loop_remove_length=0.
   !---------------------quasi particles------------------------------------------------
   integer :: quasi_pcount=0 !number of quasi particles
   character(len=20), protected :: initg='random' !initial quasi particle configuration
@@ -433,6 +446,8 @@ module cdata
              read(buffer, *, iostat=ios) force_cutoff !turn off forcing 
           case ('normal_fluid_freq')
              read(buffer, *, iostat=ios) normal_fluid_freq !frequency we "drive" nf
+          case ('norm_shear_omega')
+             read(buffer, *, iostat=ios) norm_shear_omega !frequency for xflow_shear nf
           case ('norm_vel_xflow')
              read(buffer, *, iostat=ios) norm_vel_xflow !counterflow velocity             
           case ('alpha')
@@ -455,8 +470,12 @@ module cdata
              read(buffer, *, iostat=ios) lattice_ratio !used in lattice initial conditions
           case ('loop_translate')
              read(buffer, *, iostat=ios) loop_translate !used in random_loops conditions
+          case ('random_loop_collide')
+             read(buffer, *, iostat=ios) random_loop_collide !used in random_loops condition
           case ('bundle_type')
              read(buffer, *, iostat=ios) bundle_type !used in central_bundle initial conditions
+          case ('bundle_distribution')
+            read(buffer, *, iostat=ios) bundle_distribution !used in central_bundle initial conditions
           case ('rotation_factor')
              read(buffer, *, iostat=ios) rotation_factor !how much we rotate loops by
           case ('force')
@@ -535,12 +554,16 @@ module cdata
              read(buffer, *, iostat=ios) wave_slope !for wave_spec initial conditions
           case ('wave_start')
              read(buffer, *, iostat=ios) wave_start !for wave_spec initial conditions
+          case ('wave_start2')
+             read(buffer, *, iostat=ios) wave_start2 !for wave_spec initial conditions
           case ('wave_skip')
              read(buffer, *, iostat=ios) wave_skip !for wave_spec initial conditions
           case ('wave_amp')
              read(buffer, *, iostat=ios) wave_amp !for wave_spec initial conditions
           case ('wave_type')
              read(buffer, *, iostat=ios) wave_type !for wave_spec initial conditions
+          case ('wave_distribution')
+             read(buffer, *, iostat=ios) wave_distribution !for wave_spec initial conditions
           case ('macro_ring_R')
              read(buffer, *, iostat=ios) macro_ring_R !for macro_ring initial conditions
           case ('macro_ring_a')
@@ -577,6 +600,12 @@ module cdata
              read(buffer, *, iostat=ios) KS_maximise_rey !Force 1st wavenumber to be as small as possible
           case ('KS_modes')
              read(buffer, *, iostat=ios) KS_modes !the number of KS modes
+          case ('KS_wave_cone')
+             read(buffer, *, iostat=ios) KS_wave_cone !for KS model
+          case ('KS_wave_disc')
+             read(buffer, *, iostat=ios) KS_wave_disc !for KS model
+          case ('KS_energy_bump')
+             read(buffer, *, iostat=ios) KS_energy_bump !for KS model
           case ('recon_time_info')
              read(buffer, *, iostat=ios) recon_time_info !time diffn between recon
           case ('one_dim')
