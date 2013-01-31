@@ -48,8 +48,8 @@ module inject
           case default
             call fatal_error('inject.mod','bundle_distribution must be normal or uniform')
         end select
-        if (bundle_width<0 .or. bundle_width>1) then
-          call fatal_error('inject.mod','bundle width must be between 0 and 1')
+        if (bundle_width<delta .or. bundle_width>1) then
+          call fatal_error('inject.mod','bundle width must be between resolution (delta) and 1')
         end if
         if (bundle_line_count<4) then
           call fatal_error('inject.mod','bundle line count must be at least 4')
@@ -263,6 +263,7 @@ module inject
         call random_number(rand1) !determine direction
         call random_number(rand3) !line location in 1st plane
         call random_number(rand4) !line location in 2nd plane
+        call random_number(rand2) !determine orientation i.e. + to - or - to +
         rand3=(rand3*box_size)-box_size/2.
         rand4=(rand4*box_size)-box_size/2.
         do i=1, bundle_line_count
@@ -270,13 +271,13 @@ module inject
            !andrew help - what random number generator to use
            call random_number(R) !for now until I find normal generator
            R=R*bundle_width*box_size
+           R=abs(rnorm(0.,(0.45*bundle_width*box_size)**2))
           else if (bundle_distribution=='uniform') then
            call random_number(R) !line offset from centre of bundle
            R=R*bundle_width*box_size
           end if
           call random_number(theta) !line angle
           theta=theta*2*pi
-          call random_number(rand2) !determine orientation i.e. + to - or - to +
           do j=1, bundle_line_size
             bundle_line_position=j+(i-1)*bundle_line_size
            !------------- lines in z direction-----------------
