@@ -35,6 +35,8 @@ module diagnostic
       write(72,*) t, minval(f(:)%closestd,mask=f(:)%infront>0),&
       -maxval(f(:)%x(3), mask=((f(:)%x(3)<0).and.(f(:)%x(1)>0.).and.(f(:)%x(1)<0.1).and.f(:)%infront>0))& 
       +minval(f(:)%x(3), mask=((f(:)%x(3)>0).and.(f(:)%x(1)>0.).and.(f(:)%x(1)<0.1).and.f(:)%infront>0)),&
+      -maxval(f(:)%x(3), mask=((f(:)%x(3)<0).and.(f(:)%infront>0))) & 
+      +minval(f(:)%x(3), mask=((f(:)%x(3)>0).and.(f(:)%infront>0))),&
     distf(162,212), distf(162,163)
     close(72)
   end subroutine

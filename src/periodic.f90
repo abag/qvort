@@ -312,8 +312,13 @@ module periodic
     integer :: store_next
     integer :: i, counter
     next=particle 
+    boundary_loop_remove_count=boundary_loop_remove_count+1
     do i=1, pcount
       store_next=f(next)%infront
+      if (store_next/=particle) then
+        boundary_loop_remove_length=boundary_loop_remove_length&
+                                   +distf(next,store_next)
+      end if
       call clear_particle(next) !general.mod
       next=store_next
       if (next==particle) then

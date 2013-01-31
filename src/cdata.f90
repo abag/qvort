@@ -208,10 +208,12 @@ module cdata
   character(len=20), protected :: initial_distribution='uniform'
   real, protected :: rotation_factor=1 !also used in injection routines
   real, protected :: kursa_angle=5 !used by kursa_recon
+  !below used in random_loops to setup colliding bundles
   logical, protected :: random_loop_collide=.false.
   !--------for wave_loop/wave_line initf--------------
   integer, protected :: wave_count=1 !number of waves
   real, protected :: wave_slope=-1.5 !spectral slope
+  !wave start2 used to create bimodal distribution of wavenumbers in setup_wave_line
   integer, protected :: wave_start=1, wave_start2=1 !starting wavenumber
   integer, protected :: wave_skip=1 !the skip used
   real, protected :: wave_amp=10. !amplitude of 1st wave

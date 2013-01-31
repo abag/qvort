@@ -111,6 +111,9 @@ module KSmodel
       close(57)
       !also print to screen
       write(*,*) '-------------------KS info------------------'
+      if (KS_wave_cone) write(*,*) 'clustering wavenumbers in cone'
+      if (KS_wave_disc) write(*,*) 'clustering wavenumbers in disc'
+      if (KS_energy_bump) write(*,*) 'energy in a bump at high k'
       write(*,'(a,i5.4)') ' number of fourier modes:', KS_modes
       write(*,'(a,f6.2)') ' bubble parameter to force wavenumbers apart:', KS_bubble
       write(*,'(a,f6.2)') ' slope of spectrum:', KS_slope
@@ -138,7 +141,12 @@ module KSmodel
       num=1
       !get the k-vectors now
       do i=1,total  
-        call random_number(angle)  
+        call random_number(angle)
+        if (KS_wave_cone) then
+          angle(1:2)=angle(1:2)/4. !cone the wavenumbers?
+        else if (KS_wave_disc)then
+          angle(3)=angle(3)/4. !disc the wavenumbers?
+        end if
         !make sure none of the random numbers are zero at the given resolution 
         if(sum(angle)<epsilon(0.)) then
           call random_number(angle)
@@ -220,13 +228,23 @@ module KSmodel
       integer :: r 
       allocate(ampA(KS_modes),ampB(KS_modes))
       do r=1,KS_modes
-         KS_energy(r)=1.0+(kk(r))**2
-         KS_energy(r)=(kk(r)**2)*(KS_energy(r)**((KS_slope-2.)/2.)) !11./6. gives kolmogorov
-         KS_energy(r)=KS_energy(r)*exp(-0.5*(kk(r)/kk(KS_modes))**2) 
-         !set the lengths of A& B as defined in Malik & Vassilicos
-         ampA(r)=sqrt(2.0*KS_energy(r)*delk(r))!/3.0) 
-         ampB(r)=ampA(r)                                
-      
+         if (KS_energy_bump) then
+           KS_energy(r)=10000.-(kk(r)-((10*2*pi)/box_size))**2
+           if (KS_energy(r)<0) then
+             KS_energy(r)=0.
+           else
+             KS_energy(r)=log(KS_energy(r))/5
+           end if
+           ampA(r)=KS_energy(r)
+           ampB(r)=ampA(r)                                
+         else
+           KS_energy(r)=1.0+(kk(r))**2
+           KS_energy(r)=(kk(r)**2)*(KS_energy(r)**((KS_slope-2.)/2.)) !11./6. gives kolmogorov
+           KS_energy(r)=KS_energy(r)*exp(-0.5*(kk(r)/kk(KS_modes))**2)
+           !set the lengths of A& B as defined in Malik & Vassilicos
+           ampA(r)=sqrt(2.0*KS_energy(r)*delk(r))!/3.0)
+           ampB(r)=ampA(r)
+         end if
          call random_number(newa) ; call random_number(newa2)
          newa=2.*newa-1. ; newa2=2.*newa2-1.
          j=newa ; l=newa2  

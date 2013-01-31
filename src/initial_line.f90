@@ -91,9 +91,11 @@ module initial_line
       !given the box size specified in run.i
       pcount_required=nint(box_size/(0.6*delta)) !75%
       write(*,*) '2 soliton solution from Konno and Kakuhata (2005)'
+      !--------------THESE ARE ALL SET IN RUN.IN---------------------
       write(*,'(a,f6.3,a,f6.3)') ' \lambda_r= ', soliton_lambda_r, ' \lambda_i= ', soliton_lambda_i
       write(*,'(a,f6.1,a,f6.1)') ' shift1= ', soliton_shift1, ' shift2= ', soliton_shift2
       write(*,'(a,f6.2,a,f6.2)') ' A1= ', soliton_A1, ' A2= ', soliton_A2
+      !--------------------------------------------------------------
       write(*,*) 'changing size of pcount to fit with box_length and delta'
       write(*,*) 'pcount is now', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
@@ -180,7 +182,7 @@ module initial_line
       print*, 'pcount is now', pcount_required
       deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
     else
-      call fatal_error('init.mod:setup_central_bundle', &
+      call fatal_error('init.mod:setup_hyperboloid', &
       'periodic boundary conditions required')
     end if
     write(*,*) 'initf: hyperboloid,'
@@ -283,9 +285,9 @@ module initial_line
       f(i)%x(1)=0.
       f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(pcount)
       !tiny pertubation from straight line
-      !f(i)%x(2)=delta-(delta/16.)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
+      f(i)%x(2)=delta-(delta/16.)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
       !really bent lines below
-      f(i)%x(2)=16*delta-(12*delta)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
+      !f(i)%x(2)=16*delta-(12*delta)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
       !f(i)%x(2)=2*f(i)%x(2)
       if (i==1) then
         f(i)%behind=pcount/2 ; f(i)%infront=i+1
@@ -302,9 +304,9 @@ module initial_line
       f(i)%x(1)=0.
       f(i)%x(3)=box_size/2.-box_size*real(2*(i-pcount/2)-1)/(pcount)
       !tiny pertubation from straight line
-      !f(i)%x(2)=-delta+(delta/16.)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
+      f(i)%x(2)=-delta+(delta/16.)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
       !really bent lines below
-      f(i)%x(2)=-16*delta+(12*delta)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
+      !f(i)%x(2)=-16*delta+(12*delta)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
       !f(i)%x(2)=2*f(i)%x(2)
       if (i==(pcount/2+1)) then
         f(i)%behind=pcount ; f(i)%infront=i+1
@@ -459,7 +461,8 @@ module initial_line
     integer :: line_size, line_position
     integer :: i, j
     real :: rand1, rand2, rand3
-    if (periodic_bc) then 
+    real :: rr, theta !helper variables
+    if (periodic_bc) then
       !make sure line_count is a multiple of 4
       !work out the number of particles required for single line
       !given the box size specified in run.i
@@ -471,17 +474,29 @@ module initial_line
       call fatal_error('init.mod:setup_central_bundle', &
       'periodic boundary conditions required')
     end if
-    write(*,*) 'initf: central bundle, bundle type: ', trim(bundle_type) 
+    write(*,*) 'initf: central bundle, bundle type: ', trim(bundle_type)
+    select case(bundle_type)
+      case('polarised')
+        write(*,*) 'initf: central bundle, bundle distribution: ', trim(cent_bundle_dist)
+    end select
     write(*,'(a,f8.4,a)') 'bundle will occupy ', lattice_ratio, ' of box' 
     line_size=int(pcount/line_count)
     do i=1, line_count
-      rand1=runif(-1.,1.) ; rand2=runif(-1.,1.)
+      rand1=runif(-1.,1.) ; rand2=runif(-1.,1.) !random bundle_type
+      select case(cent_bundle_dist)
+        case('uniform')
+          theta=runif(0.,2*pi)
+          rr=runif(0.,box_size*lattice_ratio)
+        case('gaussian')
+          theta=runif(0.,2*pi)
+          rr=abs(rnorm(0.,(box_size*lattice_ratio/2.5)**2))
+      end select
       do j=1, line_size
         line_position=j+(i-1)*line_size
         select case(bundle_type)
           case('polarised')
-            f(line_position)%x(1)=(box_size*lattice_ratio)*rand1/2.
-            f(line_position)%x(2)=(box_size*lattice_ratio)*rand2/2.
+            f(line_position)%x(1)=rr*sin(theta)
+            f(line_position)%x(2)=rr*cos(theta)
             f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
           case('random')
             rand3=runif(0.,1.)
@@ -713,7 +728,7 @@ module initial_line
     implicit none
     real :: wave_number, prefactor
     real :: estimate_speed
-    real :: amp, random_shift
+    real :: amp, random_shift, random_shift2
     real :: xpos, ypos
     integer :: pcount_required
     integer :: line_size, line_position
@@ -736,6 +751,7 @@ module initial_line
     end if
     write(*,'(a,i3.1,a)') ' drawing', line_count, ' lines from -z to +z'
     write(*,'(i4.1,a,a,a,f9.5)') wave_count, ' ',trim(wave_type),' wave pertubations, with spectral slope:', wave_slope
+    write(*,'(a,a)') ' wavenumber distribution:  ', wave_distribution
     write(*,'(a,i3.1)') ' starting wavenumber ', wave_start
     write(*,'(a,f9.5)') ' starting amplitude', wave_amp*delta
     write(*,'(a,i3.1)') ' wavenumber separation', wave_skip 
@@ -780,10 +796,24 @@ module initial_line
         write(34,*) '%------------------WAVE INFORMATION-------------------'
       end if
       do k=1, wave_count !wave_count set in run.in
-        wave_number=wave_start+(k-1)*wave_skip
-        !amp=prefactor*(wave_number**wave_slope)
-        call random_number(random_shift) !help things along with a 
+        select case(wave_distribution)
+          case('spectrum')
+            wave_number=wave_start+(k-1)*wave_skip
+          case('gaussian')
+             wave_number=nint(rnorm(real(wave_start),2.))
+          case('bimodal')
+             if (k<real(wave_count)/2) then
+               wave_number=nint(rnorm(real(wave_start),0.))
+             else
+               wave_number=nint(rnorm(real(wave_start2),0.))
+            end if
+          case default
+            call fatal_error('wave_line','incorrect parameter for wave_distribution')
+        end select
+        call random_number(random_shift) !help things along with a
         random_shift=random_shift*2*pi   !random shift \in (0,2\pi)
+        call random_number(random_shift2) !help things along with a
+        random_shift2=random_shift2*2*pi   !random shift \in (0,2\pi)
         if (wave_count==1) random_shift=0. !0 this for a single wave
         amp=prefactor*(wave_number**(wave_slope/2.))
         if (i==1) then
@@ -816,6 +846,10 @@ module initial_line
               amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
               f(line_position)%x(2)=f(line_position)%x(2)+&
               amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+              !f(line_position)%x(1)=f(line_position)%x(1)+&
+              !amp*delta*cos(random_shift2+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+              !f(line_position)%x(2)=f(line_position)%x(2)-&
+              !amp*delta*sin(random_shift2+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
             case default
               call fatal_error('initial.mod:wave_line','incorrect wave type parameter')
           end select
@@ -1295,5 +1329,72 @@ module initial_line
       end if 
     end do !closes the i loop
   end subroutine
+  !****************************************************************************
+  !>set up a single line from -z to z, number of particles is automatically adjusted
+  !>to box size and \f$\delta\f$
+  subroutine setup_kursa_recon
+    implicit none
+    integer :: pcount_required
+    integer :: mid_point,mid_point2
+    real :: yshift
+    real :: angler=0.02
+    integer :: i
+    if (periodic_bc) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.i
+      pcount_required=2*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length and delta'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_crow', &
+      'periodic boundary conditions required')
+    end if
+    mid_point=(pcount/2+1)/2
+    mid_point2=mid_point+pcount/2
+    yshift=angler*0.06*box_size
+    write(*,*) 'initf: crow, separation of lines is:', 2.*delta
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount/2
+      f(i)%x(1)=0.
+      f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(pcount)
+      if (i<=mid_point) then
+        f(i)%x(2)=-yshift+angler*f(i)%x(3)
+      else
+        f(i)%x(2)=f(mid_point)%x(2)-angler*f(i)%x(3)
+      end if  
+      if (i==1) then
+        f(i)%behind=pcount/2 ; f(i)%infront=i+1
+      else if (i==pcount/2) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0.; f(i)%u3=0.
+    end do
+    !second line
+    do i=pcount/2+1, pcount
+      f(i)%x(1)=0.
+      f(i)%x(3)=box_size/2.-box_size*real(2*(i-pcount/2)-1)/(pcount)
+      if (i<=mid_point2) then
+        f(i)%x(2)=yshift+angler*f(i)%x(3)
+      else
+        f(i)%x(2)=f(mid_point2)%x(2)-angler*f(i)%x(3)
+      end if  
+      if (i==(pcount/2+1)) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1+pcount/2
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do    
+!    print*, 'argggghhhhhhh'
+!    print*, f(mid_point)%x(2), f(1)%x(2), angler
+!    print*, (f(mid_point)%x(2)-f(1)%x(2))/angler
+  end subroutine
+  !****************************************************************************
 end module
-

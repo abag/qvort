@@ -40,16 +40,19 @@ module normal_fluid
       implicit none
       norm_k=2.*pi/box_size !wavenumber used in a number of normal fluid
       write(*,*) 'normal fluid velocity field is: ', trim(normal_velocity)
+      if (normal_fluid_freq==0) call fatal_error('normal_fluid', 'normal_fluid_freq cannot be 0')
       select case(normal_velocity)
         case('xflow')
           urms_norm=norm_vel_xflow
+          call setup_gen_normalf !normal_fluid.mod
           write(*,'(a,f6.3)') ' u(x)=', norm_vel_xflow
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/norm_vel_xflow !time-taken to cross box
           close(77)
         case('shear_xflow')
           urms_norm=norm_vel_xflow
-          write(*,'(a,f6.3)') ' u(x)=', norm_vel_xflow
+          write(*,'(a)') ' u(x)=Asin(z+wt)'
+          write(*,'(a,f6.3,a,f6.3)') ' A= ', norm_vel_xflow,' w= ', norm_shear_omega
           call setup_gen_normalf !normal_fluid.mod
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/norm_vel_xflow !time-taken to cross box
@@ -165,7 +168,7 @@ module normal_fluid
         case('xflow')
           u=0. ; u(1)=norm_vel_xflow !flow in the x direction
         case('shear_xflow')
-          u=0. ; u(1)=norm_vel_xflow*sin(2*pi*x(3)/box_size) !flow in the x direction
+          u=0. ; u(1)=norm_vel_xflow*sin(2*pi*x(3)/box_size+t*norm_shear_omega) !flow in the x direction
         case('noisy_xflow')
           !do we need to generate a new noise?
           if ((mod(itime,normal_fluid_freq)==0).or.(itime==1)) then
@@ -215,13 +218,13 @@ module normal_fluid
           u=u*(box_size/40)
         case('taylor-green')
           !The Taylor-Green Vortex
-          !u(1)=sin(norm_k*x(1))*cos(norm_k*x(2))*cos(norm_k*x(3))
-          !u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
-          !u(3)=0.
+          u(1)=sin(norm_k*x(1))*cos(norm_k*x(2))*cos(norm_k*x(3))*norm_vel_xflow
+          u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))*norm_vel_xflow
+          u(3)=0.
           !TG vorticity field - commented out but useful!
-          u(1)=-cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
-          u(2)=-sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
-          u(3)=2.*sin(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
+          !u(1)=-cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
+          !u(2)=-sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
+          !u(3)=2.*sin(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
         case('shear')
           u=0.
           u(1)=exp(-(6*x(3)/box_size)**2)
@@ -262,9 +265,12 @@ module normal_fluid
           end if
           u(2)=0. ; u(3)=0.
         case('galloway-proctor')
-          u(1)=-sin(norm_k*x(2)+cos(t))
-          u(2)=-cos(norm_k*x(1)+sin(t))
-          u(3)=sin(norm_k*x(1)+sin(t))+cos(norm_k*x(2)+cos(t))
+          !u(1)=-sin(norm_k*x(2)+cos(t))
+          !u(2)=-cos(norm_k*x(1)+sin(t))
+          !u(3)=sin(norm_k*x(1)+sin(t))+cos(norm_k*x(2)+cos(t))
+          u(1)=-sin(norm_k*x(2))
+          u(2)=-cos(norm_k*x(1))
+          u(3)=sin(norm_k*x(1))+cos(norm_k*x(2))
         case('KS')
           !multi-scale model of turbulence
           call get_KS_flow(x,u)

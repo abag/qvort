@@ -1,4 +1,4 @@
-!>Routines to add hyperviscosity - enters as and additional velocity 
+!>Routines to add hyperviscosity - enters as and additional velocity
 !>\f$\mathbf{u}_{\rm hyp}=\alpha_{hyp} \mathbf{s}' \times -\mathbf{u}_\mathrm{s}\f$.
 !>Here \f$  \alpha_{hyp}\f$ is dependent on curvature i.e. \f$ \alpha_{hyp} \propto \kappa^n \f$
 module hyperviscous

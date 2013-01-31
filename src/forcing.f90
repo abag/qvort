@@ -7,6 +7,7 @@
 module forcing
   use cdata
   use general
+  use ksmodel
   !> @param force_direction a helper vector to force a particle in 3 spatial dimensions
   real, private :: force_direction(3)=0. 
   real, private :: force_direction2(3)=0. 
@@ -22,8 +23,10 @@ module forcing
   contains
   !>check all the necessary conditions to use forcing are set in run.in
   subroutine setup_forcing()
+    use normal_fluid
     implicit none
     integer :: j !for looping
+    write(*,*) 'forcing is: ', trim(force)
     select case(force)
       case('off')
         write(*,*) 'no forcing employed'
@@ -67,6 +70,9 @@ module forcing
       case('plane_wave')
         write(*,'(a,f5.3)') 'forcing with a large scale plane wave with amplitude ', force_amp
         write(*,'(a,i6.2,a)') 'direction changed every, ', ceiling(force_freq), ', timesteps'
+      case('KS')
+        call setup_KS !ksmodel.mod
+        call print_KS_Mesh !normal_fluid.mod
       case default
         call fatal_error('forcing.mod:setup_forcing', &
         'incorrect forcing parameter set in run.in') !cdata.mod
@@ -173,6 +179,9 @@ module forcing
             u(2)=u(2)+force_amp*sin(t*wave_tail_freq(j)+pi/2)
           end do
         end if
+      case('KS')
+        !multi-scale model of turbulence
+        call get_KS_flow(f(i)%x,u)
     end select
   end subroutine
   !***********************************************

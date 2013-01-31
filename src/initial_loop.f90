@@ -850,6 +850,17 @@ module initial_loop
       angley=angley*2*pi*rotation_factor
       anglez=anglez*2*pi*rotation_factor
       translate=loop_translate*((box_size*translate-box_size/2.)-loop_radius)
+      if (random_loop_collide) then
+        if (used_pcount<pcount/2) then
+          !translate=0.
+          translate(1)=-box_size/16.+runif(-box_size/10.,box_size/10.)
+          anglex=0. ; angley=pi/2. ; anglez=0.
+        else 
+          !translate=0.
+          translate(1)=box_size/16.+runif(-box_size/10.,box_size/10.)
+          anglex=0. ; angley=3*pi/2. ; anglez=0.
+        end if
+      end if
       !set the loop size using specified probability distribution
       select case(initial_distribution)
         case('uniform')

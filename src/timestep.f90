@@ -249,7 +249,9 @@ module timestep
     end select
     !forcing?
     if (t<force_cutoff) then
+      !omp critical
       call get_forcing(i,u_force,u)
+      !omp end critical
       u=u+u_force
     end if
     if (mirror_bc) then

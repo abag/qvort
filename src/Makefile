@@ -54,7 +54,7 @@ normal_fluid.o: normal_fluid.f90 general.o cdata.o ksmodel.o
 #
 hyperviscous.o: hyperviscous.f90 general.o cdata.o
 #
-forcing.o: forcing.f90 general.o cdata.o
+forcing.o: forcing.f90 general.o cdata.o ksmodel.o normal_fluid.o
 #
 initial.o: initial.f90 initial_line.o initial_loop.o stiff_solver.o normal_fluid.o forcing.o cdata.o quasip.o periodic.o particles.o smoothing.o inject.o output.o hyperviscous.o reconnection.o
 #

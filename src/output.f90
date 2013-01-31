@@ -86,6 +86,10 @@ remove_count
       open(unit=72,file='data/recon_extra_info.log',position='append')
         write(72,*) self_rcount, vv_rcount, self_r_length, vv_r_length,phonon_length
       close(72)
+      open(unit=71,file='data/removed_loops.log',position='append')
+        write(71,*) small_loop_remove_count, small_loop_remove_length,&
+                    boundary_loop_remove_length, boundary_loop_remove_count
+      close(71)
     end if
     open(unit=79,file='data/curvature.log',position='append')
       write(79,*) kappa_bar, kappa_min, kappa_max

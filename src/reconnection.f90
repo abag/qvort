@@ -168,6 +168,7 @@ module reconnection
       parii=f(pari)%infront ; parbb=f(parb)%behind !find particle twice infront/behind
       !now we determine if we can reconnect
       if ((f(i)%closestd<delta/2.).and.(f(i)%closestd>epsilon(1.))) then
+      !if ((f(i)%closestd<delta).and.(f(i)%closestd>epsilon(1.))) then
         j=f(i)%closest
         if (recon_info) then !only do this check if recon_info on
           do k=1, n_recon_track
@@ -435,10 +436,21 @@ module reconnection
       end if
     end do
     ! If loop is too small destroy
+    if ((counter>=5).and.(counter<=40)) then
+      open(unit=46,file='./data/small_loops.log',position='append')
+        write(46,*) real(itime)/shots, t, counter, f(particle)%x(1:3)
+      close(46)
+    end if
     if (counter<5) then
       next=particle 
+      if (counter>2) then
+        small_loop_remove_count=small_loop_remove_count+1
+      end if
       do i=1, pcount
         store_next=f(next)%infront
+        if ((counter>2).and.(store_next/=particle)) then
+          small_loop_remove_length=small_loop_remove_length+distf(next,store_next)
+        end if 
         call clear_particle(next) !general.mod
         next=store_next
         if (next==particle) then

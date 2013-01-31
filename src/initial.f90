@@ -195,6 +195,8 @@ module initial
           call setup_smooth_test !initial_line.mod 
         case('hayder_wave')
           call setup_hayder_wave !initial_line.mod
+        case('kursa_recon')
+          call setup_kursa_recon !initial_line.mod
         case('hayder_multi_wave')
           call setup_hayder_multi_wave !initial_line.mod
         case('smooth_test_wave')
