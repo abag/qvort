@@ -29,7 +29,6 @@ for i=1:optargin
       disp('printing to file')
   end
 end
-filename=sprintf('data/mesh%03d.dat',filenumber);
 load data/dims.log;
 global ux uy uz
 msize=dims(3);

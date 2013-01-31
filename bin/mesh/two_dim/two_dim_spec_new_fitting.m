@@ -1,9 +1,6 @@
-function two_dim_spec(filenumbers,fit)
-if nargin<2
-  do_fit=0;
-else
-  do_fit=1;
-end
+function two_dim_spec_new_fitting(filenumbers)
+do_fit=1;
+cutoff=0;
 cmap=colormap(jet(length(filenumbers)));
 color_count=1;
 for ifile=filenumbers
@@ -68,48 +65,55 @@ for i=1:n
   end
 end
 k=(1:midpt)*(2*pi/dims(2));
-k_resolution = round(dims(2)/dims(1));
-if length(filenumbers)>1
-  loglog(k(1:k_resolution),spect(1:k_resolution),'Color',cmap(color_count,:),'LineWidth',1.5)
-else
-  loglog(k(1:k_resolution),spect(1:k_resolution),'Color','k','LineWidth',1.5)
-end
-color_count=color_count+1;
-hold on
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% if length(filenumbers)>1
+%   loglog(k(1:midpt-cutoff),spect(1:midpt-cutoff),'Color',cmap(color_count,:),'LineWidth',1.5)
+% else
+%   loglog(k(1:midpt-cutoff),spect(1:midpt-cutoff),'Color','k','LineWidth',1.5)
+% end
+% color_count=color_count+1;
+% hold on
+ end
 %%%%%%%%%%%%%%%%%APPLY FIT%%%%%%%%%%%%%%%%%
-if do_fit==1
-  disp(sprintf('fitting a slope of %f to plot',fit))
-  dummy_spect=k.^(fit);
-  scaling_factor=1.2*sum(spect(1:10))/sum(dummy_spect(1:10));
-  dummy_spect=dummy_spect*scaling_factor;
-  hold on
-  loglog(k(1:k_resolution-50),dummy_spect(1:k_resolution-50),'--r','LineWidth',2)
-end 
+% if do_fit==1
+%   disp(sprintf('fitting a slope of %f to plot',fit))
+%   dummy_spect=k.^(fit);
+%   scaling_factor=1.2*sum(spect(1:10))/sum(dummy_spect(1:10));
+%   dummy_spect=dummy_spect*scaling_factor;
+%   hold on
+%   loglog(k(midpt-cutoff-80:midpt-cutoff),dummy_spect(midpt-cutoff-80:midpt-cutoff),'--r','LineWidth',2)
+% end 
 %%%%%%%%%%%%ANNOTATE%%%%%%%%%%%%%%%%%%%%%%
-xlabel('log k','FontSize',16) ; ylabel('log E(k)','FontSize',16)
-set(gca,'FontSize',16)
+% xlabel('log k','FontSize',16) ; ylabel('log E(k)','FontSize',16)
+% set(gca,'FontSize',16)
 %%%%%%%%%%%%AVERAGE SPECTRA%%%%%%%%%%%%%%%
-if length(filenumbers)>1
+if length(filenumbers)>=1
   avg_spect=avg_spect./length(filenumbers);
   %avg_spect(2)=avg_spect(2)*1.1;
   avg_spect(2)=avg_spect(2)*.8;
+  k_box = round(dims(2)/dims(2));
+  k_intervortex = round(dims(2)/intervortex);
+  k_resolution = round(dims(2)/dims(1));
+  Ec = trapz(k(k_box:k_intervortex),avg_spect(k_box:k_intervortex));
+  Eq = trapz(k(k_intervortex:k_resolution),avg_spect(k_intervortex:k_resolution));
+  disp(sprintf('Ec/Eq is: '))
+  Ec/Eq
   figure('Name','avgerage E(k)')
   loglog(k(1:k_resolution),avg_spect(1:k_resolution),'Color','k','LineWidth',1.5)
   if do_fit==1
-    disp(sprintf('fitting a slope of %f to average spect',fit))
-    dummy_spect=k.^(fit);
+    disp(sprintf('I have estimated the intervortex spacing from the final half of the data, l=%f',intervortex))
+    disp(sprintf('creating a fit from k_intervortex to k_resolution'))
+    cfit = polyfit(log(k(k_intervortex:k_resolution)),log(avg_spect(k_intervortex:k_resolution)),1);
+    dummy_spect=k.^(cfit(1));
+    disp(sprintf('the fit values are: '))
+    cfit
     scaling_factor=0.8*sum(avg_spect(1:10))/sum(dummy_spect(1:10));
     dummy_spect=dummy_spect*scaling_factor;
     hold on
-    k_intervortex = round(dims(2)/intervortex);
-    loglog(k(1:k_intervortex),dummy_spect(1:k_intervortex),'--r','LineWidth',2)
+    loglog(k(k_intervortex:k_resolution),dummy_spect(k_intervortex:k_resolution),'--r','LineWidth',2)
   end
   xlabel('log k','FontSize',16) ; ylabel('log E(k)','FontSize',16)
   set(gca,'FontSize',16)
   figure('Name','compensated avgerage E(k)')
-  loglog(k(1:k_resolution),(k(1:k_resolution).^(-fit)).*avg_spect(1:k_resolution),'Color','k','LineWidth',1.5)
-  compensated_spect=k(1:k_resolution).^(-fit).*avg_spect(1:k_resolution);
+  loglog(k(k_intervortex:k_resolution),(k(k_intervortex:k_resolution).^(-cfit(1))).*avg_spect(k_intervortex:k_resolution),'Color','k','LineWidth',1.5)
 end
-save spec.mat k avg_spect k_resolution
-save compensated_spec.mat k k_resolution compensated_spect

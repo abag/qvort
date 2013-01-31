@@ -335,11 +335,16 @@ module cdata
   logical, protected :: smoothing_interspace=.false. !smooth using intervortex spacing?
   !------------------------------filament injection-------------------------------
   integer, protected :: inject_skip=10000000!how often we insert the vortice
-  integer, protected :: inject_size=0 !number of points used
+  integer :: inject_size=0 !number of points used
   integer, protected :: inject_freq=10000000!how often we switch injection direction
   logical, protected :: randomise_injection=.false.!different meanings for different routines
   real, protected :: inject_stop=1E8 !when to stop injection - arbitrarily high
   character(len=20),protected :: inject_type='off' !how we inject loops
+  !******************************lucy new code************************************
+  real, protected :: bundle_width=0.0!what proportion of the box is filled with the bundle
+  integer, protected :: bundle_line_count=0 !number of lines injected per bundle
+  character(len=20),protected :: bundle_distribution='uniform' !how lines are distributed within bundle
+  !*******************************************************************************
   !----------------------------code testing---------------------------------------
   logical, protected :: switch_off_recon=.false.!turns of reconnection algorithm
   logical, protected :: seg_fault=.false.!use print statements to try and isolate segmentation faults
@@ -665,7 +670,15 @@ module cdata
           case ('inject_type')
              read(buffer, *, iostat=ios) inject_type !how we inject new vortices
           case ('inject_stop')
-             read(buffer, *, iostat=ios) inject_stop !when (if ever) we stop injecting 
+             read(buffer, *, iostat=ios) inject_stop !when (if ever) we stop injecting
+          !***************************lucy new code****************************************
+          case ('bundle_width')
+             read(buffer, *, iostat=ios) bundle_width !width of injected bundles (if injecting bundles)
+          case ('bundle_line_count')
+             read(buffer, *, iostat=ios) bundle_line_count !number of lines per injected bundle (if bundles)
+          case ('bundle_distribution')
+             read(buffer, *, iostat=ios) bundle_distribution !distribution of injected bundles (if bundles)
+          !******************************************************************************* 
           case ('randomise_injection')
              read(buffer, *, iostat=ios) randomise_injection !extra random factor to injection 
           case ('full_loop_counter')

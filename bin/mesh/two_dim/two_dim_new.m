@@ -1,4 +1,4 @@
-function two_dim_slice(filenumber,fit,fitnorm,fitextra,firecolor)
+function two_dim_new(filenumber,fit,fitnorm,fitextra,firecolor)
 close all
 if nargin<2
   do_fit=0;
@@ -19,7 +19,7 @@ end
 if nargin<5
   firecolor=0;
 end
-filename=sprintf('data/vel_slice_2D%04d.dat',filenumber);
+filename=sprintf('./data/vel_slice_2D%04d.dat',filenumber);
 fid=fopen(filename);
 if fid<0
   disp('2D slice file does not exist, exiting script')
@@ -28,7 +28,7 @@ end
 if firecolor==1
   disp('using fireprint colour scheme')
 end
-load data/dims.log;
+load ./data/dims.log;
 msize=dims(8);
 if (msize==0) 
   disp('2D mesh size is zero exiting script')
@@ -87,9 +87,11 @@ colorbar
 
 figure('Name','2D (super) |u| slice')
 uu=sqrt(usupx.^2+usupy.^2+usupz.^2);
-vcoff=1. ;
+vcoff=50. ;
 index = find(uu > vcoff);
-uu(index) = vcoff;
+usupx(index)=0. ; usupy(index)=0. ;usupz(index)=0. ;
+%uu(index) = vcoff;
+uu=sqrt(usupx.^2+usupy.^2+usupz.^2);
 clear index
 imagesc(xx,yy,uu) ; shading interp
  set(gca,'YDir','normal')
