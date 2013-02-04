@@ -1,0 +1,20 @@
+--------------required parameters------------
+nsteps 5000
+shots 100
+recon_shots 1
+pcount 10
+dt .9E-4
+delta 0.002
+box_size 0.1
+velocity Tree
+initf single_line
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+tree_theta 0.5
+part_count 100
+initp tube
+part_tube_ratio 0.1
+two_dim 128
+mesh_shots 100
+particle_super_velocity T

@@ -16,6 +16,7 @@ module particles
     implicit none
     integer :: i, j, k
     integer :: counter
+    real :: rand1, rand2, rand3
     allocate(p(part_count))
     write(*,*) 'setting up particles in ', trim(initp),' configuration'
     write(*,'(a,a,a,i4.1)') ' particle type: ', trim(particle_type), ', particle count: ', part_count
@@ -50,6 +51,18 @@ module particles
           p(i)%x(2)=0.75*box_size/2.*sin(2*pi*(2.*i-1.)/(2.*part_count))
           !p(i)%x(3)=-box_size/2.
           p(i)%x(3)=0.
+          p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
+        end do
+      case('tube')
+        write(*,'(a,f6.4,a)') ' tube radius: ', part_tube_ratio, ' of box size'
+        !particles in random positions
+        do i=1, part_count
+          rand1=runif(0.,box_size*part_tube_ratio)
+          rand2=runif(0.,2.*pi)
+          rand3=runif(-box_size/2.,box_size/2.)
+          p(i)%x(1)=rand1*cos(rand2)
+          p(i)%x(2)=rand1*sin(rand2)
+          p(i)%x(3)=rand3
           p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
         end do
       case('pairs')
