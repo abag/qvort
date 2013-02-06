@@ -26,3 +26,4 @@ for j=1:number_of_particles
     end
    end
 end
+system('sed -ie ''$s/.$//'' test.log')

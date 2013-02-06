@@ -7,7 +7,7 @@
   cylinder {
     Var1,     // Center of one end
     Var2,     // Center of other end
-    .0003            // Radius
+    .0002            // Radius
    pigment { Red }
    finish { ambient 0.2 diffuse 0.9 phong 1 }
   }
