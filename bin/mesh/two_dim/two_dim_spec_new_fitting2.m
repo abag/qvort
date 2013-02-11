@@ -96,8 +96,14 @@ if length(filenumbers)>=1
   k_resolution = round(dims(2)/dims(1));
   Ec = trapz(k(k_box:k_intervortex),avg_spect(k_box:k_intervortex));
   Eq = trapz(k(k_intervortex:k_resolution),avg_spect(k_intervortex:k_resolution));
+  disp(sprintf('Ec is: '))
+  Ec
+  disp(sprintf('Eq is: '))
+  Eq
   disp(sprintf('Ec/Eq is: '))
   Ec/Eq
+  disp(sprintf('The total energy (Ec+Eq) is: '))
+  Ec+Eq
   figure('Name','avgerage E(k)')
   loglog(k(1:k_resolution),avg_spect(1:k_resolution),'Color','k','LineWidth',1.5)
   if do_fit==1
