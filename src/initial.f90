@@ -349,6 +349,7 @@ module initial
     if (topo_inf) write(*,*) 'printing topological information to file'
     if (sep_inf) write(*,*) 'printing point separation info+histogram to file'
     if (recon_time_info) write(*,*) 'printing time difference between reconnections at points (mesh_shots used)'
+    if (local_vs_nonlocal) write(*,*) 'printing comparison of local vs nonlocal velocity fields'
     if (recon_info) then
      write(*,*) 'activating reconnection distace array'
      call setup_recon_distance_array !reconnection.mod

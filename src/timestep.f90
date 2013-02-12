@@ -135,11 +135,13 @@ module timestep
         !first get the local part (similar to LIA)
         call get_deriv_1(i,f_dot) !general.mod
         call get_deriv_2(i,f_ddot) !general.mod
-        beta=(quant_circ/(4.*pi))*log((1.1/corea)*sqrt(dist_gen(f(i)%x,f(i)%ghosti)*dist_gen(f(i)%x,f(i)%ghostb)))
+        beta=(quant_circ/(4.*pi))*log((1.21/corea)*sqrt(dist_gen(f(i)%x,f(i)%ghosti)*dist_gen(f(i)%x,f(i)%ghostb)))
         u=beta*cross_product(f_dot,f_ddot) !general.mod
+        f(i)%u_s_LI=u !store the local contribution
         !now we do the non-local part
         u_bs=0. !always 0 before calling the routine
         call biot_savart(i,u_bs)
+        f(i)%u_s_BS=u_bs !store the non-local cont.
         u=u+u_bs
         !we now need to insert periodic and mirror boundary conditions here
         if (periodic_bc) then
@@ -150,6 +152,7 @@ module timestep
             call biot_savart_shift(i,u_bs,(/peri*box_size,perj*box_size,perk*box_size/))
           end do ; end do ;end do
           u=u+u_bs
+          f(i)%u_s_BS=f(i)%u_s_BS+u_bs !store the non-local cont.
         else if (periodic_bc_notx) then
           !we must shift the mesh in 2 directions (yz)
           u_bs=0. !zero u_bs
@@ -158,6 +161,7 @@ module timestep
             call biot_savart_shift(i,u_bs,(/0.,perj*box_size,perk*box_size/))
           end do ;end do
           u=u+u_bs
+          f(i)%u_s_BS=f(i)%u_s_BS+u_bs !store the non-local cont.
         else if (periodic_bc_notxy) then
           !we must shift the mesh in z direction
           u_bs=0. !zero u_bs
@@ -166,6 +170,7 @@ module timestep
             call biot_savart_shift(i,u_bs,(/0.,0.,perk*box_size/))
           end do
           u=u+u_bs
+          f(i)%u_s_BS=f(i)%u_s_BS+u_bs !store the non-local cont.
         end if
         if (mirror_bc) then
           !get the contribution of the image vortices
@@ -179,12 +184,14 @@ module timestep
         !first get the local part (similar to LIA)
         call get_deriv_1(i,f_dot) !general.mod
         call get_deriv_2(i,f_ddot) !general.mod
-        beta=(quant_circ/(4.*pi))*log((1.1/corea)*sqrt(dist_gen(f(i)%x,f(i)%ghosti)*dist_gen(f(i)%x,f(i)%ghostb)))
+        beta=(quant_circ/(4.*pi))*log((1.21/corea)*sqrt(dist_gen(f(i)%x,f(i)%ghosti)*dist_gen(f(i)%x,f(i)%ghostb)))
         u=beta*cross_product(f_dot,f_ddot) !general.mod
+        f(i)%u_s_LI=u !store the local contribution
         !now walk the tree to get the non-local contribution
         u_bs=0. !zero u_bs
         call tree_walk(i,vtree,(/0.,0.,0./),u_bs) !tree.mod
         u=u+u_bs
+        f(i)%u_s_BS=f(i)%u_s_BS+u_bs !store the non-local cont.
         if (periodic_bc) then
           !we must shift the mesh in all 3 directions, all 26 permutations needed!
           u_bs=0. !zero u_bs
@@ -193,6 +200,7 @@ module timestep
             call tree_walk(i,vtree,(/peri*box_size,perj*box_size,perk*box_size/),u_bs) !tree.mod
           end do ; end do ;end do
           u=u+u_bs
+          f(i)%u_s_BS=f(i)%u_s_BS+u_bs !store the non-local cont.
         else if (periodic_bc_notx) then
           !we must shift the mesh in 2 directions, 9 permutations needed!
           u_bs=0. !zero u_bs
@@ -201,6 +209,7 @@ module timestep
             call tree_walk(i,vtree,(/0.,perj*box_size,perk*box_size/),u_bs) !tree.mod
           end do ;end do
           u=u+u_bs
+          f(i)%u_s_BS=f(i)%u_s_BS+u_bs !store the non-local cont.
         else if (periodic_bc_notxy) then
           !we must shift the mesh in z direction, 3 permutations needed, not so bad
           u_bs=0. !zero u_bs
@@ -209,6 +218,7 @@ module timestep
             call tree_walk(i,vtree,(/0.,0.,perk*box_size/),u_bs) !tree.mod
           end do
           u=u+u_bs
+          f(i)%u_s_BS=f(i)%u_s_BS+u_bs !store the non-local cont.
         end if
         f(i)%u_sup=u !store just the superfluid velcotity
     end select

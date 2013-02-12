@@ -21,6 +21,7 @@ module cdata
     real :: x(3)
     real :: u(3), u1(3), u2(3), u3(3)
     real :: u_sup(3), u_mf(3)
+    real :: u_s_LI(3), u_s_BS(3)
     real :: ghosti(3), ghostb(3)
     real :: ghostii(3), ghostbb(3)
     integer :: infront, behind 
@@ -332,7 +333,8 @@ module cdata
   logical, protected :: closest_distance=.false. !what is the minimum separation between points?
   logical, protected :: full_loop_counter=.false. !check loop count and size
   logical, protected :: recon_time_info=.false. !print time difference between recon 
-  !-------------------------------smoothing-------------------------------------------
+  logical, protected :: local_vs_nonlocal=.false. !compare local (self-induced) vs non-local (BS int)
+!-------------------------------smoothing-------------------------------------------
   !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
   integer, protected :: sm_size=0 !size of smoothing mesh - 0 by default which deactivates smoothing
@@ -679,18 +681,18 @@ module cdata
              read(buffer, *, iostat=ios) inject_type !how we inject new vortices
           case ('inject_stop')
              read(buffer, *, iostat=ios) inject_stop !when (if ever) we stop injecting
-          !***************************lucy new code****************************************
           case ('bundle_width')
              read(buffer, *, iostat=ios) bundle_width !width of injected bundles (if injecting bundles)
           case ('bundle_line_count')
              read(buffer, *, iostat=ios) bundle_line_count !number of lines per injected bundle (if bundles)
           case ('bundle_distribution')
              read(buffer, *, iostat=ios) bundle_distribution !distribution of injected bundles (if bundles)
-          !******************************************************************************* 
           case ('randomise_injection')
              read(buffer, *, iostat=ios) randomise_injection !extra random factor to injection 
           case ('full_loop_counter')
              read(buffer, *, iostat=ios) full_loop_counter !check loop count and size
+          case ('local_vs_nonlocal')
+             read(buffer, *, iostat=ios) local_vs_nonlocal !check contribution of local vs nonlocal velocity
           case ('batch_mode')
              read(buffer, *, iostat=ios) batch_mode !do we message user if there are messages?        
           case ('batch_name')

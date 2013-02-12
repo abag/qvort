@@ -19,6 +19,7 @@ module diagnostic
       if (particle_plane_inf) call get_particle_plane_info !diagnostics.mod
       if (anisotropy_params) call get_anisotropy_info !diagnostics.mod
       if (full_loop_counter) call get_full_loop_count!diagnostics.mod
+      if (local_vs_nonlocal) call loc_vs_noloc_vel!diagnostics.mod
       if (mod(itime, mesh_shots)==0) then
         if (boxed_vorticity) call get_boxed_vorticity !diganostics.mod
         if (sep_inf) call get_sep_inf !diganostics.mod
@@ -153,6 +154,27 @@ module diagnostic
         write(34,'(26e13.4)') t, avg_r, avg_a, avg_r_u, avg_a_u, avg_ra
       close(34)        
     end if   
+    deallocate(uinfo)
+  end subroutine
+  !*************************************************
+  !>compare local and nonlocal velocity fields
+  subroutine  loc_vs_noloc_vel()
+    implicit none
+    real, allocatable :: uinfo(:,:)
+    allocate(uinfo(pcount,2))
+    uinfo(:,1)=sqrt(f(:)%u_s_LI(1)**2+f(:)%u_s_LI(2)**2+f(:)%u_s_LI(3)**2)
+    uinfo(:,2)=sqrt(f(:)%u_s_BS(1)**2+f(:)%u_s_BS(2)**2+f(:)%u_s_BS(3)**2)
+    !rather than use pcount more correct to use count(mask=f(:)%infront>0)
+    !---------------------------------------------------------------------------
+    open(unit=34,file='./data/local_v_nonlocal.log',position='append')
+    write(34,'(7e13.4)') t, maxval(uinfo(:,1)),&
+    sum(uinfo(:,1))/count(mask=f(:)%infront>0),&
+    minval(uinfo(:,1),mask=uinfo(:,1)>0),&
+    maxval(uinfo(:,2)),&
+    sum(uinfo(:,2))/count(mask=f(:)%infront>0),&
+    minval(uinfo(:,2),mask=uinfo(:,2)>0)
+    close(34)
+    !---------------------------------------------------------------------------
     deallocate(uinfo)
   end subroutine
   !*************************************************
