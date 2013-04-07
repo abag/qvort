@@ -120,5 +120,5 @@ if do_fit == 1
     loglog((1:msize/3),exp(cfit(2)).*(1:msize/3).^(cfit(1)),'--g','LineWidth',2);
 end
 hold on
-loglog((1:msize/2),exp(cfit(2)).*(1:msize/2).^(2/3),'--r','LineWidth',2);
+loglog((1:msize/2),exp(cfit(2)).*(1:msize/2).^(pow/3),'--r','LineWidth',2);
 hold off

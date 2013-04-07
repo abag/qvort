@@ -5,7 +5,7 @@ if nargin<1
 elseif nargin<2
   smoothed=1
 end
-load mesh_energy.mat
+load ./mesh_energy.mat
 fitted_line=t.^(fit) ;
 %get the fitted line to lie over the data
 factor=sum(u2(floor(0.75*length(u2)):length(u2)))/sum(fitted_line(floor(0.75*length(u2)):length(u2)));

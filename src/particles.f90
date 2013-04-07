@@ -75,12 +75,30 @@ module particles
           p(i)%x(2)=delta-(delta/16.)*sin(pi*(box_size/2.+p(i)%x(3))/box_size)+rand1*sin(rand2)
           p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
         end do
-        do i=part_count/2+1, pcount
+        do i=part_count/2+1, part_count
           rand1=runif(0.,box_size*part_tube_ratio)
           rand2=runif(0.,2.*pi)
           p(i)%x(1)=rand1*cos(rand2)
           p(i)%x(3)=box_size/2.-box_size*real(2*(i-part_count/2)-1)/(part_count)
           p(i)%x(2)=-delta+(delta/16.)*sin(pi*(box_size/2.-p(i)%x(3))/box_size)+rand1*sin(rand2)
+          p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
+        end do
+      case('orthog_tube')
+        write(*,'(a,f6.4,a)') ' tube radius: ', part_tube_ratio, ' of box size'
+        do i=1, part_count/2
+          rand1=runif(0.,box_size*part_tube_ratio)
+          rand2=runif(0.,2.*pi)
+          p(i)%x(1)=rand1*cos(rand2)
+          p(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(part_count)
+          p(i)%x(2)=0.5*delta+rand1*sin(rand2)
+          p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
+        end do
+        do i=part_count/2+1, part_count
+          rand1=runif(0.,box_size*part_tube_ratio)
+          rand2=runif(0.,2.*pi)
+          p(i)%x(1)=box_size/2.-box_size*real(2*(i-pcount/2)-1)/(part_count)
+          p(i)%x(2)=-0.5*delta+rand1*sin(rand2)
+          p(i)%x(3)=rand1*cos(rand2)
           p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
         end do
       case('pairs')

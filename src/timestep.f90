@@ -191,7 +191,7 @@ module timestep
         u_bs=0. !zero u_bs
         call tree_walk(i,vtree,(/0.,0.,0./),u_bs) !tree.mod
         u=u+u_bs
-        f(i)%u_s_BS=f(i)%u_s_BS+u_bs !store the non-local cont.
+        f(i)%u_s_BS=u_bs !store the non-local cont.
         if (periodic_bc) then
           !we must shift the mesh in all 3 directions, all 26 permutations needed!
           u_bs=0. !zero u_bs

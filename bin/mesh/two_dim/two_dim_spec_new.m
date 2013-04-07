@@ -1,4 +1,4 @@
-function two_dim_spec(filenumbers,fit)
+function two_dim_spec_new(filenumbers,fit)
 if nargin<2
   do_fit=0;
 else
@@ -35,7 +35,9 @@ usupz=reshape(usupz,msize,msize);
 xx=x;
 yy=x;
 A=load('./data/ts.log');
-intervortex=mean(1./sqrt(A(floor(0.5*length(A)):length(A),6)/dims(2)^3));
+if length(filenumbers)>1
+    intervortex=mean(1./sqrt(A(floor(0.5*length(A)):length(A),6)/dims(2)^3));
+end
 %%%%%%%%%%%%%CHECKING FOR ABNORMAL VELOCITY%%%%%%%%%%%%%%%%
 uu=sqrt(usupx.^2+usupy.^2+usupz.^2);
 vcoff=50. ;
@@ -112,4 +114,6 @@ if length(filenumbers)>1
   compensated_spect=k(1:k_resolution).^(-fit).*avg_spect(1:k_resolution);
 end
 save spec.mat k avg_spect k_resolution
-save compensated_spec.mat k k_resolution compensated_spect
+if length(filenumbers)>1
+    save compensated_spec.mat k k_resolution compensated_spect
+end

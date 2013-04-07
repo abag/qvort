@@ -1,5 +1,5 @@
-function vortex_anim(start,final,skip)
-vortex=0 %if set to 1 plots vortices
+function particle_anim(start,final,skip)
+vortex=1 %if set to 1 plots vortices
 if nargin<1
   disp('I at least need finish filenumbers')
   return

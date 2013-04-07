@@ -183,6 +183,8 @@ module initial
           call setup_random_loops !initial_loop.mod
         case('crow')
           call setup_crow !initial_line.mod
+        case('orthog_lines')
+          call setup_orthog_lines !initial_line.mod
         case('big_bundles')
           call setup_big_bundles !initial_line.mod
         case('isotropic_bundles')

@@ -34,6 +34,12 @@ for i=start:skip:finish
   ux=fread(fid,msize^3,'float64');
   uy=fread(fid,msize^3,'float64');
   uz=fread(fid,msize^3,'float64');
+  %%%%%%%%%%%%%CHECKING FOR ABNORMAL VELOCITY%%%%%%%%%%%%%%%%
+  uu=sqrt(ux.^2+uy.^2+uz.^2);
+  vcoff=50. ;
+  index = find(uu > vcoff);
+  ux(index)=0. ; uy(index)=0. ;uz(index)=0. ;
+  clear index
   u2(i)=sum(sum(sum(ux.^2+uy.^2+uz.^2)))/(2.*(msize/bsize)^3);
   fclose(fid);
 end
