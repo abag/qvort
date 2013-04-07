@@ -165,6 +165,8 @@ module initial
       allocate(f(pcount)) !main vector allocated
       !choose the correct setup routine based on the value of initf in run.in
       select case(initf)
+        case('var_file')
+          call read_var_file !initial.mod
         case('single_loop')
           call setup_single_loop !initial_loop.mod
         case('single_loop_zy')
@@ -399,6 +401,42 @@ module initial
     end if
     !----------------------gaussian smoothing of field------------------------------
     if (sm_size>0) call setup_smoothing_mesh !smoothing.mod
+  end subroutine
+  !**********************************************************************
+  !> start the code from a preconfigured var file
+  subroutine read_var_file
+    implicit none
+    real :: dummy_t
+    integer :: tmp, i, j
+    character(len=40) :: tmp_read_file
+    write(unit=tmp_read_file,fmt="(a,i4.4,a)")"./var",readin_var_file,".log"
+    print*, 'reading in data contained in var file: ', tmp_read_file
+    open(unit=98,file=tmp_read_file,form='unformatted',access='stream')
+      read(98) dummy_t
+      print*, 'dummy time ',dummy_t
+      read(98) pcount
+      print*,'raw pcount as read in ', pcount
+      deallocate(f)
+      allocate(f(pcount))
+      read(98) f(:)%x(1)
+      read(98) f(:)%x(2)
+      read(98) f(:)%x(3)
+      read(98) f(:)%infront
+    close(98)
+    !set behind?
+    do i=1,pcount
+      f(i)%u1=0.
+      f(i)%u2=0.
+      f(i)%u3=0.
+      if (f(i)%infront==0) cycle !ignore empty points
+      do j=1,pcount
+        if (f(j)%infront==0) cycle !ignore empty points
+        if (f(j)%infront==i) then
+          f(i)%behind=j
+          exit
+        end if
+      end do
+    end do
   end subroutine
   !**********************************************************************
   !>restart the code code periodically writes all the main variables to a file

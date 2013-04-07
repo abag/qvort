@@ -204,7 +204,8 @@ module cdata
   integer, protected :: line_count=1
   real, protected :: line_sigma=0.
   real, protected :: lattice_ratio=1
-  !how much we translate random_loops initial condition by 
+  integer, protected  :: readin_var_file=1
+  !how much we translate random_loops initial condition by
   real, protected :: loop_translate(3)=1.!for separate xyz components
   character(len=20), protected :: initial_distribution='uniform'
   real, protected :: rotation_factor=1 !also used in injection routines
@@ -569,6 +570,8 @@ module cdata
              read(buffer, *, iostat=ios) wave_start2 !for wave_spec initial conditions
           case ('wave_skip')
              read(buffer, *, iostat=ios) wave_skip !for wave_spec initial conditions
+          case ('readin_var_file')
+            read(buffer, *, iostat=ios) readin_var_file
           case ('wave_amp')
              read(buffer, *, iostat=ios) wave_amp !for wave_spec initial conditions
           case ('wave_type')
