@@ -12,7 +12,8 @@ module normal_fluid
     real, private :: norm_k
     real, private :: normal_direction(3) !used  by random_xflow
     real, private :: xflow_noise=0. !used by noisy xflow
-    real, private :: urms_norm, urms_KS
+    real, private :: urms_norm, urms_KS, vort_pos(2)
+    integer, private :: vort_dir
     real, private :: t_change=-100. !a little less than 0!
     !>normal fluid mesh - all grid based normal velocities use this (e.g. Navier Stokes future)
     !>@param x the position on the grid
@@ -87,6 +88,18 @@ module normal_fluid
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/urms_norm !size of box scaled by urms
           close(77)
+        case('gaussian_vortex')
+          vort_pos(2)=0. ; vort_pos(1)=-box_size/2.
+          vort_dir=1
+          call setup_gen_normalf !normal_fluid.mod
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/urms_norm !size of box scaled by urms
+          close(77)
+          open(unit=24,file='./data/gaussian_vortex_inf.log')
+            write(24,*)  t, vort_pos(1:2), vort_dir
+          close(24)
+          write(*,'(a,f8.3)') ' vortex core size', nf_vort_core
+          write(*,'(a,i6.4,a)') ' vortex orientation changes every', normal_fluid_freq, ' timesteps'
         case('expand','expand_rot','collapse_rot')
           call setup_gen_normalf !normal_fluid.mod
           open(unit=77,file='./data/normal_timescale.log',status='replace')
@@ -151,7 +164,20 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
     !>initialise the normal fluid velocity every timestep if needed
     subroutine initialise_normal_fluid
       implicit none
-      select case(normal_velocity)    
+      select case(normal_velocity)
+        case('gaussian_vortex')
+          vort_pos(1)=vort_pos(1)+dt*.5 !make speed a variable
+          if (vort_pos(1)>box_size/2.) then
+            vort_pos(1)=-box_size/2.
+          end if
+          if (mod(itime,normal_fluid_freq)==0) then
+            vort_pos(1)=runif(-box_size/2.,box_size/2.)
+            vort_pos(2)=runif(-box_size/2.,box_size/2.)
+            vort_dir=floor(runif(1.,6.999999))
+            open(unit=24,file='./data/gaussian_vortex_inf.log', position='append')
+              write(24,*)  t, vort_pos(1:2), vort_dir
+            close(24)
+          end if
         case('nf_macro_ring')
           !---------centre of vorticity & macro ring radii data-----------------
           call get_cov_data !normal_fluid.mod
@@ -225,6 +251,58 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
             end do ; end do
           end if
           u=u*(box_size/40)
+        case('gaussian_vortex')
+          u=0.
+          if (vort_dir==1) then
+            if (periodic_bc) then
+              do peri=-1,1 ; do perj=-1,1
+                r=(x(1)-peri*box_size-vort_pos(1))**2+(x(2)-perj*box_size-vort_pos(2))**2 !not really r but r-sq
+                u(1)=u(1)-((x(2)-vort_pos(2)-perj*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+                u(2)=u(2)+((x(1)-vort_pos(1)-peri*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+              end do; end do
+            end if
+          else if (vort_dir==2) then
+            if (periodic_bc) then
+              do peri=-1,1 ; do perj=-1,1
+                r=(x(1)-peri*box_size-vort_pos(1))**2+(x(2)-perj*box_size-vort_pos(2))**2 !not really r but r-sq
+                u(1)=u(1)+((x(2)-vort_pos(2)-perj*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+                u(2)=u(2)-((x(1)-vort_pos(1)-peri*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+              end do; end do
+            end if
+          else if (vort_dir==3) then
+            if (periodic_bc) then
+              do peri=-1,1 ; do perj=-1,1
+                r=(x(2)-peri*box_size-vort_pos(1))**2+(x(3)-perj*box_size-vort_pos(2))**2 !not really r but r-sq
+                u(2)=u(2)-((x(3)-vort_pos(2)-perj*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+                u(3)=u(3)+((x(2)-vort_pos(1)-peri*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+              end do; end do
+            end if
+          else if (vort_dir==4) then
+            if (periodic_bc) then
+              do peri=-1,1 ; do perj=-1,1
+                r=(x(2)-peri*box_size-vort_pos(1))**2+(x(3)-perj*box_size-vort_pos(2))**2 !not really r but r-sq
+                u(2)=u(2)+((x(3)-vort_pos(2)-perj*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+                u(3)=u(3)-((x(2)-vort_pos(1)-peri*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+              end do; end do
+            end if
+          else if (vort_dir==5) then
+            if (periodic_bc) then
+              do peri=-1,1 ; do perj=-1,1
+                r=(x(3)-peri*box_size-vort_pos(1))**2+(x(1)-perj*box_size-vort_pos(2))**2 !not really r but r-sq
+                u(3)=u(3)-((x(1)-vort_pos(2)-perj*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+                u(1)=u(1)+((x(3)-vort_pos(1)-peri*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+              end do; end do
+            end if
+          else if (vort_dir==6) then
+            if (periodic_bc) then
+              do peri=-1,1 ; do perj=-1,1
+                r=(x(3)-peri*box_size-vort_pos(1))**2+(x(1)-perj*box_size-vort_pos(2))**2 !not really r but r-sq
+                u(3)=u(3)+((x(1)-vort_pos(2)-perj*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+                u(1)=u(1)-((x(3)-vort_pos(1)-peri*box_size)/r)*(1-exp(-r/(nf_vort_core)**2))
+              end do; end do
+            end if
+          end if
+          u=u*nf_vort_core/(1.-exp(-1.))
         case('taylor-green')
           !The Taylor-Green Vortex
           u(1)=sin(norm_k*x(1))*cos(norm_k*x(2))*cos(norm_k*x(3))*norm_vel_xflow
@@ -274,12 +352,12 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
           end if
           u(2)=0. ; u(3)=0.
         case('galloway-proctor')
-          !u(1)=-sin(norm_k*x(2)+cos(t))
-          !u(2)=-cos(norm_k*x(1)+sin(t))
-          !u(3)=sin(norm_k*x(1)+sin(t))+cos(norm_k*x(2)+cos(t))
-          u(1)=-sin(norm_k*x(2))
-          u(2)=-cos(norm_k*x(1))
-          u(3)=sin(norm_k*x(1))+cos(norm_k*x(2))
+          u(1)=-sin(norm_k*x(2)+cos(2*pi*5*t))
+          u(2)=-cos(norm_k*x(1)+sin(2*pi*5*t))
+          u(3)=sin(norm_k*x(1)+sin(2*pi*5*t))+cos(norm_k*x(2)+cos(2*pi*5*t))
+          !u(1)=-sin(norm_k*x(2))
+          !u(2)=-cos(norm_k*x(1))
+          !u(3)=sin(norm_k*x(1))+cos(norm_k*x(2))
         case('KS')
           !multi-scale model of turbulence
           call get_KS_flow(x,u)

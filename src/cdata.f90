@@ -268,6 +268,7 @@ module cdata
   integer, protected :: normal_fluid_freq=1 !used for certain normal fluid flows
   real, protected :: norm_vel_xflow=0.5
   real, protected :: norm_shear_omega=0.
+  real, protected :: nf_vort_core=0.01 !gaussian vortex core size
   !------------KS model--------------------------------------------
   integer,protected :: KS_rey_int=8
   real,protected :: KS_slope=-5./3.
@@ -604,6 +605,8 @@ module cdata
              read(buffer, *, iostat=ios) vel_print_extra !print extra velocity information
           case ('vapor_print')
              read(buffer, *, iostat=ios) vapor_print !print the velocity field for vapor
+          case ('nf_vort_core')
+             read(buffer, *, iostat=ios) nf_vort_core !normal fluid vortex core size
           case ('KS_slope')
              read(buffer, *, iostat=ios) KS_slope !KS velocity field spectrum
           case ('KS_bubble')
