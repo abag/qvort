@@ -266,6 +266,7 @@ module cdata
   real, protected :: t_zero_normal_fluid=1E8 !impossibly high time
   integer, protected :: normal_fluid_freq=1 !used for certain normal fluid flows
   real, protected :: norm_vel_xflow=0.5
+  real, protected :: norm_vel_KS_boost=1.
   real, protected :: norm_shear_omega=0.
   !------------KS model--------------------------------------------
   integer,protected :: KS_rey_int=8
