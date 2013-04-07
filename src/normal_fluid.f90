@@ -361,7 +361,7 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
         case('KS')
           !multi-scale model of turbulence
           call get_KS_flow(x,u)
-          !u=u*norm_vel_KS_boost
+          u=u*KS_boost
         case('KS_xflow')
           !multi-scale model of turbulence
           call get_KS_flow(x,u_KS)

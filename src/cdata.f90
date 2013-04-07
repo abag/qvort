@@ -267,11 +267,11 @@ module cdata
   real, protected :: t_zero_normal_fluid=1E8 !impossibly high time
   integer, protected :: normal_fluid_freq=1 !used for certain normal fluid flows
   real, protected :: norm_vel_xflow=0.5
-  real, protected :: norm_vel_KS_boost=1.
   real, protected :: norm_shear_omega=0.
   real, protected :: nf_vort_core=0.01 !gaussian vortex core size
   !------------KS model--------------------------------------------
   integer,protected :: KS_rey_int=8
+  real, protected :: KS_boost=1.
   real,protected :: KS_slope=-5./3.
   real,protected :: KS_xflow_intense=0.
   integer, protected :: KS_modes=50
@@ -610,6 +610,8 @@ module cdata
              read(buffer, *, iostat=ios) nf_vort_core !normal fluid vortex core size
           case ('KS_slope')
              read(buffer, *, iostat=ios) KS_slope !KS velocity field spectrum
+          case ('KS_boost')
+             read(buffer, *, iostat=ios) KS_boost !KS velocity field urms boost
           case ('KS_bubble')
              read(buffer, *, iostat=ios) KS_bubble !force wavenumbers apart
           case ('KS_rey_int')
