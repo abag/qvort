@@ -16,7 +16,7 @@ module particles
     implicit none
     integer :: i, j, k
     integer :: counter
-    real :: rand1, rand2, rand3
+    real :: rand1, rand2, rand3, sphere_theta, sphere_phi
     allocate(p(part_count))
     write(*,*) 'setting up particles in ', trim(initp),' configuration'
     write(*,'(a,a,a,i4.1)') ' particle type: ', trim(particle_type), ', particle count: ', part_count
@@ -99,6 +99,19 @@ module particles
           p(i)%x(1)=box_size/2.-box_size*real(2*(i-pcount/2)-1)/(part_count)
           p(i)%x(2)=-0.5*delta+rand1*sin(rand2)
           p(i)%x(3)=rand1*cos(rand2)
+          p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
+        end do
+      case('central_sphere')
+        write(*,'(a,f6.4,a)') ' sphere radius: ', part_sphere_radius, ' of box size'
+        do i=1, part_count
+          rand1=runif(0.,part_sphere_radius*box_size) !r - distance from centre
+          rand2=runif(0.,1.)
+          rand3=runif(0.,1.)
+          sphere_theta=2.*pi*rand2
+          sphere_phi=acos(2.*rand3-1.)
+          p(i)%x(1)=rand1*cos(sphere_theta)*sin(sphere_phi)
+          p(i)%x(2)=rand1*sin(sphere_theta)*sin(sphere_phi)
+          p(i)%x(3)=rand1*cos(sphere_phi)
           p(i)%u=0. ; p(i)%u1=0. ; p(i)%u2=0. !0 the velocity fields
         end do
       case('pairs')
