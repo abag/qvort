@@ -304,6 +304,7 @@ module cdata
   integer :: part_count !number of particles 
   real :: part_stokes=0. !the stokes number of the particles
   real :: part_tube_ratio=1. !for tube initial condition
+  real :: part_sphere_radius=0.1 !for the central sphere condition
   character(len=20), protected :: particle_type='fluid' !fluid/interial/quasi particles
   character(len=20), protected :: initp='random' !initial particle configuration
   logical, protected :: particles_only=.false. !only evolve particles in the code
@@ -652,6 +653,8 @@ module cdata
              read(buffer, *, iostat=ios) n_recon_track !number of point pairs being tracked by recon_dist
           case ('part_tube_ratio')
              read(buffer, *, iostat=ios) part_tube_ratio !for particle initial condition
+          case ('part_sphere_radius')
+             read(buffer, *, iostat=ios) part_sphere_radius !for particle initial condition
           case ('sep_inf')
              read(buffer, *, iostat=ios) sep_inf !point separation
           case ('line_sep_inf')
