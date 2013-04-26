@@ -803,7 +803,7 @@ module initial_loop
   subroutine setup_random_loops
     implicit none
     real :: loop_radius
-    real :: anglex,angley,anglez
+    real :: anglex,angley,anglez, theta, phi
     real,dimension(3)::translate
     real,dimension(3)::dummy_xp_1, dummy_xp_2, dummy_xp_3, dummy_xp_4
     integer :: mean_loop_size, loop_size
@@ -850,6 +850,13 @@ module initial_loop
       angley=angley*2*pi*rotation_factor
       anglez=anglez*2*pi*rotation_factor
       translate=loop_translate*((box_size*translate-box_size/2.)-loop_radius)
+      if (random_loop_gaussian_translate) then
+        theta=runif(-1.,1.) ; phi=runif(0.,2*pi)
+        translate(1)=sqrt(1-theta**2)*cos(phi)
+        translate(2)=sqrt(1-theta**2)*sin(phi)
+        translate(3)=theta
+        translate=translate*abs(rnorm(0.,(box_size*lattice_ratio)**2))
+      end if
       if (random_loop_collide) then
         if (used_pcount<pcount/2) then
           !translate=0.

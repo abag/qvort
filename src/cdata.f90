@@ -212,6 +212,8 @@ module cdata
   real, protected :: kursa_angle=5 !used by kursa_recon
   !below used in random_loops to setup colliding bundles
   logical, protected :: random_loop_collide=.false.
+  !gaussian loop translation
+  logical, protected :: random_loop_gaussian_translate=.false.
   !--------for wave_loop/wave_line initf--------------
   integer, protected :: wave_count=1 !number of waves
   real, protected :: wave_slope=-1.5 !spectral slope
@@ -486,6 +488,8 @@ module cdata
              read(buffer, *, iostat=ios) loop_translate !used in random_loops conditions
           case ('random_loop_collide')
              read(buffer, *, iostat=ios) random_loop_collide !used in random_loops condition
+          case ('random_loop_gaussian_translate')
+             read(buffer, *, iostat=ios) random_loop_gaussian_translate !used in random_loops condition
           case ('bundle_type')
              read(buffer, *, iostat=ios) bundle_type !used in central_bundle initial conditions
           case ('cent_bundle_dist')
