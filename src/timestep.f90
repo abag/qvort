@@ -92,6 +92,89 @@ module timestep
     end if
   end subroutine
   !*************************************************
+  subroutine pmotion_RK3
+    use periodic
+    implicit none
+    real :: u(3) !dummy variable used to store velocities
+    integer :: i
+    !intialise forcing every timestep incase there is a random element
+    call randomise_forcing !forcing.mod
+    !likewise with normal fluid
+    call initialise_normal_fluid !normal_fluid.mod
+    !now loop over all points and get the velocity field
+    !$omp parallel do private(i,u)
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !check for 'empty' particles
+      call calc_velocity(u,i)
+      f(i)%u(:)=u(:) !store the velocity for time-step
+      f(i)%u1(:)=u(:)*dt
+    end do
+    !$omp end parallel do
+    !now perform 1st runge kutta step
+    !$omp parallel do private(i,u)
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !check for 'empty' particles
+      f(i)%x=f(i)%x+(f(i)%u1/3.)
+    end do
+    !$omp end parallel do
+    !now sort out ghost points
+    call ghostp !periodic.mod
+    !remove the tree
+    if (tree_theta>0) then
+      call empty_tree(vtree) !empty the tree to avoid a memory leak
+      deallocate(vtree%parray) ; deallocate(vtree)
+      nullify(vtree) !just in case!
+    end if
+    !rebuild the tree
+    if (tree_theta>0) then
+      call construct_tree !tree.mod
+    end if
+    !now recompute the velocity field
+    !$omp parallel do private(i,u)
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !check for 'empty' particles
+      call calc_velocity(u,i)
+      f(i)%u(:)=u(:) !store the velocity for time-step
+      f(i)%u1(:)=-(2./3.)*f(i)%u1(:)+u(:)*dt
+    end do
+    !$omp end parallel do
+    !now perform 2nd runge kutta step
+    !$omp parallel do private(i,u)
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !check for 'empty' particles
+      f(i)%x=f(i)%x+f(i)%u1
+    end do
+    !$omp end parallel do
+    !now sort out ghost points
+    call ghostp !periodic.mod
+    !remove the tree
+    if (tree_theta>0) then
+      call empty_tree(vtree) !empty the tree to avoid a memory leak
+      deallocate(vtree%parray) ; deallocate(vtree)
+      nullify(vtree) !just in case!
+    end if
+    !rebuild the tree
+    if (tree_theta>0) then
+      call construct_tree !tree.mod
+    end if
+    !now recompute the velocity field
+    !$omp parallel do private(i,u)
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !check for 'empty' particles
+      call calc_velocity(u,i)
+      f(i)%u(:)=u(:) !store the velocity for time-step
+      f(i)%u1(:)=-f(i)%u1(:)+u(:)*dt
+    end do
+    !$omp end parallel do
+    !now perform final runge kutta step
+    !$omp parallel do private(i,u)
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !check for 'empty' particles
+      f(i)%x=f(i)%x+0.5*f(i)%u1
+    end do
+    !$omp end parallel do
+  end subroutine
+  !*************************************************
   !>get the velocity of each particle subject to the superfluid velocity
   !>plus any normal fluid/forcing
   subroutine calc_velocity(u,i)
@@ -101,6 +184,7 @@ module timestep
     real :: cov(3), cov_vel(3) !centre of vorticity
     real :: curv, beta !LIA
     real :: hyperviscous_alpha !for hyperviscosity
+    real :: drho_z(2) !HAMILTONIAN OF SVISTUNOV
     real :: f_dot(3), f_ddot(3) !first and second derivs
     integer :: peri, perj, perk !used to loop in periodic cases
    ! integer :: miri, mirj, mirk !used to loop in mirror cases
@@ -125,7 +209,8 @@ module timestep
             curv=1./curv
           end if
           !caluculate beta based on the curvature
-          beta=(quant_circ/(4.*pi))*log(4.6*curv/corea)
+          !beta=(quant_circ/(4.*pi))*log(4.6*curv/corea)
+          beta=(quant_circ/(4.*pi))*log(curv/corea)
         end if
         !***************************************************
         u=beta*cross_product(f_dot,f_ddot) !general.mod
@@ -274,6 +359,13 @@ module timestep
         !particle is sufficiently close to top boundary stick
         u=0.
       end if
+    end if
+    if (svistunov_hamiltonian) then
+      drho_z(1)=(f(i)%ghosti(1)-f(i)%ghostb(1))/(2*delta)
+      drho_z(2)=(f(i)%ghosti(2)-f(i)%ghostb(2))/(2*delta)
+      u(1)=u(1)-u(3)*drho_z(1)
+      u(2)=u(2)-u(3)*drho_z(2)
+      u(3)=0.
     end if
   end subroutine
   !**************************************************************************

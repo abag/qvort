@@ -11,6 +11,7 @@ module initial
   use smoothing
   use inject
   use output
+  use kwc_fft
   contains
   !*************************************************************************
   !>Prints and sets up intial conditions - will give warnings/errors if there
@@ -52,6 +53,11 @@ module initial
     end if
     if (dt_adapt) then
       write(*,'(a)') ' using an adpative timestepping routine - in testing!'
+    end if
+    if (runge_kutta) then
+      write(*,'(a)') ' using 3rd order low storage runge-kutta timestep'
+    else
+      write(*,'(a)') ' using 4th order adams-bashforth timestep'
     end if
     if (phonon_emission) then
       write(*,'(a)') ' ------------------PHONON EMISSION--------------------' 
@@ -400,6 +406,30 @@ module initial
       write(*,'(a,i5.3,a)') 'calculating boxed vorticity every ',mesh_shots, ' timesteps'
       write(*,'(a,i5.3)') 'size of mesh: ',boxed_vorticity_size
       write(*,'(a)') 'I recommend that you fine tune the mesh size using the matlab routine: vorticity_field.m'
+    end if
+    if (kelvin_wave_casc) then
+      write(*,'(a)') ' ---------------------KELVIN WAVE CASCADE----------------------' 
+      write(*,'(a)') ' running in kelvin wave mode'
+      write(*,'(a)') ' switching off particle insertion/removal and reconnections'
+      !check initial conditions
+      select case(initf)
+        case('single_line','wave_line')
+          !OK
+        case default
+          call fatal_error('KWC','wrong initial conditions - must be single_line')
+      end select
+      select case(boundary)
+        case('openxy')
+          call enforce_periodic_z !periodic.mod
+        case default
+          call fatal_error('KWC','wrong boundary - must be openxy')
+      end select
+      call initialise_fft
+      if (svistunov_hamiltonian) then
+        write(*,'(a)') ' using hamiltonian formalism to ensure no z motion'
+      else
+        write(*,'(a)') ' remeshing points onto uniform mesh in z'
+      end if
     end if
     !----------------------gaussian smoothing of field------------------------------
     if (sm_size>0) call setup_smoothing_mesh !smoothing.mod

@@ -143,6 +143,17 @@ remove_count
       write(unit=print_file,fmt="(a,i4.4,a)")"./scripts/simple_plot.sh ",filenumber
       call system(print_file)
     end if
+    !if (kelvin_wave_casc) then
+    !  write(unit=print_file,fmt="(a,i4.4,a)")"./data/var_interp",filenumber,".log"
+    !  open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+    !    write(98) t
+    !    write(98) pcount
+    !    write(98) f(:)%x_interp(1)
+    !    write(98) f(:)%x_interp(2)
+    !    write(98) f(:)%x_interp(3)
+    !    write(98) f(:)%infront
+    !  close(98)
+    !end if
   end subroutine
   !**********************************************************************
   !>print the initial f (filament) array as formatted data for use with gnuplot/matlab

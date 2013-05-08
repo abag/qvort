@@ -18,7 +18,7 @@ module cdata
   !!@param closestd_loop as above but not on same loop 
   !!@param delta used for adaptive meshing along the filaments, used as a prefactor
   type qvort 
-    real :: x(3)
+    real :: x(3), x_interp(3)
     real :: u(3), u1(3), u2(3), u3(3)
     real :: u_sup(3), u_mf(3)
     real :: u_s_LI(3), u_s_BS(3)
@@ -131,6 +131,8 @@ module cdata
   !>integer loop starts from (altered by reading in stored data - i.e. restarting)
   integer :: nstart=1 
   logical, protected :: restart_rewind=.false.
+  !which timestep to use
+  logical, protected :: runge_kutta=.false.
   !***********DIAGNOSTIC INFO******************************************************
   !>total number of reconnections
   integer :: recon_count=0 
@@ -373,6 +375,10 @@ module cdata
   logical, protected :: batch_mode=.false. !set to true to enable messaging
   character(len=80),protected :: batch_name='qvort run' !what is the name of the run
   character(len=60),protected :: batch_email='a.w.baggaley@gmail.com' !who you gonna call?
+  !------------------------------KWC--------------------------------------------
+  logical, protected :: kelvin_wave_casc=.false.
+  real,allocatable :: KWC_z(:) !for interpolation
+  logical, protected :: svistunov_hamiltonian=.false.
   !------------------------------openmp--------------------------------------------
   logical,private :: serial_run=.false.
   integer,private :: qvort_nproc=0
@@ -543,8 +549,14 @@ module cdata
              read(buffer, *, iostat=ios) tree_print !print the tree mesh
           case ('tree_extra_correction')
              read(buffer, *, iostat=ios) tree_extra_correction
+          case ('kelvin_wave_casc')
+             read(buffer, *, iostat=ios) kelvin_wave_casc
+          case ('svistunov_hamiltonian')
+             read(buffer, *, iostat=ios) svistunov_hamiltonian
           case ('anisotropy_params')
              read(buffer, *, iostat=ios) anisotropy_params
+          case ('runge_kutta')
+             read(buffer, *, iostat=ios) runge_kutta
           case ('torus_q')
              read(buffer, *, iostat=ios) torus_q !q integer for torus knot initial condition
           case ('torus_p')
@@ -728,6 +740,8 @@ module cdata
           end select
        end if
     end do
+    !extra check for Kelvin wave cascade
+    if (kelvin_wave_casc) switch_off_recon=.true.
   end subroutine
   !*************************************************************************************************  
   !>reload the file run.in and show differences

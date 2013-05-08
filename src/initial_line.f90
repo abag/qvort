@@ -26,9 +26,9 @@ module initial_line
     end if
     mid_point=(pcount+1)/2
     do i=1, pcount
-      f(i)%x(1)=0. !box_size/3
       f(i)%x(2)=0. !-box_size/3
-      f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
+      f(i)%x(1)=0.
+      f(i)%x(3)=-box_size/2.+box_size*real(i-1)/(pcount)
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -39,6 +39,11 @@ module initial_line
       !zero the stored velocities
       f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
     end do
+    if (kelvin_wave_casc) then
+      !for kelvin wave cascade we allocate a new array
+      allocate(KWC_z(pcount))
+      KWC_z=f(:)%x(3)
+    end if
   end subroutine
   !****************************************************************************
   !>set up a single line from -x to x, number of particles is automatically
@@ -756,7 +761,7 @@ module initial_line
     write(*,'(a,f9.5)') ' starting amplitude', wave_amp*delta
     write(*,'(a,i3.1)') ' wavenumber separation', wave_skip 
     if ((line_count==1).and.(wave_type=='helical')) then
-      estimate_speed=abs((quant_circ*(2*pi*wave_start/box_size)/(4*pi))*(log(2./((2*pi*wave_start/box_size)*corea))-0.57721))
+      estimate_speed=abs((quant_circ*(2*pi*wave_start/box_size)**2/(4*pi))*(log(2./((2*pi*wave_start/box_size)*corea))-0.57721))
       !estimate_speed=(quant_circ/(2*pi*corea**2))*&
 !(1.-sqrt(1+BesY0((2*pi*wave_start/box_size)*corea)/BesY1((2*pi*wave_start/box_size)*corea)))
       print*, 'just one helical wave, speed should be', estimate_speed
@@ -775,7 +780,7 @@ module initial_line
         line_position=j+(i-1)*line_size
         f(line_position)%x(1)=xpos
         f(line_position)%x(2)=ypos
-        f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        f(line_position)%x(3)=-box_size/2.+box_size*real(j-1)/line_size
         if(j==1) then
           f(line_position)%behind=i*line_size
           f(line_position)%infront=line_position+1
@@ -843,13 +848,13 @@ module initial_line
               end if
             case('KWC')
               f(line_position)%x(1)=f(line_position)%x(1)+&
-              amp*delta*cos(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+              amp*delta*cos(random_shift+wave_number*2.*pi*real(j-1)/(line_size))
               f(line_position)%x(2)=f(line_position)%x(2)+&
-              amp*delta*sin(random_shift+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
-              !f(line_position)%x(1)=f(line_position)%x(1)+&
-              !amp*delta*cos(random_shift2+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
-              !f(line_position)%x(2)=f(line_position)%x(2)-&
-              !amp*delta*sin(random_shift2+wave_number*2.*pi*real(2.*j-1)/(2.*line_size))
+              amp*delta*sin(random_shift+wave_number*2.*pi*real(j-1)/(line_size))
+              f(line_position)%x(1)=f(line_position)%x(1)+&
+              amp*delta*cos(random_shift2+wave_number*2.*pi*real(j-1)/(line_size))
+              f(line_position)%x(2)=f(line_position)%x(2)-&
+              amp*delta*sin(random_shift2+wave_number*2.*pi*real(j-1)/(line_size))
             case default
               call fatal_error('initial.mod:wave_line','incorrect wave type parameter')
           end select
@@ -861,6 +866,11 @@ module initial_line
         close(34)
       end if 
     end do !closes the i loop
+    if (kelvin_wave_casc) then
+      !for kelvin wave cascade we allocate a new array
+      allocate(KWC_z(pcount))
+      KWC_z=f(:)%x(3)
+    end if
   end subroutine
   !*************************************************************************
   !>lines from the lop of the box to the bottom, helical/planar waves added with

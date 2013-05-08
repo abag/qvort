@@ -1,0 +1,18 @@
+--------------required parameters------------
+nsteps 500000
+shots 500
+mesh_shots 5000
+pcount 1000
+dt 5E-5
+delta 0.0016
+box_size 0.1
+velocity Tree
+initf random_loops
+line_count 10
+boundary periodic
+--------------optional parameters------------
+tree_theta 0.4
+normal_velocity gaussian_vortex
+alpha 0.5 0.0
+two_dim 128
+normal_fluid_freq 4000
