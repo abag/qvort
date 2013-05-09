@@ -14,6 +14,7 @@ program run
   use inject
   use mirror
   use smoothing 
+  use kwc_fft
   implicit none
   integer :: i
   logical :: can_stop=.false.,can_reload=.false. 
@@ -45,14 +46,18 @@ program run
     !---------------------create mirror array----------------------
     if (mirror_bc) call mirror_init !mirror.mod
     !---------------------velocity operations----------------------
-    call pmotion !timestep.mod
+    if (runge_kutta) then
+      call pmotion_RK3 !timestep.mod
+    else
+      call pmotion !timestep.mod
+    end if
     if (seg_fault) write(*,*) 'here3'
     if (mod(itime,mesh_shots)==0) then
       call mesh_velocity !timestep.mod
     end if
     if (seg_fault) write(*,*) 'here4'
     !---------------------line operations--------------------------
-    call pinsert !line.mod
+    if (kelvin_wave_casc.eqv..false.)call pinsert !line.mod
     if (seg_fault) write(*,*) 'here5'
     if (mod(itime, recon_shots)==0) then
       if (tree_theta>0) then
@@ -63,7 +68,7 @@ program run
       end if
       if (switch_off_recon.eqv..false.) call precon !line.mod
       if (seg_fault) write(*,*) 'here5a'
-      call premove !line.mod  \todo switchoff premove in run.in
+      if (kelvin_wave_casc.eqv..false.)call premove !line.mod  \todo switchoff premove in run.in
     end if
     if (recon_info) call set_recon_dist !reconnection.mod
     !---------------------smoothed field----------------------
@@ -84,6 +89,15 @@ program run
       case ('mirror')
         call mirror_pinning !mirror.mod
     end select
+    !---------------kelvin_wave_remesh---------------------
+    if (kelvin_wave_casc) then
+      if (svistunov_hamiltonian.eqv..false.) then
+        call KWC_remesh !line.mod
+        call ghostp !periodic.mod
+      end if
+      call KWC_get_length
+      call perform_fft
+    end if
     !---------------once all algorithms have been run--------------
     t=t+dt  !increment the time
     !---------------------diagnostic info--------------------------
@@ -98,7 +112,9 @@ program run
       if(particles_only.eqv..false.) call print_info !output.mod
       if (mod(itime, mesh_shots)==0) then
         !print the smoothed mesh to binary file
+        if (seg_fault) write(*,*) 'here7a'
         if (sm_size>0) call print_smooth_mesh(itime/mesh_shots)!smoothing.mod
+        if (seg_fault) write(*,*) 'here7b'
         call mesh_shot_print_calls !output.mod
       end if
     end if

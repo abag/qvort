@@ -250,4 +250,37 @@ module line
         call precon_kondaurova !reconnection.mod
     end select
   end subroutine
+  !******************************************************************
+  subroutine KWC_remesh
+    implicit none
+    integer :: i
+    real :: L1, L2, L3
+    !$omp parallel do private(i)
+    do i=1,pcount
+      if (f(i)%infront==0) cycle !empty particle
+      L1=(KWC_z(i)-f(i)%x(3))*(KWC_z(i)-f(i)%ghosti(3))/((f(i)%ghostb(3)-f(i)%x(3))*(f(i)%ghostb(3)-f(i)%ghosti(3)))
+      L2=(KWC_z(i)-f(i)%ghostb(3))*(KWC_z(i)-f(i)%ghosti(3))/((f(i)%x(3)-f(i)%ghostb(3))*(f(i)%x(3)-f(i)%ghosti(3)))
+      L3=(KWC_z(i)-f(i)%ghostb(3))*(KWC_z(i)-f(i)%x(3))/((f(i)%ghosti(3)-f(i)%ghostb(3))*(f(i)%ghosti(3)-f(i)%x(3)))
+      f(i)%x_interp(1)=L1*f(i)%ghostb(1)+L2*f(i)%x(1)+L3*f(i)%ghosti(1)
+      f(i)%x_interp(2)=L1*f(i)%ghostb(2)+L2*f(i)%x(2)+L3*f(i)%ghosti(2)
+      !f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do
+    !$omp end parallel do
+    f(:)%x_interp(3)=KWC_z
+    f(:)%x(1)=f(:)%x_interp(1) ; f(:)%x(2)=f(:)%x_interp(2) ; f(:)%x(3)=f(:)%x_interp(3)
+  end subroutine
+  !******************************************************************
+  subroutine KWC_get_length
+    implicit none    
+    real :: dist
+    integer:: i
+    total_length=0. !zero this
+    do i=1, pcount
+      if (f(i)%infront==0) cycle !empty particle
+      if (mirror_bc.and.f(i)%pinnedi) cycle !pinned particle
+      !get the distance between the particle and the one infront
+      dist=dist_gen(f(i)%x,f(i)%ghosti) !general.f90
+      total_length=total_length+dist !measure total length of filaments
+    end do
+  end subroutine
 end module
