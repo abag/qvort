@@ -390,6 +390,9 @@ module initial
           if (vel_print_extra) write(*,*) 'printing extra velocity information'
       end select
     end if
+    if (acc_print) then
+      write(*,'(a,i4.2,a)') ' printing full acceleration information every: ', mesh_shots, ' timesteps'
+    end if
     !final boundary conditions sanity check
     if (periodic_bc.and.mirror_bc) call fatal_error('init.mod','both periodic and mirror bcs are set')
     if (one_dim>0) write(*,'(a,i5.3,a,a,a)') ' printing 1D velocity info to file, mesh size: ', one_dim,&

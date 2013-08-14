@@ -39,6 +39,7 @@ module output
     end if
     !can also print full velocity field for statistics 
     if (vel_print) call print_velocity(itime/mesh_shots)!output.mod
+    if (acc_print) call print_acceleration(itime/mesh_shots)!output.mod
     call one_dim_vel(itime/mesh_shots) !diagnostics.mod
     call one_dim_lattice_vel(itime/mesh_shots) !diagnostics.mod
     if (multiple_initial_loop) then 
@@ -305,6 +306,30 @@ remove_count
       close(93)
       deallocate(vapor_array) 
     end if
+  end subroutine
+  !**********************************************************************
+  !>print the velocity  array as unformatted data for use matlab
+  subroutine print_acceleration(filenumber)
+    implicit none
+    integer, intent(IN) :: filenumber
+    character (len=40) :: print_file
+    integer :: i
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/acc_1_",filenumber,".dat"
+    open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+      write(98) t
+      write(98) pcount
+      write(98) (f(:)%u(1)-f(:)%u1(1))/dt
+      write(98) (f(:)%u(2)-f(:)%u1(2))/dt
+      write(98) (f(:)%u(3)-f(:)%u1(3))/dt
+    close(98)
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/acc_2_",filenumber,".dat"
+    open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+      write(98) t
+      write(98) pcount
+      write(98) (f(:)%u(1)-f(:)%u3(1))/(3*dt)
+      write(98) (f(:)%u(2)-f(:)%u3(2))/(3*dt)
+      write(98) (f(:)%u(3)-f(:)%u3(3))/(3*dt)
+    close(98)
   end subroutine
   !**********************************************************************
   !>print the velocity  array as unformatted data for use matlab

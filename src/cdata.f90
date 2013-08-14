@@ -331,6 +331,7 @@ module cdata
   logical, protected :: vapor_print=.false. !dumps raw mesh data for vapor 
   logical, protected :: mirror_print=.false. !prints the mirror filaments to file
   logical, protected :: vel_print=.false. !prints the full velocity information to file
+  logical, protected :: acc_print=.false. !prints the full acceleration information to file
   logical, protected :: vel_print_extra=.false. !prints extra velocity information to file
   logical, protected :: recon_info=.false. !more in depth reconnection information
   logical, protected :: boxed_vorticity=.false. !smoothed vorticity in a box
@@ -623,6 +624,8 @@ module cdata
              read(buffer, *, iostat=ios) vel_print !print the velocity information
           case ('vel_print_extra')
              read(buffer, *, iostat=ios) vel_print_extra !print extra velocity information
+          case ('acc_print')
+             read(buffer, *, iostat=ios) acc_print !print the acc. information
           case ('vapor_print')
              read(buffer, *, iostat=ios) vapor_print !print the velocity field for vapor
           case ('nf_vort_core')
