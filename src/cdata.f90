@@ -379,6 +379,8 @@ module cdata
   logical, protected :: kelvin_wave_casc=.false.
   real,allocatable :: KWC_z(:) !for interpolation
   logical, protected :: svistunov_hamiltonian=.false.
+  real :: fft_hyp_coeff=1E-9, fft_hyp_power=4
+  real :: fft_hypo_coeff=2., fft_hypo_power=2
   !------------------------------openmp--------------------------------------------
   logical,private :: serial_run=.false.
   integer,private :: qvort_nproc=0
@@ -735,6 +737,14 @@ module cdata
              read(buffer, *, iostat=ios) multiple_initial_loop !re-loop over multiple initial conditions
           case ('multiple_initial_count')
              read(buffer, *, iostat=ios) multiple_initial_count !re-loop over multiple initial conditions
+          case ('fft_hyp_power')
+             read(buffer, *, iostat=ios) fft_hyp_power !for KWC
+          case ('fft_hyp_coeff')
+             read(buffer, *, iostat=ios) fft_hyp_coeff !for KWC
+          case ('fft_hypo_power')
+             read(buffer, *, iostat=ios) fft_hypo_power !for KWC
+          case ('fft_hypo_coeff')
+             read(buffer, *, iostat=ios) fft_hyp_coeff !for KWC
           case default
              !print *, 'Skipping invalid label at line', line
           end select

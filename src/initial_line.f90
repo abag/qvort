@@ -1,4 +1,4 @@
-!> Module which contains initial conditions (lines) for filament (set in run.in) for more 
+!> Module which contains initial conditions (lines) for filament (set in run.in) for more
 !!information on the options see \ref INIT
 module initial_line
   use cdata
@@ -1118,6 +1118,58 @@ module initial_line
         end if
         f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
       end do
+    end do
+  end subroutine
+  !*************************************************************************
+  subroutine setup_line_of_lines
+    implicit none
+    real :: rand1, rand2, rand3, rand4
+    real :: rand5, rand6
+    integer :: pcount_required
+    integer :: line_size
+    integer:: line_position
+    integer :: i,j
+    !test run.in parameters, if wrong program will exit
+    if (line_count==0) then
+      call fatal_error('init.mod:setup_tangle', &
+      'you have not set a value for line_count in run.in')
+    end if
+    if (periodic_bc) then
+      !work out the number of particles required for our lines
+      !given the box size specified in run.i
+      pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
+      write(*,*) 'changing size of pcount to fit with box_length and delta'
+      write(*,*) 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_criss_cross',&
+                       'periodic boundary conditions required for this initial condition') !cdata.mod
+    end if
+    line_size=int(pcount/line_count)
+    do i=1, line_count
+        if (mod(line_count,2)==0) then
+          rand2=1.
+        else
+          rand2=-1.
+        end if
+        rand1=-box_size/2+(real(i)/(line_count+1))*box_size
+        do j=1, line_size
+          line_position=j+(i-1)*line_size
+          f(line_position)%x(1)=rand1
+          f(line_position)%x(2)=0.
+          f(line_position)%x(3)=rand2*(-box_size/2.+box_size*real(2*j-1)/(2.*line_size))
+          if(j==1) then
+            f(line_position)%behind=i*line_size
+            f(line_position)%infront=line_position+1
+          else if (j==line_size) then
+            f(line_position)%behind=line_position-1
+            f(line_position)%infront=(i-1)*line_size+1
+          else
+            f(line_position)%behind=line_position-1
+            f(line_position)%infront=line_position+1
+          end if
+          f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
+        end do
     end do
   end subroutine
   !*************************************************************************

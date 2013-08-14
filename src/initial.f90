@@ -219,6 +219,8 @@ module initial
           call setup_hyperboloid !initial_line.mod
         case('loop_train')
           call setup_loop_train !initial_loop.mod
+        case('line_of_lines') !initial_line.mod
+          call setup_line_of_lines
         case('rear_collide_loops')
           call setup_rear_collide_loops !initial_loop.mod
         case('loop_stream')
@@ -413,7 +415,7 @@ module initial
       write(*,'(a)') ' switching off particle insertion/removal and reconnections'
       !check initial conditions
       select case(initf)
-        case('single_line','wave_line')
+        case('single_line','wave_line','var_file')
           !OK
         case default
           call fatal_error('KWC','wrong initial conditions - must be single_line')
@@ -430,6 +432,8 @@ module initial
       else
         write(*,'(a)') ' remeshing points onto uniform mesh in z'
       end if
+      write(*,*) 'hypoviscosity, power (i.e. -ve) ', fft_hypo_power, ' coefficient ', fft_hypo_coeff
+      write(*,*) 'hyperviscosity, power ', fft_hyp_power, ' coefficient ', fft_hyp_coeff
     end if
     !----------------------gaussian smoothing of field------------------------------
     if (sm_size>0) call setup_smoothing_mesh !smoothing.mod

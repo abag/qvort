@@ -18,6 +18,7 @@ module general
     f(i)%infront=0 ; f(i)%behind=0
     f(i)%closest=0 ; f(i)%closestd=0.
     f(i)%pinnedi=.false. ; f(i)%pinnedb=.false.
+    f(i)%u_s_LI=0. ; f(i)%u_s_BS=0.
   end subroutine
   !*********************************************************************
   !>calculate the distance between points in the f vector

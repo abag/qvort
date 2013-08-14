@@ -59,8 +59,8 @@ module kwc_fft
 
    !Apply dissipation
    out(1)=0.
-   out=out*exp(-(1E-8)*(k**4)*dt)
-   out=out*exp(-(5)*(k**(-2))*dt)
+   out=out*exp(-(fft_hyp_coeff)*(k**fft_hyp_power)*dt)
+   out=out*exp(-(fft_hypo_coeff)*(k**(-fft_hypo_power))*dt)
    out(1)=0.
    !remove mean position
    if (mod(itime,shots)==0) then
