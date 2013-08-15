@@ -314,21 +314,32 @@ remove_count
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
     integer :: i
-    write(unit=print_file,fmt="(a,i4.4,a)")"./data/acc_1_",filenumber,".dat"
+    !compute the acceleration
+    do i=1,pcount
+      if (f(i)%infront==0) then
+        f(i)%acc=0
+      else
+        if (maxval(abs(f(i)%u1))==0) then
+          f(i)%acc=0. !cannot compute
+        else if (maxval(abs(f(i)%u2))==0) then
+          f(i)%acc=0. !do not compute as too low order
+        else if (maxval(abs(f(i)%u3))==0) then
+          !2nd order downwind
+          f(i)%acc=(3*f(i)%u-4*f(i)%u1+f(i)%u2)/(2*dt)
+        else
+          !3rd order downwind
+          f(i)%acc=(2*f(i)%u+3*f(i)%u1-6*f(i)%u2+f(i)%u3)/(6*dt)
+        end if
+
+      end if
+    end do
+    write(unit=print_file,fmt="(a,i4.4,a)")"./data/acc",filenumber,".dat"
     open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
       write(98) t
       write(98) pcount
-      write(98) (f(:)%u(1)-f(:)%u1(1))/dt
-      write(98) (f(:)%u(2)-f(:)%u1(2))/dt
-      write(98) (f(:)%u(3)-f(:)%u1(3))/dt
-    close(98)
-    write(unit=print_file,fmt="(a,i4.4,a)")"./data/acc_2_",filenumber,".dat"
-    open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
-      write(98) t
-      write(98) pcount
-      write(98) (f(:)%u(1)-f(:)%u3(1))/(3*dt)
-      write(98) (f(:)%u(2)-f(:)%u3(2))/(3*dt)
-      write(98) (f(:)%u(3)-f(:)%u3(3))/(3*dt)
+      write(98) f(:)%acc(1)
+      write(98) f(:)%acc(2)
+      write(98) f(:)%acc(3)
     close(98)
   end subroutine
   !**********************************************************************

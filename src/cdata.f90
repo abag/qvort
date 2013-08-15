@@ -19,7 +19,7 @@ module cdata
   !!@param delta used for adaptive meshing along the filaments, used as a prefactor
   type qvort 
     real :: x(3), x_interp(3)
-    real :: u(3), u1(3), u2(3), u3(3)
+    real :: u(3), u1(3), u2(3), u3(3), acc(3)
     real :: u_sup(3), u_mf(3)
     real :: u_s_LI(3), u_s_BS(3)
     real :: ghosti(3), ghostb(3)
