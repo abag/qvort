@@ -50,5 +50,18 @@ clear index;
 index = find(uz < -vcoff);
 uz(index) = [];
 clear index ;
+
+%-----------clear zero's---------
+index = find(abs(ux) < 1E-20);
+ux(index) = [];
+clear index;
+index = find(abs(uy) < 1E-20);
+uy(index) = [];
+clear index;
+index = find(abs(uz) < 1E-20);
+uz(index) = [];
+clear index ;
+%---------------------------------
+
 ux=ux' ; uy=uy' ; uz=uz' ;
 save velocity.mat ux uy uz
