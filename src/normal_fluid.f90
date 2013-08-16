@@ -581,13 +581,11 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
       end do ; end do ; end do
       !$omp end parallel do
       urms_norm=0. !0 the root mean squared velocity
-      !$omp parallel do private(i,j,k)
       do k=1, nfm_size  ; do j=1, nfm_size ; do i=1, nfm_size
         !get the velocity field - shearing wave
         call get_normal_velocity(nfm(k,j,i)%x,nfm(k,j,i)%u)
         urms_norm=urms_norm+(nfm(k,j,i)%u(1)**2+nfm(k,j,i)%u(2)**2+nfm(k,j,i)%u(3)**2)
       end do ; end do ; end do
-      !$omp end parallel do 
       urms_norm=sqrt(urms_norm/(nfm_size**3))
       write(*,'(a)') ' velocity field calculated, printing to ./data/norm_init_mesh.dat'
       open(unit=92,file='./data/norm_init_mesh.dat',form='unformatted',status='replace',access='stream')
