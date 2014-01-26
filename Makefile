@@ -13,7 +13,7 @@ pristine: cleann
 	rm -f *.eps *.png
 	rm -f *.mat matlab.out
 	rm -f *.vtk
-	rm -f *.vdf
+	rm -f *.vdf *.pov *.log
 	rm -rf unorm_data usup_data
 	rm -f STOP
 linkx:

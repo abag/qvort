@@ -36,6 +36,7 @@ if (msize==0)
   disp('mesh size is zero exiting script')
   return
 end
+filename=sprintf('./data/mesh%03d.dat',filenumber);
 fid=fopen(filename);
 if fid<0
   disp('mesh file does not exist, exiting script')
