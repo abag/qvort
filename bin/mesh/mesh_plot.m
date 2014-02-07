@@ -1,9 +1,11 @@
-function mesh_plot(filenumber,varargin)
+function mesh_plot(varargin)
+global ux uy uz msize unormx unormy unormz unorm_mrms u_mrms x t
 close all
 optargin = size(varargin,2);
 %set options based on varargin
 slice=0 ; iso=0 ; spect=0 ; struct=0 ; print=0 ; para=0 ; 
 vort_slice=0 ; vort_iso=0 ; smoothme=0 ; get_phi=0 ; 
+double_spect=0 ;
 for i=1:optargin
   switch cell2str(varargin(i))
     case 'slice'
@@ -16,6 +18,8 @@ for i=1:optargin
       vort_iso=1;
     case 'spect'
       spect=1;
+    case 'double_spect'
+      double_spect=1;
     case 'para'
       para=1;
     case 'struct'
@@ -29,36 +33,6 @@ for i=1:optargin
       disp('printing to file')
   end
 end
-load data/dims.log;
-global ux uy uz
-msize=dims(3);
-if (msize==0) 
-  disp('mesh size is zero exiting script')
-  return
-end
-filename=sprintf('./data/mesh%03d.dat',filenumber);
-fid=fopen(filename);
-if fid<0
-  disp('mesh file does not exist, exiting script')
-  return
-end
-disp(sprintf('mesh size is: %04d',msize))
-t=fread(fid,1,'float64');
-x=fread(fid,msize,'float64');
-unormx=fread(fid,msize^3,'float64');
-unormy=fread(fid,msize^3,'float64');
-unormz=fread(fid,msize^3,'float64');
-unorm_mrms=max(sqrt(unormx(:).^2+unormy(:).^2+unormz(:).^2));
-ux=fread(fid,msize^3,'float64');
-uy=fread(fid,msize^3,'float64');
-uz=fread(fid,msize^3,'float64');
-u_mrms=max(sqrt(ux(:).^2+uy(:).^2+uz(:).^2));
-unormx=reshape(unormx,msize,msize,msize);
-unormy=reshape(unormy,msize,msize,msize);
-unormz=reshape(unormz,msize,msize,msize);
-ux=reshape(ux,msize,msize,msize);
-uy=reshape(uy,msize,msize,msize);
-uz=reshape(uz,msize,msize,msize);
 if smoothme==1
   ux=smooth3(ux,'box',3);
   uy=smooth3(uy,'box',3);
@@ -124,7 +98,7 @@ if u_mrms>0.
     mesh_spectrum(ux,uy,uz,msize,'super',0)
   end
   if struct==1
-    mesh_structure_func(x,ux,uy,uz,msize,'super')
+    %mesh_structure_func(x,ux,uy,uz,msize,'super')
   end
 end
 if unorm_mrms>0.
@@ -132,7 +106,10 @@ if unorm_mrms>0.
     mesh_spectrum(unormx,unormy,unormz,msize,'normal',0)
   end
   if struct==1
-    %mesh_structure_func(x,unormx,unormy,unormz,msize,'normal')
+    mesh_structure_func(x,unormx,unormy,unormz,msize,'normal')
   end
+end
+if double_spect==1
+  mesh_double_spectrum(ux,uy,uz,unormx,unormy,unormz,msize)
 end
   

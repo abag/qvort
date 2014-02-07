@@ -35,7 +35,9 @@ module output
     if (multiple_initial_loop) then 
       call print_mesh(mloop) !output.mod
     else
-      call print_mesh(itime/mesh_shots) !output.mod
+      if (itime>mesh_print_delay) then
+        call print_mesh((itime-mesh_print_delay)/mesh_shots) !output.mod
+      end if
     end if
     !can also print full velocity field for statistics 
     if (vel_print) call print_velocity(itime/mesh_shots)!output.mod

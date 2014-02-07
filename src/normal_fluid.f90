@@ -29,10 +29,12 @@ module normal_fluid
     end type
     !use the abbreviation nfm (normal fluid mesh)
     !>the size of the normal fluid mesh, put in run.in soon
-    integer, private, parameter :: nfm_size=64 
+    integer, private, parameter :: nfm_size=64
     real, private :: nfm_res, nfm_inv_res !resolution/inv resolution of normal fluid mesh
     !>the normal fluid mesh
     type(norm_fluid_grid), allocatable, private :: nfm(:,:,:)
+    real, allocatable, private :: laizet_u(:,:,:,:)
+    real, allocatable, private :: xp(:),yp(:),zp(:)
     contains 
     !************************************************************
     !>setup everything needed to use a normal fluid
@@ -134,6 +136,10 @@ module normal_fluid
           write(*,'(a,f6.3,a)') ' u(x)=', norm_vel_xflow, '+KS flow'
           write(*,'(a,f6.3)') ' turbulent intensity is: ', KS_xflow_intense
 write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
+        case('turbDNS')
+          write(*,*) "DNS from John Hopkins database"
+          call  setup_turbDNS
+          call setup_gen_normalf !normal_fluid.mod
         case('compressible')
           if (periodic_bc) then
             write(*,'(a,i4.2,a)') ' creating gradient of a random field  on a', nfm_size,'^3 mesh'
@@ -185,6 +191,7 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
           call get_macro_ring_radii_2 !normal_fluid.mod 
       end select
     end subroutine
+
     !************************************************************
     !>get the velocity (u) of the normal fluid at a position (x)
     !>see the normal fluid page for more information
@@ -373,6 +380,8 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
           call nfm_interpolation(x,u)
         case('nf_macro_ring')
           call get_nf_macro_ring(x,u) !normal_fluid.mod
+        case('turbDNS')
+          call turbDNS_interp(x,u)
         case default
           call fatal_error('normal_fluid.mod:get_normal_fluid', &
           'correct parameter for normal_veloctity not set')
@@ -753,6 +762,86 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
       avg_a_old=avg_a
       deallocate(mrr2)
     end subroutine
+    !*************************************************
+    subroutine setup_turbDNS
+      implicit none
+      integer :: i
+      allocate(laizet_u(256,256,256,3))
+      allocate(xp(256))
+      allocate(yp(256))
+      allocate(zp(256))
+      open(unit=37,file='./turbDNS.dat',form='unformatted',access='stream')
+        read(37) laizet_u(:,:,:,1)
+        read(37) laizet_u(:,:,:,2)
+        read(37) laizet_u(:,:,:,3)
+      close(37)
+      do i=1,256
+        xp(i)=(i-1)*(1./256)*box_size-box_size/2.
+        yp(i)=(i-1)*(1./256)*box_size-box_size/2.
+        zp(i)=(i-1)*(1./256)*box_size-box_size/2.
+      end do
+      !laizet_u=laizet_u/10.
+    end subroutine
+    !**********************************************************
+    subroutine turbDNS_interp(x,u)
+      implicit none
+      real, intent(IN) :: x(3)
+      real, intent(OUT) :: u(3)
+      real :: xd,yd,zd
+      real,dimension(3) :: c00,c10,c01,c11,c0,c1
+      integer :: nx, nnx, ny, nny, nz, nnz
+      !find nearest and next nearest points in x,y,z
+      !-------------X--------------
+      nx=minloc(abs(x(1)-xp),1)
+      if (x(1)>xp(nx)) then
+        nnx=nx+1
+      else
+        nx=nx-1
+        nnx=nx+1
+      end if
+      if (nnx==257) nnx=1 !periodicity
+      !-------------X--------------
+      ny=minloc(abs(x(2)-yp),1)
+      if (x(2)>yp(ny)) then
+        nny=ny+1
+      else
+        ny=ny-1
+        nny=ny+1
+      end if
+      if (nny==257) nny=1 !periodicity
+      !-------------Z--------------
+      nz=minloc(abs(x(3)-zp),1)
+      if (x(3)>zp(nz)) then
+        nnz=nz+1
+      else
+        nz=nz-1
+        nnz=nz+1
+      end if
+      if (nnz==257) nnz=1 !periodicity
+      !print*, 'x', xp(nx), x(1), xp(nnx)
+      !print*, 'y', yp(ny), x(2), yp(nny)
+      !print*, 'z', zp(nz), x(3), zp(nnz)
+      !now we can do the interpolation
+      xd=(x(1)-xp(nx))/((1./256)*box_size)
+      yd=(x(2)-yp(ny))/((1./256)*box_size)
+      zd=(x(3)-zp(nz))/((1./256)*box_size)
+      !xd=(x(1)-xp(nx))/((1./256)*2*pi)
+      !yd=(x(2)-yp(ny))/((1./256)*2*pi)
+      !zd=(x(3)-zp(nz))/((1./256)*2*pi)
+      !interpolate in x
+      c00=laizet_u(nx,ny,nz,:)*(1-xd)+laizet_u(nnx,ny,nz,:)*xd
+      c10=laizet_u(nx,nny,nz,:)*(1-xd)+laizet_u(nnx,nny,nz,:)*xd
+      c01=laizet_u(nx,ny,nnz,:)*(1-xd)+laizet_u(nnx,ny,nnz,:)*xd
+      c11=laizet_u(nx,nny,nnz,:)*(1-xd)+laizet_u(nnx,nny,nnz,:)*xd
+      !interpolate in y
+      c0=c00*(1-yd)+c10*yd
+      c1=c01*(1-yd)+c11*yd
+      !interpolate in z
+      u=c0*(1-zd)+c1*zd
+      !print*, 'interp', u
+      !print*, 'nn', laizet_u(nx,ny,nz,:)
+    end subroutine
+    !**********************************************************
 end module
 !>\page NF Normal fluid velocity field
 !!Normal fluid velocity field is set in run.in throught the parameter normal_velocity\n

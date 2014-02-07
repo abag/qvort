@@ -265,6 +265,7 @@ module cdata
   !----------------------mesh information----------------------------------------
   integer, protected :: mesh_size=0
   integer, protected :: mesh_shots=100
+  integer, protected :: mesh_print_delay=0
   logical, protected :: hollow_mesh_core=.false.
   !------------normal fluid component--------------------------------------------
   character(len=30), protected :: normal_velocity='zero'
@@ -455,6 +456,8 @@ module cdata
              read(buffer, *, iostat=ios) hollow_mesh_core
           case ('mesh_shots')
              read(buffer, *, iostat=ios) mesh_shots !how often to print mesh to file
+          case ('mesh_print_delay')
+             read(buffer, *, iostat=ios) mesh_print_delay !delay computing mesh
           case ('velocity')
              !velocity field options are LIA, BS, Tree
              read(buffer, *, iostat=ios) velocity !BS/LIA/Tree
@@ -771,7 +774,7 @@ module cdata
     !****************************************
     !*******RELOAD DUMMY VARIABLES***********
     integer :: reload_nsteps
-    integer :: reload_shots,reload_recon_shots, reload_mesh_shots
+    integer :: reload_shots,reload_recon_shots, reload_mesh_shots, reload_mesh_print_delay
     real ::  reload_normal_fluid_cutoff,reload_force_cutoff, reload_inject_stop
     logical :: reload_curv_hist,reload_torsion_hist, reload_vel_print, reload_vapor_print
     logical :: reload_topo_inf,reload_energy_inf,reload_recon_info,reload_sep_inf
@@ -809,7 +812,13 @@ module cdata
              if (reload_mesh_shots/=mesh_shots) then
                mesh_shots=reload_mesh_shots
                write(*,'(a,i6.6)') 'RELOAD: changed mesh_shots to ', mesh_shots
-             end if 
+             end if
+          case ('mesh_print_delay')
+             read(buffer, *, iostat=ios) reload_mesh_print_delay
+             if (reload_mesh_print_delay/=mesh_print_delay) then
+               mesh_print_delay=reload_mesh_print_delay
+               write(*,'(a,i6.6)') 'RELOAD: changed mesh_print_delay to ', mesh_print_delay
+             end if
           case ('normal_fluid_cutoff')
              read(buffer, *, iostat=ios) reload_normal_fluid_cutoff 
              if ((reload_normal_fluid_cutoff>normal_fluid_cutoff).or. & 

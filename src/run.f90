@@ -52,7 +52,7 @@ program run
       call pmotion !timestep.mod
     end if
     if (seg_fault) write(*,*) 'here3'
-    if (mod(itime,mesh_shots)==0) then
+    if ((mod(itime,mesh_shots)==0).and.(itime>mesh_print_delay)) then
       call mesh_velocity !timestep.mod
     end if
     if (seg_fault) write(*,*) 'here4'

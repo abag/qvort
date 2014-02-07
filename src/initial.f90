@@ -533,6 +533,11 @@ module initial
     mesh_delta=real(box_size)/mesh_size
     write(*,'(a,i3.2,a,f7.6)') ' creating an n^3 mesh, n=', mesh_size, ' resolution=', mesh_delta
     write(*,'(a,i5.2,a)') ' mesh information will be printed every ', mesh_shots, ' time-steps'
+    if (mod(mesh_print_delay, mesh_shots)==0) then
+      if (mesh_print_delay>0) write(*,'(a,i5.2,a)') ' will not start printing until itime= ', mesh_print_delay
+    else
+      call fatal_error('init.mod:setup_mesh','mesh_print_delay must be a multiply of mesh_shots')
+    end if
     allocate(mesh(mesh_size,mesh_size,mesh_size))
     !$omp parallel do private(k,j,i,x,y,z)
     do k=1, mesh_size

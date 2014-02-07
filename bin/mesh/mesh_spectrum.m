@@ -1,5 +1,11 @@
 function mesh_spectrum(ux,uy,uz,n,fluid,fit)
 dims=load('./data/dims.log');
+uu=sqrt(ux.^2+uy.^2+uz.^2);
+%ksdensity(reshape(uu,n^3,1))
+vcoff=2. ;
+index = find(uu > vcoff);
+ux(index)=0. ; uy(index)=0. ;uz(index)=0. ;
+clear index
 fux=fftn(ux)/(n^3);
 fuy=fftn(uy)/(n^3);
 fuz=fftn(uz)/(n^3);
@@ -10,26 +16,27 @@ spect(1:1.5*n)=0.;
 for i=1:n
     for j=1:n
         for k=1:n
-            ii=i;
-            jj=j;
-            kk=k;
-            if ii>midpt ; ii=n-ii+1; ; end ;
-            if jj>midpt ; jj=n-jj+1; ; end ; 
-            if kk>midpt ; kk=n-kk+1; ; end ;
+            ii=i-1;
+            jj=j-1;
+            kk=k-1;
+            if ii>=midpt ; ii=n-ii; ; end ;
+            if jj>=midpt ; jj=n-jj; ; end ; 
+            if kk>=midpt ; kk=n-kk; ; end ;
             r=round(sqrt(ii^2+jj^2+kk^2));
+            if r==0 ; continue ; end
             spect(r)=spect(r)+energyr(i,j,k)+energyi(i,j,k);
         end
     end
 end
 figure('Name',strcat('Energy Spectrum, fluid:',fluid)) 
 k=(1:midpt)*(2*pi/dims(2));
-loglog(k,spect(1:midpt),'LineWidth',2)
-if fit==1
+loglog(k,spect(1:midpt).*k.^(5/3),'LineWidth',2)
+if 1==1
   dummy_spect=k.^(-5/3);
   scaling_factor=spect(3)/dummy_spect(3);
   dummy_spect=dummy_spect*scaling_factor;
   hold on
-  loglog(k,dummy_spect,'--k','LineWidth',2)
+  loglog(k,dummy_spect.*k(1:end).^(5/3),'--k','LineWidth',2)
 end
 xlabel('log k','FontSize',14) ; ylabel('log E(k)','FontSize',14)
 axis tight
