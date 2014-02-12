@@ -12,7 +12,7 @@ module diagnostic
     end if
     if (mod(itime, shots)==0) then
       call velocity_info !diagnostics.mod
-      call curv_info !diagnostics.mod
+      call curv_info(itime/shots) !diagnostics.mod
       if (energy_inf) call energy_info !diagnostics.mod
       if (topo_inf) call get_topo_info !diagnostics.mod
       if (torsion_hist) call get_torsion_hist !diagnostics.mod      
@@ -481,9 +481,11 @@ module diagnostic
   !>caculate the mean, min, max curvature of the filament
   !>if set in run.in will also bin the curvatures to plot a 
   !>histogram
-  subroutine curv_info()
+  subroutine curv_info(filenumber)
     use kernel_density
     implicit none
+    integer, intent(IN) :: filenumber
+    character(24) :: print_file
     real, allocatable :: curvi(:)
     integer :: i, j
     !------------histogram parameters below---------------------
@@ -506,8 +508,19 @@ module diagnostic
     kappa_bar=sum(curvi)/count(mask=f(:)%infront>0)
     kappa_max=maxval(curvi)
     kappa_min=minval(curvi,mask=curvi>0)
-    !experimental creation of a histogram using kernel density estimation
+    !creation of a histogram using kernel density estimation
     if (curv_hist) then
+      !***********************lucy start*************************
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/lucy_curv",filenumber,".dat"
+      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+        write(98) t
+        write(98) pcount
+        write(98) curvi(:)
+      close(98)
+      !***********************lucy end***************************
+    end if
+    !creation of a histogram using kernel density estimation
+    if (curv_ksdensity) then
       !set the mesh over which we calculate densities
       do j=1, bin_num
         kdmesh(j)=kappa_min+(j-1)*(kappa_max-kappa_min)/(bin_num-1)

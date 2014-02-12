@@ -319,7 +319,8 @@ module cdata
   logical, protected :: tree_print=.false.
   logical, protected :: tree_extra_correction=.true.
   !--------------------additional diagnostics------------------------------------
-  logical, protected :: curv_hist=.false. !dumps binned curvature information
+  logical, protected :: curv_hist=.false. !dumps curvature information to file
+  logical, protected :: curv_ksdensity=.false. !dumps binned curvature PDF
   logical, protected :: torsion_hist=.false. !dumps binned torsion information
   logical, protected :: topo_inf=.false. !calculate topological information
   logical, protected :: energy_inf=.false. !calculate energy of vortex 
@@ -616,7 +617,9 @@ module cdata
           case ('hyperboloid_r')
              read(buffer, *, iostat=ios) hyperboloid_r !for hyperboloid initial conditions
           case ('curv_hist')
-             read(buffer, *, iostat=ios) curv_hist !do we want binned curvature info?
+             read(buffer, *, iostat=ios) curv_hist !do we want curvature info?
+          case ('curv_ksdensity')
+             read(buffer, *, iostat=ios) curv_ksdensity !do we want binned curvature info?
           case ('torsion_hist')
              read(buffer, *, iostat=ios) torsion_hist !do we want binned torsion info?
           case ('boxed_vorticity')
