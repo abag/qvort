@@ -29,8 +29,8 @@ default: run.x
 #
 # Targets
 #
-run.x: run.f90 cdata.o derivatives.o forcing.o reconnection.o initial_line.o initial_loop.o initial.o output.o periodic.o general.o statistics.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o hyperviscous.o kwc_fft.o Makefile 
-	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o derivatives.o forcing.o normal_fluid.o reconnection.o initial.o initial_loop.o initial_line.o output.o periodic.o general.o statistics.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o hyperviscous.o kwc_fft.o -I$(INCLUDE) -L$(LIB) $(FFTFLAG)
+run.x: run.f90 cdata.o derivatives.o forcing.o reconnection.o initial_line.o initial_loop.o initial.o output.o periodic.o general.o statistics.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o hyperviscous.o kwc_fft.o biofluid.o Makefile 
+	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o derivatives.o forcing.o normal_fluid.o reconnection.o initial.o initial_loop.o initial_line.o output.o periodic.o general.o statistics.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o hyperviscous.o kwc_fft.o biofluid.o -I$(INCLUDE) -L$(LIB) $(FFTFLAG)
 #
 #
 clean: 
@@ -87,7 +87,9 @@ smoothing.o: smoothing.f90 tree.o general.o cdata.o
 #
 quasip.o: quasip.f90 hamiltonian.o general.o cdata.o timestep.o normal_fluid.o output.o tree.o stiff_solver.o
 #
-particles.o: particles.f90 general.o cdata.o timestep.o normal_fluid.o output.o tree.o
+particles.o: particles.f90 general.o cdata.o timestep.o normal_fluid.o output.o tree.o biofluid.o
+#
+biofluid.o: biofluid.f90 general.o cdata.o timestep.o normal_fluid.o output.o tree.o
 #
 ksmodel.o: ksmodel.f90 general.o cdata.o
 #

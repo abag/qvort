@@ -7,6 +7,7 @@ module particles
   use general
   use timestep
   use output
+  use biofluid
   real :: part_maxu=0., part_maxdu=0., part_urms=0. !velocity information
   real :: part_sep=0. !average particle separation
   contains
@@ -154,6 +155,12 @@ module particles
         if (part_stokes<epsilon(0.)) call fatal_error('setup_particles',&
         'part_stokes is 0, change particle_type if you want tracers')
         write(*,'(a,f10.4)') 'stokes number is ', part_stokes
+      case('swimmers')
+        write(*,*) 'swimming particles, G= ', bio_G, ' V= ', bio_V
+        !sort out particle directions for swimmers
+        do i=1,part_count
+          call random_unit_vector(p(i)%p) !general.f90
+        end do
       case default
         call fatal_error('setup_particles','particle type incorrect')
     end select
@@ -184,17 +191,27 @@ module particles
     integer :: i
     !$omp parallel do
     do i=1, part_count
-      call velocity_fluidp(i,u)
       select case(particle_type)
         case('fluid')
+          call velocity_fluidp(i,u)
           p(i)%u=u
         case('inertial')
+          call velocity_fluidp(i,u)
           !an euler step to get the velocity
           p(i)%u=p(i)%u1+dt*(u-p(i)%u1)*part_stokes
           !adjust the velocity due to stokes drag
+        case('swimmers')
+          call bio_swimming(i) !biofluid.mod
       end select
-      !euler step the particles
-      p(i)%x(:)=p(i)%x(:)+dt*p(i)%u
+      if (maxval(abs(p(i)%u1))==0) then
+        p(i)%x(:)=p(i)%x(:)+dt*p(i)%u(:) !euler
+      else if (maxval(abs(p(i)%u2))==0) then
+        !first order adams-bashforth
+        p(i)%x(:)=p(i)%x(:)+three_twos*dt*p(i)%u(:)-one_half*dt*p(i)%u1(:)
+      else 
+        !second order adams-bashforth
+        p(i)%x(:)=p(i)%x(:)+twenty_three_twelve*dt*p(i)%u(:)-four_thirds*dt*p(i)%u1(:)+five_twelths*dt*p(i)%u2(:)
+      end if
       !store the old velocities
       p(i)%u2=p(i)%u1
       p(i)%u1=p(i)%u

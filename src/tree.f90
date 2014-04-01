@@ -386,13 +386,25 @@ module tree
      real :: vect(3) !helper vector
      real :: a_bs, b_bs, c_bs, u_bs(3) !helper variables 
      real :: dist, theta !helper variables
+     real :: geo_dist
      integer :: j=0 !the particle in the tree mesh
      if (vtree%pcount==0) return !empty box no use
      !work out distances opening angles etc. here
      dist=sqrt((x(1)-(vtree%centx+shift(1)))**2+&
                (x(2)-(vtree%centy+shift(2)))**2+&
                (x(3)-(vtree%centz+shift(3)))**2)
-     theta=vtree%width/dist !the most simple way we can improve this
+     if (tree_extra_correction) then
+       geo_dist=sqrt((vtree%centx-(vtree%posx+vtree%width/2.))**2+&
+                     (vtree%centy-(vtree%posy+vtree%width/2.))**2+&
+                     (vtree%centz-(vtree%posz+vtree%width/2.))**2)
+       if (dist-geo_dist>0.) then
+         theta=vtree%width/(dist-geo_dist)
+       else
+         theta=vtree%width/dist
+       end if
+     else
+       theta=vtree%width/dist
+     end if
      if (vtree%pcount==1.or.theta<tree_theta) then
        !use the contribution of this cell
        if (dist<epsilon(0.)) return !avoid 1/0.

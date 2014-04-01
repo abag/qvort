@@ -187,6 +187,15 @@ module general
        if (next==i) exit
      end do
    end subroutine
+   !**************************************************
+   subroutine random_unit_vector(vect)
+     real, intent(INOUT) :: vect(3)
+     call random_number(vect(1))
+     call random_number(vect(2))
+     call random_number(vect(3))
+     vect=2*vect-1
+     vect=vect/sqrt(vect(1)**2+vect(2)**2+vect(3)**2)
+   end subroutine
   !**************************************************
   !>a routine to test if two points are on the same loop
   !>returns a logical arguement with the answer

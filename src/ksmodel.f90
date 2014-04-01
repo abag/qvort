@@ -44,6 +44,30 @@ module KSmodel
       end do
     end subroutine get_KS_flow
     !************************************************************
+    !>return the KS flow (u) at a given position x, t is a global
+    !>variable which is used in here (flow is time dependent)
+    subroutine get_KS_vorticity(x,vort)
+      implicit none
+      real,intent(in)     :: x(3)
+      real,intent(out)    :: vort(3)
+      real :: argument
+      real :: sin_arg,cos_arg
+      integer :: r
+      omega=0.
+      argument=0.
+      do r=1,KS_modes                 
+        !find A(&B)crossed with unit_k as this appears in our sum for
+        !the velocity field.
+        argument=(k(1,r)*x(1))+(k(2,r)*x(2))+(k(3,r)*x(3))+(omega(r)*t)   
+        cos_arg=cos(argument)
+        sin_arg=sin(argument)
+        addition(1,r)=cross2(3,r)*k(2,r)*cos_arg-cross1(3,r)*k(2,r)*sin_arg-cross2(2,r)*k(3,r)*cos_arg+cross1(2,r)*k(3,r)*sin_arg
+        addition(2,r)=cross2(1,r)*k(3,r)*cos_arg-cross1(1,r)*k(3,r)*sin_arg-cross2(3,r)*k(1,r)*cos_arg+cross1(3,r)*k(1,r)*sin_arg
+        addition(3,r)=cross2(2,r)*k(1,r)*cos_arg-cross1(2,r)*k(1,r)*sin_arg-cross2(1,r)*k(2,r)*cos_arg+cross1(1,r)*k(2,r)*sin_arg
+        vort(:)=vort(:)+addition(:,r)
+      end do
+    end subroutine get_KS_vorticity
+    !************************************************************
     !>the main routine to setup the KS flow, only performed once
     !>at the start of a run. KS vectors held within this module to
     !>be used by the get_KS_flow routine.

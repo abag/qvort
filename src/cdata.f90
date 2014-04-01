@@ -105,9 +105,12 @@ module cdata
   !>@param x the position of the particle
   !>@param u the velocity of the particle
   !>@param u1 @param u2 old velocities for Adams-Bashforth timestepping
+  !>@param p particles swimming direction
+  !>@param pdot1 @param pdot2 old swimming directions for Adams-Bashforth timestepping
   type particella
     real :: x(3) 
-    real :: u(3), u1(3), u2(3) 
+    real :: u(3), u1(3), u2(3)
+    real :: p(3), pdot1(3), pdot2(3)
   end type
   !>vector of particles
   type(particella), allocatable :: p(:)  
@@ -321,7 +324,8 @@ module cdata
   !--------------------additional diagnostics------------------------------------
   logical, protected :: curv_hist=.false. !dumps curvature information to file
   logical, protected :: curv_ksdensity=.false. !dumps binned curvature PDF
-  logical, protected :: torsion_hist=.false. !dumps binned torsion information
+  logical, protected :: torsion_hist=.false. !dumps torsion information
+  logical, protected :: torsion_ksdensity=.false. !dumps binned torsion PDF
   logical, protected :: topo_inf=.false. !calculate topological information
   logical, protected :: energy_inf=.false. !calculate energy of vortex 
   logical, protected :: sep_inf=.false. !calculate information and histogram of point separation
@@ -386,6 +390,9 @@ module cdata
   logical, protected :: svistunov_hamiltonian=.false.
   real :: fft_hyp_coeff=1E-9, fft_hyp_power=4
   real :: fft_hypo_coeff=2., fft_hypo_power=2
+  !-------------------------biofluid/swimming particles----------------------------
+  real :: bio_G=0.5, bio_V=5
+  real :: bio_alpha=0.
   !------------------------------openmp--------------------------------------------
   logical,private :: serial_run=.false.
   integer,private :: qvort_nproc=0
@@ -621,7 +628,9 @@ module cdata
           case ('curv_ksdensity')
              read(buffer, *, iostat=ios) curv_ksdensity !do we want binned curvature info?
           case ('torsion_hist')
-             read(buffer, *, iostat=ios) torsion_hist !do we want binned torsion info?
+             read(buffer, *, iostat=ios) torsion_hist !do we want torsion info?
+          case ('torsion_ksdensity')
+             read(buffer, *, iostat=ios) torsion_ksdensity !do we want binned torsion info?
           case ('boxed_vorticity')
              read(buffer, *, iostat=ios) boxed_vorticity !do we want vorticity on a mesh?
           case ('boxed_vorticity_size')

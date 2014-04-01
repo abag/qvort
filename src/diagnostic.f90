@@ -15,7 +15,7 @@ module diagnostic
       call curv_info(itime/shots) !diagnostics.mod
       if (energy_inf) call energy_info !diagnostics.mod
       if (topo_inf) call get_topo_info !diagnostics.mod
-      if (torsion_hist) call get_torsion_hist !diagnostics.mod      
+      if (torsion_hist.or.torsion_ksdensity) call get_torsion_hist(itime/shots) !diagnostics.mod
       if (particle_plane_inf) call get_particle_plane_info !diagnostics.mod
       if (anisotropy_params) call get_anisotropy_info !diagnostics.mod
       if (full_loop_counter) call get_full_loop_count!diagnostics.mod
@@ -539,10 +539,12 @@ module diagnostic
   !*************************************************
   !>caculate the mean, min, max torsion of the filament
   !>and will also bin the torsions to plot a histogram
-  subroutine get_torsion_hist()
+  subroutine get_torsion_hist(filenumber)
     use kernel_density
     implicit none
+    integer, intent(IN) :: filenumber
     real, allocatable :: torsioni(:)
+    character(30) :: print_file
     integer :: i, j
     real :: tors_min, tors_max, tors_bar
     real :: ddot_i(3), ddot_infront(3), ddot_behind(3)
@@ -580,18 +582,28 @@ module diagnostic
     open(unit=76,file='data/torsion.log',position='append')
       write(76,*) tors_bar, tors_min, tors_max
     close(76)
-    !set the mesh over which we calculate densities
-    do j=1, bin_num
-      kdmesh(j)=tors_min+(j-1)*(tors_max-tors_min)/(bin_num-1)
-    end do
-    call qsort(torsioni) !sort the data in ascending order
-    call get_kernel_density(torsioni,pcount,kdmesh,bin_num,kdensity,bwidth)
-    open(unit=79,file='data/torsion_pdf.log',position='append')
-    write(79,*) '%----------------t=',t,'---------------'
-    do j=1, bin_num
-      write(79,*) kdmesh(j), kdensity(j)
-    end do 
-    close(79)
+    if (torsion_ksdensity) then
+      !set the mesh over which we calculate densities
+      do j=1, bin_num
+        kdmesh(j)=tors_min+(j-1)*(tors_max-tors_min)/(bin_num-1)
+      end do
+      call qsort(torsioni) !sort the data in ascending order
+      call get_kernel_density(torsioni,pcount,kdmesh,bin_num,kdensity,bwidth)
+      open(unit=79,file='data/torsion_pdf.log',position='append')
+      write(79,*) '%----------------t=',t,'---------------'
+      do j=1, bin_num
+        write(79,*) kdmesh(j), kdensity(j)
+      end do
+      close(79)
+    end if
+    if (torsion_hist) then
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/torsion_data",filenumber,".dat"
+      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+        write(98) t
+        write(98) pcount
+        write(98) torsioni(:)
+      close(98)
+    end if
     deallocate(torsioni) !deallocate helper array
   end subroutine
   !*************************************************
