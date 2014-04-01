@@ -191,7 +191,6 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
           call get_macro_ring_radii_2 !normal_fluid.mod 
       end select
     end subroutine
-
     !************************************************************
     !>get the velocity (u) of the normal fluid at a position (x)
     !>see the normal fluid page for more information
@@ -312,13 +311,13 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
           u=u*nf_vort_core/(1.-exp(-1.))
         case('taylor-green')
           !The Taylor-Green Vortex
-          u(1)=sin(norm_k*x(1))*cos(norm_k*x(2))*cos(norm_k*x(3))*norm_vel_xflow
-          u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))*norm_vel_xflow
-          u(3)=0.
+          !u(1)=sin(norm_k*x(1))*cos(norm_k*x(2))*cos(norm_k*x(3))*norm_vel_xflow
+          !u(2)=-cos(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))*norm_vel_xflow
+          !u(3)=0.
           !TG vorticity field - commented out but useful!
-          !u(1)=-cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
-          !u(2)=-sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
-          !u(3)=2.*sin(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
+          u(1)=-2*cos(norm_k*x(1))*sin(norm_k*x(2))*sin(norm_k*x(3))
+          u(2)=sin(norm_k*x(1))*cos(norm_k*x(2))*sin(norm_k*x(3))
+          u(3)=sin(norm_k*x(1))*sin(norm_k*x(2))*cos(norm_k*x(3))
         case('shear')
           u=0.
           u(1)=exp(-(6*x(3)/box_size)**2)
@@ -385,6 +384,30 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
         case default
           call fatal_error('normal_fluid.mod:get_normal_fluid', &
           'correct parameter for normal_veloctity not set')
+      end select
+    end subroutine
+    !************************************************************
+    !>get the vorticity (omega) of the normal fluid at a position (x)
+    !>see the normal fluid page for more information
+    subroutine get_normal_vorticity(x,omega)
+      implicit none
+      real, intent(IN) :: x(3) !position of the particle
+      real, intent(OUT) :: omega(3) !vorticity at x
+      real :: u_KS(3) !dummy variable for KS_xflow
+      omega=0. ! a safety check , 0 the field before we begin!
+      select case(normal_velocity)
+        case('ABC')
+          !commonly used toy model - turbulence/dynamo
+          omega(1)=abc_B*cos(norm_k*x(2))+abc_C*sin(norm_k*x(3))
+          omega(2)=abc_C*cos(norm_k*x(3))+abc_A*sin(norm_k*x(1))
+          omega(3)=abc_A*cos(norm_k*x(1))+abc_B*sin(norm_k*x(2))
+        case('KS')
+          !multi-scale model of turbulence
+          call get_KS_vorticity(x,omega)
+          omega=omega*KS_boost
+        case default
+          call fatal_error('normal_fluid.mod:get_normal_fluid', &
+          'correct parameter for normal_veloctity not set no vorticity')
       end select
     end subroutine
     !************************************************************
