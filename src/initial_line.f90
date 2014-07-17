@@ -240,7 +240,7 @@ module initial_line
     do i=1, pcount/2
       f(i)%x(1)=0.
       f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(pcount)
-      f(i)%x(2)=0.5*delta !-(delta/16.)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
+      f(i)%x(2)=0.25*delta !-(delta/16.)*sin(pi*(box_size/2.+f(i)%x(3))/box_size)
       if (i==1) then
         f(i)%behind=pcount/2 ; f(i)%infront=i+1
       else if (i==pcount/2) then 
@@ -254,7 +254,7 @@ module initial_line
     !second line
     do i=pcount/2+1, pcount
       f(i)%x(1)=box_size/2.-box_size*real(2*(i-pcount/2)-1)/(pcount)
-      f(i)%x(2)=-0.5*delta!+(delta/16.)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
+      f(i)%x(2)=-0.25*delta!+(delta/16.)*sin(pi*(box_size/2.-f(i)%x(3))/box_size)
       f(i)%x(3)=0.
       if (i==(pcount/2+1)) then
         f(i)%behind=pcount ; f(i)%infront=i+1
@@ -387,6 +387,82 @@ module initial_line
     end do
   end subroutine
   !*************************************************************************
+  !> 2 bundles of lines which reconnection
+  subroutine setup_sultan_recon
+    implicit none
+    real, allocatable :: rad_shift(:), x_shift(:)
+    real, allocatable :: rad_shift_r(:), rad_shift_theta(:)
+    integer :: shift_help, shift_counter
+    integer :: pcount_required, actual_line_count
+    integer :: line_size, line_position
+    integer :: i, j
+    if (periodic_bc) then
+      !work out the number of particles required for single line
+      !given the box size specified in run.in
+      actual_line_count=2*(3*line_count*(line_count-1)+1)
+      pcount_required=actual_line_count*nint(box_size/(0.75*delta)) !75%
+      print*, 'changing size of pcount to fit with box_length/delta and line_count'
+      print*, 'pcount is now', pcount_required
+      deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+    else
+      call fatal_error('init.mod:setup_big_bundles', &
+      'periodic boundary conditions required')
+    end if
+    write(*,*) 'initf: sultan reconnection'
+    line_size=int(pcount/actual_line_count)
+    allocate(rad_shift(actual_line_count/2),x_shift(actual_line_count/2))
+    allocate(rad_shift_r(actual_line_count/2),rad_shift_theta(actual_line_count/2))
+    rad_shift_r(1)=0. ; rad_shift_theta(1)=0.
+    shift_counter=1
+    if (line_count>1) then !we may not need this if statement
+      do i=2,line_count
+        do j=1,((i-1)*6)
+          shift_counter=shift_counter+1
+          rad_shift_r(shift_counter)=2*delta*(real(i)/line_count)
+          rad_shift_theta(shift_counter)=2.*pi*real(j-1)/((i-1)*6)
+        end do
+      end do
+    end if
+    do i=1, actual_line_count/2
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        f(line_position)%x(1)=rad_shift_r(i)*cos(rad_shift_theta(i))-box_size/16
+        f(line_position)%x(2)=rad_shift_r(i)*sin(rad_shift_theta(i))
+        f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0.
+      end do
+    end do
+    do i=actual_line_count/2+1, actual_line_count
+      do j=1, line_size
+        line_position=j+(i-1)*line_size
+        f(line_position)%x(1)=rad_shift_r(i-actual_line_count/2)*cos(rad_shift_theta(i-actual_line_count/2))+box_size/16
+        f(line_position)%x(3)=rad_shift_r(i-actual_line_count/2)*sin(rad_shift_theta(i-actual_line_count/2))
+        f(line_position)%x(2)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        if(j==1) then
+          f(line_position)%behind=i*line_size
+          f(line_position)%infront=line_position+1
+        else if (j==line_size) then
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=(i-1)*line_size+1
+        else
+          f(line_position)%behind=line_position-1
+          f(line_position)%infront=line_position+1
+        end if
+        f(line_position)%u1=0. ; f(line_position)%u2=0.
+      end do
+    end do
+    deallocate(rad_shift,x_shift,rad_shift_r,rad_shift_theta)
+  end subroutine
   !> 3 bundles of lines in all 3 cartesian directions
   subroutine setup_isotropic_bundles
     implicit none
@@ -1039,7 +1115,7 @@ module initial_line
         line_position=j+counter*line_size
         f(line_position)%x(1)=xpos
         f(line_position)%x(2)=ypos
-        f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+        f(line_position)%x(3)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
         if(j==1) then
           f(line_position)%behind=(counter+1)*line_size
           f(line_position)%infront=line_position+1

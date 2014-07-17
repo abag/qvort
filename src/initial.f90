@@ -12,6 +12,7 @@ module initial
   use inject
   use output
   use kwc_fft
+  use killing_sphere
   contains
   !*************************************************************************
   !>Prints and sets up intial conditions - will give warnings/errors if there
@@ -221,6 +222,8 @@ module initial
           call setup_loop_train !initial_loop.mod
         case('line_of_lines') !initial_line.mod
           call setup_line_of_lines
+        case('sultan_recon')
+          call setup_sultan_recon!initial_line.mod
         case('rear_collide_loops')
           call setup_rear_collide_loops !initial_loop.mod
         case('loop_stream')
@@ -277,6 +280,11 @@ module initial
     !do we employ forcing on the boundary?
     write(*,'(a)') ' -----------------------FORCING-----------------------' 
     call setup_forcing !forcing,mod
+    !are there quasi particles in the code?
+    if (killing_sphere_on) then
+      write(*,'(a)') ' --------------------KILLING SPHERE--------------------'
+      call setup_killing_sphere !killing_sphere.mod
+    end if
     !are there quasi particles in the code?
     write(*,'(a)') ' ------------------------QUASI PARTICLES-----------------------' 
     if (quasi_pcount>0) then

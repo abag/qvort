@@ -15,6 +15,7 @@ program run
   use mirror
   use smoothing 
   use kwc_fft
+  use killing_sphere
   implicit none
   integer :: i
   logical :: can_stop=.false.,can_reload=.false. 
@@ -89,6 +90,8 @@ program run
       case ('mirror')
         call mirror_pinning !mirror.mod
     end select
+    !-------------------killing spehere------------------------
+    if (killing_sphere_on) call enforce_killing_sphere !killing_sphere.mod
     !---------------kelvin_wave_remesh---------------------
     if (kelvin_wave_casc) then
       if (svistunov_hamiltonian.eqv..false.) then

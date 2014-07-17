@@ -393,6 +393,9 @@ module cdata
   !-------------------------biofluid/swimming particles----------------------------
   real :: bio_G=0.5, bio_V=5
   real :: bio_alpha=0.
+  !--------------------------killing_sphere----------------------------------------
+  logical :: killing_sphere_on=.false.
+  real :: killing_radius=0.
   !------------------------------openmp--------------------------------------------
   logical,private :: serial_run=.false.
   integer,private :: qvort_nproc=0
@@ -721,6 +724,10 @@ module cdata
              read(buffer, *, iostat=ios) delta_adapt !is the discretisation adaptive
           case ('delta_adapt_print')
              read(buffer, *, iostat=ios) delta_adapt_print !print apative discretisation
+          case ('killing_sphere_on')
+             read(buffer, *, iostat=ios) killing_sphere_on !do we employ a 'killing sphere'?
+          case ('killing_radius')
+             read(buffer, *, iostat=ios) killing_radius !if so what is its radius?
           case ('inject_size')
              read(buffer, *, iostat=ios) inject_size !size of injected filaments
           case ('inject_skip')

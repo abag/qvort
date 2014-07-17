@@ -29,8 +29,8 @@ default: run.x
 #
 # Targets
 #
-run.x: run.f90 cdata.o derivatives.o forcing.o reconnection.o initial_line.o initial_loop.o initial.o output.o periodic.o general.o statistics.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o hyperviscous.o kwc_fft.o biofluid.o Makefile 
-	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o derivatives.o forcing.o normal_fluid.o reconnection.o initial.o initial_loop.o initial_line.o output.o periodic.o general.o statistics.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o hyperviscous.o kwc_fft.o biofluid.o -I$(INCLUDE) -L$(LIB) $(FFTFLAG)
+run.x: run.f90 cdata.o derivatives.o forcing.o reconnection.o initial_line.o initial_loop.o initial.o output.o periodic.o general.o statistics.o normal_fluid.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o hyperviscous.o kwc_fft.o biofluid.o killing_sphere.o Makefile 
+	$(F90) $(FFLAGS) -o ./run.x run.f90 cdata.o derivatives.o forcing.o normal_fluid.o reconnection.o initial.o initial_loop.o initial_line.o output.o periodic.o general.o statistics.o timestep.o line.o diagnostic.o quasip.o particles.o tree.o ksmodel.o mirror.o stiff_solver.o hamiltonian.o smoothing.o matrix.o topology.o inject.o kernel_density.o hyperviscous.o kwc_fft.o biofluid.o killing_sphere.o -I$(INCLUDE) -L$(LIB) $(FFTFLAG)
 #
 #
 clean: 
@@ -61,7 +61,7 @@ hyperviscous.o: hyperviscous.f90 general.o cdata.o
 #
 forcing.o: forcing.f90 general.o cdata.o ksmodel.o normal_fluid.o
 #
-initial.o: initial.f90 initial_line.o initial_loop.o stiff_solver.o normal_fluid.o forcing.o cdata.o quasip.o periodic.o particles.o smoothing.o inject.o output.o hyperviscous.o reconnection.o kwc_fft.o
+initial.o: initial.f90 initial_line.o initial_loop.o stiff_solver.o normal_fluid.o forcing.o cdata.o quasip.o periodic.o particles.o smoothing.o inject.o output.o hyperviscous.o reconnection.o kwc_fft.o killing_sphere.o
 #
 initial_loop.o: initial_loop.f90 cdata.o general.o periodic.o
 #
@@ -102,3 +102,5 @@ stiff_solver.o: stiff_solver.f90 hamiltonian.o general.o cdata.o
 hamiltonian.o: hamiltonian.f90 tree.o timestep.o output.o general.o cdata.o
 #
 kwc_fft.o: kwc_fft.f90 general.o cdata.o
+#
+killing_sphere.o: killing_sphere.f90 general.o cdata.o timestep.o diagnostic.o
