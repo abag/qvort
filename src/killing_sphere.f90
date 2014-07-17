@@ -3,9 +3,11 @@ module killing_sphere
   use general
   use diagnostic
   use timestep
+  implicit none
+  real,private :: centre_of_killing(3)=0.
   contains
   !******************************************************************
-  !> remove loops which hit the boundaries
+  !> initialise the killing sphere
   subroutine setup_killing_sphere()
     implicit none
     !check boundary conditions
@@ -22,20 +24,24 @@ module killing_sphere
     else
       call fatal_error('killing_sphere.mod','killing_radius must be larger than 0.')
     end if
+    if (adaptive_killing_sphere) then
+      write(*,*) 'killing sphere will adapt to centre of mass and std of tangle'
+    end if
   end subroutine
   !******************************************************************
-  !> remove loops which hit the boundaries
+  !> remove loops which hit the sphere
   subroutine enforce_killing_sphere()
     implicit none
     integer :: i, j
     real :: dist, u(3)
     real :: energy1, energy2
+    !do we adapt the killing sphere?
+    if (adaptive_killing_sphere) call adapt_killing_sphere !killing_sphere.mod
     do i=1, pcount
       if (f(i)%infront==0) cycle !empty particle
-      dist=sqrt(f(i)%x(1)**2+f(i)%x(2)**2+f(i)%x(3)**2)
-      if (i==1) then
-        print*, dist
-      end if
+      dist=sqrt((f(i)%x(1)-centre_of_killing(1))**2+&
+                (f(i)%x(2)-centre_of_killing(2))**2+&
+                (f(i)%x(3)-centre_of_killing(3))**2)
       if (dist>killing_radius) then
         !compute energy before hand
         !$omp parallel do private(i,u)
@@ -64,6 +70,34 @@ module killing_sphere
         close(32)
       end if
     end do
+  end subroutine
+  !******************************************************************
+  !> adapt the killing sphere
+  subroutine adapt_killing_sphere()
+    implicit none
+    real:: sum_x(3), count_x,x_std(3), sum_x2(3)
+    !first compute the centre of "mass"
+    sum_x(1)=sum(f(:)%x(1), mask=f(:)%infront>0)
+    sum_x(2)=sum(f(:)%x(2), mask=f(:)%infront>0)
+    sum_x(3)=sum(f(:)%x(3), mask=f(:)%infront>0)
+    count_x=count(mask=f(:)%infront>0)
+    !set this to be the centre of killing
+    centre_of_killing=sum_x/count_x
+    !now the standard deviation
+    sum_x2(1)=sum((f(:)%x(1)-centre_of_killing(1))**2, mask=f(:)%infront>0)
+    sum_x2(2)=sum((f(:)%x(2)-centre_of_killing(2))**2, mask=f(:)%infront>0)
+    sum_x2(3)=sum((f(:)%x(3)-centre_of_killing(3))**2, mask=f(:)%infront>0)
+    x_std(1)=sqrt(sum_x2(1)/(count_x-1))
+    x_std(2)=sqrt(sum_x2(2)/(count_x-1))
+    x_std(3)=sqrt(sum_x2(3)/(count_x-1))
+    !now we set the killing radius to be 3 times the maximum standard deviation
+    !as is standard in finding outliers
+    killing_radius=3*maxval(x_std)
+    if (mod(itime,shots)==0) then
+      open(unit=37,file='./data/adaptive_killing_radius.log', position='append')
+        write(37,*) centre_of_killing, killing_radius
+      close(37)
+    end if
   end subroutine
   !**************************************************
   !>remove loops that have left the box as they pass through the killing sphere

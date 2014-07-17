@@ -396,6 +396,7 @@ module cdata
   !--------------------------killing_sphere----------------------------------------
   logical :: killing_sphere_on=.false.
   real :: killing_radius=0.
+  logical :: adaptive_killing_sphere=.false.
   !------------------------------openmp--------------------------------------------
   logical,private :: serial_run=.false.
   integer,private :: qvort_nproc=0
@@ -728,6 +729,8 @@ module cdata
              read(buffer, *, iostat=ios) killing_sphere_on !do we employ a 'killing sphere'?
           case ('killing_radius')
              read(buffer, *, iostat=ios) killing_radius !if so what is its radius?
+          case ('adaptive_killing_sphere')
+             read(buffer, *, iostat=ios) adaptive_killing_sphere !does the radius/location adapt?
           case ('inject_size')
              read(buffer, *, iostat=ios) inject_size !size of injected filaments
           case ('inject_skip')
