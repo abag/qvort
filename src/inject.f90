@@ -27,6 +27,7 @@ module inject
         if (mod(inject_size,6)/=0) then
           call fatal_error('inject.mod','inject size must be a multiple of 6')
         end if
+        write(*,'(a,f6.4)') 'vortices injected towards centre from distance d= ', lattice_ratio*box_size/2
       case('loop_stream')
         if (mod(inject_size,2)/=0) then
           call fatal_error('inject.mod','inject size must be a multiple of 2')
@@ -153,7 +154,7 @@ module inject
         do i=1, dummy_inject_size/6
           f(inject_loc(i))%x(1)=radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
           f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
-          f(inject_loc(i))%x(3)=box_size/2.01
+          f(inject_loc(i))%x(3)=lattice_ratio*box_size/2.01
           if (i==1) then
             f(inject_loc(i))%behind=inject_loc(dummy_inject_size/6)
             f(inject_loc(i))%infront=inject_loc(i+1)
@@ -171,7 +172,7 @@ module inject
         do i=dummy_inject_size/6+1, dummy_inject_size/3
           f(inject_loc(i))%x(1)=-radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
           f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
-          f(inject_loc(i))%x(3)=-box_size/2.01
+          f(inject_loc(i))%x(3)=-lattice_ratio*box_size/2.01
           if (i==(dummy_inject_size/6+1)) then
             f(inject_loc(i))%behind=inject_loc(dummy_inject_size/3)
             f(inject_loc(i))%infront=inject_loc(i+1)
@@ -187,7 +188,7 @@ module inject
         end do    
         !third loop- yz plane pos side of box 
         do i=dummy_inject_size/3+1, dummy_inject_size/2
-          f(inject_loc(i))%x(1)=box_size/2.01
+          f(inject_loc(i))%x(1)=lattice_ratio*box_size/2.01
           f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
           f(inject_loc(i))%x(3)=-radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
           if (i==(dummy_inject_size/3+1)) then
@@ -205,7 +206,7 @@ module inject
         end do
         !fourth loop- yz plane neg side of box 
         do i=dummy_inject_size/2+1, 2*dummy_inject_size/3
-          f(inject_loc(i))%x(1)=-box_size/2.01
+          f(inject_loc(i))%x(1)=-lattice_ratio*box_size/2.01
           f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
           f(inject_loc(i))%x(3)=radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
           if (i==(dummy_inject_size/2+1)) then
@@ -224,7 +225,7 @@ module inject
         !fifth loop- xz plane pos side box
         do i=2*dummy_inject_size/3+1, 5*dummy_inject_size/6
           f(inject_loc(i))%x(1)=-radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
-          f(inject_loc(i))%x(2)=box_size/2.01
+          f(inject_loc(i))%x(2)=lattice_ratio*box_size/2.01
           f(inject_loc(i))%x(3)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
           if (i==(2*dummy_inject_size/3+1)) then
             f(inject_loc(i))%behind=inject_loc(5*dummy_inject_size/6)
@@ -242,7 +243,7 @@ module inject
         !final loop- xz plane neg side of box
         do i=5*dummy_inject_size/6+1, dummy_inject_size
           f(inject_loc(i))%x(1)=radius*sin(pi*real(2*i-1)/(dummy_inject_size/6))
-          f(inject_loc(i))%x(2)=-box_size/2.01
+          f(inject_loc(i))%x(2)=-lattice_ratio*box_size/2.01
           f(inject_loc(i))%x(3)=radius*cos(pi*real(2*i-1)/(dummy_inject_size/6))
           if (i==(5*dummy_inject_size/6+1)) then
             f(inject_loc(i))%behind=inject_loc(dummy_inject_size)

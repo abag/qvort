@@ -19,7 +19,7 @@ module killing_sphere
     end select
     if (killing_radius>epsilon(0.)) then
       write(*,*) 'Employing a "killing sphere":'
-      write(*,*) 'all loops at a distance greater than, ', killing_radius, ' will be removed'
+      write(*,'(a,f6.4,a)') 'all loops at a distance greater than, ', killing_radius, ' will be removed'
       write(*,*) 'The energy lost due to these removed loops will be printed to file'
     else
       call fatal_error('killing_sphere.mod','killing_radius must be larger than 0.')
