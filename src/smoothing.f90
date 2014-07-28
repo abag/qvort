@@ -30,16 +30,17 @@ module smoothing
     integer :: i, j, k
     write(*,'(a)') ' -------------------------SMOOTHING----------------------------' 
     sm_sigma=smoothing_length*delta
-    if (tree_theta>0) then
+    !if (tree_theta>0) then
       write(*,'(a,i4.2,a)') ' creating a ', sm_size,' ^3 mesh to smooth \omega onto'
       if (smoothing_interspace) then
         write(*,'(a)') ' using adaptive smoothing length based on inter-vortex spacing'
       else
         write(*,'(a,f8.5,a)') ' smoothing length is ', sm_sigma
       end if
-    else
-      call fatal_error('smoothing.mod','tree theta must be +ve to use smoothing')
-    end if
+    !else
+      !write(*,*) 'tree theta is 0, using kernel smoothed field'
+      !call fatal_error('smoothing.mod','tree theta must be +ve to use smoothing')
+    !end if
     if (sm_size<16) call warning_message('smoothing.mod','sm_size<16 results will be poor')
     !print dimensions to file for matlab
     open(unit=77,file='./data/sm_dims.log',status='replace')
@@ -108,6 +109,41 @@ module smoothing
         end do ; end do ;end do
       end if
       sm(k,j,i)%w=w
+    end do ; end do ; end do
+    !$omp end parallel do
+  end subroutine
+  !************************************************************
+  !>get the smoothed field on the smoothed mesh 
+  subroutine get_kernel_smoothed_field
+    implicit none
+    integer :: i, j, k, m
+    real :: dist,smoothing_factor
+    real :: w(3)
+    !define smoothing length 
+    if (smoothing_interspace) then
+      sm_sigma=sqrt((box_size**3)/total_length)/2.
+      !smoothing length can be checked against ts.m
+      open(unit=78,file='data/smoothing_length.log',position='append')
+        write(78,*) t, sm_sigma
+      close(78)
+    end if
+    !$omp parallel do private(i,j,k,w)
+    do k=1, sm_size  ; do j=1, sm_size ; do i=1, sm_size
+      w=0. !0 this before each call
+      do m=1, pcount
+        if (f(m)%infront==0) cycle
+        !compute distance from cell to vortex point
+        dist=dist_gen(f(m)%x,sm(k,j,i)%x)
+        if (dist>2*sm_sigma) cycle
+        if (dist<sm_sigma) then
+          smoothing_factor=1-1.5*(dist/sm_sigma)**2+0.75*(dist/sm_sigma)**3
+        else
+          smoothing_factor=0.25*(2-dist/sm_sigma)**3
+        end if
+        smoothing_factor=smoothing_factor/(pi*sm_sigma)
+        w=w+smoothing_factor*(f(i)%ghosti-f(i)%x)
+      end do
+      sm(k,j,i)%w=quant_circ*w
     end do ; end do ; end do
     !$omp end parallel do
   end subroutine

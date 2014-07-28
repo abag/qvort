@@ -1,0 +1,18 @@
+--------------required parameters------------
+nsteps 100000
+shots 100
+mesh_shots 100
+pcount 1000
+dt 5E-5
+delta 0.01
+box_size 1.
+velocity BS
+initf sultan_recon
+line_count 2
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+tree_theta 0.4
+binary_print T 
+sm_size 128
+smoothing_length 1.5

@@ -26,7 +26,7 @@ module initial_line
     end if
     mid_point=(pcount+1)/2
     do i=1, pcount
-      f(i)%x(2)=0. !-box_size/3
+      f(i)%x(2)=-box_size/3
       f(i)%x(1)=0.
       !f(i)%x(3)=-box_size/2.+box_size*real(i-1)/(pcount)
       f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2*pcount)
@@ -426,7 +426,7 @@ module initial_line
     do i=1, actual_line_count/2
       do j=1, line_size
         line_position=j+(i-1)*line_size
-        f(line_position)%x(1)=rad_shift_r(i)*cos(rad_shift_theta(i))-box_size/16
+        f(line_position)%x(1)=rad_shift_r(i)*cos(rad_shift_theta(i))-box_size/32
         f(line_position)%x(2)=rad_shift_r(i)*sin(rad_shift_theta(i))
         f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
         if(j==1) then
@@ -445,7 +445,7 @@ module initial_line
     do i=actual_line_count/2+1, actual_line_count
       do j=1, line_size
         line_position=j+(i-1)*line_size
-        f(line_position)%x(1)=rad_shift_r(i-actual_line_count/2)*cos(rad_shift_theta(i-actual_line_count/2))+box_size/16
+        f(line_position)%x(1)=rad_shift_r(i-actual_line_count/2)*cos(rad_shift_theta(i-actual_line_count/2))+box_size/32
         f(line_position)%x(3)=rad_shift_r(i-actual_line_count/2)*sin(rad_shift_theta(i-actual_line_count/2))
         f(line_position)%x(2)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
         if(j==1) then

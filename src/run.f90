@@ -72,9 +72,10 @@ program run
       if (kelvin_wave_casc.eqv..false.)call premove !line.mod  \todo switchoff premove in run.in
     end if
     if (recon_info) call set_recon_dist !reconnection.mod
+    call ghostp !periodic.mod
     !---------------------smoothed field----------------------
     if (mod(itime,mesh_shots)==0) then
-      if (sm_size>0) call get_smoothed_field !smoothing.mod
+      if (sm_size>0) call get_kernel_smoothed_field !smoothing.mod
     end if
     if (seg_fault) write(*,*) 'here6'
     !-------------------boundary conditions------------------------
