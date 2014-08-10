@@ -33,7 +33,7 @@ filename=sprintf('data/var%04d.log',filenumber);
 box_size=.005 ;
 %set options based on varargin
 rough=0 ; linetrue=1 ; rainbow=0 ; dark=0 ; printit=0 ; overhead=0  ; magnetic=0; show_points=0 ; medium_line=0 ; overhead_xz=0;
-log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ; medium_line=0 ; plot_arrow=0 ; 
+log_rainbow=0 ; annotate=0 ; thin_line=0 ; ploteps=0 ; medium_line=0 ; plot_arrow=0 ; painted=0;
 zoomin=0;
 %empty the vmax/min values
 v_max=[] ; v_min=[] ;
@@ -78,6 +78,8 @@ for i=1:optargin
       thin_line=1; 
     case 'arrow'
       plot_arrow=1; 
+    case 'painted'
+      painted=1;   
     case 'medium_line'
       medium_line=1;  
       otherwise
@@ -102,6 +104,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
+%if painted then load in the vortex points you want to paint
+painted_data=load('./data/painted.log');
 if dims(4)==1
   fid=fopen(filename);
   if fid<0
@@ -197,6 +201,9 @@ elseif magnetic==1
   u=u*rainbow_scale;
   rainbowcmap=colormap(jet(300));
 end
+%max(abs(x))
+%max(abs(y))
+%max(abs(z))
 %now create vectors to plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for j=1:number_of_particles
   if round(f(j))==0
@@ -306,7 +313,15 @@ for j=1:number_of_particles
                   angle_color=floor(100*acos(dot((dummy_x(2,:)-dummy_x(1,:))/dist,[0 1 0])));
                   plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-','Color',anglecmap(max(1,angle_color),:),'LineWidth',2.0)   
                 end
-                plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2.)  
+                if painted==1
+                  if any(j==painted_data)
+                    plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-r','LineWidth',2.)
+                  else
+                    plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2.)
+                  end 
+                else
+                  plot3(dummy_x(1:2,1),dummy_x(1:2,2),dummy_x(1:2,3),'-k','LineWidth',2.)
+                end
               end
             end 
           end
@@ -366,7 +381,7 @@ end
 if overhead==1
   view(0,90)
 elseif overhead_xz==1
-  view(0,0)
+  view(-90,0)
 end
 camproj('perspective')
 if dark==1

@@ -60,11 +60,20 @@ module inject
     write(*,'(a,i4.1,a,i3.1,a)') ' loops will be injected every ', inject_skip, ' timesteps with ', inject_size, ' points'
     write(*,'(a,a)') ' inject type is set to: ', trim(inject_type)
     select case(inject_type)
+      case('sphere_loop')
+        write(*,'(a,f6.4)') ' loops injected randomly from surface of sphere with radius: ', (0.75*inject_size*delta)/(2*pi)
+        write(*,'(a,f6.4)') ' estimated velocity of loop: ', &
+        (quant_circ/(4*pi*(0.75*inject_size*delta)/(2*pi)))*(log(8*(0.75*inject_size*delta)/(2*pi)/corea)-.5)
+        write(*,'(a,f6.3,a)') ' radius of sphere is ', lattice_ratio*100, '% of half box width'
       case('rand-xyz-loop')
         write(*,'(a,f7.4,a)') ' rotation applied to loops: ', rotation_factor, '*2\pi'
       case('rand-yz-loop-rot')
         write(*,'(a,f7.4,a)') ' rotation applied to loops: ', rotation_factor, '*2\pi'
         write(*,'(a,f7.4,a)') ' loops translated by: ', lattice_ratio, 'box_size'
+      case('rand-yz-loop')
+        write(*,'(a,f6.4)') ' loops injected randomly from x=-D/2 in yz-plane with radius: ', (0.75*inject_size*delta)/(2*pi)
+        write(*,'(a,f6.4)') ' estimated velocity of loop: ', &
+        (quant_circ/(4*pi*(0.75*inject_size*delta)/(2*pi)))*(log(8*(0.75*inject_size*delta)/(2*pi)/corea)-.5)
       case('vibrating_mesh')
         write(*,'(a,i4.1,a)') ' using normal distn., mean loop size is ', inject_size, ' points'
         write(*,'(a,f9.6)') ' standard deviation is ', line_sigma
@@ -478,15 +487,60 @@ module inject
           !zero the stored velocities
           f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0.
         end do
+      case('sphere_loop')
+        radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
+        !loop over particles setting spatial and 'loop' position
+        call random_number(rand1)
+        call random_number(rand2)
+        call random_number(anglex)
+        call random_number(angley)
+        call random_number(anglez)
+        anglex=(2.*anglex-1.)*2*pi
+        angley=(2.*angley-1.)*2*pi
+        anglez=(2.*anglez-1.)*2*pi
+        do i=1, dummy_inject_size
+          dummy_xp_1(1)=-lattice_ratio*box_size/2.
+          dummy_xp_1(2)=radius*cos(pi*real(2*i-1)/dummy_inject_size)
+          dummy_xp_1(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)
+
+          dummy_xp_2(1)=dummy_xp_1(1)
+          dummy_xp_2(2)=dummy_xp_1(2)*cos(anglex)+dummy_xp_1(3)*sin(anglex)
+          dummy_xp_2(3)=dummy_xp_1(2)*(-sin(anglex))+dummy_xp_1(3)*cos(anglex)
+
+          dummy_xp_3(1)=dummy_xp_2(1)*cos(angley)+dummy_xp_2(3)*(-sin(angley))
+          dummy_xp_3(2)=dummy_xp_2(2)
+          dummy_xp_3(3)=dummy_xp_2(1)*sin(angley)+dummy_xp_2(3)*cos(angley)
+
+          dummy_xp_4(1)=dummy_xp_3(1)*cos(anglez)+dummy_xp_3(2)*sin(anglez)
+          dummy_xp_4(2)=dummy_xp_3(1)*(-sin(anglez))+dummy_xp_3(2)*cos(anglez)
+          dummy_xp_4(3)=dummy_xp_3(3)
+    
+          f(inject_loc(i))%x(1)=dummy_xp_4(1)
+          f(inject_loc(i))%x(2)=dummy_xp_4(2)
+          f(inject_loc(i))%x(3)=dummy_xp_4(3)
+          if (i==1) then
+            f(inject_loc(i))%behind=inject_loc(dummy_inject_size)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          else if (i==dummy_inject_size) then 
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(1)
+          else
+            f(inject_loc(i))%behind=inject_loc(i-1)
+            f(inject_loc(i))%infront=inject_loc(i+1)
+          end if
+          !zero the stored velocities
+          f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0. ; ; f(inject_loc(i))%u3=0.
+        end do  
       case('rand-yz-loop') !as yz-loop but with a slight pertubation in positions
         radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
         !loop over particles setting spatial and 'loop' position
         call random_number(rand1)
         call random_number(rand2)
-        rand1=box_size*(rand1*2.-1.)/20.
-        rand2=box_size*(rand2*2.-1.)/20.
+        rand1=box_size*(rand1*2.-1.)*lattice_ratio
+        rand2=box_size*(rand2*2.-1.)*lattice_ratio
+        open(unit=48,file='./data/painted.log',position='append')
         do i=1, dummy_inject_size
-          f(inject_loc(i))%x(1)=-box_size/2.
+          f(inject_loc(i))%x(1)=-0.7*(box_size/2.)
           f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
           f(inject_loc(i))%x(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
           if (i==1) then
@@ -501,7 +555,9 @@ module inject
           end if
           !zero the stored velocities
           f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0.
+          write(48,'(i6.6)') inject_loc(i)
         end do
+        close(48)
       case('rand-yz-loop-rot') !pertubation in both position and angle
         radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
         !loop over particles setting spatial and 'loop' position
