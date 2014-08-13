@@ -74,6 +74,11 @@ module inject
         write(*,'(a,f6.4)') ' loops injected randomly from x=-D/2 in yz-plane with radius: ', (0.75*inject_size*delta)/(2*pi)
         write(*,'(a,f6.4)') ' estimated velocity of loop: ', &
         (quant_circ/(4*pi*(0.75*inject_size*delta)/(2*pi)))*(log(8*(0.75*inject_size*delta)/(2*pi)/corea)-.5)
+      case('yz-loop')
+        write(*,'(a,f6.4)') ' loops injected from x=-0.2(D/2) in yz-plane with radius: ', (0.75*inject_size*delta)/(2*pi)
+        write(*,'(a,f6.4)') ' estimated velocity of loop: ', &
+        (quant_circ/(4*pi*(0.75*inject_size*delta)/(2*pi)))*(log(8*(0.75*inject_size*delta)/(2*pi)/corea)-.5)
+        write(*,'(a,f6.4)') ' impact parameter (normalised by loop radius is: ', yz_impact
       case('vibrating_mesh')
         write(*,'(a,i4.1,a)') ' using normal distn., mean loop size is ', inject_size, ' points'
         write(*,'(a,f9.6)') ' standard deviation is ', line_sigma
@@ -428,9 +433,10 @@ module inject
       case('yz-loop') !loops in yz plane injected at side of box
         radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
         !loop over particles setting spatial and 'loop' position
+        open(unit=48,file='./data/painted.log')
         do i=1, dummy_inject_size
-          f(inject_loc(i))%x(1)=-box_size/2.1
-          f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/dummy_inject_size)
+          f(inject_loc(i))%x(1)=-0.2*box_size/2
+          f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/dummy_inject_size)+yz_impact*radius
           f(inject_loc(i))%x(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)
           if (i==1) then
             f(inject_loc(i))%behind=inject_loc(dummy_inject_size)
@@ -444,7 +450,9 @@ module inject
           end if
           !zero the stored velocities
           f(inject_loc(i))%u1=0. ; f(inject_loc(i))%u2=0.
+          write(48,'(i6.6)') inject_loc(i)
         end do
+        close(48)
       case('vibrating_mesh') !loops in yz plane injected at side of box
         radius=(0.75*dummy_inject_size*delta)/(2*pi) !75% of potential size
         rand1=runif(-box_size/2,box_size/2)*lattice_ratio
@@ -540,7 +548,7 @@ module inject
         rand2=box_size*(rand2*2.-1.)*lattice_ratio
         open(unit=48,file='./data/painted.log',position='append')
         do i=1, dummy_inject_size
-          f(inject_loc(i))%x(1)=-0.7*(box_size/2.)
+          f(inject_loc(i))%x(1)=-0.2*(box_size/2.)
           f(inject_loc(i))%x(2)=radius*cos(pi*real(2*i-1)/dummy_inject_size)+rand1
           f(inject_loc(i))%x(3)=radius*sin(pi*real(2*i-1)/dummy_inject_size)+rand2
           if (i==1) then

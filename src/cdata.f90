@@ -363,6 +363,7 @@ module cdata
   logical, protected :: randomise_injection=.false.!different meanings for different routines
   real, protected :: inject_stop=1E8 !when to stop injection - arbitrarily high
   character(len=20),protected :: inject_type='off' !how we inject loops
+  real :: yz_impact=0. !impact parameter for ring-line reconnection
   !******************************lucy new code************************************
   real, protected :: bundle_width=0.0!what proportion of the box is filled with the bundle
   integer, protected :: bundle_line_count=0 !number of lines injected per bundle
@@ -743,6 +744,8 @@ module cdata
              read(buffer, *, iostat=ios) inject_stop !when (if ever) we stop injecting
           case ('bundle_width')
              read(buffer, *, iostat=ios) bundle_width !width of injected bundles (if injecting bundles)
+          case ('yz_impact')
+             read(buffer, *, iostat=ios) yz_impact !impact paremeter for ring reconnections
           case ('bundle_line_count')
              read(buffer, *, iostat=ios) bundle_line_count !number of lines per injected bundle (if bundles)
           case ('bundle_distribution')

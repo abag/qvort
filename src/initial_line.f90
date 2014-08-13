@@ -26,7 +26,7 @@ module initial_line
     end if
     mid_point=(pcount+1)/2
     do i=1, pcount
-      f(i)%x(2)=-box_size/3
+      f(i)%x(2)=0.!-box_size/3
       f(i)%x(1)=0.
       !f(i)%x(3)=-box_size/2.+box_size*real(i-1)/(pcount)
       f(i)%x(3)=-box_size/2.+box_size*real(2*i-1)/(2*pcount)

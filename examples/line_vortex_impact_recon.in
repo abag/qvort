@@ -1,0 +1,22 @@
+--------------required parameters------------
+nsteps 800000
+shots 400
+pcount 4000
+dt 0.4E-4
+delta 0.0013333333333
+box_size 1.
+velocity BS
+initf single_line
+readin_varfile 168
+line_count 20
+loop_translate 0. 1. 1.
+boundary openxy
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+binary_print T
+inject_type yz-loop
+inject_size 500
+inject_skip 1
+inject_stop 0.4E-4
+lattice_ratio 1.
+yz_impact 0.

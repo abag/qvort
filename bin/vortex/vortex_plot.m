@@ -105,7 +105,9 @@ end
 %get the dimensions information from dims.log
 dims=load('./data/dims.log');
 %if painted then load in the vortex points you want to paint
-painted_data=load('./data/painted.log');
+if painted==1
+    painted_data=load('./data/painted.log');
+end
 if dims(4)==1
   fid=fopen(filename);
   if fid<0
