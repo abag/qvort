@@ -329,7 +329,6 @@ remove_count
     integer, intent(IN) :: filenumber
     character (len=40) :: print_file
     integer :: i
-    print*, 'here'
     !compute the acceleration
     do i=1,pcount
       if (f(i)%infront==0) then
@@ -344,10 +343,6 @@ remove_count
         else
           !2nd order downwind
           f(i)%acc=(3*f(i)%u1-4*f(i)%u2+f(i)%u3)/(2*dt)
-          f(i)%acc_mf=f(i)%u_mf-f(i)%u_mf1
-          f(i)%acc_sup=f(i)%u_sup-f(i)%u_sup1
-          !3rd order downwind
-          !f(i)%acc=(2*f(i)%u+3*f(i)%u1-6*f(i)%u2+f(i)%u3)/(6*dt)
         end if
       end if
     end do
@@ -358,12 +353,6 @@ remove_count
       write(98) f(:)%acc(1)
       write(98) f(:)%acc(2)
       write(98) f(:)%acc(3)
-      write(98) f(:)%acc_mf(1)
-      write(98) f(:)%acc_mf(2)
-      write(98) f(:)%acc_mf(3)
-      write(98) f(:)%acc_sup(1)
-      write(98) f(:)%acc_sup(2)
-      write(98) f(:)%acc_sup(3)
     close(98)
   end subroutine
   !**********************************************************************

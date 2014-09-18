@@ -28,12 +28,6 @@ module timestep
     call randomise_forcing !forcing.mod
     !likewise with normal fluid
     call initialise_normal_fluid !normal_fluid.mod
-    !---------for acceleration-----------------------
-    do i=1,3
-      f(:)%u_mf1(i)=f(:)%u_mf(i) !store our old velocities 
-      f(:)%u_sup1(i)=f(:)%u_sup(i) !store our old velocities 
-    end do
-    !---------end of acceleration--------------------
     !begin by testing if we have special velocity field Rotate
     select case(velocity)
       case('Rotate')
