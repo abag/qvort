@@ -26,6 +26,7 @@ module cdata
     real :: u_s_LI(3), u_s_BS(3)
     real :: ghosti(3), ghostb(3)
     real :: ghostii(3), ghostbb(3)
+    real :: f_mf(3)
     integer :: infront, behind 
     integer :: closest
     real :: closestd
@@ -67,10 +68,13 @@ module cdata
   !>@param x position of mesh point
   !>@param u_sup superfluid velocity at meshpoint
   !>@param u_norm normal velocity at meshpoint
+  !>@param mf1 mutual_friction first term
+  !>@param mf2 mutual_friction second (transverse?) term
   type grid
     real :: x(3) 
     real :: u_sup(3) 
-    real :: u_norm(3) 
+    real :: u_norm(3)
+    real :: mf1(3), mf2(3)
   end type
   !>3D allocatable mesh
   type(grid), allocatable :: mesh(:,:,:)
@@ -351,6 +355,7 @@ module cdata
   logical, protected :: full_loop_counter=.false. !check loop count and size
   logical, protected :: recon_time_info=.false. !print time difference between recon 
   logical, protected :: local_vs_nonlocal=.false. !compare local (self-induced) vs non-local (BS int)
+  logical, protected :: mutual_friction_mesh=.false. !compute mutual friction on the mesh structure
 !-------------------------------smoothing-------------------------------------------
   !gaussian smoothing of vorticity/B field
   real, protected :: smoothing_length=1. !length we smooth over
@@ -471,6 +476,8 @@ module cdata
              read(buffer, *, iostat=ios) mesh_shots !how often to print mesh to file
           case ('mesh_print_delay')
              read(buffer, *, iostat=ios) mesh_print_delay !delay computing mesh
+          case ('mutual_friction_mesh')
+             read(buffer, *, iostat=ios) mutual_friction_mesh !will compute mutual friction on mesh
           case ('velocity')
              !velocity field options are LIA, BS, Tree
              read(buffer, *, iostat=ios) velocity !BS/LIA/Tree

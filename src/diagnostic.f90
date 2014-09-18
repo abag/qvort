@@ -25,6 +25,7 @@ module diagnostic
         if (sep_inf) call get_sep_inf !diganostics.mod
         if (line_sep_inf) call get_line_sep_inf !diganostics.mod
         if (recon_time_info) call print_recon_time_info!diagnostics.mod
+        if (mutual_friction_mesh) call get_mutual_friction_on_mesh !diagnostics.mod
       end if 
     end if
   end subroutine
@@ -752,5 +753,44 @@ module diagnostic
       end do
     end do ; end do ; end do
     deallocate(sfunction)
+  end subroutine
+  !*************************************************
+  !>compute the mutual friction coefficients on the 3D mesh
+  subroutine get_mutual_friction_on_mesh() 
+    use timestep
+    implicit none
+    integer :: i, j, k, l
+    real :: dxi
+    real :: sdot(3), u_norm(3), helper(3)
+    !!!$omp parallel do private(i,j,k,l)
+    do k=1, mesh_size
+      do j=1, mesh_size
+        do i=1, mesh_size
+          mesh(k,j,i)%mf1=0.; mesh(k,j,i)%mf2=0.
+          !loop over all the vortex points
+          do l=1,pcount
+            if (f(l)%infront==0) cycle !empty particle
+            !see if point lies inside the cell
+            !print*, l,f(l)%x
+            !print*, mesh(k,j,i)%x(:)
+            !print*, mesh_delta
+            !stop
+            if ((f(l)%x(1)<(mesh(k,j,i)%x(1)+0.5*mesh_delta)).and.(f(l)%x(1)>(mesh(k,j,i)%x(1)-0.5*mesh_delta)).and.&
+               (f(l)%x(2)<(mesh(k,j,i)%x(2)+0.5*mesh_delta)).and.(f(l)%x(2)>(mesh(k,j,i)%x(2)-0.5*mesh_delta)).and.&
+               (f(l)%x(3)<(mesh(k,j,i)%x(3)+0.5*mesh_delta)).and.(f(l)%x(3)>(mesh(k,j,i)%x(3)-0.5*mesh_delta))) then
+               call get_deriv_1(l,sdot) !derivatives.mod
+               call get_normal_velocity(mesh(k,j,i)%x,u_norm) !normal_fluid.mod
+               dxi=dist_gen(f(l)%x,f(l)%ghosti) !general.f90
+               mesh(k,j,i)%mf1=mesh(k,j,i)%mf1+dxi*cross_product(sdot,u_norm-f(l)%u)
+               mesh(k,j,i)%mf2=mesh(k,j,i)%mf2+cross_product(sdot,mesh(k,j,i)%mf1)
+               !if (sqrt(mesh(k,j,i)%mf1(1)**2+mesh(k,j,i)%mf1(2)**2+mesh(k,j,i)%mf1(3)**2)/(mesh_delta**3)>10.) then
+                ! print*, l, mesh(k,j,i)%mf1
+               !end if
+            end if
+          end do
+          mesh(k,j,i)%mf1=mesh(k,j,i)%mf1*(1/mesh_delta**3)
+          mesh(k,j,i)%mf2=mesh(k,j,i)%mf2*(1/mesh_delta**3)
+    end do ; end do ; end do
+    !!!$omp end parallel do
   end subroutine
 end module

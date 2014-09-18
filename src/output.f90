@@ -289,6 +289,19 @@ remove_count
       write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_sup(2)
       write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%u_sup(3)
     close(92)
+    if (mutual_friction_mesh) then
+      write(unit=print_file,fmt="(a,i3.3,a)")"./data/mesh_mf",filenumber,".dat"
+      open(unit=92,file=print_file,form='unformatted',status='replace',access='stream')
+        write(92) t
+        write(92) mesh(mesh_size/2,mesh_size/2,1:mesh_size)%x(1)
+        write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%mf1(1)
+        write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%mf1(2)
+        write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%mf1(3)
+        write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%mf2(1)
+        write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%mf2(2)
+        write(92) mesh(1:mesh_size,1:mesh_size,1:mesh_size)%mf2(3)
+      close(92)
+    end if
     !print the velocity field for vapor (vapor print set in run.in) 
     if (vapor_print) then
       allocate(vapor_array(mesh_size, mesh_size, mesh_size))
