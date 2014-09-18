@@ -13,6 +13,8 @@ module diagnostic
     if (mod(itime, shots)==0) then
       call velocity_info !diagnostics.mod
       call curv_info(itime/shots) !diagnostics.mod
+      call get_stretching_rate !diagnostics.mod
+      call get_f_mf !diagnostics.mod
       if (energy_inf) call energy_info !diagnostics.mod
       if (topo_inf) call get_topo_info !diagnostics.mod
       if (torsion_hist.or.torsion_ksdensity) call get_torsion_hist(itime/shots) !diagnostics.mod
@@ -503,6 +505,7 @@ module diagnostic
       else
         curvi(i)=curvature(i) !general.mod
       end if
+      f(i)%curv=curvi(i) !store this for printing
     end do
     !$omp end parallel do
     !compute the average/min/max of this array
@@ -753,6 +756,44 @@ module diagnostic
       end do
     end do ; end do ; end do
     deallocate(sfunction)
+  end subroutine
+  !*************************************************
+  !>caculate the local stretching rate
+  subroutine get_stretching_rate()
+    implicit none
+    real :: s_ddot(3)
+    integer :: i
+    !$omp parallel do private(i,s_ddot)
+    do i=1, pcount
+      if (f(i)%infront==0) then
+        f(i)%stretch=0. !check for 'empty' particles
+      else
+        call get_deriv_2(i,s_ddot) !sdot is the local tangent vector
+        f(i)%stretch=-dot_product(f(i)%u, s_ddot)
+      end if
+    end do
+    !$omp end parallel do
+  end subroutine
+  !*************************************************
+  !>caculate the local mutual friction force 
+  subroutine get_f_mf()
+    use normal_fluid
+    implicit none
+    real :: coeff1=1., coeff2=0.
+    real :: u_norm(3), sdot(3)
+    integer :: i
+    !$omp parallel do private(i,sdot,u_norm)
+    do i=1, pcount
+      if (f(i)%infront==0) then
+        f(i)%f_mf=0. !check for 'empty' particles
+      else
+        call get_deriv_1(i,sdot) !derivatives.mod
+        call get_normal_velocity(f(i)%x,u_norm) !normal_fluid.mod
+        f(i)%f_mf=coeff1*cross_product(sdot,u_norm-f(i)%u)+&
+                coeff2*cross_product(sdot,cross_product(sdot,(u_norm-f(i)%u)))
+      end if
+    end do
+    !$omp end parallel do
   end subroutine
   !*************************************************
   !>compute the mutual friction coefficients on the 3D mesh

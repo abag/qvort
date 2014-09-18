@@ -25,7 +25,7 @@ module cdata
     real :: u_s_LI(3), u_s_BS(3)
     real :: ghosti(3), ghostb(3)
     real :: ghostii(3), ghostbb(3)
-    real :: f_mf(3)
+    real :: f_mf(3), stretch, curv
     integer :: infront, behind 
     integer :: closest
     real :: closestd

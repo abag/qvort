@@ -119,6 +119,36 @@ remove_count
     character (len=40) :: print_file
     integer :: i
     if (filenumber==10000) call warning_message('output.mod','run out of filenumbers to print var to')
+      write(unit=print_file,fmt="(a,i4.4,a)")"./data/var",filenumber,".log"
+      open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')
+      write(98) t
+      write(98) pcount
+      write(98) f(:)%x(1)
+      write(98) f(:)%x(2)
+      write(98) f(:)%x(3)
+      write(98) f(:)%infront
+      write(98) f(:)%u(1)
+      write(98) f(:)%u(2)
+      write(98) f(:)%u(3)
+      write(98) f(:)%u_mf(1)
+      write(98) f(:)%u_mf(2)
+      write(98) f(:)%u_mf(3)
+      write(98) f(:)%curv
+      write(98) f(:)%stretch
+      write(98) f(:)%f_mf(1)
+      write(98) f(:)%f_mf(2)
+      write(98) f(:)%f_mf(3)
+      write(98) f(:)%t_recon(1)
+      close(98)
+  end subroutine
+  !**********************************************************************
+  !>print the f (filament) array as (un)formatted data for use with gnuplot/matlab
+  subroutine printf_old(filenumber)
+    implicit none
+    integer, intent(IN) :: filenumber
+    character (len=40) :: print_file
+    integer :: i
+    if (filenumber==10000) call warning_message('output.mod','run out of filenumbers to print var to')
     if (binary_print) then
       write(unit=print_file,fmt="(a,i4.4,a)")"./data/var",filenumber,".log"
       open(unit=98,file=print_file,status='replace',form='unformatted',access='stream')

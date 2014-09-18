@@ -96,6 +96,7 @@ module initial
       write(*,*) 'binary data output, formatted data can be selected in run.in'
     else
       write(*,*) 'formatted data output selected in run.in'
+      call fatal_error('initial.mod','formatted output is now depreciated, code can be hacked using fprint_old')
     end if
     write(*,'(a,i3.2,a)') ' outputting filament information every ', shots, ' time-steps'
     !periodic bounday conditions?
