@@ -15,7 +15,9 @@ module tree
    !>@param bbl child cell back bottom left, @param bbr child cell back bottom right
    !>@param btl child cell back top left @param btr child cell back top right
    !>@param all particles in the cell
-   !>@param centx @param centy @param centz the center of 'mass' of the cell
+   !>@param centx @param centy @param centz  @param cent the center of 'mass' of the cell
+   !>@param cent_u center of mass' velocity
+   !>@param Cij a sort of circulation tensor
    !>@param circ the total circulation (vector) of the cell
    type node
       real :: posx,posy,posz 
@@ -26,8 +28,11 @@ module tree
       type (node), pointer :: bbl, bbr !back (y) bottom left, right (child)
       type (node), pointer :: btl, btr !back (y) top left, right (child)
       type (qvort), allocatable :: parray(:) 
-      real :: centx, centy, centz 
+      real :: centx, centy, centz, cent(3)
+      real :: cent_u(3) !velocity of the center (\sum u_j)
       real :: circ(3) !total circulation vector
+      real :: Cij(3, 3) ! \int r_i dr_j where r are relative to the center of mass
+                        ! a "circulation tensor", for a lack of better name
    end type node
    !>the vortex point tree
    type (node), pointer :: vtree 
@@ -48,7 +53,9 @@ module tree
     vtree%centx=sum(f(:)%x(1), mask=f(:)%infront>0)/count(mask=f(:)%infront>0)
     vtree%centy=sum(f(:)%x(2), mask=f(:)%infront>0)/count(mask=f(:)%infront>0)
     vtree%centz=sum(f(:)%x(3), mask=f(:)%infront>0)/count(mask=f(:)%infront>0)
+    vtree%cent = [vtree%centx, vtree%centy, vtree%centz]
     vtree%circ=0. !0 the circulation
+    vtree%Cij = 0.
     !now nullify its children - for safety
     nullify(vtree%fbl, vtree%fbr, vtree%ftl, vtree%ftr)
     nullify(vtree%bbl, vtree%bbr, vtree%btl, vtree%btr)
@@ -126,13 +133,14 @@ module tree
     real, intent(IN) :: posx, posy, posz, width
     type(qvort) :: parray(loc_pcount)
     type(node), pointer :: vtree
-    integer :: i, counter
+    integer :: i, counter, k
     allocate(vtree)
     allocate(vtree%parray(loc_pcount))
     !set up this node of the tree with the input info
     vtree%posx=posx ; vtree%posy=posy ; vtree%posz=posz
     vtree%width=width ; vtree%centx=0. ; vtree%centy=0.
-    vtree%centz=0. ; vtree%circ=0. 
+    vtree%centz=0. ; vtree%circ=0. ; vtree%cent_u = 0.
+    vtree%Cij = 0
     vtree%parray(:)%infront=0 !0 the infront marker
     counter=0 !0 the counter
     do i=1, loc_pcount
@@ -146,10 +154,14 @@ module tree
         vtree%centx=vtree%centx+parray(i)%x(1)
         vtree%centy=vtree%centy+parray(i)%x(2)
         vtree%centz=vtree%centz+parray(i)%x(3)
+        !centre's velocity is the mean of velocities
+        vtree%cent_u = vtree%cent_u + parray(i)%u
         !also account for the circulation
-        vtree%circ(1)=vtree%circ(1)+parray(i)%ghosti(1)-parray(i)%x(1)
-        vtree%circ(2)=vtree%circ(2)+parray(i)%ghosti(2)-parray(i)%x(2)
-        vtree%circ(3)=vtree%circ(3)+parray(i)%ghosti(3)-parray(i)%x(3)
+        vtree%circ = vtree%circ + parray(i)%ghosti - parray(i)%x
+        do k=1, 3
+           vtree%Cij(:,k) = vtree%Cij(:,k)&
+                &         + parray(i)%x*(parray(i)%ghosti(k) - parray(i)%x(k))
+        end do
       end if
     end do
     !take the average of the positions
@@ -157,6 +169,14 @@ module tree
      vtree%centx=vtree%centx/counter
      vtree%centy=vtree%centy/counter
      vtree%centz=vtree%centz/counter
+     vtree%cent_u = vtree%cent_u / counter
+
+     vtree%cent = [vtree%centx, vtree%centy, vtree%centz] !it's easier to work with vectors
+     do i=1, 3
+        do k=1, 3
+           vtree%Cij(i, k) = vtree%Cij(i, k) - vtree%cent(i)*vtree%circ(k)
+        end do
+     end do
     end if
     vtree%pcount=counter
     !nullify the children
@@ -318,61 +338,86 @@ module tree
      integer, intent(IN) :: i !the particle we are interested in
      real, intent(IN) :: shift(3) !shift tree (periodicity)
      type (node), pointer :: vtree !the tree
-     real :: u(3) !the velocity at particle i
+     real, intent(inout) :: u(3) !the velocity at particle i
      real :: vect(3) !helper vector
      real :: dist, theta !helper variables
      real :: geo_dist !distance between centre of vorticity and centre of cell
      real :: a_bs, b_bs, c_bs, u_bs(3) !helper variables 
      integer :: j=0 !the particle in the tree mesh
+     integer :: k, l
+     if(f(i)%infront == 0) return
      if (vtree%pcount==0) return !empty box no use
      !work out distances opening angles etc. here
      dist=sqrt((f(i)%x(1)-(vtree%centx+shift(1)))**2+&
-               (f(i)%x(2)-(vtree%centy+shift(2)))**2+&
-               (f(i)%x(3)-(vtree%centz+shift(3)))**2)
+         &     (f(i)%x(2)-(vtree%centy+shift(2)))**2+&
+         &     (f(i)%x(3)-(vtree%centz+shift(3)))**2)
      if (tree_extra_correction) then
-       geo_dist=sqrt((vtree%centx-(vtree%posx+vtree%width/2.))**2+&
-                     (vtree%centy-(vtree%posy+vtree%width/2.))**2+&
-                     (vtree%centz-(vtree%posz+vtree%width/2.))**2)
-       if (dist-geo_dist>0.) then
-         theta=vtree%width/(dist-geo_dist)
-       else
-         theta=vtree%width/dist 
-       end if
+        geo_dist=sqrt((vtree%centx-(vtree%posx+vtree%width/2.))**2+&
+                &     (vtree%centy-(vtree%posy+vtree%width/2.))**2+&
+                &     (vtree%centz-(vtree%posz+vtree%width/2.))**2)
+        if (dist-geo_dist>0.) then
+           theta=vtree%width/(dist-geo_dist)
+        else
+           theta=vtree%width/dist 
+        end if
      else
-       theta=vtree%width/dist 
+        theta=vtree%width/dist 
      end if
-     if (vtree%pcount==1.or.theta<tree_theta) then
-       !use the contribution of this cell
-       if (vtree%pcount==1) then
-         !check that the particle is not itself or the particle behind
-         j=f(vtree%parray(1)%infront)%behind
-         if (j==i) return
-         if (j==f(i)%behind) return
-         if (dist<epsilon(0.)) then
+     if (vtree%pcount==1) then
+        !check that the particle is not itself or the particle behind
+        j=f(vtree%parray(1)%infront)%behind
+        if (j==i) return
+        if (j==f(i)%behind) return
+        if (j==f(i)%infront) return
+        if (dist<epsilon(0.)) then
            call fatal_error('tree.mod:tree_walk', & 
-           'singularity in BS (tree) velocity field - &
-           this is normally caused by having recon_shots too large') !cdata.mod
-         end if
-       end if
-       eval_counter=eval_counter+1 !increment this counter
-       vect(1)=((vtree%centx+shift(1))-f(i)%x(1)) 
-       vect(2)=((vtree%centy+shift(2))-f(i)%x(2)) 
-       vect(3)=((vtree%centz+shift(3))-f(i)%x(3))
-       a_bs=dist**2
-       b_bs=2.*dot_product(vect,vtree%circ)
-       c_bs=dot_product(vtree%circ,vtree%circ) 
-       if (4*a_bs*c_bs-b_bs**2<epsilon(0.)) return !avoid 1/0
-       u_bs=cross_product(vect,vtree%circ)
-       u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
-       u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
-       u=u+u_bs
+                'singularity in BS (tree) velocity field - &
+                this is normally caused by having recon_shots too large') !cdata.mod
+        end if
+        !add the contribution of single segment
+        !vtree%cent is the same as vtree%parray(1)%x and
+        !vtree%circ is == f(vtree%parray(1)%infront)%x
+        a_bs = vector_norm(vtree%parray(1)%x + shift - f(i)%x) !lRj
+        b_bs = vector_norm(vtree%parray(1)%ghosti + shift - f(i)%x) !lRjp1
+
+        !denom
+        c_bs = a_bs*b_bs*(a_bs*b_bs&
+             &           + dot_product(vtree%parray(1)%x + shift - f(i)%x,&
+             &                         vtree%parray(1)%ghosti + shift - f(i)%x))
+
+        u_bs = (a_bs + b_bs)/c_bs*cross_product(vtree%parray(1)%x + shift - f(i)%x,&
+             &                                  vtree%parray(1)%ghosti + shift - f(i)%x)
+        u_bs = u_bs * quant_circ/4/pi
+
+        u = u + u_bs
+        eval_counter=eval_counter+1 !increment this counter
+     else if (theta < tree_theta) then !use the contribution of this cell
+        !there is more than one vortex particle in this node so use
+        !the first two terms in Taylor expansion of the Biot-Savart
+        !integral
+        !vect = vtree%cent + shift - f(i)%x
+
+        vect = f(i)%x - (vtree%cent + shift)
+
+        u_bs = cross_product(vtree%circ, vect)/dist**3;
+        do k=1, 3
+           do l=1, 3
+              u_bs = u_bs - eps(:, k, l)*vtree%Cij(k, l)/dist**3;
+              u_bs = u_bs + 3*eps(:, k, l)*vect(k)*dot_product(vect, vtree%Cij(:,l))&
+                   &        /dist**5
+           end do
+        end do
+
+        u = u + u_bs*quant_circ/4./pi
+
+        eval_counter=eval_counter+1
      else
-       !open the box up and use the child cells
-       call tree_walk(i,vtree%fbl,shift,u) ; call tree_walk(i,vtree%fbr,shift,u)
-       call tree_walk(i,vtree%ftl,shift,u) ; call tree_walk(i,vtree%ftr,shift,u)
-       call tree_walk(i,vtree%bbl,shift,u) ; call tree_walk(i,vtree%bbr,shift,u)
-       call tree_walk(i,vtree%btl,shift,u) ; call tree_walk(i,vtree%btr,shift,u)
-     end if 
+        !open the box up and use the child cells
+        call tree_walk(i,vtree%fbl,shift,u) ; call tree_walk(i,vtree%fbr,shift,u)
+        call tree_walk(i,vtree%ftl,shift,u) ; call tree_walk(i,vtree%ftr,shift,u)
+        call tree_walk(i,vtree%bbl,shift,u) ; call tree_walk(i,vtree%bbr,shift,u)
+        call tree_walk(i,vtree%btl,shift,u) ; call tree_walk(i,vtree%btr,shift,u)
+     end if
    end subroutine
 !************************************************************************
    !>a more general form of above, where a position is an input
@@ -386,51 +431,86 @@ module tree
      real :: vect(3) !helper vector
      real :: a_bs, b_bs, c_bs, u_bs(3) !helper variables 
      real :: dist, theta !helper variables
-     real :: geo_dist
      integer :: j=0 !the particle in the tree mesh
+     integer :: k,l
+
      if (vtree%pcount==0) return !empty box no use
      !work out distances opening angles etc. here
      dist=sqrt((x(1)-(vtree%centx+shift(1)))**2+&
-               (x(2)-(vtree%centy+shift(2)))**2+&
-               (x(3)-(vtree%centz+shift(3)))**2)
-     if (tree_extra_correction) then
-       geo_dist=sqrt((vtree%centx-(vtree%posx+vtree%width/2.))**2+&
-                     (vtree%centy-(vtree%posy+vtree%width/2.))**2+&
-                     (vtree%centz-(vtree%posz+vtree%width/2.))**2)
-       if (dist-geo_dist>0.) then
-         theta=vtree%width/(dist-geo_dist)
-       else
-         theta=vtree%width/dist
-       end if
+          (x(2)-(vtree%centy+shift(2)))**2+&
+          (x(3)-(vtree%centz+shift(3)))**2)
+     if (dist<epsilon(0.)) return !avoid 1/0.
+
+     theta=vtree%width/dist !the most simple way we can improve this
+     if (vtree%pcount==1) then
+        !add the contribution of single segment
+        !vtree%cent is the same as vtree%parray(1)%x and
+        !vtree%circ is == f(vtree%parray(1)%infront)%x
+        a_bs = vector_norm(vtree%cent + shift - x) !lRj
+        b_bs = vector_norm(vtree%cent + vtree%circ + shift - x) !lRjp1
+
+        !denom
+        c_bs = a_bs*b_bs*(a_bs*b_bs&
+             &           + dot_product(vtree%cent + shift - x,&
+             &                         vtree%cent + vtree%circ + shift - x))
+
+        u_bs = (a_bs + b_bs)/c_bs*cross_product(vtree%cent + shift - x,&
+             &                                  vtree%cent + vtree%circ + shift - x)
+
+        u = u + u_bs/4/pi
+        eval_counter=eval_counter+1 !increment this counter
+
+     else if (theta < tree_theta) then !use the contribution of this cell
+        vect=x-(vtree%cent+shift)
+        u_bs = cross_product(vtree%circ, vect)/dist**3;
+        do k=1, 3
+           do l=1, 3
+              u_bs = u_bs - eps(:, k, l)*vtree%Cij(k, l)/dist**3;
+              u_bs = u_bs + 3*eps(:, k, l)*vect(k)*dot_product(vect, vtree%Cij(:,l))&
+                   &        /dist**5
+           end do
+        end do
+
+        if (hollow_mesh_core) then
+           if (dist<delta) then
+              u_bs=0. !0 the velocity
+           end if
+        end if
+        u=u+u_bs
+        eval_counter=eval_counter+1 !increment this counter
      else
-       theta=vtree%width/dist
+        !open the box up and use the child cells
+        call tree_walk_general(x,vtree%fbl,shift,u) ; call tree_walk_general(x,vtree%fbr,shift,u)
+        call tree_walk_general(x,vtree%ftl,shift,u) ; call tree_walk_general(x,vtree%ftr,shift,u)
+        call tree_walk_general(x,vtree%bbl,shift,u) ; call tree_walk_general(x,vtree%bbr,shift,u)
+        call tree_walk_general(x,vtree%btl,shift,u) ; call tree_walk_general(x,vtree%btr,shift,u)
      end if
-     if (vtree%pcount==1.or.theta<tree_theta) then
-       !use the contribution of this cell
-       if (dist<epsilon(0.)) return !avoid 1/0.
-       !use hollow core model?
-       vect(1)=((vtree%centx+shift(1))-x(1)) 
-       vect(2)=((vtree%centy+shift(2))-x(2)) 
-       vect(3)=((vtree%centz+shift(3))-x(3))
-       a_bs=dist**2
-       b_bs=2.*dot_product(vect,vtree%circ)
-       c_bs=dot_product(vtree%circ,vtree%circ) 
-       if (4*a_bs*c_bs-b_bs**2==0) return !avoid 1/0
-       u_bs=cross_product(vect,vtree%circ)
-       u_bs=u_bs*quant_circ/((2*pi)*(4*a_bs*c_bs-b_bs**2))
-       u_bs=u_bs*((2*c_bs+b_bs)/sqrt(a_bs+b_bs+c_bs)-(b_bs/sqrt(a_bs)))
-       if (hollow_mesh_core) then
-         if (dist<delta) then
-           u_bs=0. !0 the velocity
-         end if
-       end if 
-       u=u+u_bs
-     else
-       !open the box up and use the child cells
-       call tree_walk_general(x,vtree%fbl,shift,u) ; call tree_walk_general(x,vtree%fbr,shift,u)
-       call tree_walk_general(x,vtree%ftl,shift,u) ; call tree_walk_general(x,vtree%ftr,shift,u)
-       call tree_walk_general(x,vtree%bbl,shift,u) ; call tree_walk_general(x,vtree%bbr,shift,u)
-       call tree_walk_general(x,vtree%btl,shift,u) ; call tree_walk_general(x,vtree%btr,shift,u)
-     end if 
    end subroutine
+
+   subroutine tree_mat_diff(vtree, x, dtvs, vs_g_vs, vs, periodic, cutoff)
+     type(node), intent(in)        :: vtree
+     real, intent(in)              :: x(3)
+     real, intent(out)             :: dtvs(3), vs_g_vs(3), vs(3)
+     real, intent(in), optional    :: cutoff
+     logical, intent(in), optional :: periodic
+
+     real :: vec(3), dist, theta
+     !periodicity
+     integer :: px_l = 0, py_l = 0, pz_l = 0
+     integer :: px_h = 0, py_h = 0, pz_h = 0
+     integer :: px, py, pz
+     real    :: shift(3)
+
+     if(present(periodic) .and. periodic) then
+        px_l = -1; py_l = -1; pz_l = -1
+        px_h =  1; py_h =  1; pz_h =  1
+     end if
+
+     if(vtree%pcount == 0) return;
+     do px=px_l, px_h ; do py=py_l, py_h; do pz=pz_l, pz_h
+        shift = [px, py, pz]*box_size
+
+     end do; end do; end do
+     
+   end subroutine tree_mat_diff
 end module

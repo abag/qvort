@@ -180,6 +180,13 @@ module cdata
   real, parameter :: twenty_three_twelve=(23./12.)
   real, parameter :: four_thirds=(4./3.)
   real, parameter :: five_twelths=(5./12.)
+  !totally anti-symmetric tensor with eps(1, 2, 3)==1
+  !useful for calculating some sums in tree.mod
+  real, parameter :: eps(3,3,3) =  reshape(&
+       &[ 0,  0, 0,  0, 0, -1,   0, 1, 0,& !111,211,311,121,221,321,131,231,331
+       &  0,  0, 1,  0, 0,  0,  -1, 0, 0,& !112,212,312,122,222,322,132,232,332
+       &  0, -1, 0,  1, 0,  0,   0, 0, 0]& !113,213,313,123,223,323,133,233,333
+       &, [3,3,3]); !stupid fortran not having proper array literals
   !*********ANYTHING ELSE**************************************************
   logical :: nf_compressible=.false. !is the normal velocity field divergence free?
   !***********RUN.IN***************************************************************

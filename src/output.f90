@@ -138,7 +138,6 @@ remove_count
       write(98) f(:)%f_mf(1)
       write(98) f(:)%f_mf(2)
       write(98) f(:)%f_mf(3)
-      write(98) f(:)%t_recon(1)
       close(98)
   end subroutine
   !**********************************************************************
