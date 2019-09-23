@@ -27,6 +27,26 @@ module killing_sphere
     if (adaptive_killing_sphere) then
       write(*,*) 'killing sphere will adapt to centre of mass and std of tangle'
     end if
+    if (moving_box) then
+      write(*,*) 'box will move with the centre of mass of the tangle'
+    end if
+  end subroutine
+    !******************************************************************
+  !> change to a frame moving with the tangle
+  subroutine killing_moving_frame
+    implicit none
+    !check boundary conditions
+    real:: sum_x(3), count_x
+    !first compute the centre of "mass"
+    sum_x(1)=sum(f(:)%x(1), mask=f(:)%infront>0)
+    sum_x(2)=sum(f(:)%x(2), mask=f(:)%infront>0)
+    sum_x(3)=sum(f(:)%x(3), mask=f(:)%infront>0)
+    count_x=count(mask=f(:)%infront>0)
+    !set this to be the centre of killing
+    centre_of_killing=sum_x/count_x
+    f(:)%x(1)=f(:)%x(1)-centre_of_killing(1)
+    f(:)%x(2)=f(:)%x(2)-centre_of_killing(2)
+    f(:)%x(3)=f(:)%x(3)-centre_of_killing(3)
   end subroutine
   !******************************************************************
   !> remove loops which hit the sphere

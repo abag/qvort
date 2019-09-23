@@ -7,11 +7,12 @@
   cylinder {
     Var1,     // Center of one end
     Var2,     // Center of other end
-    .0002            // Radius
+    .0004            // Radius
    pigment { Red }
    finish { ambient 0.2 diffuse 0.9 phong 1 }
   }
   #end
+ background {Black}
 //box
 //{
 //< -0.05, -0.05, -0.05> < 0.05, 0.05, 0.05>
@@ -53,7 +54,7 @@ cylinder {<-0.05,-0.05,-0.05>,<-0.05,-0.05, 0.05>,R}
 cylinder {<-0.05, 0.05,-0.05>,<-0.05, 0.05, 0.05>,R}
 cylinder {< 0.05,-0.05,-0.05>,< 0.05,-0.05, 0.05>,R}
 cylinder {< 0.05, 0.05,-0.05>,< 0.05, 0.05, 0.05>,R}
-texture{pigment{color rgb<1,1,1>}
+texture{pigment{color rgb<.9,.9,.9>}
         finish{ diffuse 0.9 phong 1}}
 }//-- End of wireframed cube -------
 

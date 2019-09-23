@@ -1,5 +1,6 @@
 // To make the figure use the following (using desired width (W) and height (H))
 // povray +IplotdecompoBox.pov +OtestBox.png +FN +W800 +H600 +V -D +X
+// povray +I./povray/plotdecompoBox.pov +OtestBox.png +FN +W2400 +H1800 +V -D +X
 // To remove the background add option +UA
 
 
@@ -18,12 +19,13 @@ global_settings { ambient_light rgb <1, 1, 1> }
 
 #declare iorCylinder = 1.5;   // ior value for the cylinder glass 1.5
 #declare DD = 0.5;  // Thickness for the walls
-#declare LL = 10.08; //Box Size
+#declare LL = 6.08; //Box Size
+#declare LL = 100; //Box Size
 #declare LL2 = LL+DD;
 
 // First change the left-handed coordinate system to right-handed by commands up, right, and sky:
 camera {
-location <4*LL,3*LL,2*LL>
+location <4*LL,0.,0.>
 up <0,1,0>           // To get right-handed coordinate system
 right <-1.33,0,0>    // To get right-handed coordinate system
 // right <-1.00,0,0> // To get right-handed coordinate system
@@ -36,7 +38,7 @@ angle 24
 // background { color White }
 background { color Black }
 
-light_source { <3*LL, 0*LL, 2*LL> color red 0.6 green 0.6 blue 0.6 
+light_source { <3*LL, 0*LL, 1.5*LL> color red 0.6 green 0.6 blue 0.6 
 //light_source { <3*LL, 0*LL, 2*LL> color red 0.6 green 0.6 blue 0.6 
     area_light <0, 1, 0>, <0, 0, 1>, 3, 3 // area light along yz-plane with size 3x3 lamps
     adaptive 1
@@ -82,12 +84,12 @@ Box2 //Thin walls
 object {Vortices}
 
 
-object{
-ColorBar
-scale <10,10,10>
+//object{
+//ColorBar
+//scale <20,20,20>
 //rotate -90*x
-translate 7*y
-translate -4*x
-}
+//translate 21*y
+//translate -12*x
+//}
 
 

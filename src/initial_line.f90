@@ -67,11 +67,9 @@ module initial_line
     end if
     do i=1, pcount
       f(i)%x(1)=-box_size/2.+box_size*real(2*i-1)/(2.*pcount)
-      f(i)%x(2)=0. 
-      f(i)%x(3)=0. 
       !add a little noise
       call random_number(f(i)%x(2:3))
-      f(i)%x(2:3)=f(i)%x(2:3)*delta*0.1
+      f(i)%x(2:3)=f(i)%x(2:3)*delta*0.5
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then
@@ -180,6 +178,7 @@ module initial_line
     integer :: line_size, line_position
     integer :: i, j
     real :: u, v !helper variables
+    real :: shift1, shift2
     if (periodic_bc.or.periodic_bc_notx.or.periodic_bc_notxy) then
       !work out the number of particles required for single line
       !given the box size specified in run.in
@@ -214,6 +213,12 @@ module initial_line
           f(line_position)%infront=line_position+1
         end if
         f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
+        if (j==1) then
+          call random_number(shift1) ; call random_number(shift2)
+          shift1=2*shift1-1 ; shift2=2*shift2-1
+        end if
+        f(line_position)%x(1)=f(line_position)%x(1)+2*shift1*delta
+        f(line_position)%x(2)=f(line_position)%x(2)+2*shift2*delta
       end do
     end do
   end subroutine

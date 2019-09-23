@@ -30,6 +30,7 @@ module KSmodel
       real :: argument
       real :: sin_arg,cos_arg
       integer :: r
+      real :: spat_scale=1000.
       u=0.
       argument=0.
       do r=1,KS_modes                 
@@ -42,6 +43,7 @@ module KSmodel
         addition(:,r)=(cross1(:,r)*cos_arg)+(cross2(:,r)*sin_arg)
         u(:)=u(:)+addition(:,r)
       end do
+      u=u*exp(-spat_scale*(x(1)**2+x(2)**2+x(3)**2))
     end subroutine get_KS_flow
     !************************************************************
     !>return the KS flow (u) at a given position x, t is a global

@@ -231,6 +231,8 @@ module initial
           call setup_loop_stream !initial_loop.mod       
         case('linked_filaments')
           call setup_linked_filaments !initial_loop.mod
+        case('linked_knots')
+          call setup_linked_knots !initial_loop.mod
         case('colliding_loops')
           call setup_colliding_loops !initial_loop.mod
         case('kivotedes')
@@ -257,6 +259,8 @@ module initial
           call setup_criss_cross !initial_line.mod
         case('criss-cross-wave')
           call setup_criss_cross_wave !initial_line.mod
+        case('six_loops')
+          call setup_six_loops !initial_line.mod
         case default
           call fatal_error('cdata.mod:init_setup', &
                          'invalid choice for initf parameter') !cdata.mod

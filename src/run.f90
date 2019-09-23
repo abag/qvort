@@ -93,6 +93,7 @@ program run
     end select
     !-------------------killing spehere------------------------
     if (killing_sphere_on) call enforce_killing_sphere !killing_sphere.mod
+    if (moving_box) call killing_moving_frame !killing_sphere.mod
     !---------------kelvin_wave_remesh---------------------
     if (kelvin_wave_casc) then
       if (svistunov_hamiltonian.eqv..false.) then

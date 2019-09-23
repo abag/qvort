@@ -56,7 +56,7 @@ module diagnostic
     real,allocatable :: counter_rad(:)
     integer :: i, j, l, m
     logical :: unique
-    character (len=30) :: line_file
+    character (len=30) :: line_file, mf_file
     allocate(counter(ceiling(pcount/5.)))
     allocate(counter_rad(ceiling(pcount/5.)))
     allocate(line(ceiling(pcount/5.),pcount,4))
@@ -73,8 +73,11 @@ module diagnostic
       end if
     end do
     next_old=next
+    write(unit=mf_file,fmt="(a,i4.4,a)")'./data/mf_along_loops',itime/shots,".log"
+    open(unit=57,file=mf_file,action="write")
     do l=1, 1000 !limited to 500 loops at present - should be do while
       do i=1, pcount
+        write(57,*) l, counter_rad(l), f(next)%f_mf
         line(l,i,1)=f(next)%x(1)
         line(l,i,2)=f(next)%x(2)
         line(l,i,3)=f(next)%x(3)
@@ -112,6 +115,7 @@ module diagnostic
         exit
       end if 
     end do
+    close(57)
     if (mod(itime,mesh_shots)==0) then
       close(97)
     end if

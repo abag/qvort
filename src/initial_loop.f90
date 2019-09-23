@@ -159,7 +159,7 @@ module initial_loop
       theta=phi+(torus_epsilon/(w*radius))*cos(w*phi)
       f(i)%x(1)=rho*cos(theta)
       f(i)%x(2)=rho*sin(theta)
-      f(i)%x(3)=torus_epsilon*((1+1./w)**(0.5))*cos(w*phi)
+      f(i)%x(3)=torus_epsilon*((1+1./w)**(0.5))*cos(w*phi)-box_size/2.5
       if (i==1) then
         f(i)%behind=pcount ; f(i)%infront=i+1
       else if (i==pcount) then 
@@ -275,6 +275,51 @@ module initial_loop
     do i=pcount/2+1, pcount
       f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius
       f(i)%x(2)=radius/1.05
+      f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
+
+      if (i==(pcount/2+1)) then
+        f(i)%behind=pcount ; f(i)%infront=i+1
+      else if (i==pcount) then 
+        f(i)%behind=i-1 ; f(i)%infront=1+pcount/2
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do    
+  end subroutine
+  !*************************************************************************
+  !>two linked loops which drive a reconnection
+  subroutine setup_linked_knots
+    !two linked loops 
+    implicit none
+    real :: radius
+    integer :: i 
+    if (mod(pcount,2)/=0) then
+      call fatal_error('init.mod:setup_linked_filaments', &
+      'pcount is not a multiple of 2-aborting')
+    end if
+    radius=(0.7*pcount*delta)/(4*pi) !75% of potential size
+    write(*,'(a,f9.6)') ' initf: linked filaments, radius of loops:', radius 
+    !loop over particles setting spatial and 'loop' position
+    do i=1, pcount/2
+      f(i)%x(1)=radius*sin(pi*real(2*i-1)/(pcount/2))
+      f(i)%x(2)=radius*cos(pi*real(2*i-1)/(pcount/2))
+      f(i)%x(3)=0.
+      if (i==1) then
+        f(i)%behind=pcount/2 ; f(i)%infront=i+1
+      else if (i==pcount/2) then 
+        f(i)%behind=i-1 ; f(i)%infront=1
+      else
+        f(i)%behind=i-1 ; f(i)%infront=i+1
+      end if
+      !zero the stored velocities
+      f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+    end do
+    !second loop
+    do i=pcount/2+1, pcount
+      f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/2)-1)/(pcount/2))+radius
+      f(i)%x(2)=radius/2
       f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/2)-1)/(pcount/2)) 
 
       if (i==(pcount/2+1)) then
@@ -1037,6 +1082,113 @@ module initial_loop
       end do
     end do
   end subroutine
+!*************************************************************************
+!>two linked loops which drive a reconnection
+subroutine setup_six_loops
+!two linked loops
+implicit none
+real :: radius
+integer :: i
+if (mod(pcount,6)/=0) then
+call fatal_error('init.mod:setup_linked_filaments', &
+'pcount is not a multiple of 2-aborting')
+end if
+radius=(0.7*pcount*delta)/(4*pi) !75% of potential size
+write(*,'(a,f9.6)') ' initf: linked filaments, radius of loops:', radius
+!loop over particles setting spatial and 'loop' position
+do i=1, pcount/6
+f(i)%x(1)=radius*sin(pi*real(2*i-1)/(pcount/6))
+f(i)%x(2)=radius*cos(pi*real(2*i-1)/(pcount/6))
+f(i)%x(3)=0.
+if (i==1) then
+f(i)%behind=pcount/6 ; f(i)%infront=i+1
+else if (i==pcount/6) then
+f(i)%behind=i-1 ; f(i)%infront=1
+else
+f(i)%behind=i-1 ; f(i)%infront=i+1
+end if
+!zero the stored velocities
+f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+end do
+!second loop
+do i=pcount/6+1, 2*pcount/6
+f(i)%x(1)=radius*sin(pi*real(2.*(i-pcount/6)-1)/(pcount/6))+radius
+f(i)%x(2)=radius/2
+f(i)%x(3)=radius*cos(pi*real(2.*(i-pcount/6)-1)/(pcount/6))
+
+if (i==(pcount/6+1)) then
+f(i)%behind=2*pcount/6 ; f(i)%infront=i+1
+else if (i==2*pcount/6) then
+f(i)%behind=i-1 ; f(i)%infront=1+pcount/6
+else
+f(i)%behind=i-1 ; f(i)%infront=i+1
+end if
+!zero the stored velocities
+f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+end do
+! third loop
+do i=2*pcount/6+1, 3*pcount/6
+f(i)%x(1)=1.5*radius*sin(pi*real(2.*(i-2*pcount/6)-1)/(pcount/6))+radius
+f(i)%x(2)=1.5*radius/2
+f(i)%x(3)=1.5*radius*cos(pi*real(2.*(i-2*pcount/6)-1)/(pcount/6))
+
+if (i==(2*pcount/6+1)) then
+f(i)%behind=3*pcount/6 ; f(i)%infront=i+1
+else if (i==3*pcount/6) then
+f(i)%behind=i-1 ; f(i)%infront=1+2*pcount/6
+else
+f(i)%behind=i-1 ; f(i)%infront=i+1
+end if
+!zero the stored velocities
+f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+end do
+!fourth loop
+do i=3*pcount/6+1, 4*pcount/6
+f(i)%x(1)=1.5*radius*sin(pi*real(2*i-3*pcount/6)/(pcount/6))
+f(i)%x(2)=1.5*radius*cos(pi*real(2*i-3*pcount/6)/(pcount/6))
+f(i)%x(3)=0.
+if (i==3*pcount/6+1) then
+f(i)%behind=4*pcount/6 ; f(i)%infront=i+1
+else if (i==4*pcount/6) then
+f(i)%behind=i-1 ; f(i)%infront=3*pcount/6+1
+else
+f(i)%behind=i-1 ; f(i)%infront=i+1
+end if
+!zero the stored velocities
+f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+end do
+!fifth loop
+do i=4*pcount/6+1, 5*pcount/6
+f(i)%x(1)=1.25*radius*sin(pi*real(2*i-4*pcount/6)/(pcount/6))
+f(i)%x(2)=1.25*radius*cos(pi*real(2*i-4*pcount/6)/(pcount/6))
+f(i)%x(3)=0.
+if (i==4*pcount/6+1) then
+f(i)%behind=5*pcount/6 ; f(i)%infront=i+1
+else if (i==5*pcount/6) then
+f(i)%behind=i-1 ; f(i)%infront=4*pcount/6+1
+else
+f(i)%behind=i-1 ; f(i)%infront=i+1
+end if
+!zero the stored velocities
+f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+end do
+!sixth loop
+do i=5*pcount/6+1, pcount
+f(i)%x(1)=1.25*radius*sin(pi*real(2.*(i-5*pcount/6)-1)/(pcount/6))+radius
+f(i)%x(2)=1.25*radius/2
+f(i)%x(3)=1.25*radius*cos(pi*real(2.*(i-5*pcount/6)-1)/(pcount/6))
+
+if (i==(5*pcount/6+1)) then
+f(i)%behind=pcount ; f(i)%infront=i+1
+else if (i==pcount) then
+f(i)%behind=i-1 ; f(i)%infront=1+5*pcount/6
+else
+f(i)%behind=i-1 ; f(i)%infront=i+1
+end if
+!zero the stored velocities
+f(i)%u1=0. ; f(i)%u2=0. ; f(i)%u3=0.
+end do
+end subroutine
 end module
 !******************************************************************
 !>\page INIT Initial condition for filament

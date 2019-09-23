@@ -52,6 +52,17 @@ module normal_fluid
           open(unit=77,file='./data/normal_timescale.log',status='replace')
             write(77,*) box_size/norm_vel_xflow !time-taken to cross box
           close(77)
+        case('xflow_hourglass')
+          urms_norm=norm_vel_xflow
+          call setup_gen_normalf !normal_fluid.mod
+          write(*,'(a,f6.3)') ' u(x)=', norm_vel_xflow
+          open(unit=77,file='./data/normal_timescale.log',status='replace')
+            write(77,*) box_size/norm_vel_xflow !time-taken to cross box
+          close(77)
+        case('catseye')
+          urms_norm=norm_vel_xflow
+          write(*,'(a)') " cat's eye flow"
+          call setup_gen_normalf !normal_fluid.mod
         case('shear_xflow')
           urms_norm=norm_vel_xflow
           write(*,'(a)') ' u(x)=Asin(z+wt)'
@@ -147,9 +158,14 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
             open(unit=77,file='./data/normal_timescale.log',status='replace')
               write(77,*) box_size/urms_norm !size of box scaled by urms
             close(77)
-          else
-            call fatal_error('normal_fluid.mod','comrpressible v needs periodic b.c.')
-          end if
+           else
+             call fatal_error('normal_fluid.mod','comrpressible v needs periodic b.c.')
+           end if
+         case('dudley-james')
+           call setup_gen_normalf !normal_fluid.mod
+           open(unit=77,file='./data/normal_timescale.log',status='replace')
+           write(77,*) box_size/urms_norm !size of box scaled by urms
+           close(77)
         case('nf_macro_ring')
           !initialise some quantities to 0
           cov%u=0. ; cov%x_old=0.
@@ -208,6 +224,8 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
           u=0. ! no flow
         case('xflow')
           u=0. ; u(1)=norm_vel_xflow !flow in the x direction
+        case('xflow_hourglass')
+          u=0. ; u(1)=norm_vel_xflow+3*norm_vel_xflow*cos(x(1)/box_size) !flow in the x direction
         case('shear_xflow')
           u=0. ; u(1)=norm_vel_xflow*sin(2*pi*x(3)/box_size+t*norm_shear_omega) !flow in the x direction
         case('noisy_xflow')
@@ -224,6 +242,12 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
             end if
           end if
           u=0. ; u(1)=norm_vel_xflow+xflow_noise
+        case('catseye')
+          u=0.
+          phi=1.0
+          u(1)=phi*sinh(4*pi*x(2)/box_size)/(phi*cosh(4*pi*x(2)/box_size) & 
+               +sqrt(phi**2-1)*cos(4*pi*x(1)/box_size))*exp(-50*(x(2)/box_size)**4)
+          u(2)=sqrt(phi**2-1)*sin(4*pi*x(1)/box_size)/(phi*cosh(4*pi*x(2)/box_size)+sqrt(phi**2-1)*cos(4*pi*x(1)/box_size))
         case('random_xflow')
           !do we need to generate a new direction?
           if ((mod(itime,normal_fluid_freq)==0).or.(itime==1)) then
@@ -381,6 +405,8 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
           call get_nf_macro_ring(x,u) !normal_fluid.mod
         case('turbDNS')
           call turbDNS_interp(x,u)
+        case('dudley-james')
+          call get_dudley_james(x,u)
         case default
           call fatal_error('normal_fluid.mod:get_normal_fluid', &
           'correct parameter for normal_veloctity not set')
@@ -804,6 +830,30 @@ write(*,'(a,f6.3,a,f6.3)') ' <U>= ', norm_vel_xflow,  ", <u'>= ", urms_KS
         zp(i)=(i-1)*(1./256)*box_size-box_size/2.
       end do
       !laizet_u=laizet_u/10.
+    end subroutine
+    !**********************************************************
+    subroutine get_dudley_james(x,u)
+      implicit none
+      real, intent(IN) :: x(3)
+      real, intent(OUT) :: u(3)
+      real :: dum_x(3)
+      real :: r, theta, phi
+      real :: ur, utheta, uphi
+      dum_x=3*x/box_size
+      r=sqrt(dum_x(1)**2+dum_x(2)**2+dum_x(3)**2)
+      theta=acos(dum_x(3)/r)
+      phi=atan2(dum_x(2),dum_x(1))
+      ur=sin(20*t)*sin(pi*r)*(sin(theta)**2-2*(cos(theta)**2))
+      utheta=sin(20*t)*cos(theta)*sin(theta)*(2*sin(pi*r)+pi*r*cos(pi*r))
+      uphi=5*cos(20*t)*r*sin(pi*r)*sin(theta)*cos(theta)
+      if (r<1.) then
+        u(1)=ur*sin(theta)*cos(phi)+utheta*cos(theta)*cos(phi)-uphi*sin(phi);
+        u(2)=ur*sin(theta)*sin(phi)+utheta*cos(theta)*sin(phi)+uphi*cos(phi);
+        u(3)=ur*cos(theta)-utheta*sin(theta);
+      else
+        u=0
+      end if
+      u=u*0.95
     end subroutine
     !**********************************************************
     subroutine turbDNS_interp(x,u)

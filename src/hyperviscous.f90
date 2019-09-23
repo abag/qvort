@@ -16,7 +16,7 @@ module hyperviscous
       implicit none
       real :: plot_x(100), plot_y(100)
       integer :: i
-      write(*,*) 'hyperviscosity swithed on'
+      write(*,*) 'hyperviscosity switched on'
       max_curv=2./delta
       write(*,'(a,f9.2,a)') ' curvature above ', max_curv*hyp_curv, ' are damped'
       write(*,'(a,i4.2)') ' degree of polynomial ', hyp_power

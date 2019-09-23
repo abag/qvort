@@ -407,6 +407,7 @@ module cdata
   real :: bio_alpha=0.
   !--------------------------killing_sphere----------------------------------------
   logical :: killing_sphere_on=.false.
+  logical :: moving_box=.false.
   real :: killing_radius=0.
   logical :: adaptive_killing_sphere=.false.
   !------------------------------openmp--------------------------------------------
@@ -741,6 +742,8 @@ module cdata
              read(buffer, *, iostat=ios) delta_adapt_print !print apative discretisation
           case ('killing_sphere_on')
              read(buffer, *, iostat=ios) killing_sphere_on !do we employ a 'killing sphere'?
+          case ('moving_box')
+             read(buffer, *, iostat=ios) moving_box !does the box move with the tangle?
           case ('killing_radius')
              read(buffer, *, iostat=ios) killing_radius !if so what is its radius?
           case ('adaptive_killing_sphere')
@@ -1003,11 +1006,11 @@ module cdata
   !>generate a new random seed, or read one in from ./data if restating code
   subroutine init_random_seed()
      !CREATE A NEW RANDOM SEED, UNLESS RESTARTING CODE
-     integer :: i, n=16, clock
+     integer :: i, n, clock
      integer, allocatable :: seed(:)
      logical :: seed_exists=.false.
+     call random_seed(size=n)
      allocate(seed(n))
-     
      call system_clock(count=clock)
      
      seed = clock + 37 * (/ (i - 1, i = 1, n) /)

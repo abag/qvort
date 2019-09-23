@@ -215,7 +215,7 @@ module reconnection
               !print the time of the recon and its location
               !also include the angle between the reconnecting filaments
               open(unit=61,file='./data/recon_location.log',position='append')
-                write(61,*) t, 0.5*(f(i)%x+f(j)%x), acos(dot_val), (l_before-l_after)
+                write(61,*) t, 0.5*(f(i)%x+f(j)%x), acos(dot_val), (l_before-l_after), f(i)%f_mf
               close(61)
               !now see if we setup reconnection distance array
               do k=1, n_recon_track
