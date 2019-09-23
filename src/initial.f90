@@ -225,6 +225,8 @@ module initial
           call setup_line_of_lines
         case('sultan_recon')
           call setup_sultan_recon!initial_line.mod
+        case('bundles_recon')
+          call setup_bundles_recon!initial_line.mod
         case('rear_collide_loops')
           call setup_rear_collide_loops !initial_loop.mod
         case('loop_stream')

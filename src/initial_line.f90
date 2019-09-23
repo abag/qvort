@@ -391,6 +391,59 @@ module initial_line
       end do
     end do
   end subroutine
+!*************************************************************************
+!> 4 bundles of lines in corners of the box
+subroutine setup_bundles_recon
+  implicit none
+  integer :: pcount_required
+  integer :: line_size, line_position
+  integer :: i, j
+  real :: rand1, rand2
+  if (periodic_bc) then
+    !make sure line_count is a multiple of 2
+    if (mod(line_count,2)/=0) then
+      call fatal_error('init.mod:setup_bundles_recon', &
+      'line_count needs to be a multiple of 2')
+     end if
+    !work out the number of particles required for single line
+    !given the box size specified in run.i
+    pcount_required=line_count*nint(box_size/(0.75*delta)) !75%
+    print*, 'changing size of pcount to fit with box_length/delta and line_count'
+    print*, 'pcount is now', pcount_required
+    deallocate(f) ; pcount=pcount_required ; allocate(f(pcount))
+  else
+    call fatal_error('init.mod:recon_bundles', &
+    'periodic boundary conditions required')
+  end if
+  write(*,*) 'initf: recon bundles - bundle width', bundle_width, ' bundle separation', bundle_sep
+  line_size=int(pcount/line_count)
+  do i=1, line_count
+    rand1=runif(0.,bundle_width) ; rand2=runif(0.,1.)
+    do j=1, line_size
+      line_position=j+(i-1)*line_size
+      if (real(i)/line_count<=0.5) then
+        f(line_position)%x(1)=bundle_sep/2+rand1*cos(rand2*2*pi)
+        f(line_position)%x(2)=rand1*sin(rand2*2*pi)
+        f(line_position)%x(3)=-box_size/2.+box_size*real(2*j-1)/(2.*line_size)
+      else
+        f(line_position)%x(1)=-bundle_sep/2+rand1*cos(rand2*2*pi)
+        f(line_position)%x(2)=box_size/2.-box_size*real(2*j-1)/(2.*line_size)
+        f(line_position)%x(3)=rand1*sin(rand2*2*pi)
+      end if
+      if(j==1) then
+        f(line_position)%behind=i*line_size
+        f(line_position)%infront=line_position+1
+      else if (j==line_size) then
+        f(line_position)%behind=line_position-1
+        f(line_position)%infront=(i-1)*line_size+1
+      else
+        f(line_position)%behind=line_position-1
+        f(line_position)%infront=line_position+1
+      end if
+      f(line_position)%u1=0. ; f(line_position)%u2=0. ; f(line_position)%u3=0.
+    end do
+  end do
+  end subroutine
   !*************************************************************************
   !> 2 bundles of lines which reconnection
   subroutine setup_sultan_recon

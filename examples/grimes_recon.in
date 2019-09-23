@@ -1,0 +1,16 @@
+--------------required parameters------------
+nsteps 10000
+shots 10
+mesh_shots 100
+pcount 1000
+dt 5E-5
+delta 0.01
+box_size 1.
+velocity BS
+initf bundles_recon
+line_count 20
+boundary periodic
+--------------optional parameters------------
+---delete all below for a 'standard' run-----
+bundle_width 0.03
+bundle_sep 0.07
