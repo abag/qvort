@@ -1,11 +1,13 @@
-function [L_inside L_outside L_total vort_rms]=kdtree_vort_smooth(filenumber,plot,eval_rms)
+function [L_inside L_outside L_total vort_rms]=kdtree_vort_smooth(filenumber,ploter,eval_rms)
 global dims
 global x y z
+global f_mf
 global f
 global number_of_particles
 global vort total_length vort_rms
+global varray
 if nargin<2
-  plot=1;
+  ploter=1;
   eval_rms=2.;
 elseif nargin<3
   eval_rms=2.;
@@ -24,8 +26,10 @@ for j=1:number_of_particles
   varray(counter,5)=y(round(f(j)))-y(j);
   varray(counter,6)=z(round(f(j)))-z(j);
   varray(counter,7:9)=0.;
+  varray(counter,10)=f_mf(j)
   counter=counter+1;
 end
+varray(:,10)
 l_varray=length(varray);
 %----------------------------------------------------------------------
 %create the periodic array
@@ -95,7 +99,9 @@ for i=1:l_varray ;
   clear ind ddist
 end ; 
 vort=sqrt(varray(:,7).^2+varray(:,8).^2+varray(:,9).^2);
-vort=10*sqrt(vort);
+plot(vort,varray(:,10))
+return
+%vort=10*sqrt(vort);
 vort_rms=sqrt(sum(varray(:,7).^2+varray(:,8).^2+varray(:,9).^2)/l_varray);
 total_length=sqrt(varray(:,4).^2+varray(:,5).^2+varray(:,6).^2);
 %return
@@ -111,7 +117,7 @@ for i=1:10
   L_outside(i)=L_total-L_inside(i);
   clear ind
 end
-if plot==1
+if ploter==1
   vort_norm=vort-min(vort);
   rainbow_scale=299/max(vort_norm);
   vort_norm=vort_norm*rainbow_scale;
@@ -174,10 +180,6 @@ if plot==1
   set(gca,'ztick',[])
   caxis([0 1])
   colorbar
-  if 1==1
-    whitebg('k')
-    set(gcf,'InvertHardcopy','off');
-  end
   hold off
 end
 end

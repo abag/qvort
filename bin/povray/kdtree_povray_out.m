@@ -76,7 +76,7 @@ ns = createns(varray2(:,1:3),'nsmethod','kdtree');
 ts=load('./data/ts.log');
 delta=sqrt((bsize^3)/ts(filenumber,6))/2;
 for i=1:l_varray ;
-  [ind ddist]=knnsearch(ns,varray(i,1:3),'k',200);
+  [ind ddist]=knnsearch(ns,varray(i,1:3),'k',800);
   if max(ddist)<2*delta
     disp('i think more points are needed in KD tree')
   end
@@ -104,8 +104,8 @@ tones = 1000; %number of different color tones
 ColMap=colormap(jet(tones+1));
 %tuberad=0.02;
 %tuberad=0.02/10;
-tuberad=0.0002;
-scale = 100.00; %Added in order to get povray working correctly!
+tuberad=0.0001;
+scale = 1000.00; %Added in order to get povray working correctly!
 
 tuberad = scale*tuberad;
 fid = fopen('mesh.pov','w');

@@ -91,8 +91,8 @@ tones = 1000; %number of different color tones
 ColMap=colormap(jet(tones+1));
 %tuberad=0.02;
 %tuberad=0.02/10;
-tuberad=0.0004;
-scale = 100.00; %Added in order to get povray working correctly!
+tuberad=0.000025;
+scale = 1000.00; %Added in order to get povray working correctly!
 
 tuberad = scale*tuberad;
 fid = fopen('mesh.pov','w');
@@ -121,7 +121,7 @@ for j=1:number_of_particles
         %fprintf(fid,'tolerance 0.1\n');
         %colorInd=round(tones*wval/wmax)+1;    
         %rgbvals=ColMap(colorInd,:);
-        fprintf(fid,'pigment { color red 1 green 0 blue 0 }\n');
+        fprintf(fid,'pigment { color red 0 green 1 blue 0 }\n');
         %fprintf(fid,'pigment { color red %6.4f green %6.4f blue %6.4f }\n',rgbvals);
         fprintf(fid,'finish { ambient 0.2 diffuse 0.99 phong 1 }\n');
         fprintf(fid,'}\n');

@@ -1,8 +1,7 @@
-function mesh_spectrum(ux,uy,uz,n,fluid,fit)
+function mesh_double_spectrum(ux,uy,uz,n,fluid,fit)
 dims=load('./data/dims.log');
 uu=sqrt(ux.^2+uy.^2+uz.^2);
-%ksdensity(reshape(uu,n^3,1))
-vcoff=2. ;
+vcoff=5000. ;
 index = find(uu > vcoff);
 ux(index)=0. ; uy(index)=0. ;uz(index)=0. ;
 clear index
@@ -28,17 +27,14 @@ for i=1:n
         end
     end
 end
-figure('Name',strcat('Energy Spectrum, fluid:',fluid)) 
+figure('Name','Normal (blue) and super (black) fluid energy spectra') 
 k=(1:midpt)*(2*pi/dims(2));
-loglog(k,spect(1:midpt).*k.^(5/3),'LineWidth',2)
-if 1==1
-  dummy_spect=k.^(-5/3);
-  scaling_factor=spect(3)/dummy_spect(3);
-  dummy_spect=dummy_spect*scaling_factor;
-  hold on
-  loglog(k,dummy_spect.*k(1:end).^(5/3),'--k','LineWidth',2)
-end
+loglog(k,spect(1:midpt),'LineWidth',2)
+dummy_spect=k.^(-5/3);
+scaling_factor=spect(3)/dummy_spect(3);
+dummy_spect=dummy_spect*scaling_factor;
+hold on
+loglog(k,dummy_spect,'--r','LineWidth',2)
 xlabel('log k','FontSize',14) ; ylabel('log E(k)','FontSize',14)
 axis tight
 set(gca,'FontSize',14)
-%save spect.mat k spect dummy_spect

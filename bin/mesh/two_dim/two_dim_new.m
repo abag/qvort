@@ -1,4 +1,5 @@
 function two_dim_new(filenumber,fit,fitnorm,fitextra,firecolor)
+global uu
 close all
 if nargin<2
   do_fit=0;
@@ -75,7 +76,7 @@ set(gca,'FontSize',14)
 xlabel('u_z','FontSize',14)
 colorbar
 subplot(2,2,4)
-imagesc(xx,yy,log(sqrt(usupx.^2+usupy.^2+usupz.^2))) ; shading interp
+imagesc(xx,yy,(sqrt(usupx.^2+usupy.^2+usupz.^2))) ; shading interp
 set(gca,'YDir','normal')
 axis square
 set(gca,'FontSize',14)
@@ -87,7 +88,7 @@ colorbar
 
 figure('Name','2D (super) |u| slice')
 uu=sqrt(usupx.^2+usupy.^2+usupz.^2);
-vcoff=50. ;
+vcoff=8000. ;
 index = find(uu > vcoff);
 usupx(index)=0. ; usupy(index)=0. ;usupz(index)=0. ;
 %uu(index) = vcoff;
@@ -159,18 +160,20 @@ midpt=n/2+1;
 spect(1:1.5*n)=0.;
 for i=1:n
   for j=1:n
-    ii=i;
-    jj=j;
-    if ii>midpt ; ii=n-ii+1;  end ;
-    if jj>midpt ; jj=n-jj+1;  end ;
+    ii=i-1;
+    jj=j-1;
+    if ii>midpt ; ii=n-ii;  end ;
+    if jj>midpt ; jj=n-jj;  end ;
     r=int16(sqrt(ii^2+jj^2));
+    if r>0
     spect(r)=spect(r)+energyr(i,j)+energyi(i,j);
+    end
   end
 end
 cutoff=100;
 figure('Name','Superfluid energy spectrum')
 k=1:midpt;
-k2=(floor(midpt/2):midpt);
+k2=(floor(midpt/2)-60:midpt);
 loglog(k(1:midpt-cutoff),spect(1:midpt-cutoff),'LineWidth',2)
 xlabel('log k','FontSize',14) ; ylabel('log E(k)','FontSize',14)
 axis tight
@@ -179,7 +182,7 @@ if do_fit==1
   disp(sprintf('fitting a slope of %f to plot',fit))
   dummy_spect=k.^(fit);
   scaling_factor=sum(spect(1:10))/sum(dummy_spect(1:10));
-  dummy_spect=dummy_spect*scaling_factor;
+  dummy_spect=0.15*dummy_spect*scaling_factor;
   hold on
   loglog(k,dummy_spect,'--k','LineWidth',2)
   if isempty(fitextra)==0

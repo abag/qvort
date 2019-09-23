@@ -31,11 +31,11 @@ end
 ux=ux';
 uy=uy';
 uz=uz';
-%ux=sqrt(ux.^2+uy.^2+uz.^2);
+u2=sqrt(ux.^2+uy.^2+uz.^2);
 markerx=1;
 markery=1;
 markerz=1;
-vcoff=100. ;
+vcoff=500. ;
 index = find(ux > vcoff);
 ux(index) = [];
 clear index;
@@ -54,7 +54,9 @@ clear index;
 index = find(uz < -vcoff);
 uz(index) = [];
 clear index ;
-
+index = find(u2 > 500);
+u2(index) = [];
+clear index ;
 %-----------clear zero's---------
 index = find(abs(ux) < 1E-20);
 ux(index) = [];
@@ -65,7 +67,10 @@ clear index;
 index = find(abs(uz) < 1E-20);
 uz(index) = [];
 clear index ;
+index = find(abs(u2) < 1E-20);
+u2(index) = [];
+clear index ;
 %---------------------------------
 
 %ux=ux' ; uy=uy' ; uz=uz' ;
-save velocity.mat ux uy uz
+save velocity.mat ux uy uz u2

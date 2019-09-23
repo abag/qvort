@@ -25,8 +25,8 @@ figure('Name',strcat('Iso-surface-|u| 1.75 rms, fluid:',fluid));
   xlabel('x','FontSize',14) ; ylabel('y','FontSize',14) ; zlabel('z','FontSize',14)
   set(gca,'Fontsize',14)
   axis([min(x) max(x) min(x) max(x) min(x) max(x)])
-figure('Name',strcat('Iso-surface-|u| 2 rms, fluid:',fluid));
-  p=patch(isosurface(x,x,x,u2,2*rms));
+figure('Name',strcat('Iso-surface-|u| 2.5 rms, fluid:',fluid));
+  p=patch(isosurface(x,x,x,u2,5*rms));
   isonormals(x,x,x,u2, p)
   set(p, 'FaceColor', rgb('Red'), 'EdgeColor', 'none');
   alpha(0.8)

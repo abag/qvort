@@ -6,6 +6,8 @@ figure('visible','off');
 for i=start:skip:final
   %vortex_plot(i,'line','magnetic')
   vortex_plot(i,varargin{:})
+  %vortex_plot_sep_loops(i)
+  %view(0.2*i,26)
   if eps==1 
     fOUT=sprintf('data/var%04d.eps',i)
     print('-depsc',fOUT)

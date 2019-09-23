@@ -5,11 +5,11 @@ if nargin<1
   fit=-5/3
 end
 A=load('./data/ts.log');
-t=A(:,2) ; l=A(:,6) ; 
+t=A(:,2) ; l=A(:,6)/(0.03^3) ; 
 fitted_line=t.^(fit) ;
 %get the fitted line to lie over the data
 factor=sum(l(floor(0.75*length(l)):length(l)))/sum(fitted_line(floor(0.75*length(l)):length(l)));
-fitted_line=1.5*fitted_line*factor;
+fitted_line=0.2*fitted_line*factor;
 loglog(t,l,'k*','MarkerSize',4)
 hold on
 loglog(t,fitted_line,'r-','LineWidth',2)

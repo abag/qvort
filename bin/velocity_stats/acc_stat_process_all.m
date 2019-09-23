@@ -69,7 +69,7 @@ clear index;
 index = find(uz < -vcoff);
 uz(index) = [];
 clear index ;
-index = find(u2 > 500);
+index = find(u2 > 50);
 u2(index) = [];
 clear index ;
 %-----------clear zero's---------

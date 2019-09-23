@@ -34,4 +34,5 @@ colorbar
 figure('Name','curl(u)')
 curlz = curl(ux,uy,uz);
 pcolor(squeeze(curlz(32,:,:))) ; shading interp
-colorbar
+figure
+isosurface(sqrt(ux.^2+uy.^2+uz.^2))

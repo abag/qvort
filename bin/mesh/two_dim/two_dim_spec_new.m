@@ -36,11 +36,11 @@ xx=x;
 yy=x;
 A=load('./data/ts.log');
 if length(filenumbers)>1
-    intervortex=mean(1./sqrt(A(floor(0.5*length(A)):length(A),6)/dims(2)^3));
+    %intervortex=mean(1./sqrt(A(floor(0.5*length(A)):length(A),6)/dims(2)^3));
 end
 %%%%%%%%%%%%%CHECKING FOR ABNORMAL VELOCITY%%%%%%%%%%%%%%%%
 uu=sqrt(usupx.^2+usupy.^2+usupz.^2);
-vcoff=50. ;
+vcoff=10. ;
 index = find(uu > vcoff);
 usupx(index)=0. ; usupy(index)=0. ;usupz(index)=0. ;
 uu=sqrt(usupx.^2+usupy.^2+usupz.^2);
@@ -59,16 +59,17 @@ if ifile==filenumbers(1)
   avg_spect(1:1.5*n)=0.;
 end
 for i=1:n
-  for j=1:n
-    ii=i;
-    jj=j;
-    if ii>midpt ; ii=n-ii+1; ; end ;
-    if jj>midpt ; jj=n-jj+1; ; end ;
-    r=int16(sqrt(ii^2+jj^2));
-    spect(r)=spect(r)+energyr(i,j)+energyi(i,j);
-    avg_spect(r)=avg_spect(r)+energyr(i,j)+energyi(i,j);
-  end
+    for j=1:n
+        ii=i-1;
+        jj=j-1;
+        if ii>=midpt ; ii=n-ii;  end ;
+        if jj>=midpt ; jj=n-jj;  end ;
+        r=round(sqrt(ii^2+jj^2));
+        if r==0 ; continue ; end
+        spect(r)=spect(r)+energyr(i,j)+energyi(i,j);
+    end
 end
+avg_spect=avg_spect+spect;
 k=(1:midpt)*(2*pi/dims(2));
 k_resolution = round(dims(2)/dims(1));
 if length(filenumbers)>1
@@ -95,7 +96,6 @@ set(gca,'FontSize',16)
 if length(filenumbers)>1
   avg_spect=avg_spect./length(filenumbers);
   %avg_spect(2)=avg_spect(2)*1.1;
-  avg_spect(2)=avg_spect(2)*.8;
   figure('Name','avgerage E(k)')
   loglog(k(1:k_resolution),avg_spect(1:k_resolution),'Color','k','LineWidth',1.5)
   if do_fit==1

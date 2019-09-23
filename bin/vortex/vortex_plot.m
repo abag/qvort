@@ -91,7 +91,7 @@ elseif strcmp(p.Results.LineColor,'fric_force')
   rainbow_scale=199/max(f_mf) ;
   f_mf=f_mf*rainbow_scale;
   rainbow_val=f_mf;
-  rainbowcmap=colormap(jet(200)); 
+  rainbowcmap=colormap(fireprint(200)); 
   rainbow=1;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

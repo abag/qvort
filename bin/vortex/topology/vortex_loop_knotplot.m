@@ -63,6 +63,7 @@ else
   f=uint16(f);
 end
 zerocount=sum(f<=0);
+vlength(1:4)=0.;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %find a starting point
 for j=1:number_of_particles
@@ -97,14 +98,19 @@ for l=1:500
     case 'knot'
       %print to file dummy_pos
       fOUT=sprintf('./data/single_line%05d.log',l);
-      dlmwrite(fOUT,dummy_pos(1:10:length(dummy_pos),:),'delimiter','\t','precision', 6);
+      dlmwrite(fOUT,dummy_pos(1:1:length(dummy_pos),:),'delimiter','\t','precision', 6);
     case 'plot'
     dummy_pos(length(dummy_pos)+1,1:3)=dummy_pos(1,1:3);
-    for k=1:(length(dummy_pos)-1)
+    size(dummy_pos)
+    length(dummy_pos)
+    for k=1:(length(dummy_pos)-2)
       dist=sqrt((dummy_pos(k+1,1)-dummy_pos(k,1))^2+(dummy_pos(k+1,2)-dummy_pos(k,2))^2+(dummy_pos(k+1,3)-dummy_pos(k,3))^2);
       if dist>10*dims(1)
         disp('here')
         dummy_pos(k,:)=NaN;
+      end
+      if k<length(dummy_pos)-2
+      %vlength(l)=vlength(l)+dist;
       end
     end
     plot3(dummy_pos(:,1),dummy_pos(:,2),dummy_pos(:,3),'Color',cmap(l,:),'LineWidth',1.5)
@@ -144,6 +150,7 @@ switch option
 end
 disp('total loop count is')
 line_count
+return
 %disp('brace yourself printing all the loop sizes!')
 %counter(1:line_count);
 figure('Name','Kernel Density')
@@ -160,3 +167,4 @@ figure
 plot(curvature)
 figure
 ksdensity(curvature)
+vlength

@@ -31,7 +31,8 @@ end
 markerx=1;
 markery=1;
 markerz=1;
-vcoff=10. ;
+u2=sqrt(ux.^2+uy.^2+uz.^2);
+vcoff=5. ;
 index = find(ux > vcoff);
 ux(index) = [];
 clear index;
@@ -50,5 +51,8 @@ clear index;
 index = find(uz < -vcoff);
 uz(index) = [];
 clear index ;
-ux=ux' ; uy=uy' ; uz=uz' ;
-save velocity.mat ux uy uz
+index = find(u2 > vcoff);
+u2(index) = [];
+clear index;
+ux=ux' ; uy=uy' ; uz=uz' ; u2=u2' ;
+save velocity.mat ux uy uz u2

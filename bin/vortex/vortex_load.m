@@ -6,6 +6,7 @@ global number_of_particles
 global u_mf_x u_mf_y u_mf_z
 global ux uy uz
 global v_f_mf_x v_f_mf_y v_f_mf_z
+global t_recon time
 %check filenumber has been set
 if exist('filenumber')==0
   disp('you have not set filnumber')
@@ -38,6 +39,7 @@ v_stretch=fread(fid,number_of_particles,'float64');
 v_f_mf_x=fread(fid,number_of_particles,'float64');
 v_f_mf_y=fread(fid,number_of_particles,'float64');
 v_f_mf_z=fread(fid,number_of_particles,'float64');
+t_recon=fread(fid,number_of_particles,'float64');
 fclose(fid);
 %now create arrays for u and u_mf
 u=sqrt(ux.^2+uy.^2+uz.^2);
